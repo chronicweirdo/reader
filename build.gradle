@@ -14,9 +14,9 @@ repositories {
 
 dependencies {
 	implementation 'com.github.junrar:junrar:4.0.0'
-	implementation 'com.positiondev.epublib:epublib-core:3.1'
-	implementation 'com.github.mertakdut:EpubParser:1.0.95'
-	implementation 'org.jsoup:jsoup:1.13.1'
+	//implementation 'com.positiondev.epublib:epublib-core:3.1'
+	//implementation 'com.github.mertakdut:EpubParser:1.0.95'
+	//implementation 'org.jsoup:jsoup:1.13.1'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
