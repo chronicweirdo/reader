@@ -28,3 +28,26 @@ A very simple web-reader app. Should support the following functionality:
     - when loading a book, the api called by the web UI should be the same, preferably
     - should know how much content the book has
     - should know how to give content at position X
+
+## Epub pagination
+
+- the simplest approach
+    - load epub html, show it in a frame with `overflow: hidden;`
+    - when clicking for next page, get the viewport height (`Math.max(document.documentElement.clientHeight, window.innerHeight || 0);`, then scroll between pages with `window.scrollTo(0, 2*1508)` (1508 is the page size).
+    - the position in the book is the current html file + scroll value (+ view settings)
+    - the problem here is that part of the lines on adjacent pages can still be visible
+
+- another approach: https://stackoverflow.com/questions/8518257/render-the-epub-book-in-android
+
+- a library that seems to do what I need: https://github.com/mertakdut/EpubParser/blob/8fdc48879e596ea33d4b908f8a5cea2973de6d88/src/main/java/com/github/mertakdut/Reader.java#L493
+
+- I've looked at the source code of that library, what it does:
+    - it computes the contents for each page successively
+    - if you want to get page 10, it will compute pages 1 through 9 first (if they were not computed before)
+    - the size of a page is determined by the number of characters shown in that page
+
+- I would approach this a different way
+    - the size of the page can still be determined by the number of characters in that page
+    - the ideea would be to insert page breaks inside a html file
+    - load the file in memory, go over actual characters in the file and approximately every X characters insert a page break <div>
+    - if that page break is in the middle of a paragraph/complex tag structure, insert closing tags and reopen tags appropriately around the inserted page break

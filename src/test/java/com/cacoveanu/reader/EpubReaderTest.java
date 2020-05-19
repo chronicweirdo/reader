@@ -2,6 +2,7 @@ package com.cacoveanu.reader;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.domain.Resources;
 import nl.siegmann.epublib.epub.EpubReader;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.junit.jupiter.api.Test;
