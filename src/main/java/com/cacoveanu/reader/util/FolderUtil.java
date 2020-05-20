@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class FolderUtil {
@@ -34,6 +35,15 @@ public class FolderUtil {
         return scan(path).stream()
                 .filter(f -> f.isFile())
                 .filter(f -> f.getName().endsWith(extension))
+                .map(f -> f.getAbsolutePath())
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> scanFilesRegex(String path, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        return scan(path).stream()
+                .filter(f -> f.isFile())
+                .filter(f -> pattern.matcher(f.getAbsolutePath()).matches())
                 .map(f -> f.getAbsolutePath())
                 .collect(Collectors.toList());
     }

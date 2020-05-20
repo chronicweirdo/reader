@@ -1,9 +1,13 @@
 package com.cacoveanu.reader.controller;
 
+import com.cacoveanu.reader.service.Comic;
+import com.cacoveanu.reader.service.ComicService;
 import com.cacoveanu.reader.util.CbrUtil;
 import com.cacoveanu.reader.util.CbzUtil;
 import com.cacoveanu.reader.util.FolderUtil;
 import com.github.junrar.exception.RarException;
+import com.sun.xml.internal.ws.api.pipe.ContentType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +20,9 @@ import java.util.List;
 
 @RestController
 public class ImageController {
+
+    @Autowired
+    private ComicService comicService;
 
     @RequestMapping("/")
     public String index() {
@@ -44,17 +51,17 @@ public class ImageController {
 
     @RequestMapping("/collection")
     public String getComicCollection() throws IOException, RarException {
-        String path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Last Airbender\\Avatar - The Last Airbender - Imbalance (2018-2019)";
-        List<String> comics = FolderUtil.scanSpecificFiles(path, "cbr");
+        String path = "C:\\Users\\silvi\\Dropbox\\comics";
+        List<Comic> comics = comicService.loadComicFiles(path);
 
         StringBuilder page = new StringBuilder();
         page.append("<html><body>");
-        for (String comic : comics) {
+        for (Comic comic : comics) {
             page.append("<p>");
-            page.append(comic);
-            ByteArrayOutputStream cover = CbrUtil.read(comic, 0);
+            page.append(comic.getTitle());
+            ByteArrayOutputStream cover = comic.getCover().getData();
             String coverEncoded = new String(Base64.getEncoder().encode(cover.toByteArray()));
-            page.append("<img style=\"max-width: 100px;\" src=\"data:image/jpeg;base64,");
+            page.append("<img style=\"max-width: 100px;\" src=\"data:" + comic.getCover().getMediaType() + ";base64,");
             page.append(coverEncoded);
             page.append("\">");
             page.append("</p>");
