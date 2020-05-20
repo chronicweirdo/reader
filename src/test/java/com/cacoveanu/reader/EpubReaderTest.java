@@ -1,9 +1,9 @@
 package com.cacoveanu.reader;
 
-import nl.siegmann.epublib.domain.Book;
+/*import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.Resources;
-import nl.siegmann.epublib.epub.EpubReader;
+import nl.siegmann.epublib.epub.EpubReader;*/
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,7 @@ import java.util.List;
 
 class EpubReaderTest {
 
-    @Test
+    /*@Test
     void testReadEpubContents() throws IOException {
         String path = "C:\\Users\\silvi\\Dropbox\\books\\The Expanse\\Corey, James S. A_\\5.0 - Nemesis Games\\Nemesis Games - James S. A. Corey.epub";
         EpubReader epubReader = new EpubReader();
@@ -32,5 +32,5 @@ class EpubReaderTest {
         try(OutputStream outputStream = new FileOutputStream("test.html")) {
             IOUtils.copy(chapter.getInputStream(), outputStream);
         }
-    }
+    }*/
 }

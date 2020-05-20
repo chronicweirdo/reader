@@ -1,6 +1,7 @@
 package com.cacoveanu.reader.controller;
 
 import com.cacoveanu.reader.util.CbrUtil;
+import com.cacoveanu.reader.util.CbzUtil;
 import com.cacoveanu.reader.util.FolderUtil;
 import com.github.junrar.exception.RarException;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,16 @@ public class ImageController {
         String path = "C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 001 (2012) (5 covers) (digital).cbr";
 
         ByteArrayOutputStream data = CbrUtil.read(path, page);
+
+        response.setContentType("image/jpeg");
+        data.writeTo(response.getOutputStream());
+    }
+
+    @RequestMapping("/cbz")
+    public void getCbzImage(@RequestParam("page") int page, HttpServletResponse response) throws IOException, RarException {
+        String path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)\\The Legend of Korra - Turf Wars - Part 1 (2017) (Digital) (Raven).cbz";
+
+        ByteArrayOutputStream data = CbzUtil.read(path, page);
 
         response.setContentType("image/jpeg");
         data.writeTo(response.getOutputStream());

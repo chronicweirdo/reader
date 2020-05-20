@@ -1,11 +1,11 @@
 package com.cacoveanu.reader;
 
-import org.jsoup.Jsoup;
+/*import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
+import org.jsoup.select.Elements;*/
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class HtmlWordCountTest {
 
-    @Test
+    /*@Test
     void openDocument() throws IOException {
         Document doc = Jsoup.connect("https://en.wikipedia.org/").get();
         System.out.println(doc.title());
@@ -53,5 +53,5 @@ public class HtmlWordCountTest {
         String trimmedContent = content.replaceAll("\\s+", " ");
         System.out.println(trimmedContent);
         System.out.println(trimmedContent.equals(otherContent));
-    }
+    }*/
 }

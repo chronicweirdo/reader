@@ -1,14 +1,14 @@
 package com.cacoveanu.reader;
 
-import com.github.mertakdut.BookSection;
+/*import com.github.mertakdut.BookSection;
 import com.github.mertakdut.Reader;
 import com.github.mertakdut.exception.OutOfPagesException;
-import com.github.mertakdut.exception.ReadingException;
+import com.github.mertakdut.exception.ReadingException;*/
 import org.junit.jupiter.api.Test;
 
 public class OtherEpubReaderTest {
 
-    @Test
+    /*@Test
     void read() throws ReadingException, OutOfPagesException {
         String path = "C:\\Users\\silvi\\Dropbox\\books\\The Expanse\\Corey, James S. A_\\5.0 - Nemesis Games\\Nemesis Games - James S. A. Corey.epub";
         Reader reader = new Reader();
@@ -40,5 +40,5 @@ public class OtherEpubReaderTest {
         System.out.println(sectionContent);
         String sectionTextContent = bookSection.getSectionTextContent(); // Excludes html tags.
         System.out.println(sectionTextContent);
-    }
+    }*/
 }
