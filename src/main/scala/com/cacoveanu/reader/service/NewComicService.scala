@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.service
 
-import java.io.{ByteArrayOutputStream, FileInputStream}
+import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
 import java.util
 import java.util.zip.ZipFile
@@ -104,9 +104,33 @@ class NewComicService {
       case _ => None
     }
 
-  def loadComicFiles(path: String): mutable.Seq[NewComic] =
-    FolderUtil.scanFilesRegex(path, COMIC_FILE_REGEX).asScala
-    .map(file => loadComic(file))
-    .filter(comic => comic.isDefined)
-    .map(comic => comic.get)
+  def loadComicFiles(path: String): Seq[NewComic] =
+    scanFilesRegex(path, COMIC_FILE_REGEX)
+      .map(file => loadComic(file))
+      .filter(comic => comic.isDefined)
+      .map(comic => comic.get)
+
+  private def scan(path: String) = {
+    var files = mutable.Seq[File]()
+    files = files :+ new File(path)
+    var processed = 0
+    while (processed < files.length) {
+      val current = files(processed)
+      if (current.exists() && current.isDirectory()) {
+        val children: Array[File] = current.listFiles()
+        files ++= current.listFiles
+      }
+      processed += 1
+    }
+
+    Seq(files:_*)
+  }
+
+  private def scanFilesRegex(path: String, regex: String) = {
+    val pattern = regex.r
+    scan(path)
+      .filter(f => f.isFile())
+      .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
+      .map(f => f.getAbsolutePath())
+  }
 }
