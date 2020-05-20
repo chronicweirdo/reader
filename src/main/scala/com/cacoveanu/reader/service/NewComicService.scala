@@ -12,6 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 case class NewComic(title: String, path: String, cover: NewComicPage)
 
@@ -103,10 +104,9 @@ class NewComicService {
       case _ => None
     }
 
-  def loadComicFiles(path: String): util.List[NewComic] =
+  def loadComicFiles(path: String): mutable.Seq[NewComic] =
     FolderUtil.scanFilesRegex(path, COMIC_FILE_REGEX).asScala
     .map(file => loadComic(file))
     .filter(comic => comic.isDefined)
     .map(comic => comic.get)
-    .asJava
 }
