@@ -2,11 +2,11 @@ package com.cacoveanu.reader.controller;
 
 import com.cacoveanu.reader.service.Comic;
 import com.cacoveanu.reader.service.ComicService;
+import com.cacoveanu.reader.service.NewComic;
+import com.cacoveanu.reader.service.NewComicService;
 import com.cacoveanu.reader.util.CbrUtil;
 import com.cacoveanu.reader.util.CbzUtil;
-import com.cacoveanu.reader.util.FolderUtil;
 import com.github.junrar.exception.RarException;
-import com.sun.xml.internal.ws.api.pipe.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +23,9 @@ public class ImageController {
 
     @Autowired
     private ComicService comicService;
+
+    @Autowired
+    private NewComicService newComicService;
 
     @RequestMapping("/")
     public String index() {
@@ -51,17 +54,16 @@ public class ImageController {
 
     @RequestMapping("/collection")
     public String getComicCollection() throws IOException, RarException {
-        String path = "C:\\Users\\silvi\\Dropbox\\comics";
-        List<Comic> comics = comicService.loadComicFiles(path);
+        String path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)";
+        List<NewComic> comics = newComicService.loadComicFiles(path);
 
         StringBuilder page = new StringBuilder();
         page.append("<html><body>");
-        for (Comic comic : comics) {
+        for (NewComic comic : comics) {
             page.append("<p>");
-            page.append(comic.getTitle());
-            ByteArrayOutputStream cover = comic.getCover().getData();
-            String coverEncoded = new String(Base64.getEncoder().encode(cover.toByteArray()));
-            page.append("<img style=\"max-width: 100px;\" src=\"data:" + comic.getCover().getMediaType() + ";base64,");
+            page.append(comic.title());
+            String coverEncoded = new String(Base64.getEncoder().encode(comic.cover().data()));
+            page.append("<img style=\"max-width: 100px;\" src=\"data:" + comic.cover().mediaType() + ";base64,");
             page.append(coverEncoded);
             page.append("\">");
             page.append("</p>");

@@ -1,6 +1,7 @@
 plugins {
 	id 'org.springframework.boot' version '2.3.0.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'scala'
 	id 'java'
 }
 
@@ -12,7 +13,19 @@ repositories {
 	mavenCentral()
 }
 
+sourceSets {
+	main {
+		scala {
+			srcDirs = ['src/main/scala', 'src/main/java']
+		}
+		java {
+			srcDirs = []
+		}
+	}
+}
+
 dependencies {
+	implementation 'org.scala-lang:scala-library:2.12.5'
 	implementation 'com.github.junrar:junrar:4.0.0'
 	//implementation 'com.positiondev.epublib:epublib-core:3.1'
 	//implementation 'com.github.mertakdut:EpubParser:1.0.95'
