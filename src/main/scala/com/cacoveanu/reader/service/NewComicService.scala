@@ -2,10 +2,8 @@ package com.cacoveanu.reader.service
 
 import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
-import java.util
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.util.FolderUtil
 import com.github.junrar.Archive
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.http.MediaType
