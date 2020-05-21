@@ -108,7 +108,7 @@ class ComicService {
       .filter(comic => comic.isDefined)
       .map(comic => comic.get)
 
-  private def scan(path: String) = {
+  private def scan(path: String): Seq[File] = {
     var files = mutable.Seq[File]()
     files = files :+ new File(path)
     var processed = 0
@@ -121,7 +121,7 @@ class ComicService {
       processed += 1
     }
 
-    Seq(files:_*)
+    files.toSeq
   }
 
   private def scanFilesRegex(path: String, regex: String) = {
