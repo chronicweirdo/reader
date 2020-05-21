@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-case class NewComic(title: String, path: String, cover: NewComicPage)
+case class Comic(title: String, path: String, cover: ComicPage)
 
-case class NewComicPage(mediaType: MediaType, data: Array[Byte])
+case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
 @Service
-class NewComicService {
+class ComicService {
 
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
@@ -37,7 +37,7 @@ class NewComicService {
   private def isImageType(fileName: String) =
     Seq("jpg", "jpeg", "png", "gif") contains getExtension(fileName)
 
-  def readPage(path: String, pageNumber: Int): Option[NewComicPage] = {
+  def readPage(path: String, pageNumber: Int): Option[ComicPage] = {
     getExtension(path) match {
       case COMIC_TYPE_CBR => readCbrPage(path, pageNumber)
       case COMIC_TYPE_CBZ => readCbzPage(path, pageNumber)
@@ -45,7 +45,7 @@ class NewComicService {
     }
   }
 
-  private def readCbrPage(path: String, pageNumber: Int): Option[NewComicPage] = {
+  private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
 
     val archive = new Archive(new FileInputStream(path))
     val fileHeaders = archive.getFileHeaders().asScala
@@ -61,13 +61,13 @@ class NewComicService {
       archive.close()
 
       fileMediaType match {
-        case Some(mediaType) => Some(NewComicPage(mediaType, fileContents.toByteArray))
+        case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
         case None => None
       }
     } else None
   }
 
-  private def readCbzPage(path: String, pageNumber: Int): Option[NewComicPage] = {
+  private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
     val zipFile = new ZipFile(path)
     val files = zipFile.entries().asScala
       .filter(f => !f.isDirectory)
@@ -84,7 +84,7 @@ class NewComicService {
       zipFile.close();
 
       fileMediaType match {
-        case Some(mediaType) => Some(NewComicPage(mediaType, bos.toByteArray))
+        case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
         case None => None
       }
     } else None
@@ -96,13 +96,13 @@ class NewComicService {
     Some(fileName.substring(0, fileName.lastIndexOf('.')))
   }
 
-  private def loadComic(file: String): Option[NewComic] =
+  private def loadComic(file: String): Option[Comic] =
     (getComicTitle(file), readPage(file, 0)) match {
-      case (Some(title), Some(cover)) => Some(NewComic(title, file, cover))
+      case (Some(title), Some(cover)) => Some(Comic(title, file, cover))
       case _ => None
     }
 
-  def loadComicFiles(path: String): Seq[NewComic] =
+  def loadComicFiles(path: String): Seq[Comic] =
     scanFilesRegex(path, COMIC_FILE_REGEX)
       .map(file => loadComic(file))
       .filter(comic => comic.isDefined)
