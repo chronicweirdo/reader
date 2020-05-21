@@ -27,7 +27,8 @@ class ComicService {
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
   private val COVER_RESIZE_FACTOR = .2
 
-  @BeanProperty @Autowired val imageService: ImageService = null
+  @BeanProperty
+  @Autowired var imageService: ImageService = null
 
   private def isImageType(fileName: String) =
     Seq("jpg", "jpeg", "png", "gif") contains FileUtil.getExtension(fileName)
@@ -41,7 +42,7 @@ class ComicService {
   }
 
   private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
-
+    println("scanning comic: " + path)
     val archive = new Archive(new FileInputStream(path))
     val fileHeaders = archive.getFileHeaders().asScala
       .filter(f => !f.isDirectory)
@@ -63,6 +64,7 @@ class ComicService {
   }
 
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
+    println("scanning comic: " + path)
     val zipFile = new ZipFile(path)
     val files = zipFile.entries().asScala
       .filter(f => !f.isDirectory)
@@ -91,7 +93,7 @@ class ComicService {
     Some(fileName.substring(0, fileName.lastIndexOf('.')))
   }
 
-  private def loadComic(file: String): Option[Comic] =
+  def loadComic(file: String): Option[Comic] =
     (getComicTitle(file), readPage(file, 0)) match {
       case (Some(title), Some(cover)) =>
         imageService.getFormatName(cover.mediaType) match {
