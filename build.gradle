@@ -22,11 +22,6 @@ sourceSets {
 			srcDirs = []
 		}
 	}
-/*	test {
-		scala {
-			srcDirs = ['src/test/scala']
-		}
-	}*/
 }
 
 dependencies {
@@ -34,14 +29,9 @@ dependencies {
 	implementation 'com.github.junrar:junrar:4.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
-	//testImplementation 'org.scalactic:scalactic_2.13:3.1.2'
-	//testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
-
-	//testRuntime 'org.pegdown:pegdown:1.4.2'
 }
 
 test {
