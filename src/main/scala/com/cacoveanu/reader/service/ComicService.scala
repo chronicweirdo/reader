@@ -4,12 +4,15 @@ import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
+import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import org.apache.tomcat.util.http.fileupload.IOUtils
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
-import scala.collection.JavaConverters._
+import scala.beans.BeanProperty
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 case class Comic(title: String, path: String, cover: ComicPage)
@@ -22,23 +25,15 @@ class ComicService {
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
+  private val COVER_RESIZE_FACTOR = .2
 
-  private def getExtension(path: String) = path.toLowerCase().substring(path.lastIndexOf('.')).substring(1)
-
-  private def getMediaType(fileName: String): Option[MediaType] =
-    getExtension(fileName) match {
-      case "jpg" => Some(MediaType.IMAGE_JPEG)
-      case "jpeg" => Some(MediaType.IMAGE_JPEG)
-      case "png" => Some(MediaType.IMAGE_PNG)
-      case "gif" => Some(MediaType.IMAGE_GIF)
-      case _ => None
-    }
+  @BeanProperty @Autowired val imageService: ImageService = null
 
   private def isImageType(fileName: String) =
-    Seq("jpg", "jpeg", "png", "gif") contains getExtension(fileName)
+    Seq("jpg", "jpeg", "png", "gif") contains FileUtil.getExtension(fileName)
 
   def readPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    getExtension(path) match {
+    FileUtil.getExtension(path) match {
       case COMIC_TYPE_CBR => readCbrPage(path, pageNumber)
       case COMIC_TYPE_CBZ => readCbzPage(path, pageNumber)
       case _ => None
@@ -55,7 +50,7 @@ class ComicService {
     if (fileHeaders.indices contains pageNumber) {
       val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
       val archiveFile = sortedFileHandlers(pageNumber)
-      val fileMediaType: Option[MediaType] = getMediaType(archiveFile.getFileNameString)
+      val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
       val fileContents = new ByteArrayOutputStream()
       archive.extractFile(archiveFile, fileContents)
       archive.close()
@@ -77,7 +72,7 @@ class ComicService {
     if (files.indices contains pageNumber) {
       val sortedFiles = files.sortBy(f => f.getName)
       val file = sortedFiles(pageNumber)
-      val fileMediaType = getMediaType(file.getName)
+      val fileMediaType = imageService.getMediaType(file.getName)
       val fileContents = zipFile.getInputStream(file)
       val bos = new ByteArrayOutputStream()
       IOUtils.copy(fileContents, bos)
@@ -98,7 +93,14 @@ class ComicService {
 
   private def loadComic(file: String): Option[Comic] =
     (getComicTitle(file), readPage(file, 0)) match {
-      case (Some(title), Some(cover)) => Some(Comic(title, file, cover))
+      case (Some(title), Some(cover)) =>
+        imageService.getFormatName(cover.mediaType) match {
+          case Some(formatName) =>
+            val smallerCoverData = imageService.resizeImage(cover.data, formatName, COVER_RESIZE_FACTOR)
+            val smallerCover = cover.copy(data = smallerCoverData)
+            Some(Comic(title, file, smallerCover))
+          case None => None
+        }
       case _ => None
     }
 

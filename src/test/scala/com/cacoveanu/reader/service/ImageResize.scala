@@ -33,6 +33,7 @@ class ImageResize {
     }
   }
 
+  // https://stackoverflow.com/questions/244164/how-can-i-resize-an-image-using-java
   @Test def resizeImageAndSave(): Unit = {
     val page = comicService.readPage(path, 0)
 

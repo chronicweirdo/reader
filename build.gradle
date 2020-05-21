@@ -13,7 +13,7 @@ repositories {
 	mavenCentral()
 }
 
-sourceSets {
+/*sourceSets {
 	main {
 		scala {
 			srcDirs = ['src/main/scala', 'src/main/java']
@@ -22,7 +22,7 @@ sourceSets {
 			srcDirs = []
 		}
 	}
-}
+}*/
 
 dependencies {
 	implementation 'org.scala-lang:scala-library:2.13.2'
