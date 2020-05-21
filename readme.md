@@ -51,3 +51,21 @@ A very simple web-reader app. Should support the following functionality:
     - the ideea would be to insert page breaks inside a html file
     - load the file in memory, go over actual characters in the file and approximately every X characters insert a page break <div>
     - if that page break is in the middle of a paragraph/complex tag structure, insert closing tags and reopen tags appropriately around the inserted page break
+
+## Rudimentary comic book reading app
+
+- already showing a list of all comics in the collection with their cover image and the name in the "title"
+- already can click through comic
+- todo:
+    - better comic model (with total number of pages)
+    - integrate a database that contains comic information (and will eventually contain users and progress information)
+    - make app scan for changes between comic library and database on start (also have an option in the ui to trigger rescan, maybe do it periodically)
+    - integrate a html templating engine (not ideea what, what's hip now with the kids?)
+    - integrate a js library that gives image "controls": pinch or mouse zoom and pan on the image
+    - integrate a js library that detects clicks in the edges of the screen (finger or mouse) to flip between pages (maybe even have a page flip if finger flips the screen, if the image is not zoomed)
+    - also make a swipe from top (or mouse hover near top) open the ui menu that can take you back to the comics library
+    - make the library page organize comics in folders (and subfolders?)
+    - introduce a section with "recently" at the top of the library page
+    - add option to download comic file
+    - add option to upload comic file
+    - (a lot of ui work)
