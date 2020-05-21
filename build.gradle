@@ -22,19 +22,26 @@ sourceSets {
 			srcDirs = []
 		}
 	}
+/*	test {
+		scala {
+			srcDirs = ['src/test/scala']
+		}
+	}*/
 }
 
 dependencies {
 	implementation 'org.scala-lang:scala-library:2.13.2'
 	implementation 'com.github.junrar:junrar:4.0.0'
-	//implementation 'com.positiondev.epublib:epublib-core:3.1'
-	//implementation 'com.github.mertakdut:EpubParser:1.0.95'
-	//implementation 'org.jsoup:jsoup:1.13.1'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
+
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	//testImplementation 'org.scalactic:scalactic_2.13:3.1.2'
+	//testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
+
+	//testRuntime 'org.pegdown:pegdown:1.4.2'
 }
 
 test {
