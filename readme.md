@@ -69,3 +69,17 @@ A very simple web-reader app. Should support the following functionality:
     - add option to download comic file
     - add option to upload comic file
     - (a lot of ui work)
+    
+## Epub Reading App idea
+
+- to correctly identify the number of words to display on each page, use a html/css in-memory renderer
+    - set the page size to what we have in the UI
+    - set the page css (margins) to what we have in the UI
+    - add words in the page until we detect an overflow (the appearance of scroll bars)
+    - remove last word after overflow happened
+    - this is the page size
+    - we can attempt to do this for the whole book when loading it from disk, and every time the UI settings are changed (check performance)
+    
+- we also need to find a way to treat
+    - images
+    - tables
