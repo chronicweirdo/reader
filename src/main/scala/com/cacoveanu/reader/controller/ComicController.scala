@@ -27,8 +27,9 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   @RequestMapping(Array("/collection"))
   def getComicCollection(): String = {
     //val path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)";
-    val path = "C:\\Users\\silvi\\Dropbox\\comics\\"
-    val comics = comicService.loadComicFiles(path);
+    //val path = "C:\\Users\\silvi\\Dropbox\\comics\\"
+    //val comics = comicService.loadComicFiles(path);
+    val comics = comicService.getCollection()
 
     val page = new StringBuilder()
     page.append("<html><body>")

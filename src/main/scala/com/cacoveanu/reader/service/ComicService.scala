@@ -4,16 +4,28 @@ import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
+import com.cacoveanu.reader.repository.ComicRepository
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
+import javax.annotation.PostConstruct
+import javax.persistence.{Entity, GeneratedValue, GenerationType, Id}
 import org.apache.tomcat.util.http.fileupload.IOUtils
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+
+@Entity
+class DbComic {
+  @Id
+  var path: String = _
+  var title: String = _
+  var mediaType: MediaType = _
+  var cover: Array[Byte] = _
+}
 
 case class Comic(title: String, path: String, cover: ComicPage)
 
@@ -27,8 +39,39 @@ class ComicService {
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
   private val COVER_RESIZE_FACTOR = .2
 
+  @Value("${comics.location}")
+  @BeanProperty
+  var comicsLocation: String = null
+
   @BeanProperty
   @Autowired var imageService: ImageService = null
+
+  @BeanProperty
+  @Autowired
+  var comicRepository: ComicRepository = null
+
+  @PostConstruct
+  def scanAndSave() = {
+    println(comicsLocation)
+    val comics = loadComicFiles(comicsLocation)
+    val dbComics = comics.map(c => {
+      val dc = new DbComic
+      dc.path = c.path
+      dc.title = c.title
+      dc.mediaType = c.cover.mediaType
+      dc.cover = c.cover.data
+      dc
+    })
+    comicRepository.saveAll(dbComics.asJava)
+  }
+
+  def getCollection(): Seq[Comic] = {
+    comicRepository.findAll().asScala.map(c => Comic(
+      c.title,
+      c.path,
+      ComicPage(c.mediaType, c.cover)
+    )).toSeq
+  }
 
   private def isImageType(fileName: String) =
     Seq("jpg", "jpeg", "png", "gif") contains FileUtil.getExtension(fileName)
