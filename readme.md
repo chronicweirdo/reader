@@ -83,3 +83,16 @@ A very simple web-reader app. Should support the following functionality:
 - we also need to find a way to treat
     - images
     - tables
+    
+## Spring Data with Scala
+
+https://spring.io/guides/gs/accessing-data-jpa/
+https://stackoverflow.com/questions/27865403/spring-data-with-scala
+
+## Building the UI
+
+Spring template engines: https://www.baeldung.com/spring-template-engines
+
+Js gestures library:
+    - https://hammerjs.github.io/
+    - http://gojquery.com/best-javascript-touch-gesture-libraries/
