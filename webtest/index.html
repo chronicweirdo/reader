@@ -57,14 +57,38 @@
         }
         return def
     }
+
+    function viewportWidth() {
+        return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+    }
+    function viewportHeight() {
+        return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+    }
     function pan(x, y) {
         var img = getImage()
         //console.log(img.style.left)
         //console.log(img.style.top)
-        img.style.left = num(img.style.left, 0) + x
-        img.style.top = num(img.style.top, 0) + y
+        var minimumLeft = Math.min(0, viewportWidth() - img.width)
+        var maximumLeft = Math.max(0, viewportWidth() - img.width)
+        var minimumTop = Math.min(0, viewportHeight() - img.height)
+        var maximumTop = Math.max(0, viewportHeight() - img.height)
+
+        var newLeft = num(img.style.left, 0) + x
+        var newTop = num(img.style.top, 0) + y
+
+        //if (newLeft < 0 && (newLeft + img.width < viewportWidth())) newLeft = originalLeft
+        if (newLeft < minimumLeft) newLeft = minimumLeft
+        if (newLeft > maximumLeft) newLeft = maximumLeft
+        if (newTop < minimumTop) newTop = minimumTop
+        if (newTop > maximumTop) newTop = maximumTop
+
+        img.style.left = newLeft
+        img.style.top = newTop
         //console.log(img.style.left)
         //console.log(img.style.top)
+
+        // regularization
+        
     }
     function zoom(d) {
         var img = getImage()
@@ -100,7 +124,7 @@
     function mouseUp(e) {
         drag = false;
     }
-    var panSpeed = 2
+    var panSpeed = 4
     function mouseMove(e) {
         if (drag) {
             console.log(e.movementX)
