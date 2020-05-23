@@ -1,6 +1,7 @@
 package com.cacoveanu.reader.controller
 
 import java.net.URLEncoder
+import java.nio.file.{Files, Paths}
 import java.util.Base64
 
 import com.cacoveanu.reader.service.ComicService
@@ -22,6 +23,12 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     img.append("src=\"data:").append(mediaType).append(";base64,")
       .append(imageEncoded).append("\">")
     img.toString()
+  }
+
+  @RequestMapping(Array("/gesture"))
+  def getGesturesTest(): String = {
+    val byteArray = Files.readAllBytes(Paths.get("src/main/resources/static/index.html"))
+    new String(byteArray)
   }
 
   @RequestMapping(Array("/collection"))

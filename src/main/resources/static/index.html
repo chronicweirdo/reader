@@ -43,6 +43,7 @@
         position: fixed;
     }
 </style>
+<script src="hammer.min.js"></script> 
 <script>
     function num(s, def) {
         var patt = /[\-]?[0-9\.]+/
@@ -132,6 +133,31 @@
             pan(e.movementX * panSpeed, e.movementY * panSpeed)
         }
     }
+
+    var myOptions = {}
+    var hammertime = new Hammer(document, myOptions);
+    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+
+    var touchscreenPanAttenuator = 1
+    var panPreviousDeltaX = 0
+    var panPreviousDeltaY = 0
+    
+    hammertime.on('pan', function(ev) {
+        //console.log(ev);
+        //pan(ev.overallVelocityX * touchscreenPanAttenuator, ev.overallVelocityY * touchscreenPanAttenuator)
+        var currentDeltaX = ev.deltaX - panPreviousDeltaX
+        var currentDeltaY = ev.deltaY - panPreviousDeltaY
+        pan(currentDeltaX * touchscreenPanAttenuator, currentDeltaY * touchscreenPanAttenuator)
+        panPreviousDeltaX = ev.deltaX
+        panPreviousDeltaY = ev.deltaY
+    });
+    hammertime.on('panend', function(ev) {
+        console.log(ev);
+        //pan(ev.deltaX * touchscreenPanAttenuator, ev.deltaY * touchscreenPanAttenuator)
+        panPreviousDeltaX = 0
+        panPreviousDeltaY = 0
+    });
+
 </script>
 </head>
 <body>
