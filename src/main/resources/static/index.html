@@ -1,5 +1,7 @@
 <html>
 <head>
+    <meta name="viewport"
+        content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 <style>
     * {
         margin: 0;
@@ -134,53 +136,70 @@
         }
     }
 
-    var myOptions = {prevent_defaults: true}
-    var hammertime = new Hammer(document, myOptions);
-    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
-    hammertime.get('pinch').set({ enable: true });
+    var disableEventHandlers = function (el) {
+        console.log("disabling event handlers for " + el)
+        var events = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover',
+                      'onmouseup', 'ondblclick', 'onfocus', 'onblur'];
 
-    var touchscreenPanAttenuator = 1
-    var panPreviousDeltaX = 0
-    var panPreviousDeltaY = 0
+        events.forEach(function (event) {
+          el[event] = function () {
+            return false;
+          };
+        });
+      };
     
-    hammertime.on('pan', function(ev) {
-        //console.log(ev);
-        //pan(ev.overallVelocityX * touchscreenPanAttenuator, ev.overallVelocityY * touchscreenPanAttenuator)
-        var currentDeltaX = ev.deltaX - panPreviousDeltaX
-        var currentDeltaY = ev.deltaY - panPreviousDeltaY
-        pan(currentDeltaX * touchscreenPanAttenuator, currentDeltaY * touchscreenPanAttenuator)
-        panPreviousDeltaX = ev.deltaX
-        panPreviousDeltaY = ev.deltaY
-    });
-    hammertime.on('panend', function(ev) {
-        //console.log(ev);
-        //pan(ev.deltaX * touchscreenPanAttenuator, ev.deltaY * touchscreenPanAttenuator)
-        panPreviousDeltaX = 0
-        panPreviousDeltaY = 0
-    });
-    var previousPinchScale = 1
-    var pinchZoomSpeed = .1
-    var originalWidth = null
-    var originalHeight = null
-    hammertime.on('pinchstart', function(ev) {
-        ev.preventDefault();
-        var img = getImage()
-        originalWidth = img.width
-        originalHeight = img.height
-        console.log(originalWidth + " " + originalHeight)
-    })
-    hammertime.on('pinch', function(ev) {
-        ev.preventDefault()
-	    //console.log(ev);
-        //var currentScale = ev.scale - previousPinchScale
-        //zoom(1 + currentScale)
-        //previousPinchScale = ev.scale
-        //zoom(ev.distance)
-        var img = getImage()
-        img.width = originalWidth * ev.scale
-        img.height = originalHeight * ev.scale
-        console.log(ev.scale + " " + img.width + " " + img.height)
-    });
+    function enableTouchGestures(element) {
+        disableEventHandlers(element)
+        var hammertime = new Hammer(element, {
+            domEvents: true
+            });
+        hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+        hammertime.get('pinch').set({ enable: true });
+
+        var touchscreenPanAttenuator = 1
+        var panPreviousDeltaX = 0
+        var panPreviousDeltaY = 0
+        
+        hammertime.on('pan', function(ev) {
+            //console.log(ev);
+            //pan(ev.overallVelocityX * touchscreenPanAttenuator, ev.overallVelocityY * touchscreenPanAttenuator)
+            var currentDeltaX = ev.deltaX - panPreviousDeltaX
+            var currentDeltaY = ev.deltaY - panPreviousDeltaY
+            pan(currentDeltaX * touchscreenPanAttenuator, currentDeltaY * touchscreenPanAttenuator)
+            panPreviousDeltaX = ev.deltaX
+            panPreviousDeltaY = ev.deltaY
+        });
+        hammertime.on('panend', function(ev) {
+            //console.log(ev);
+            //pan(ev.deltaX * touchscreenPanAttenuator, ev.deltaY * touchscreenPanAttenuator)
+            panPreviousDeltaX = 0
+            panPreviousDeltaY = 0
+        });
+        var previousPinchScale = 1
+        var pinchZoomSpeed = .1
+        var originalWidth = null
+        var originalHeight = null
+        hammertime.on('pinchstart', function(ev) {
+            ev.preventDefault();
+            var img = getImage()
+            originalWidth = img.width
+            originalHeight = img.height
+            console.log(originalWidth + " " + originalHeight)
+        })
+        hammertime.on('pinch', function(ev) {
+            ev.preventDefault()
+            //console.log(ev);
+            //var currentScale = ev.scale - previousPinchScale
+            //zoom(1 + currentScale)
+            //previousPinchScale = ev.scale
+            //zoom(ev.distance)
+            var img = getImage()
+            img.width = originalWidth * ev.scale
+            img.height = originalHeight * ev.scale
+            console.log(ev.scale + " " + img.width + " " + img.height)
+        });
+        
+    }
 
 </script>
 </head>
@@ -190,10 +209,19 @@
     <div id="next"></div>
     <div id="top"></div>
     <script>
-        document.addEventListener("wheel", mouseWheelScroll)
-        document.addEventListener("mousedown", mouseDown)
-        document.addEventListener("mouseup", mouseUp)
-        document.addEventListener("mousemove", mouseMove)
+        
+
+        window.onload = function() {
+            console.log(document)
+            //disableEventHandlers(document)
+            
+            //enableTouchGestures(getImage())
+            enableTouchGestures(document.all.item(0))
+            document.addEventListener("wheel", mouseWheelScroll)
+            document.addEventListener("mousedown", mouseDown)
+            document.addEventListener("mouseup", mouseUp)
+            document.addEventListener("mousemove", mouseMove)
+        }
     </script>
 </body>
 </html>
