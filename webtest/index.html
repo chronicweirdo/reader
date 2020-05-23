@@ -45,7 +45,7 @@
 </style>
 <script>
     function num(s, def) {
-        var patt = /[0-9\.]+/
+        var patt = /[\-]?[0-9\.]+/
         var match = patt.exec(s)
         if (match != null && match.length > 0) {
             var n = match[0]
@@ -86,10 +86,27 @@
     function getImage() {
         return document.getElementsByTagName("img")[0]
     }
+    var revertScrollZoom = true
     var scrollSpeed = .5 * .1
     function mouseWheelScroll(i) {
         //console.log(i.deltaY)
-        zoom(1 + i.deltaY * scrollSpeed)
+        zoom(1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1))
+    }
+    var drag = false;
+    function mouseDown(e) {
+        e.preventDefault()
+        drag = true;
+    }
+    function mouseUp(e) {
+        drag = false;
+    }
+    var panSpeed = 2
+    function mouseMove(e) {
+        if (drag) {
+            console.log(e.movementX)
+            console.log(e.deltaX)
+            pan(e.movementX * panSpeed, e.movementY * panSpeed)
+        }
     }
 </script>
 </head>
@@ -99,7 +116,10 @@
     <div id="next"></div>
     <div id="top"></div>
     <script>
-        document.addEventListener("wheel", mouseWheelScroll);
+        document.addEventListener("wheel", mouseWheelScroll)
+        document.addEventListener("mousedown", mouseDown)
+        document.addEventListener("mouseup", mouseUp)
+        document.addEventListener("mousemove", mouseMove)
     </script>
 </body>
 </html>
