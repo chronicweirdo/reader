@@ -104,3 +104,12 @@ Js gestures library:
     - display menu: lowers down the top menu; triggerred by mouse hover in top area, or by finger drag from top (if possible, on touch screen)
     
 - also, the jump operations should be implemented using Ajax, so that on mobile, the back operation will take used back to the collections page
+
+- CONCLUSIONS
+    - kind of difficult to make the UI with javascript behave in a mobile/touch enabled browser
+    - the big problem was preventing the pinch-zoom behavior of the browser app when I tried to implement my own behavior
+    - the saner solution seems to be to keep the functionality at a minimum:
+        - have a special page able to display a simple image
+        - minimal css, mainly to switch between pages
+        - the change should be made through Ajax, that way the back action will take us back to the comics list
+        

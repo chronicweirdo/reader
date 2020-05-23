@@ -27,7 +27,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
 
   @RequestMapping(Array("/gesture"))
   def getGesturesTest(): String = {
-    val byteArray = Files.readAllBytes(Paths.get("src/main/resources/static/index.html"))
+    val byteArray = Files.readAllBytes(Paths.get("src/main/resources/static/index3.html"))
     new String(byteArray)
   }
 

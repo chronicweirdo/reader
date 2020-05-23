@@ -134,9 +134,10 @@
         }
     }
 
-    var myOptions = {}
+    var myOptions = {prevent_defaults: true}
     var hammertime = new Hammer(document, myOptions);
     hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+    hammertime.get('pinch').set({ enable: true });
 
     var touchscreenPanAttenuator = 1
     var panPreviousDeltaX = 0
@@ -152,10 +153,33 @@
         panPreviousDeltaY = ev.deltaY
     });
     hammertime.on('panend', function(ev) {
-        console.log(ev);
+        //console.log(ev);
         //pan(ev.deltaX * touchscreenPanAttenuator, ev.deltaY * touchscreenPanAttenuator)
         panPreviousDeltaX = 0
         panPreviousDeltaY = 0
+    });
+    var previousPinchScale = 1
+    var pinchZoomSpeed = .1
+    var originalWidth = null
+    var originalHeight = null
+    hammertime.on('pinchstart', function(ev) {
+        ev.preventDefault();
+        var img = getImage()
+        originalWidth = img.width
+        originalHeight = img.height
+        console.log(originalWidth + " " + originalHeight)
+    })
+    hammertime.on('pinch', function(ev) {
+        ev.preventDefault()
+	    //console.log(ev);
+        //var currentScale = ev.scale - previousPinchScale
+        //zoom(1 + currentScale)
+        //previousPinchScale = ev.scale
+        //zoom(ev.distance)
+        var img = getImage()
+        img.width = originalWidth * ev.scale
+        img.height = originalHeight * ev.scale
+        console.log(ev.scale + " " + img.width + " " + img.height)
     });
 
 </script>

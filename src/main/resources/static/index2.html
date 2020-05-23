@@ -1,0 +1,75 @@
+<html>
+<head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+    #prev {
+        display: block;
+        position: fixed;
+        top: 10%;
+        left: 0;
+        width: 5%;
+        height: 90%;
+        background-color: green;
+        opacity: .5;
+    }
+    #next {
+        display: block;
+        position: fixed;
+        top: 10%;
+        right: 0;
+        width: 5%;
+        height: 90%;
+        background-color: blue;
+        opacity: .5;
+    }
+    #top {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 10%;
+        background-color: red;
+        opacity: .5;
+    }
+    p {
+        text-align: center;
+    }
+</style>
+
+</head>
+<body>
+    <img src="comic2.jpg" />
+    <div id="prev"></div>
+    <div id="next"></div>
+    <div id="top"></div>
+    <script>
+        //var body = document.getElementsByTagName("body")[0]
+        var img = document.getElementsByTagName("img")[0]
+        //body.appendChild("<p>client width: " + document.documentElement.clientWidth + "</p>")
+        //body.appendChild("<p>inner width: " + window.innerWidth + "</p>")
+        //console.log(document.documentElement.clientWidth)
+        //console.log(window.innerWidth)
+        
+
+        window.onload = setupViewport;
+        //window.onresize = showViewport;
+
+        function setupViewport() {
+            //var output=document.getElementById("output");
+            var width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            var height= Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+            //output.innerHTML = "Viewport size is " + width + "x" + height;
+            console.log("Viewport size is " + width + "x" + height)
+            img.width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+
+            document.getElementById("next").height = .9 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+            document.getElementById("prev").height = .9 * Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+        }
+    </script>
+</body>
+</html>
