@@ -38,6 +38,16 @@
         background-color: red;
         opacity: .5;
     }
+    #canv {
+        display: block;
+        position: fixed;
+        top: 10vh;
+        left: 10vw;
+        width: 80vw;
+        height: 90vh;
+        background-color: yellow;
+        opacity: .5;
+    }
     p {
         text-align: center;
     }
@@ -208,6 +218,7 @@
     <div id="prev"></div>
     <div id="next"></div>
     <div id="top"></div>
+    <div id="canv"></div>
     <script>
         
 
@@ -216,11 +227,13 @@
             //disableEventHandlers(document)
             
             //enableTouchGestures(getImage())
-            enableTouchGestures(document.all.item(0))
-            document.addEventListener("wheel", mouseWheelScroll)
-            document.addEventListener("mousedown", mouseDown)
-            document.addEventListener("mouseup", mouseUp)
-            document.addEventListener("mousemove", mouseMove)
+            //enableTouchGestures(document.all.item(0))
+            var canv = document.getElementById("canv")
+            enableTouchGestures(canv)
+            canv.addEventListener("wheel", mouseWheelScroll)
+            canv.addEventListener("mousedown", mouseDown)
+            canv.addEventListener("mouseup", mouseUp)
+            canv.addEventListener("mousemove", mouseMove)
         }
     </script>
 </body>
