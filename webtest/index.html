@@ -40,13 +40,38 @@
         text-align: center;
     }
     img {
+        position: fixed;
         max-width: 100vw;
         max-height: 100vh;
     }
 </style>
+<script>
+    function num(s, def) {
+        var patt = /[0-9\.]+/
+        var match = patt.exec(s)
+        if (match != null && match.length > 0) {
+            var n = match[0]
+            if (n.indexOf('.') > -1) {
+                return parseFloat(n)
+            } else {
+                return parseInt(n)
+            }
+        }
+        return def
+    }
+    function pan(x, y) {
+        var img = document.getElementsByTagName("img")[0]
+        console.log(img.style.left)
+        console.log(img.style.top)
+        img.style.left = num(img.style.left, 0) + x
+        img.style.top = num(img.style.top, 0) + y
+        console.log(img.style.left)
+        console.log(img.style.top)
+    }
+</script>
 </head>
 <body>
-    <p><img src="comic.jpg" /></p>
+    <img src="comic.jpg" />
     <div id="prev"></div>
     <div id="next"></div>
     <div id="top"></div>

@@ -96,3 +96,11 @@ Spring template engines: https://www.baeldung.com/spring-template-engines
 Js gestures library:
     - https://hammerjs.github.io/
     - http://gojquery.com/best-javascript-touch-gesture-libraries/
+    
+- the operations on a comic book page:
+    - pan: left, right, up, down; triggered by mouse click and drag, or finger drag (touchscreen)
+    - zoom: in, out; triggered by mouse scroll or pinch gesture
+    - jump: previous, next page; triggered by click on ui sections for it, or by finger-click
+    - display menu: lowers down the top menu; triggerred by mouse hover in top area, or by finger drag from top (if possible, on touch screen)
+    
+- also, the jump operations should be implemented using Ajax, so that on mobile, the back operation will take used back to the collections page
