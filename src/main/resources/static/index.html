@@ -54,10 +54,7 @@
     img {
         position: fixed;
     }
-    #imga {
-        display: block;
-    }
-    #imgb {
+    #imga, #imgb, #imgc {
         display: none;
     }
 </style>
@@ -235,17 +232,18 @@
         });
     }
 
-    function loadImageData(path, page, callback) {
+    function loadImageData(path, page, storage, callback) {
         //img.style.display = "none"
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var oldImage = getImage()
-                var newStorage = "imga"
-                if (document.imageSettings && document.imageSettings.storage && document.imageSettings.storage == "imga") newStorage = "imgb"
-                var img = document.getElementById(newStorage)
+            if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
+                //var oldImage = getImage()
+                //var newStorage = "imga"
+                //if (document.imageSettings && document.imageSettings.storage && document.imageSettings.storage == "imga") newStorage = "imgb"
+                var img = document.getElementById(storage)
                 img.src = this.responseText;
                 //img.style.display = "block"
+                /*
                 document.imageSettings = {
                     storage: newStorage,
                     path: path,
@@ -259,6 +257,7 @@
                 }
                 img.style.display = "block"
                 if (oldImage != null) oldImage.style.display = "none"
+                */
                 callback()
             }
         };
@@ -266,15 +265,102 @@
         xhttp.send();
     }
 
+    var maximumPages = 20
+
     function next() {
-        loadImageData(document.imageSettings.path, document.imageSettings.page + 1, function() {
+        if (document.imageSettings.page == maximumPages) return
+        /*loadImageData(document.imageSettings.path, document.imageSettings.page + 1, function() {
             fitPageToScreenWidth()
-        })
+        })*/
+        if (document.imageSettings && document.imageSettings.nextStorage) {
+            var prevStorage = document.imageSettings.storage
+            var currentStorage = document.imageSettings.nextStorage
+            var emptyStorage = document.imageSettings.prevStorage
+            var currentPath = document.imageSettings.path
+            var currentPage = document.imageSettings.page + 1
+            var img = document.getElementById(currentStorage)
+            img.style.display = "block"
+            document.getElementById(prevStorage).style.display = "none"
+            document.imageSettings = {
+                storage: currentStorage,
+                nextStorage: null,
+                prevStorage: prevStorage,
+                path: currentPath,
+                page: currentPage,
+                width: img.width,
+                height: img.height,
+                left: num(img.style.left, 0),
+                top: num(img.style.left, 0),
+                zoom: 1.0,
+                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+            }
+            fitPageToScreenWidth()
+            loadImageData(currentPath, currentPage + 1, emptyStorage, function() {
+                document.imageSettings.nextStorage = emptyStorage
+            })
+        } else {
+            console.log("no next image loaded!")
+        }
     }
 
     function previous() {
-        loadImageData(document.imageSettings.path, document.imageSettings.page - 1, function() {
+        if (document.imageSettings.page == 0) return;
+        if (document.imageSettings && document.imageSettings.prevStorage) {
+            var nextStorage = document.imageSettings.storage
+            document.getElementById(nextStorage).style.display = "none"
+            var currentStorage = document.imageSettings.prevStorage
+            var emptyStorage = document.imageSettings.nextStorage
+            var currentPath = document.imageSettings.path
+            var currentPage = document.imageSettings.page - 1
+            var img = document.getElementById(currentStorage)
+            img.style.display = "block"
+            document.imageSettings = {
+                storage: currentStorage,
+                nextStorage: nextStorage,
+                prevStorage: null,
+                path: currentPath,
+                page: currentPage,
+                width: img.width,
+                height: img.height,
+                left: num(img.style.left, 0),
+                top: num(img.style.left, 0),
+                zoom: 1.0,
+                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+            }
             fitPageToScreenWidth()
+            loadImageData(currentPath, currentPage - 1, emptyStorage, function() {
+                document.imageSettings.prevStorage = emptyStorage
+            })
+        } else {
+            console.log("no prev image loaded!")
+        }
+    }
+
+    function loadCurrentImage(path, page) {
+        var currentStorage = "imga"
+        loadImageData(path, page, currentStorage, function() {
+            var img = document.getElementById(currentStorage)
+            img.style.display = "block"
+            document.imageSettings = {
+                storage: currentStorage,
+                nextStorage: null,
+                prevStorage: null,
+                path: path,
+                page: page,
+                width: img.width,
+                height: img.height,
+                left: num(img.style.left, 0),
+                top: num(img.style.left, 0),
+                zoom: 1.0,
+                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+            }
+            fitPageToScreenWidth()
+            loadImageData(path, page+1, "imgb", function() {
+                document.imageSettings.nextStorage = "imgb"
+            })
+            loadImageData(path, page-1, "imgc", function() {
+                document.imageSettings.prevStorage = "imgc"
+            })
         })
     }
 
@@ -306,9 +392,7 @@
             var nextDiv = document.getElementById("next")
             nextDiv.addEventListener("click", next)
 
-            loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 10, function() {
-                fitPageToScreenWidth()
-            })
+            loadCurrentImage("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 5)
         }
     </script>
 </body>
