@@ -29,6 +29,7 @@ dependencies {
 	implementation 'com.github.junrar:junrar:4.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	//implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 
 	implementation 'org.postgresql:postgresql:9.4-1206-jdbc42'

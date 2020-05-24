@@ -4,7 +4,7 @@ import java.net.URLEncoder
 import java.nio.file.{Files, Paths}
 import java.util.Base64
 
-import com.cacoveanu.reader.service.ComicService
+import com.cacoveanu.reader.service.{ComicService, FullComic}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, RestController}
@@ -62,12 +62,13 @@ class ComicController @Autowired() (private val comicService: ComicService) {
 
   @RequestMapping(Array("/imageData"))
   def getImageData(@RequestParam("path") path: String, @RequestParam("page") page: Int): String = {
-    comicService.readPage(path, page) match {
-      case Some(comicPage) =>
+    comicService.loadFullComic(path) match {
+      case Some(FullComic(_, pages)) if pages.indices contains page =>
+        val comicPage = pages(page)
         val builder = new StringBuilder()
         builder.append("data:").append(comicPage.mediaType)
           .append(";base64,").append(new String(Base64.getEncoder().encode(comicPage.data))).toString()
-      case None => ""
+      case _ => ""
     }
   }
 

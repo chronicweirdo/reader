@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct
 import javax.persistence.{Entity, GeneratedValue, GenerationType, Id}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.beans.factory.annotation.{Autowired, Value}
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
@@ -30,6 +31,8 @@ class DbComic {
 case class Comic(title: String, path: String, cover: ComicPage)
 
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
+
+case class FullComic(comic: Comic, pages: Seq[ComicPage])
 
 @Service
 class ComicService {
@@ -84,6 +87,40 @@ class ComicService {
     }
   }
 
+  @Cacheable(Array("comics"))
+  def loadFullComic(path: String): Option[FullComic] = {
+    FileUtil.getExtension(path) match {
+      case COMIC_TYPE_CBR => Some(loadCbr(path))
+      case COMIC_TYPE_CBZ => Some(loadCbz(path))
+      case _ => None
+    }
+  }
+
+  private def loadCbr(path: String): FullComic = {
+    val archive = new Archive(new FileInputStream(path))
+    val fileHeaders = archive.getFileHeaders().asScala
+      .filter(f => !f.isDirectory)
+      .filter(f => isImageType(f.getFileNameString))
+
+    val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
+    val pages = sortedFileHandlers.map(archiveFile => {
+      val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
+      val fileContents = new ByteArrayOutputStream()
+      archive.extractFile(archiveFile, fileContents)
+
+      fileMediaType match {
+        case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
+        case None => None
+      }
+    }).filter(pageOption => pageOption.isDefined)
+      .map(pageOption => pageOption.get)
+      .toSeq
+
+    archive.close()
+
+    FullComic(Comic(getComicTitle(path).get, path, pages.head), pages)
+  }
+
   private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
     println("scanning comic: " + path)
     val archive = new Archive(new FileInputStream(path))
@@ -106,8 +143,34 @@ class ComicService {
     } else None
   }
 
+  private def loadCbz(path: String): FullComic = {
+    val zipFile = new ZipFile(path)
+    val files = zipFile.entries().asScala
+      .filter(f => !f.isDirectory)
+      .filter(f => isImageType(f.getName))
+      .toSeq
+
+    val sortedFiles = files.sortBy(f => f.getName)
+
+    val pages = sortedFiles.map(file => {
+      val fileMediaType = imageService.getMediaType(file.getName)
+      val fileContents = zipFile.getInputStream(file)
+      val bos = new ByteArrayOutputStream()
+      IOUtils.copy(fileContents, bos)
+
+      fileMediaType match {
+        case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
+        case None => None
+      }
+    }).filter(pageOption => pageOption.isDefined)
+      .map(pageOption => pageOption.get)
+      .toSeq
+    zipFile.close();
+
+    FullComic(Comic(getComicTitle(path).get, path, pages.head), pages)
+  }
+
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    println("scanning comic: " + path)
     val zipFile = new ZipFile(path)
     val files = zipFile.entries().asScala
       .filter(f => !f.isDirectory)
