@@ -102,21 +102,7 @@
         updateImage()
     }
     function zoom(d) {
-        /*var img = getImage()
-
-        var centerOfScreen = viewportHeight() / 2
-        var topOfPage = num(img.style.top, 0)
-        var topDistance = centerOfScreen - topOfPage
-
-        var newWidth = img.width * d
-        var newHeight = img.height * d
-        img.width = newWidth
-        img.height = newHeight
-
-        var newTopDistance = topDistance * d
-        var topPan = topDistance - newTopDistance
-        pan(0, newTop)*/
-        document.imageSettings.zoom = document.imageSettings.zoom * d
+        document.imageSettings.zoom = d //document.imageSettings.zoom * d
         fixPosition()
         updateImage()
     }
@@ -140,7 +126,8 @@
     var scrollSpeed = .5 * .1
     function mouseWheelScroll(i) {
         //console.log(i.deltaY)
-        zoom(1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1))
+        var zoomDelta = 1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1)
+        zoom(document.imageSettings.zoom * zoomDelta)
     }
     var drag = false;
     function mouseDown(e) {
@@ -218,13 +205,15 @@
         });
         var previousPinchScale = 1
         var pinchZoomSpeed = .1
-        var originalWidth = null
-        var originalHeight = null
+        //var originalWidth = null
+        //var originalHeight = null
+        var originalZoom = null
         hammertime.on('pinchstart', function(ev) {
             ev.preventDefault();
-            var img = getImage()
-            originalWidth = img.width
-            originalHeight = img.height
+            //var img = getImage()
+            originalZoom = document.imageSettings.zoom
+            //originalWidth = img.width
+            //originalHeight = img.height
             //console.log(originalWidth + " " + originalHeight)
         })
         hammertime.on('pinch', function(ev) {
@@ -238,7 +227,7 @@
             img.width = originalWidth * ev.scale
             img.height = originalHeight * ev.scale*/
             //console.log(ev.scale + " " + img.width + " " + img.height)
-            zoom(ev.scale)
+            zoom(originalZoom * ev.scale)
         });
         
     }
