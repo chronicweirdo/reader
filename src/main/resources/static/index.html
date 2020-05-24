@@ -54,6 +54,12 @@
     img {
         position: fixed;
     }
+    #imga {
+        display: block;
+    }
+    #imgb {
+        display: none;
+    }
 </style>
 <script src="hammer.min.js"></script> 
 <script>
@@ -119,7 +125,6 @@
     function updateImage() {
         var img = getImage()
         var settings = document.imageSettings
-        //console.log(settings)
 
         var newWidth = settings.width * settings.zoom
         var newHeight = settings.height * settings.zoom
@@ -130,12 +135,17 @@
         img.style.top = settings.top
     }
     function getImage() {
-        return document.getElementsByTagName("img")[0]
+        //var storage = "imga"
+        if (document.imageSettings && document.imageSettings.storage) {
+            return document.getElementById(document.imageSettings.storage)
+        }
+        //return document.getElementsByTagName("img")[0]
+        //return document.getElementById(storage)
+        return null
     }
     var revertScrollZoom = true
     var scrollSpeed = .5 * .1
     function mouseWheelScroll(i) {
-        console.log(i)
         var zoomCenterX = i.clientX
         var zoomCenterY = i.clientY
         var zoomDelta = 1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1)
@@ -150,11 +160,9 @@
     function mouseUp(e) {
         drag = false;
     }
-    var panSpeed = 4
+    var panSpeed = 2
     function mouseMove(e) {
         if (drag) {
-            //console.log(e.movementX)
-            //console.log(e.deltaX)
             pan(e.movementX * panSpeed, e.movementY * panSpeed)
         }
     }
@@ -177,8 +185,7 @@
         updateImage()
     }
 
-    var disableEventHandlers = function (el) {
-        //console.log("disabling event handlers for " + el)
+    function disableEventHandlers(el) {
         var events = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover',
                       'onmouseup', 'ondblclick', 'onfocus', 'onblur'];
 
@@ -202,8 +209,6 @@
         var panPreviousDeltaY = 0
         
         hammertime.on('pan', function(ev) {
-            //console.log(ev);
-            //pan(ev.overallVelocityX * touchscreenPanAttenuator, ev.overallVelocityY * touchscreenPanAttenuator)
             var currentDeltaX = ev.deltaX - panPreviousDeltaX
             var currentDeltaY = ev.deltaY - panPreviousDeltaY
             pan(currentDeltaX * touchscreenPanAttenuator, currentDeltaY * touchscreenPanAttenuator)
@@ -211,54 +216,38 @@
             panPreviousDeltaY = ev.deltaY
         });
         hammertime.on('panend', function(ev) {
-            //console.log(ev);
-            //pan(ev.deltaX * touchscreenPanAttenuator, ev.deltaY * touchscreenPanAttenuator)
             panPreviousDeltaX = 0
             panPreviousDeltaY = 0
         });
-        var previousPinchScale = 1
-        var pinchZoomSpeed = .1
-        //var originalWidth = null
-        //var originalHeight = null
+
         var originalZoom = null
         var pinchCenterX = null
         var pinchCenterY = null
         hammertime.on('pinchstart', function(ev) {
             ev.preventDefault();
-            console.log(ev)
-            //var img = getImage()
             originalZoom = document.imageSettings.zoom
             pinchCenterX = ev.center.x
             pinchCenterY = ev.center.y
-            //originalWidth = img.width
-            //originalHeight = img.height
-            //console.log(originalWidth + " " + originalHeight)
         })
         hammertime.on('pinch', function(ev) {
             ev.preventDefault()
-            //console.log(ev);
-            //var currentScale = ev.scale - previousPinchScale
-            //zoom(1 + currentScale)
-            //previousPinchScale = ev.scale
-            //zoom(ev.distance)
-            /*var img = getImage()
-            img.width = originalWidth * ev.scale
-            img.height = originalHeight * ev.scale*/
-            //console.log(ev.scale + " " + img.width + " " + img.height)
             zoom(originalZoom * ev.scale, pinchCenterX, pinchCenterY)
         });
-        
     }
 
     function loadImageData(path, page, callback) {
+        //img.style.display = "none"
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-            //console.log(this.responseText)
             if (this.readyState == 4 && this.status == 200) {
-                var img = getImage()
+                var oldImage = getImage()
+                var newStorage = "imga"
+                if (document.imageSettings && document.imageSettings.storage && document.imageSettings.storage == "imga") newStorage = "imgb"
+                var img = document.getElementById(newStorage)
                 img.src = this.responseText;
-                // initialize image settings / defaults
+                //img.style.display = "block"
                 document.imageSettings = {
+                    storage: newStorage,
                     path: path,
                     page: page,
                     width: img.width,
@@ -268,6 +257,8 @@
                     zoom: 1.0,
                     minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
                 }
+                img.style.display = "block"
+                if (oldImage != null) oldImage.style.display = "none"
                 callback()
             }
         };
@@ -275,10 +266,23 @@
         xhttp.send();
     }
 
+    function next() {
+        loadImageData(document.imageSettings.path, document.imageSettings.page + 1, function() {
+            fitPageToScreenWidth()
+        })
+    }
+
+    function previous() {
+        loadImageData(document.imageSettings.path, document.imageSettings.page - 1, function() {
+            fitPageToScreenWidth()
+        })
+    }
+
 </script>
 </head>
 <body>
-    <img src="" />
+    <img id="imga" src="" />
+    <img id="imgb" src="" />
     <div id="prev"></div>
     <div id="next"></div>
     <div id="top"></div>
@@ -287,11 +291,6 @@
         
 
         window.onload = function() {
-            //console.log(document)
-            //disableEventHandlers(document)
-            
-            //enableTouchGestures(getImage())
-            //enableTouchGestures(document.all.item(0))
             var canv = document.getElementById("canv")
             enableTouchGestures(canv)
             canv.addEventListener("wheel", mouseWheelScroll)
@@ -300,13 +299,15 @@
             canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
 
+            var prev = document.getElementById("prev")
+            prev.addEventListener("click", previous)
+            
+            var nextDiv = document.getElementById("next")
+            nextDiv.addEventListener("click", next)
+
             loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 10, function() {
-                //console.log(document.imageSettings)
-                //fitPageToScreen()
                 fitPageToScreenWidth()
             })
-            
-            
         }
     </script>
 </body>
