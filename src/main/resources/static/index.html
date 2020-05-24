@@ -101,8 +101,18 @@
         fixPosition()
         updateImage()
     }
-    function zoom(d) {
-        document.imageSettings.zoom = d //document.imageSettings.zoom * d
+    function zoom(zoom, centerX, centerY) {
+        var sideLeft = centerX - document.imageSettings.left
+        var ratioLeft = sideLeft / (document.imageSettings.width * document.imageSettings.zoom)
+        var newSideLeft = (document.imageSettings.width * zoom) * ratioLeft
+        document.imageSettings.left = centerX - newSideLeft
+
+        var sideTop = centerY - document.imageSettings.top
+        var ratioTop = sideTop / (document.imageSettings.height * document.imageSettings.zoom)
+        var newSideTop = (document.imageSettings.height * zoom) * ratioTop
+        document.imageSettings.top = centerY - newSideTop
+
+        document.imageSettings.zoom = zoom
         fixPosition()
         updateImage()
     }
@@ -125,9 +135,12 @@
     var revertScrollZoom = true
     var scrollSpeed = .5 * .1
     function mouseWheelScroll(i) {
-        //console.log(i.deltaY)
+        console.log(i)
+        var zoomCenterX = i.clientX
+        var zoomCenterY = i.clientY
         var zoomDelta = 1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1)
-        zoom(document.imageSettings.zoom * zoomDelta)
+        var newZoom = document.imageSettings.zoom * zoomDelta
+        zoom(newZoom, zoomCenterX, zoomCenterY)
     }
     var drag = false;
     function mouseDown(e) {
@@ -208,10 +221,15 @@
         //var originalWidth = null
         //var originalHeight = null
         var originalZoom = null
+        var pinchCenterX = null
+        var pinchCenterY = null
         hammertime.on('pinchstart', function(ev) {
             ev.preventDefault();
+            console.log(ev)
             //var img = getImage()
             originalZoom = document.imageSettings.zoom
+            pinchCenterX = ev.center.x
+            pinchCenterY = ev.center.y
             //originalWidth = img.width
             //originalHeight = img.height
             //console.log(originalWidth + " " + originalHeight)
@@ -227,7 +245,7 @@
             img.width = originalWidth * ev.scale
             img.height = originalHeight * ev.scale*/
             //console.log(ev.scale + " " + img.width + " " + img.height)
-            zoom(originalZoom * ev.scale)
+            zoom(originalZoom * ev.scale, pinchCenterX, pinchCenterY)
         });
         
     }
@@ -284,7 +302,8 @@
 
             loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 10, function() {
                 //console.log(document.imageSettings)
-                fitPageToScreen()
+                //fitPageToScreen()
+                fitPageToScreenWidth()
             })
             
             
