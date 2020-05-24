@@ -11,41 +11,31 @@
     #prev {
         display: block;
         position: fixed;
-        top: 10vh;
+        top: 0;
         left: 0;
         width: 10vw;
-        height: 90vh;
-        background-color: green;
+        height: 100vh;
+        /*background-color: green;*/
         opacity: .5;
     }
     #next {
         display: block;
         position: fixed;
-        top: 10vh;
+        top: 0;
         right: 0;
         width: 10vw;
-        height: 90vh;
-        background-color: blue;
-        opacity: .5;
-    }
-    #top {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 10vh;
-        background-color: red;
+        height: 100vh;
+        /*background-color: blue;*/
         opacity: .5;
     }
     #canv {
         display: block;
         position: fixed;
-        top: 10vh;
+        top: 0;
         left: 10vw;
         width: 80vw;
-        height: 90vh;
-        background-color: yellow;
+        height: 100vh;
+        /*background-color: yellow;*/
         opacity: .5;
     }
     p {
@@ -53,9 +43,6 @@
     }
     img {
         position: fixed;
-    }
-    #imga, #imgb, #imgc {
-        display: none;
     }
 </style>
 <script src="hammer.min.js"></script> 
@@ -132,13 +119,7 @@
         img.style.top = settings.top
     }
     function getImage() {
-        //var storage = "imga"
-        if (document.imageSettings && document.imageSettings.storage) {
-            return document.getElementById(document.imageSettings.storage)
-        }
-        //return document.getElementsByTagName("img")[0]
-        //return document.getElementById(storage)
-        return null
+        return document.getElementsByTagName("img")[0]
     }
     var revertScrollZoom = true
     var scrollSpeed = .5 * .1
@@ -232,32 +213,19 @@
         });
     }
 
-    function loadImageData(path, page, storage, callback) {
-        //img.style.display = "none"
+    function loadImageData(path, page, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-                //var oldImage = getImage()
-                //var newStorage = "imga"
-                //if (document.imageSettings && document.imageSettings.storage && document.imageSettings.storage == "imga") newStorage = "imgb"
-                var img = document.getElementById(storage)
+                var img = getImage()
                 img.src = this.responseText;
-                //img.style.display = "block"
-                /*
-                document.imageSettings = {
-                    storage: newStorage,
-                    path: path,
-                    page: page,
-                    width: img.width,
-                    height: img.height,
-                    left: num(img.style.left, 0),
-                    top: num(img.style.left, 0),
-                    zoom: 1.0,
-                    minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
-                }
-                img.style.display = "block"
-                if (oldImage != null) oldImage.style.display = "none"
-                */
+                document.imageSettings.page = page
+                document.imageSettings.width = img.width
+                document.imageSettings.height = img.height
+                document.imageSettings.left = num(img.style.left, 0)
+                document.imageSettings.top = num(img.style.left, 0)
+                document.imageSettings.zoom = 1.0
+                document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
                 callback()
             }
         };
@@ -265,119 +233,48 @@
         xhttp.send();
     }
 
-    var maximumPages = 20
-
     function next() {
-        if (document.imageSettings.page == maximumPages) return
-        /*loadImageData(document.imageSettings.path, document.imageSettings.page + 1, function() {
-            fitPageToScreenWidth()
-        })*/
-        if (document.imageSettings && document.imageSettings.nextStorage) {
-            var prevStorage = document.imageSettings.storage
-            var currentStorage = document.imageSettings.nextStorage
-            var emptyStorage = document.imageSettings.prevStorage
-            var currentPath = document.imageSettings.path
-            var currentPage = document.imageSettings.page + 1
-            var img = document.getElementById(currentStorage)
-            img.style.display = "block"
-            document.getElementById(prevStorage).style.display = "none"
-            document.imageSettings = {
-                storage: currentStorage,
-                nextStorage: null,
-                prevStorage: prevStorage,
-                path: currentPath,
-                page: currentPage,
-                width: img.width,
-                height: img.height,
-                left: num(img.style.left, 0),
-                top: num(img.style.left, 0),
-                zoom: 1.0,
-                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
-            }
-            fitPageToScreenWidth()
-            loadImageData(currentPath, currentPage + 1, emptyStorage, function() {
-                document.imageSettings.nextStorage = emptyStorage
+        if (document.imageSettings.page < document.comicMaximumPages) {
+            loadImageData(document.comicPath, document.imageSettings.page + 1, function() {
+                fitPageToScreenWidth()
             })
-        } else {
-            console.log("no next image loaded!")
         }
     }
 
     function previous() {
-        if (document.imageSettings.page == 0) return;
-        if (document.imageSettings && document.imageSettings.prevStorage) {
-            var nextStorage = document.imageSettings.storage
-            document.getElementById(nextStorage).style.display = "none"
-            var currentStorage = document.imageSettings.prevStorage
-            var emptyStorage = document.imageSettings.nextStorage
-            var currentPath = document.imageSettings.path
-            var currentPage = document.imageSettings.page - 1
-            var img = document.getElementById(currentStorage)
-            img.style.display = "block"
-            document.imageSettings = {
-                storage: currentStorage,
-                nextStorage: nextStorage,
-                prevStorage: null,
-                path: currentPath,
-                page: currentPage,
-                width: img.width,
-                height: img.height,
-                left: num(img.style.left, 0),
-                top: num(img.style.left, 0),
-                zoom: 1.0,
-                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
-            }
-            fitPageToScreenWidth()
-            loadImageData(currentPath, currentPage - 1, emptyStorage, function() {
-                document.imageSettings.prevStorage = emptyStorage
+        if (document.imageSettings.page > 0) {
+            loadImageData(document.comicPath, document.imageSettings.page - 1, function() {
+                fitPageToScreenWidth()
             })
-        } else {
-            console.log("no prev image loaded!")
         }
-    }
-
-    function loadCurrentImage(path, page) {
-        var currentStorage = "imga"
-        loadImageData(path, page, currentStorage, function() {
-            var img = document.getElementById(currentStorage)
-            img.style.display = "block"
-            document.imageSettings = {
-                storage: currentStorage,
-                nextStorage: null,
-                prevStorage: null,
-                path: path,
-                page: page,
-                width: img.width,
-                height: img.height,
-                left: num(img.style.left, 0),
-                top: num(img.style.left, 0),
-                zoom: 1.0,
-                minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
-            }
-            fitPageToScreenWidth()
-            loadImageData(path, page+1, "imgb", function() {
-                document.imageSettings.nextStorage = "imgb"
-            })
-            loadImageData(path, page-1, "imgc", function() {
-                document.imageSettings.prevStorage = "imgc"
-            })
-        })
     }
 
 </script>
 </head>
 <body>
-    <img id="imga" src="" />
-    <img id="imgb" src="" />
-    <img id="imgc" src="" />
+    <img src="" />
     <div id="prev"></div>
     <div id="next"></div>
-    <div id="top"></div>
     <div id="canv"></div>
     <script>
-        
-
         window.onload = function() {
+            document.onkeydown = function(e) {
+                if (e.keyCode == '38') {
+                    // up arrow
+                }
+                else if (e.keyCode == '40') {
+                    // down arrow
+                }
+                else if (e.keyCode == '37') {
+                    // left arrow
+                    previous()
+                }
+                else if (e.keyCode == '39') {
+                    // right arrow
+                    next()
+                }
+            }
+
             var canv = document.getElementById("canv")
             enableTouchGestures(canv)
             canv.addEventListener("wheel", mouseWheelScroll)
@@ -392,7 +289,15 @@
             var nextDiv = document.getElementById("next")
             nextDiv.addEventListener("click", next)
 
-            loadCurrentImage("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 5)
+            document.comicPath = "C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr"
+            document.comicMaximumPages = 20
+            document.imageSettings = {}
+            document.imageSettings.zoom = 1.0
+            var startPage = 5
+
+            loadImageData(document.comicPath, startPage, function() {
+                fitPageToScreenWidth()
+            })
         }
     </script>
 </body>
