@@ -77,34 +77,32 @@
     function viewportHeight() {
         return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
     }
-    function pan(x, y) {
+    function fixPosition() {
         var img = getImage()
-        //console.log(img.style.left)
-        //console.log(img.style.top)
-        var minimumLeft = Math.min(0, viewportWidth() - img.width)
-        var maximumLeft = Math.max(0, viewportWidth() - img.width)
-        var minimumTop = Math.min(0, viewportHeight() - img.height)
-        var maximumTop = Math.max(0, viewportHeight() - img.height)
 
-        var newLeft = num(img.style.left, 0) + x
-        var newTop = num(img.style.top, 0) + y
+        if (document.imageSettings.zoom < document.imageSettings.minimumZoom) document.imageSettings.zoom = document.imageSettings.minimumZoom
 
-        //if (newLeft < 0 && (newLeft + img.width < viewportWidth())) newLeft = originalLeft
-        if (newLeft < minimumLeft) newLeft = minimumLeft
-        if (newLeft > maximumLeft) newLeft = maximumLeft
-        if (newTop < minimumTop) newTop = minimumTop
-        if (newTop > maximumTop) newTop = maximumTop
+        var newWidth = document.imageSettings.width * document.imageSettings.zoom
+        var newHeight = document.imageSettings.height * document.imageSettings.zoom
 
-        img.style.left = newLeft
-        img.style.top = newTop
-        //console.log(img.style.left)
-        //console.log(img.style.top)
+        var minimumLeft = (newWidth < viewportWidth()) ? (viewportWidth() / 2) - (newWidth / 2) : Math.min(0, viewportWidth() - newWidth)
+        var maximumLeft = (newWidth < viewportWidth()) ? (viewportWidth() / 2) - (newWidth / 2) : Math.max(0, viewportWidth() - newWidth)
+        var minimumTop = (newHeight < viewportHeight()) ? (viewportHeight() / 2) - (newHeight / 2) : Math.min(0, viewportHeight() - newHeight)
+        var maximumTop = (newHeight < viewportHeight()) ? (viewportHeight() / 2) - (newHeight / 2) : Math.max(0, viewportHeight() - newHeight)
 
-        // regularization
-        
+        if (document.imageSettings.left < minimumLeft) document.imageSettings.left = minimumLeft
+        if (document.imageSettings.left > maximumLeft) document.imageSettings.left = maximumLeft
+        if (document.imageSettings.top < minimumTop) document.imageSettings.top = minimumTop
+        if (document.imageSettings.top > maximumTop) document.imageSettings.top = maximumTop
+    }
+    function pan(x, y) {
+        document.imageSettings.left = document.imageSettings.left + x
+        document.imageSettings.top = document.imageSettings.top + y
+        fixPosition()
+        updateImage()
     }
     function zoom(d) {
-        var img = getImage()
+        /*var img = getImage()
 
         var centerOfScreen = viewportHeight() / 2
         var topOfPage = num(img.style.top, 0)
@@ -117,8 +115,23 @@
 
         var newTopDistance = topDistance * d
         var topPan = topDistance - newTopDistance
-        pan(0, newTop)
+        pan(0, newTop)*/
+        document.imageSettings.zoom = document.imageSettings.zoom * d
+        fixPosition()
+        updateImage()
+    }
+    function updateImage() {
+        var img = getImage()
+        var settings = document.imageSettings
+        //console.log(settings)
 
+        var newWidth = settings.width * settings.zoom
+        var newHeight = settings.height * settings.zoom
+        img.width = newWidth
+        img.height = newHeight
+
+        img.style.left = settings.left
+        img.style.top = settings.top
     }
     function getImage() {
         return document.getElementsByTagName("img")[0]
@@ -140,14 +153,32 @@
     var panSpeed = 4
     function mouseMove(e) {
         if (drag) {
-            console.log(e.movementX)
-            console.log(e.deltaX)
+            //console.log(e.movementX)
+            //console.log(e.deltaX)
             pan(e.movementX * panSpeed, e.movementY * panSpeed)
         }
     }
 
+    function fitPageToScreenWidth() {
+        document.imageSettings.zoom = viewportWidth() / document.imageSettings.width
+        fixPosition()
+        updateImage()
+    }
+
+    function fitPageToScreenHeight() {
+        document.imageSettings.zoom = viewportHeight() / document.imageSettings.height
+        fixPosition()
+        updateImage()
+    }
+
+    function fitPageToScreen() {
+        document.imageSettings.zoom = Math.min(viewportHeight() / document.imageSettings.height, viewportWidth() / document.imageSettings.width)
+        fixPosition()
+        updateImage()
+    }
+
     var disableEventHandlers = function (el) {
-        console.log("disabling event handlers for " + el)
+        //console.log("disabling event handlers for " + el)
         var events = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover',
                       'onmouseup', 'ondblclick', 'onfocus', 'onblur'];
 
@@ -194,7 +225,7 @@
             var img = getImage()
             originalWidth = img.width
             originalHeight = img.height
-            console.log(originalWidth + " " + originalHeight)
+            //console.log(originalWidth + " " + originalHeight)
         })
         hammertime.on('pinch', function(ev) {
             ev.preventDefault()
@@ -203,20 +234,34 @@
             //zoom(1 + currentScale)
             //previousPinchScale = ev.scale
             //zoom(ev.distance)
-            var img = getImage()
+            /*var img = getImage()
             img.width = originalWidth * ev.scale
-            img.height = originalHeight * ev.scale
-            console.log(ev.scale + " " + img.width + " " + img.height)
+            img.height = originalHeight * ev.scale*/
+            //console.log(ev.scale + " " + img.width + " " + img.height)
+            zoom(ev.scale)
         });
         
     }
 
-    function loadImageData(path, page) {
+    function loadImageData(path, page, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-            console.log(this.responseText)
+            //console.log(this.responseText)
             if (this.readyState == 4 && this.status == 200) {
-                getImage().src = this.responseText;
+                var img = getImage()
+                img.src = this.responseText;
+                // initialize image settings / defaults
+                document.imageSettings = {
+                    path: path,
+                    page: page,
+                    width: img.width,
+                    height: img.height,
+                    left: num(img.style.left, 0),
+                    top: num(img.style.left, 0),
+                    zoom: 1.0,
+                    minimumZoom: Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+                }
+                callback()
             }
         };
         xhttp.open("GET", "imageData?path=" + encodeURIComponent(path) + "&page=" + page, true);
@@ -235,7 +280,7 @@
         
 
         window.onload = function() {
-            console.log(document)
+            //console.log(document)
             //disableEventHandlers(document)
             
             //enableTouchGestures(getImage())
@@ -245,9 +290,15 @@
             canv.addEventListener("wheel", mouseWheelScroll)
             canv.addEventListener("mousedown", mouseDown)
             canv.addEventListener("mouseup", mouseUp)
+            canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
 
-            loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 0)
+            loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 10, function() {
+                //console.log(document.imageSettings)
+                fitPageToScreen()
+            })
+            
+            
         }
     </script>
 </body>

@@ -112,4 +112,22 @@ Js gestures library:
         - have a special page able to display a simple image
         - minimal css, mainly to switch between pages
         - the change should be made through Ajax, that way the back action will take us back to the comics list
-        
+
+- UPDATED CONCLUSIONS:
+    - I made it work, with the generous help of the internet
+    - the important part was finding the right dom element to remove events from and to bind the hammer library to
+    - the correct element was html
+    - i then changed the ui to be completely split into areas of influence, overlapping divs, with one large div in the middle of the page to which the gestures are bound
+    
+## A new model for the comic page UI
+
+- we have the settings of the page held in memory:
+    - original width
+    - original height
+    - left
+    - top
+    - zoom
+- the image display is udpated based on those values
+- operations (pan, zoom) change some of those values, within the acceptable limits, and then the image is redisplayed
+- some of the limits can be precomputed and stored with the image settings:
+    - minimum and maximum zoom, for example (minimum zoom is when the whole page fits on screen)
