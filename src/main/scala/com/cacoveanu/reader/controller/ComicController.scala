@@ -7,9 +7,11 @@ import java.util.Base64
 import com.cacoveanu.reader.service.{ComicService, FullComic}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, RestController}
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody, RestController}
 
-@RestController
+@Controller
 class ComicController @Autowired() (private val comicService: ComicService) {
 
   private def getImageTag(title: String, mediaType: MediaType, image: Array[Byte], maxWidth: Option[Int]) = {
@@ -60,7 +62,21 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     page.toString()
   }
 
+  // http://192.168.2.149:8080/comic?path=C%3A%5CUsers%5Csilvi%5CDropbox%5Ccomics%5CAdventure%20Time%5CAdventure%20Time%20(01%20-%2039)%20(ongoing)%20(2012-)%5CAdventure%20Time%20036%20(2015)%20(digital)%20(Minutemen-InnerDemons).cbr
+  @RequestMapping(Array("/comic"))
+  def getComic(@RequestParam("path") path: String, model: Model): String = {
+    comicService.loadFullComic(path) match {
+      case Some(FullComic(comic, pages)) =>
+        model.addAttribute("path", comic.path)
+        model.addAttribute("pages", pages.size)
+        model.addAttribute("startPage", 0)
+        "comic"
+      case _ => ""
+    }
+  }
+
   @RequestMapping(Array("/imageData"))
+  @ResponseBody
   def getImageData(@RequestParam("path") path: String, @RequestParam("page") page: Int): String = {
     comicService.loadFullComic(path) match {
       case Some(FullComic(_, pages)) if pages.indices contains page =>
@@ -72,7 +88,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     }
   }
 
-  @RequestMapping(Array("/comic"))
+  //@RequestMapping(Array("/comic"))
   def getComic(@RequestParam("path") path: String, @RequestParam("page") page: Int) = {
     comicService.readPage(path, page) match {
       case Some(comicPage) =>

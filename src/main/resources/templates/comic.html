@@ -2,8 +2,9 @@
 <head>
     <meta name="viewport"
         content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="path" content="C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr">
-    <meta name="pages" content="20">
+    <meta name="path" content="" th:content="${path}">
+    <meta name="pages" content="20" th:content=${pages}>
+    <meta name="startPage" content="0" th:content=${startPage}>
 <style>
     * {
         margin: 0;
@@ -307,7 +308,7 @@
             document.comicMaximumPages = num(getMeta("pages"))
             document.imageSettings = {}
             document.imageSettings.zoom = 1.0
-            var startPage = 5
+            var startPage = num(getMeta("startPage"))
 
             loadImageData(document.comicPath, startPage, function() {
                 fitPageToScreenWidth()
