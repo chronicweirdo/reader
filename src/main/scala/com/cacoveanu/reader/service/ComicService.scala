@@ -2,6 +2,7 @@ package com.cacoveanu.reader.service
 
 import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
+import java.util.concurrent.{ExecutorService, Executors}
 import java.util.zip.ZipFile
 
 import com.cacoveanu.reader.repository.ComicRepository
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future}
 
 @Entity
 class DbComic {
@@ -55,17 +57,19 @@ class ComicService {
 
   @PostConstruct
   def scanAndSave() = {
-    println(comicsLocation)
-    val comics = loadComicFiles(comicsLocation)
-    val dbComics = comics.map(c => {
-      val dc = new DbComic
-      dc.path = c.path
-      dc.title = c.title
-      dc.mediaType = c.cover.mediaType
-      dc.cover = c.cover.data
-      dc
-    })
-    comicRepository.saveAll(dbComics.asJava)
+    val scannedComics: Future[Seq[DbComic]] = Future {
+      println(comicsLocation)
+      val comics = loadComicFiles(comicsLocation)
+      val dbComics = comics.map(c => {
+        val dc = new DbComic
+        dc.path = c.path
+        dc.title = c.title
+        dc.mediaType = c.cover.mediaType
+        dc.cover = c.cover.data
+        dc
+      })
+      comicRepository.saveAll(dbComics.asJava).asScala.toSeq
+    }(ExecutionContext.global)
   }
 
   def getCollection(): Seq[Comic] = {
