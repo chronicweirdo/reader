@@ -62,12 +62,11 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     page.toString()
   }
 
-  // http://192.168.2.149:8080/comic?path=C%3A%5CUsers%5Csilvi%5CDropbox%5Ccomics%5CAdventure%20Time%5CAdventure%20Time%20(01%20-%2039)%20(ongoing)%20(2012-)%5CAdventure%20Time%20036%20(2015)%20(digital)%20(Minutemen-InnerDemons).cbr
   @RequestMapping(Array("/comic"))
-  def getComic(@RequestParam("path") path: String, model: Model): String = {
-    comicService.loadFullComic(path) match {
+  def getComic(@RequestParam("id") id: Int, model: Model): String = {
+    comicService.loadFullComic(id) match {
       case Some(FullComic(comic, pages)) =>
-        model.addAttribute("path", comic.path)
+        model.addAttribute("id", id)
         model.addAttribute("pages", pages.size)
         model.addAttribute("startPage", 0)
         "comic"
@@ -77,8 +76,8 @@ class ComicController @Autowired() (private val comicService: ComicService) {
 
   @RequestMapping(Array("/imageData"))
   @ResponseBody
-  def getImageData(@RequestParam("path") path: String, @RequestParam("page") page: Int): String = {
-    comicService.loadFullComic(path) match {
+  def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int): String = {
+    comicService.loadFullComic(id) match {
       case Some(FullComic(_, pages)) if pages.indices contains page =>
         val comicPage = pages(page)
         val builder = new StringBuilder()

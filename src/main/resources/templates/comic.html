@@ -2,7 +2,7 @@
 <head>
     <meta name="viewport"
         content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="path" content="" th:content="${path}">
+    <meta name="comicId" content="1" th:content="${id}">
     <meta name="pages" content="20" th:content=${pages}>
     <meta name="startPage" content="0" th:content=${startPage}>
 <style>
@@ -48,7 +48,7 @@
         position: fixed;
     }
 </style>
-<script src="hammer.min.js"></script> 
+<script src="hammer.min.js"></script>
 <script>
     function num(s, def) {
         var patt = /[\-]?[0-9\.]+/
@@ -216,7 +216,7 @@
         });
     }
 
-    function loadImageData(path, page, callback) {
+    function loadImageData(id, page, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
@@ -232,13 +232,13 @@
                 callback()
             }
         };
-        xhttp.open("GET", "imageData?path=" + encodeURIComponent(path) + "&page=" + page, true);
+        xhttp.open("GET", "imageData?id=" + id + "&page=" + page, true);
         xhttp.send();
     }
 
     function next() {
         if (document.imageSettings.page < document.comicMaximumPages) {
-            loadImageData(document.comicPath, document.imageSettings.page + 1, function() {
+            loadImageData(document.comicId, document.imageSettings.page + 1, function() {
                 fitPageToScreenWidth()
             })
         }
@@ -246,7 +246,7 @@
 
     function previous() {
         if (document.imageSettings.page > 0) {
-            loadImageData(document.comicPath, document.imageSettings.page - 1, function() {
+            loadImageData(document.comicId, document.imageSettings.page - 1, function() {
                 fitPageToScreenWidth()
             })
         }
@@ -304,13 +304,13 @@
             var nextDiv = document.getElementById("next")
             nextDiv.addEventListener("click", next)
 
-            document.comicPath = getMeta("path")
+            document.comicId = getMeta("comicId")
             document.comicMaximumPages = num(getMeta("pages"))
             document.imageSettings = {}
             document.imageSettings.zoom = 1.0
             var startPage = num(getMeta("startPage"))
 
-            loadImageData(document.comicPath, startPage, function() {
+            loadImageData(document.comicId, startPage, function() {
                 fitPageToScreenWidth()
             })
         }

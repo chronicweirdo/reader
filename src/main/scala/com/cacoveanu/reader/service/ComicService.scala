@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -24,6 +25,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Entity
 class DbComic {
   @Id
+  @GeneratedValue(strategy=GenerationType.AUTO)
+  var id: Int = _
   var path: String = _
   var title: String = _
   var mediaType: MediaType = _
@@ -92,11 +95,15 @@ class ComicService {
   }
 
   @Cacheable(Array("comics"))
-  def loadFullComic(path: String): Option[FullComic] = {
-    FileUtil.getExtension(path) match {
-      case COMIC_TYPE_CBR => Some(loadCbr(path))
-      case COMIC_TYPE_CBZ => Some(loadCbz(path))
-      case _ => None
+  def loadFullComic(id: Int): Option[FullComic] = {
+    comicRepository.findById(id).asScala match {
+      case Some(dbComic) =>
+        FileUtil.getExtension(dbComic.path) match {
+          case COMIC_TYPE_CBR => Some(loadCbr(dbComic.path))
+          case COMIC_TYPE_CBZ => Some(loadCbz(dbComic.path))
+          case _ => None
+        }
+      case None => None
     }
   }
 
