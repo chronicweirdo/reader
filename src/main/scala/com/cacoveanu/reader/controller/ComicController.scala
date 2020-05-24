@@ -60,6 +60,17 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     page.toString()
   }
 
+  @RequestMapping(Array("/imageData"))
+  def getImageData(@RequestParam("path") path: String, @RequestParam("page") page: Int): String = {
+    comicService.readPage(path, page) match {
+      case Some(comicPage) =>
+        val builder = new StringBuilder()
+        builder.append("data:").append(comicPage.mediaType)
+          .append(";base64,").append(new String(Base64.getEncoder().encode(comicPage.data))).toString()
+      case None => ""
+    }
+  }
+
   @RequestMapping(Array("/comic"))
   def getComic(@RequestParam("path") path: String, @RequestParam("page") page: Int) = {
     comicService.readPage(path, page) match {
@@ -76,6 +87,8 @@ class ComicController @Autowired() (private val comicService: ComicService) {
         html.append(getImageTag(path + " page " + page, comicPage.mediaType, comicPage.data, None))
         html.append("</p>")
         html.append("</body></html>")
+        html.toString()
+      case None => null
     }
   }
 }

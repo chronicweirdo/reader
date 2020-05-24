@@ -105,20 +105,20 @@
     }
     function zoom(d) {
         var img = getImage()
-        //console.log(img.width)
-        //console.log(img.height)
 
-        // option one:
-        //img.width = img.width * d
-        
-        // option two:
+        var centerOfScreen = viewportHeight() / 2
+        var topOfPage = num(img.style.top, 0)
+        var topDistance = centerOfScreen - topOfPage
+
         var newWidth = img.width * d
         var newHeight = img.height * d
         img.width = newWidth
         img.height = newHeight
 
-        //console.log(img.width)
-        //console.log(img.height)
+        var newTopDistance = topDistance * d
+        var topPan = topDistance - newTopDistance
+        pan(0, newTop)
+
     }
     function getImage() {
         return document.getElementsByTagName("img")[0]
@@ -211,10 +211,22 @@
         
     }
 
+    function loadImageData(path, page) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            console.log(this.responseText)
+            if (this.readyState == 4 && this.status == 200) {
+                getImage().src = this.responseText;
+            }
+        };
+        xhttp.open("GET", "imageData?path=" + encodeURIComponent(path) + "&page=" + page, true);
+        xhttp.send();
+    }
+
 </script>
 </head>
 <body>
-    <img src="comic.jpg" />
+    <img src="" />
     <div id="prev"></div>
     <div id="next"></div>
     <div id="top"></div>
@@ -234,6 +246,8 @@
             canv.addEventListener("mousedown", mouseDown)
             canv.addEventListener("mouseup", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
+
+            loadImageData("C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Adventure Time (01 - 39) (ongoing) (2012-)\\Adventure Time 036 (2015) (digital) (Minutemen-InnerDemons).cbr", 0)
         }
     </script>
 </body>

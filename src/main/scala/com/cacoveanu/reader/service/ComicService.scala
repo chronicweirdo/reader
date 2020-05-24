@@ -50,7 +50,7 @@ class ComicService {
   @Autowired
   var comicRepository: ComicRepository = null
 
-  //@PostConstruct
+  @PostConstruct
   def scanAndSave() = {
     println(comicsLocation)
     val comics = loadComicFiles(comicsLocation)
