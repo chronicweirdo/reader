@@ -5,6 +5,7 @@
     <meta name="comicId" content="1" th:content="${id}">
     <meta name="pages" content="20" th:content=${pages}>
     <meta name="startPage" content="0" th:content=${startPage}>
+    <meta name="defaultFit" content="screen">
     <style>
     * {
         margin: 0;
@@ -453,7 +454,12 @@
             var startPage = num(getMeta("startPage"))
 
             loadImageData(document.comicId, startPage, function() {
-                fitPageToScreenWidth()
+                var fit = getMeta("defaultFit")
+                if (fit == "width") {
+                    fitPageToScreenWidth()
+                } else if (fit = "screen") {
+                    fitPageToScreen()
+                }
             })
         }
     </script>

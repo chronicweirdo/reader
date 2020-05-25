@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, Re
 
 import scala.beans.BeanProperty
 
+case class UiCollection(
+                       @BeanProperty name: String,
+                       @BeanProperty comics: util.List[UiComic]
+                       )
+
 case class UiComic(
                     @BeanProperty id: Long,
                     @BeanProperty title: String,
@@ -39,11 +44,15 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     val comics = comicService.getCollection()
     val uiComics = comics
       .groupBy(comic => comic.collection)
-      .map { case (collection, entries) => (
+      .map { case (collection, entries) => UiCollection(
         collection,
         entries.map(comic => UiComic(comic.id, comic.title, base64Image(comic.mediaType, comic.cover))).asJava
       )}
-    val comicsCollection: util.Map[String, util.List[UiComic]] = uiComics.asJava
+      .toSeq
+      .sortBy(collection => collection.name)
+
+
+    val comicsCollection: util.List[UiCollection] = uiComics.asJava
     model.addAttribute("comicCollections", comicsCollection)
     "collection"
   }
