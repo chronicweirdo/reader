@@ -58,7 +58,7 @@ class ComicService {
   @Autowired
   var comicRepository: ComicRepository = null
 
-  @PostConstruct
+  //@PostConstruct
   def scanAndSave() = {
     val scannedComics: Future[Seq[DbComic]] = Future {
       println(comicsLocation)

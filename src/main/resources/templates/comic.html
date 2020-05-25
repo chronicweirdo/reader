@@ -1,11 +1,11 @@
 <html>
 <head>
     <meta name="viewport"
-        content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+          content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="comicId" content="1" th:content="${id}">
     <meta name="pages" content="20" th:content=${pages}>
     <meta name="startPage" content="0" th:content=${startPage}>
-<style>
+    <style>
     * {
         margin: 0;
         padding: 0;
@@ -48,8 +48,8 @@
         position: fixed;
     }
 </style>
-<script src="hammer.min.js"></script>
-<script>
+    <script src="hammer.min.js"></script>
+    <script>
     function num(s, def) {
         var patt = /[\-]?[0-9\.]+/
         var match = patt.exec(s)
@@ -95,6 +95,7 @@
         updateImage()
     }
     function zoom(zoom, centerX, centerY) {
+        console.log("zooming")
         var sideLeft = centerX - document.imageSettings.left
         var ratioLeft = sideLeft / (document.imageSettings.width * document.imageSettings.zoom)
         var newSideLeft = (document.imageSettings.width * zoom) * ratioLeft
@@ -106,6 +107,7 @@
         document.imageSettings.top = centerY - newSideTop
 
         document.imageSettings.zoom = zoom
+        console.log(document.imageSettings)
         fixPosition()
         updateImage()
     }
@@ -221,15 +223,18 @@
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
                 var img = getImage()
-                img.src = this.responseText;
-                document.imageSettings.page = page
-                document.imageSettings.width = img.width
-                document.imageSettings.height = img.height
-                document.imageSettings.left = num(img.style.left, 0)
-                document.imageSettings.top = num(img.style.left, 0)
-                document.imageSettings.zoom = 1.0
-                document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
-                callback()
+                img.onload = function() {
+                    document.imageSettings.page = page
+                    document.imageSettings.width = img.naturalWidth
+                    document.imageSettings.height = img.naturalHeight
+                    document.imageSettings.left = num(img.style.left, 0)
+                    document.imageSettings.top = num(img.style.left, 0)
+                    //document.imageSettings.zoom = 1.0
+                    document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+                    console.log(document.imageSettings)
+                    callback()
+                }
+                img.src = this.responseText
             }
         };
         xhttp.open("GET", "imageData?id=" + id + "&page=" + page, true);
@@ -239,7 +244,10 @@
     function next() {
         if (document.imageSettings.page < document.comicMaximumPages) {
             loadImageData(document.comicId, document.imageSettings.page + 1, function() {
-                fitPageToScreenWidth()
+                //fitPageToScreenWidth()
+                //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+                fixPosition()
+                updateImage()
             })
         }
     }
@@ -247,7 +255,10 @@
     function previous() {
         if (document.imageSettings.page > 0) {
             loadImageData(document.comicId, document.imageSettings.page - 1, function() {
-                fitPageToScreenWidth()
+                //fitPageToScreenWidth()
+                //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+                fixPosition()
+                updateImage()
             })
         }
     }
@@ -267,11 +278,11 @@
 </script>
 </head>
 <body>
-    <img src="" />
-    <div id="prev"></div>
-    <div id="next"></div>
-    <div id="canv"></div>
-    <script>
+<img src="" />
+<div id="prev"></div>
+<div id="next"></div>
+<div id="canv"></div>
+<script>
         window.onload = function() {
             document.onkeydown = function(e) {
                 if (e.keyCode == '38') {
