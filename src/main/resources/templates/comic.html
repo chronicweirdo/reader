@@ -11,6 +11,13 @@
         padding: 0;
         border: 0;
     }
+    body {
+        user-select: none; /* standard syntax */
+        -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+        -moz-user-select: none; /* mozilla browsers */
+        -khtml-user-select: none; /* webkit (konqueror) browsers */
+        -ms-user-select: none; /* IE10+ */
+    }
     #prev {
         display: block;
         position: fixed;
@@ -147,7 +154,7 @@
     }
 
     function fitPageToScreen() {
-        setZoom(Math.min(getViewportHeight() / getImageHeight(), getViewportWidth() / getImageWidth()))
+        setZoom(Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth()))
         updateImage()
     }
 
@@ -243,8 +250,9 @@
     function getZoom() {
         return document.imageSettings.zoom
     }
-    function setMinimumZoom(zoom) {
-        document.imageSettings.minimumZoom = zoom
+    // minimum zoom is determined by image and viewport dimensions
+    function updateMinimumZoom() {
+        document.imageSettings.minimumZoom = Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
     }
     function getMinimumZoom() {
         return document.imageSettings.minimumZoom
@@ -261,7 +269,7 @@
                     setImageHeight(getOriginalImageHeight())
                     setImageLeft(0)
                     setImageTop(0)
-                    setMinimumZoom(Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth()))
+                    updateMinimumZoom()
                     callback()
                 }
                 img.src = this.responseText
@@ -275,17 +283,17 @@
         return Math.abs(val1 - val2) < 1
     }
 
-    function endOfRow() {
+    function isEndOfRow() {
         return (getImage().width <= getViewportWidth()) || approx(getImageLeft() + getImageWidth(), getViewportWidth())
     }
-    function beginningOfRow() {
+    function isBeginningOfRow() {
         return (getImage().width <= getViewportWidth()) || approx(getImageLeft(), 0)
     }
 
-    function endOfColumn() {
+    function isEndOfColumn() {
         return (getImage().height <= getViewportHeight()) || approx(getImageTop() + getImageHeight(), getViewportHeight())
     }
-    function beginningOfColumn() {
+    function isBeginningOfColumn() {
         return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0)
     }
 
@@ -303,14 +311,14 @@
         }
     }
 
-    function nextPosition(imageDimension, viewportDimension, imageValue) {
+    function getNextPosition(imageDimension, viewportDimension, imageValue) {
         var positions = computePositions(imageDimension, viewportDimension)
         var i = 0
         while (i < positions.length && positions[i] >= imageValue) i++
         if (i == positions.length) i = 0
         return positions[i]
     }
-    function previousPosition(imageDimension, viewportDimension, imageValue) {
+    function getPreviousPosition(imageDimension, viewportDimension, imageValue) {
         var positions = computePositions(imageDimension, viewportDimension)
         var i = 0
         while (i < positions.length && positions[i] > imageValue) i++
@@ -318,45 +326,50 @@
         return positions[i - 1]
     }
 
-    function next() {
-        if (endOfRow()) {
-            if (endOfColumn()) {
-                if (getPage() < document.comicMaximumPages) {
-                    loadImageData(document.comicId, getPage() + 1, function() {
-                        updateImage()
-                    })
-                }
+    function goToNextPage() {
+        if (getPage() < document.comicMaximumPages) {
+            loadImageData(document.comicId, getPage() + 1, function() {
+                updateImage()
+            })
+        }
+    }
+
+    function goToPreviousPage() {
+        if (getPage() > 0) {
+            loadImageData(document.comicId, getPage() - 1, function() {
+                updateImage()
+            })
+        }
+    }
+
+    function goToNextView() {
+        if (isEndOfRow()) {
+            if (isEndOfColumn()) {
+                goToNextPage()
             } else {
-                var nextRowPosition = nextPosition(getImage().width, getViewportWidth(), getImageLeft())
-                var nextColumnPosition = nextPosition(getImage().height, getViewportHeight(), getImageTop())
-                setImageLeft(nextRowPosition)
-                setImageTop(nextColumnPosition)
+                setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft()))
+                setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop()))
                 updateImage()
             }
         } else {
-            var nextRowPosition = nextPosition(getImage().width, getViewportWidth(), getImageLeft())
-            setImageLeft(nextRowPosition)
+            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft()))
             updateImage()
         }
 
 
     }
 
-    function previous() {
-        if (beginningOfRow()) {
-            if (beginningOfColumn()) {
-                if (getPage() > 0) {
-                    loadImageData(document.comicId, getPage() - 1, function() {
-                        updateImage()
-                    })
-                }
+    function goToPreviousView() {
+        if (isBeginningOfRow()) {
+            if (isBeginningOfColumn()) {
+                goToPreviousPage()
             } else {
-                setImageLeft(previousPosition(getImage().width, getViewportWidth(), getImageLeft()))
-                setImageTop(previousPosition(getImage().height, getViewportHeight(), getImageTop()))
+                setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft()))
+                setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop()))
                 updateImage()
             }
         } else {
-            setImageLeft(previousPosition(getImage().width, getViewportWidth(), getImageLeft()))
+            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft()))
             updateImage()
         }
 
@@ -374,9 +387,14 @@
         return '';
     }
 
+    function handleResize() {
+        updateMinimumZoom()
+        updateImage()
+    }
+
 </script>
 </head>
-<body>
+<body onresize="handleResize()">
 <img src="" />
 <div id="prev"></div>
 <div id="next"></div>
@@ -392,11 +410,11 @@
                 }
                 else if (e.keyCode == '37') {
                     // left arrow
-                    previous()
+                    goToPreviousView()
                 }
                 else if (e.keyCode == '39') {
                     // right arrow
-                    next()
+                    goToNextView()
                 }
             }
 
@@ -407,12 +425,26 @@
             canv.addEventListener("mouseup", mouseUp)
             canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
+            canv.addEventListener("dblclick", function(event) {
+                event.preventDefault()
+                fitPageToScreen()
+            })
 
-            var prev = document.getElementById("prev")
-            prev.addEventListener("click", previous)
+            var prevDiv = document.getElementById("prev")
+            prevDiv.addEventListener("click", goToPreviousView)
+            // click functionality interferes with next div functionality
+            /*prevDiv.addEventListener("dblclick", function(event) {
+                event.preventDefault()
+                goToPreviousPage()
+            })*/
 
             var nextDiv = document.getElementById("next")
-            nextDiv.addEventListener("click", next)
+            nextDiv.addEventListener("click", goToNextView)
+            // click functionality interferes with next div functionality
+            /*nextDiv.addEventListener("dblclick", function(event) {
+                event.preventDefault()
+                goToNextPage()
+            })*/
 
             document.comicId = getMeta("comicId")
             document.comicMaximumPages = num(getMeta("pages"))
