@@ -46,7 +46,8 @@ class ComicService {
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
-  private val COVER_RESIZE_FACTOR = .2
+  //private val COVER_RESIZE_FACTOR = .2
+  private val COVER_RESIZE_MINIMAL_SIDE = 500 //300
 
   @Value("${comics.location}")
   @BeanProperty
@@ -71,11 +72,7 @@ class ComicService {
   }
 
   def getCollection(): Seq[DbComic] = {
-    comicRepository.findAll().asScala.toSeq/*.map(c => Comic(
-      c.title,
-      c.path,
-      ComicPage(c.mediaType, c.cover)
-    )).toSeq9*/
+    comicRepository.findAll().asScala.toSeq
   }
 
   private def isImageType(fileName: String) =
@@ -210,7 +207,7 @@ class ComicService {
       case (Some(title), Some(cover)) =>
         imageService.getFormatName(cover.mediaType) match {
           case Some(formatName) =>
-            val smallerCoverData = imageService.resizeImage(cover.data, formatName, COVER_RESIZE_FACTOR)
+            val smallerCoverData = imageService.resizeImageByMinimalSide(cover.data, formatName, COVER_RESIZE_MINIMAL_SIDE)
             val smallerCover = cover.copy(data = smallerCoverData)
             Some(Comic(title, file, smallerCover))
           case None => None

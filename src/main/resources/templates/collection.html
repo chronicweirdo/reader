@@ -6,44 +6,38 @@
     <style>
         .imgdiv {
             display: inline-block;
-            width: 125px;
-            height: 200px;
+            width: 22vw;
+            height: 36vw;
             overflow: hidden;
+            text-decoration: none;
+            margin: .5vw;
         }
         .imgdiv img {
             position: relative;
         }
     </style>
     <script>
-        function scaleImages() {
+        function scaleImage(image) {
             var imageContainer = document.getElementsByClassName("imgdiv")[0]
-            var expectedRatio = imageContainer.offsetWidth / imageContainer.offsetHeight
-            console.log(expectedRatio)
-            var images = document.getElementsByTagName("img")
-            for (var i = 0; i < images.length; i++) {
-                //if (images[i].naturalHeight < images[i].naturalWidth) {
-                if (images[i].naturalWidth / images[i].naturalHeight > expectedRatio) {
-                    images[i].style.height = "100%"
-                } else {
-                    images[i].style.width = "100%"
-                }
-                var differenceWidth = images[i].offsetWidth - imageContainer.offsetWidth
-                var differenceHeight = images[i].offsetHeight - imageContainer.offsetHeight
-                console.log(differenceWidth + " " + differenceHeight)
-                images[i].style.left = (- differenceWidth / 2) + "px"
-                images[i].style.top = (- differenceHeight / 2) + "px"
+            var expectedHeight = imageContainer.offsetHeight
+            var expectedWidth = imageContainer.offsetWidth
+            if (image.naturalWidth / image.naturalHeight > expectedWidth / expectedHeight) {
+                image.style.height = "100%"
+            } else {
+                image.style.width = "100%"
             }
+            var differenceWidth = image.offsetWidth - expectedWidth
+            var differenceHeight = image.offsetHeight - expectedHeight
+            image.style.left = (- differenceWidth / 2) + "px"
+            image.style.top = (- differenceHeight / 2) + "px"
         }
     </script>
 </head>
 <body>
 <p>
-    <a th:each="comic: ${comics}" th:href="'comic?id=' + ${comic.id}">
-        <span class="imgdiv"><img th:src="${comic.cover}" th:title="${comic.title}"></span>
-    </a>
+    <a class="imgdiv" th:each="comic: ${comics}" th:href="'comic?id=' + ${comic.id}"><img onload="scaleImage(this)" th:src="${comic.cover}" th:title="${comic.title}"></a>
     <script>
         window.onload = function() {
-            scaleImages()
         }
     </script>
 </p>

@@ -28,13 +28,23 @@ class ImageService {
       case _ => None
     }
 
-  def resizeImage(original: Array[Byte], formatName: String, factor: Double): Array[Byte] = {
-    val image = ImageIO.read(new ByteArrayInputStream(original))
-    val originalHeight = image.getHeight
-    val originalWidth = image.getWidth
-    val newHeight = (originalHeight * factor).floor.toInt
-    val newWidth = (originalWidth * factor).floor.toInt
+  private def resizeByFactor(factor: Double, originalWidth: Int, originalHeight: Int) =
+    ((originalWidth * factor).floor.toInt, (originalHeight * factor).floor.toInt)
 
+  private def resizeByMinimalSide(minimalSideSize: Int, originalWidth: Int, originalHeight: Int) =
+    if (originalWidth < originalHeight) {
+      val newWidth = minimalSideSize
+      val newHeight = ((newWidth.toDouble / originalWidth) * originalHeight).floor.toInt
+      (newWidth, newHeight)
+    } else {
+      val newHeight = minimalSideSize
+      val newWidth = ((newHeight.toDouble / originalHeight) * originalWidth).floor.toInt
+      (newWidth, newHeight)
+    }
+
+  private def resize(original: Array[Byte], formatName: String, strategy: (Int, Int) => (Int, Int)): Array[Byte] = {
+    val image = ImageIO.read(new ByteArrayInputStream(original))
+    val (newWidth, newHeight) = strategy(image.getWidth, image.getHeight)
     val resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
     val g = resized.createGraphics
     g.drawImage(image, 0, 0, newWidth, newHeight, null)
@@ -45,4 +55,10 @@ class ImageService {
 
     out.toByteArray
   }
+
+  def resizeImageByFactor(original: Array[Byte], formatName: String, factor: Double): Array[Byte] =
+    resize(original, formatName, resizeByFactor(factor, _: Int, _: Int))
+
+  def resizeImageByMinimalSide(original: Array[Byte], formatName: String, minimalSide: Int): Array[Byte] =
+    resize(original, formatName, resizeByMinimalSide(minimalSide, _: Int, _: Int))
 }
