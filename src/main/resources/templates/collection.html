@@ -3,13 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>Comics Reader</title>
+    <style>
+        .imgdiv {
+            display: inline-block;
+            width: 125px;
+            height: 200px;
+            overflow: hidden;
+        }
+        .imgdiv img {
+            position: relative;
+        }
+    </style>
+    <script>
+        function scaleImages() {
+            var imageContainer = document.getElementsByClassName("imgdiv")[0]
+            var expectedRatio = imageContainer.offsetWidth / imageContainer.offsetHeight
+            console.log(expectedRatio)
+            var images = document.getElementsByTagName("img")
+            for (var i = 0; i < images.length; i++) {
+                //if (images[i].naturalHeight < images[i].naturalWidth) {
+                if (images[i].naturalWidth / images[i].naturalHeight > expectedRatio) {
+                    images[i].style.height = "100%"
+                } else {
+                    images[i].style.width = "100%"
+                }
+                var differenceWidth = images[i].offsetWidth - imageContainer.offsetWidth
+                var differenceHeight = images[i].offsetHeight - imageContainer.offsetHeight
+                console.log(differenceWidth + " " + differenceHeight)
+                images[i].style.left = (- differenceWidth / 2) + "px"
+                images[i].style.top = (- differenceHeight / 2) + "px"
+            }
+        }
+    </script>
 </head>
 <body>
 <p>
     <a th:each="comic: ${comics}" th:href="'comic?id=' + ${comic.id}">
-    <img th:src="${comic.cover}" th:title="${comic.title}">
+        <span class="imgdiv"><img th:src="${comic.cover}" th:title="${comic.title}"></span>
     </a>
-
+    <script>
+        window.onload = function() {
+            scaleImages()
+        }
+    </script>
 </p>
 </body>
 </html>
