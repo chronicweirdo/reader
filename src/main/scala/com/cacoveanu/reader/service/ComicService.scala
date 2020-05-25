@@ -9,7 +9,7 @@ import com.cacoveanu.reader.repository.ComicRepository
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
-import javax.persistence.{Entity, GeneratedValue, GenerationType, Id}
+import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id, UniqueConstraint}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
@@ -27,6 +27,7 @@ class DbComic {
   @Id
   @GeneratedValue(strategy=GenerationType.AUTO)
   var id: Int = _
+  @Column(unique=true)
   var path: String = _
   var title: String = _
   var mediaType: MediaType = _
@@ -58,21 +59,15 @@ class ComicService {
   @Autowired
   var comicRepository: ComicRepository = null
 
-  //@PostConstruct
-  def scanAndSave() = {
-    val scannedComics: Future[Seq[DbComic]] = Future {
-      println(comicsLocation)
-      val comics = loadComicFiles(comicsLocation)
-      val dbComics = comics.map(c => {
-        val dc = new DbComic
-        dc.path = c.path
-        dc.title = c.title
-        dc.mediaType = c.cover.mediaType
-        dc.cover = c.cover.data
-        dc
-      })
-      comicRepository.saveAll(dbComics.asJava).asScala.toSeq
-    }(ExecutionContext.global)
+  private implicit val executionContext = ExecutionContext.global
+
+  @PostConstruct
+  def updateLibrary() = Future {
+    scanLibrary(comicsLocation)
+  }
+
+  def forceUpdateLibrary() = Future {
+    scanLibrary(comicsLocation, forceUpdate = true)
   }
 
   def getCollection(): Seq[DbComic] = {
@@ -222,6 +217,42 @@ class ComicService {
         }
       case _ => None
     }
+
+  private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
+    val comicsInDatabase = comicRepository.findAll().asScala
+    val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
+    val filesInLibrary = scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
+    val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
+    val comicsToDelete = comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
+    comicRepository.deleteAll(comicsToDelete.asJava)
+    val newComics = newFiles.map(f => loadComic(f))
+      .filter(comicOptional => comicOptional.isDefined)
+      .map(comicOptional => comicOptional.get)
+      .map(c => {
+        val dc = new DbComic
+        dc.path = c.path
+        dc.title = c.title
+        dc.mediaType = c.cover.mediaType
+        dc.cover = c.cover.data
+        dc
+      })
+    comicRepository.saveAll(newComics.asJava)
+
+    if (forceUpdate) {
+      val updatedComics = comicsInDatabase.filter(c => comicPathsInDatabase.contains(c.path))
+        .map(c => {
+          loadComic(c.path) match {
+            case Some(updatedComic) =>
+              c.title = updatedComic.title
+              c.mediaType = updatedComic.cover.mediaType
+              c.cover = updatedComic.cover.data
+              Some(c)
+            case None => None
+          }
+        }).filter(o => o.isDefined).map(o => o.get)
+      comicRepository.saveAll(updatedComics.asJava)
+    }
+  }
 
   def loadComicFiles(path: String): Seq[Comic] =
     scanFilesRegex(path, COMIC_FILE_REGEX)

@@ -45,6 +45,13 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   private def base64Image(mediaType: MediaType, image: Array[Byte]) =
     "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
 
+  @RequestMapping(Array("/rescan"))
+  @ResponseBody
+  def rescan() = {
+    comicService.forceUpdateLibrary()
+    ""
+  }
+
   @RequestMapping(Array("/collection"))
   def getComicCollection(model: Model): String = {
     val comics = comicService.getCollection()
