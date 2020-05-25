@@ -95,7 +95,6 @@
         updateImage()
     }
     function zoom(zoom, centerX, centerY) {
-        console.log("zooming")
         var sideLeft = centerX - document.imageSettings.left
         var ratioLeft = sideLeft / (document.imageSettings.width * document.imageSettings.zoom)
         var newSideLeft = (document.imageSettings.width * zoom) * ratioLeft
@@ -107,7 +106,6 @@
         document.imageSettings.top = centerY - newSideTop
 
         document.imageSettings.zoom = zoom
-        console.log(document.imageSettings)
         fixPosition()
         updateImage()
     }
@@ -178,7 +176,7 @@
           };
         });
       };
-    
+
     function enableTouchGestures(element) {
         disableEventHandlers(element)
         var hammertime = new Hammer(element, {
@@ -190,7 +188,7 @@
         var touchscreenPanAttenuator = 1
         var panPreviousDeltaX = 0
         var panPreviousDeltaY = 0
-        
+
         hammertime.on('pan', function(ev) {
             var currentDeltaX = ev.deltaX - panPreviousDeltaX
             var currentDeltaY = ev.deltaY - panPreviousDeltaY
@@ -230,7 +228,7 @@
                     document.imageSettings.left = num(img.style.left, 0)
                     document.imageSettings.top = num(img.style.left, 0)
                     //document.imageSettings.zoom = 1.0
-                    document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.height, viewportWidth() / img.width)
+                    document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.naturalHeight, viewportWidth() / img.naturalWidth)
                     console.log(document.imageSettings)
                     callback()
                 }
@@ -241,26 +239,135 @@
         xhttp.send();
     }
 
-    function next() {
-        if (document.imageSettings.page < document.comicMaximumPages) {
-            loadImageData(document.comicId, document.imageSettings.page + 1, function() {
-                //fitPageToScreenWidth()
-                //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
-                fixPosition()
-                updateImage()
-            })
+    function approx(val1, val2) {
+        return Math.abs(val1 - val2) < 1
+    }
+
+    function endOfRow() {
+        return (getImage().width <= viewportWidth()) || approx(document.imageSettings.left + getImage().width, viewportWidth())
+    }
+    function beginningOfRow() {
+        return (getImage().width <= viewportWidth()) || approx(document.imageSettings.left, 0)
+    }
+
+    function endOfColumn() {
+        return (getImage().height <= viewportHeight()) || approx(document.imageSettings.top + getImage().height, viewportHeight())
+    }
+    function beginningOfColumn() {
+        return (getImage().height <= viewportHeight()) || approx(document.imageSettings.top, 0)
+    }
+
+    function computePositions(imageDimension, viewportDimension) {
+        if (imageDimension > viewportDimension) {
+            var numberOfPositions = Math.ceil(imageDimension / viewportDimension)
+            var iter = (imageDimension - viewportDimension) / (numberOfPositions-1)
+            var pos = []
+            for (var i = 0; i < numberOfPositions; i++) {
+                pos.push(- i * iter)
+            }
+            return pos
+        } else {
+            return [0]
         }
     }
 
-    function previous() {
-        if (document.imageSettings.page > 0) {
-            loadImageData(document.comicId, document.imageSettings.page - 1, function() {
-                //fitPageToScreenWidth()
-                //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+    /*function positionsInRow() {
+        if (getImage().width > viewportWidth()) {
+            var numberOfPositions = Math.ceil(getImage().width / viewportWidth())
+            var iter = (getImage().width - viewportWidth()) / (numberOfPositions-1)
+            var pos = []
+            for (var i = 0; i < numberOfPositions; i++) {
+                pos.push(- i * iter)
+            }
+            return pos
+        } else {
+            return [0]
+        }
+    }*/
+    /*function nextPositionInRow() {
+        var positions = computePositions(getImage().width, viewportWidth())
+        var current = document.imageSettings.left
+        var i = 0
+        while (i < positions.length && positions[i] >= current) i++
+        if (i == positions.length) i = 0
+        return positions[i]
+    }*/
+    function nextPosition(imageDimension, viewportDimension, imageValue) {
+        var positions = computePositions(imageDimension, viewportDimension)
+        var i = 0
+        while (i < positions.length && positions[i] >= imageValue) i++
+        if (i == positions.length) i = 0
+        return positions[i]
+    }
+    function previousPosition(imageDimension, viewportDimension, imageValue) {
+        var positions = computePositions(imageDimension, viewportDimension)
+        var i = 0
+        while (i < positions.length && positions[i] > imageValue) i++
+        if (i == 0) i = positions.length
+        return positions[i - 1]
+    }
+
+    function next() {
+        if (endOfRow()) {
+            console.log("end of row")
+            if (endOfColumn()) {
+                console.log("end of column")
+                if (document.imageSettings.page < document.comicMaximumPages) {
+                    loadImageData(document.comicId, document.imageSettings.page + 1, function() {
+                        //fitPageToScreenWidth()
+                        //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+                        fixPosition()
+                        updateImage()
+                    })
+                }
+            } else {
+                console.log("jump to beginning of next row")
+                var nextRowPosition = nextPosition(getImage().width, viewportWidth(), document.imageSettings.left)
+                console.log("next row position: " + nextRowPosition)
+                var nextColumnPosition = nextPosition(getImage().height, viewportHeight(), document.imageSettings.top)
+                console.log("next column position: " + nextColumnPosition)
+                document.imageSettings.left = nextRowPosition
+                document.imageSettings.top = nextColumnPosition
                 fixPosition()
                 updateImage()
-            })
+            }
+        } else {
+            console.log("jump to next position in row")
+            var nextRowPosition = nextPosition(getImage().width, viewportWidth(), document.imageSettings.left)
+            console.log("next row position: " + nextRowPosition)
+            document.imageSettings.left = nextRowPosition
+            fixPosition()
+            updateImage()
         }
+
+
+    }
+
+    function previous() {
+        if (beginningOfRow()) {
+            console.log("beginning of row")
+            if (beginningOfColumn()) {
+                console.log("beginning of column")
+                if (document.imageSettings.page > 0) {
+                    loadImageData(document.comicId, document.imageSettings.page - 1, function() {
+                        //fitPageToScreenWidth()
+                        //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+                        fixPosition()
+                        updateImage()
+                    })
+                }
+            } else {
+                document.imageSettings.left = previousPosition(getImage().width, viewportWidth(), document.imageSettings.left)
+                document.imageSettings.top = previousPosition(getImage().height, viewportHeight(), document.imageSettings.top)
+                fixPosition()
+                updateImage()
+            }
+        } else {
+            document.imageSettings.left = previousPosition(getImage().width, viewportWidth(), document.imageSettings.left)
+            fixPosition()
+            updateImage()
+        }
+
     }
 
     function getMeta(metaName) {
