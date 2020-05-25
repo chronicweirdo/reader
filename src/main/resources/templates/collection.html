@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Comics Reader</title>
     <style>
+        h1 {
+            margin: .5vw;
+        }
         .imgdiv {
             display: inline-block;
             width: 180px;
@@ -34,12 +37,9 @@
     </script>
 </head>
 <body>
-<p>
-    <a class="imgdiv" th:each="comic: ${comics}" th:href="'comic?id=' + ${comic.id}"><img onload="scaleImage(this)" th:src="${comic.cover}" th:title="${comic.title}"></a>
-    <script>
-        window.onload = function() {
-        }
-    </script>
-</p>
+    <div th:each="collection: ${comicCollections}">
+        <h1 th:text="${collection.key}">Collection Name</h1>
+        <p><a class="imgdiv" th:each="comic: ${collection.value}" th:href="'comic?id=' + ${comic.id}"><img onload="scaleImage(this)" th:src="${comic.cover}" th:title="${comic.title}"></a></p>
+    </div>
 </body>
 </html>
