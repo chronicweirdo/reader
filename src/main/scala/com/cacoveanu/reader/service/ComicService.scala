@@ -41,11 +41,9 @@ class DbComic {
   }
 }
 
-case class Comic(title: String, path: String, cover: ComicPage)
-
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
-case class FullComic(comic: Comic, pages: Seq[ComicPage])
+case class FullComic(path: String, title: String, collection: String, pages: Seq[ComicPage])
 
 @Service
 class ComicService {
@@ -97,37 +95,44 @@ class ComicService {
     comicRepository.findById(id).asScala match {
       case Some(dbComic) =>
         FileUtil.getExtension(dbComic.path) match {
-          case COMIC_TYPE_CBR => Some(loadCbr(dbComic.path))
-          case COMIC_TYPE_CBZ => Some(loadCbz(dbComic.path))
+          case COMIC_TYPE_CBR => loadCbr(dbComic.path)
+          case COMIC_TYPE_CBZ => loadCbz(dbComic.path)
           case _ => None
         }
       case None => None
     }
   }
 
-  private def loadCbr(path: String): FullComic = {
-    val archive = new Archive(new FileInputStream(path))
-    val fileHeaders = archive.getFileHeaders().asScala
-      .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getFileNameString))
+  private def loadCbr(path: String): Option[FullComic] = {
+    var archive: Archive = null
 
-    val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
-    val pages = sortedFileHandlers.map(archiveFile => {
-      val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
-      val fileContents = new ByteArrayOutputStream()
-      archive.extractFile(archiveFile, fileContents)
+    val pages = try {
+      archive = new Archive(new FileInputStream(path))
 
-      fileMediaType match {
-        case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
-        case None => None
-      }
-    }).filter(pageOption => pageOption.isDefined)
-      .map(pageOption => pageOption.get)
-      .toSeq
+      Some(
+        archive.getFileHeaders.asScala
+          .filter(f => !f.isDirectory)
+          .filter(f => isImageType(f.getFileNameString))
+          .sortBy(f => f.getFileNameString)
+          .flatMap(archiveFile => imageService.getMediaType(archiveFile.getFileNameString) match {
+            case Some(mediaType) =>
+              val fileContents = new ByteArrayOutputStream()
+              archive.extractFile(archiveFile, fileContents)
+              Some(ComicPage(mediaType, fileContents.toByteArray))
+            case None => None
+          })
+          .toSeq
+      )
+    } catch {
+      case _: Throwable => None
+    } finally {
+      archive.close()
+    }
 
-    archive.close()
-
-    FullComic(Comic(getComicTitle(path).get, path, pages.head), pages)
+    (pages, getComicTitle(path), getComicCollection(path)) match {
+      case (Some(binaryPages), Some(title), Some(collection)) => Some(FullComic(path, title, collection, binaryPages))
+      case _ => None
+    }
   }
 
   private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
@@ -152,31 +157,40 @@ class ComicService {
     } else None
   }
 
-  private def loadCbz(path: String): FullComic = {
-    val zipFile = new ZipFile(path)
-    val files = zipFile.entries().asScala
-      .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getName))
-      .toSeq
+  private def loadCbz(path: String): Option[FullComic] = {
+    var zipFile: ZipFile = null
 
-    val sortedFiles = files.sortBy(f => f.getName)
+    val pages = try {
+      zipFile = new ZipFile(path)
 
-    val pages = sortedFiles.map(file => {
-      val fileMediaType = imageService.getMediaType(file.getName)
-      val fileContents = zipFile.getInputStream(file)
-      val bos = new ByteArrayOutputStream()
-      IOUtils.copy(fileContents, bos)
+      Some(
+        zipFile.entries().asScala
+          .filter(f => !f.isDirectory)
+          .filter(f => isImageType(f.getName))
+          .toSeq
+          .sortBy(f => f.getName)
+          .flatMap(file => imageService.getMediaType(file.getName) match {
+            case Some(mediaType) =>
+              val fileContents = zipFile.getInputStream(file)
+              val bos = new ByteArrayOutputStream()
+              IOUtils.copy(fileContents, bos)
+              Some(ComicPage(mediaType, bos.toByteArray))
+            case None => None
+          })
+          .toSeq
+      )
+    } catch {
+      case _: Throwable => None
+    } finally {
+      zipFile.close()
+    }
 
-      fileMediaType match {
-        case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
-        case None => None
-      }
-    }).filter(pageOption => pageOption.isDefined)
-      .map(pageOption => pageOption.get)
-      .toSeq
-    zipFile.close();
+    (pages, getComicTitle(path), getComicCollection(path)) match {
+      case (Some(binaryPages), Some(title), Some(collection)) =>
+        Some(FullComic(path, title, collection, binaryPages))
+      case _ => None
+    }
 
-    FullComic(Comic(getComicTitle(path).get, path, pages.head), pages)
   }
 
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
@@ -233,30 +247,21 @@ class ComicService {
     val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
     val comicsToDelete = comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
     comicRepository.deleteAll(comicsToDelete.asJava)
-    val newComics = newFiles.map(f => loadComic(f))
-      .filter(comicOptional => comicOptional.isDefined)
-      .map(comicOptional => comicOptional.get)
+    val newComics = newFiles.flatMap(f => loadComic(f))
     comicRepository.saveAll(newComics.asJava)
 
     if (forceUpdate) {
-      val updatedComics = comicsInDatabase.filter(c => comicPathsInDatabase.contains(c.path))
-        .map(c => {
-          loadComic(c.path) match {
+      val updatedComics = comicsInDatabase
+        .filter(c => comicPathsInDatabase.contains(c.path))
+        .flatMap(c => loadComic(c.path) match {
             case Some(updatedComic) =>
               updatedComic.id = c.id
               Some(updatedComic)
             case None => None
-          }
-        }).filter(o => o.isDefined).map(o => o.get)
+        })
       comicRepository.saveAll(updatedComics.asJava)
     }
   }
-
-  /*def loadComicFiles(path: String): Seq[Comic] =
-    scanFilesRegex(path, COMIC_FILE_REGEX)
-      .map(file => loadComic(file))
-      .filter(comic => comic.isDefined)
-      .map(comic => comic.get)*/
 
   private def scan(path: String): Seq[File] = {
     var files = mutable.Seq[File]()
@@ -277,8 +282,8 @@ class ComicService {
   private def scanFilesRegex(path: String, regex: String) = {
     val pattern = regex.r
     scan(path)
-      .filter(f => f.isFile())
+      .filter(f => f.isFile)
       .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
-      .map(f => f.getAbsolutePath())
+      .map(f => f.getAbsolutePath)
   }
 }

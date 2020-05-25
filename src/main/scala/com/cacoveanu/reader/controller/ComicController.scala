@@ -63,7 +63,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   @RequestMapping(Array("/comic"))
   def getComic(@RequestParam("id") id: Int, model: Model): String = {
     comicService.loadFullComic(id) match {
-      case Some(FullComic(comic, pages)) =>
+      case Some(FullComic(path, title, collection, pages)) =>
         model.addAttribute("id", id)
         model.addAttribute("pages", pages.size)
         model.addAttribute("startPage", 0)
@@ -76,7 +76,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   @ResponseBody
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int): String = {
     comicService.loadFullComic(id) match {
-      case Some(FullComic(_, pages)) if pages.indices contains page =>
+      case Some(FullComic(_, _, _, pages)) if pages.indices contains page =>
         val comicPage = pages(page)
         val builder = new StringBuilder()
         builder.append("data:").append(comicPage.mediaType)
