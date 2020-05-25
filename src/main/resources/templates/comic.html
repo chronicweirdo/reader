@@ -64,10 +64,10 @@
         return def
     }
 
-    function viewportWidth() {
+    function getViewportWidth() {
         return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
     }
-    function viewportHeight() {
+    function getViewportHeight() {
         return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
     }
     function fixPosition() {
@@ -75,35 +75,35 @@
 
         if (document.imageSettings.zoom < document.imageSettings.minimumZoom) document.imageSettings.zoom = document.imageSettings.minimumZoom
 
-        var newWidth = document.imageSettings.width * document.imageSettings.zoom
-        var newHeight = document.imageSettings.height * document.imageSettings.zoom
+        var newWidth = getImageWidth() * document.imageSettings.zoom
+        var newHeight = getImageHeight() * document.imageSettings.zoom
 
-        var minimumLeft = (newWidth < viewportWidth()) ? (viewportWidth() / 2) - (newWidth / 2) : Math.min(0, viewportWidth() - newWidth)
-        var maximumLeft = (newWidth < viewportWidth()) ? (viewportWidth() / 2) - (newWidth / 2) : Math.max(0, viewportWidth() - newWidth)
-        var minimumTop = (newHeight < viewportHeight()) ? (viewportHeight() / 2) - (newHeight / 2) : Math.min(0, viewportHeight() - newHeight)
-        var maximumTop = (newHeight < viewportHeight()) ? (viewportHeight() / 2) - (newHeight / 2) : Math.max(0, viewportHeight() - newHeight)
+        var minimumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.min(0, getViewportWidth() - newWidth)
+        var maximumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.max(0, getViewportWidth() - newWidth)
+        var minimumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.min(0, getViewportHeight() - newHeight)
+        var maximumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.max(0, getViewportHeight() - newHeight)
 
-        if (document.imageSettings.left < minimumLeft) document.imageSettings.left = minimumLeft
-        if (document.imageSettings.left > maximumLeft) document.imageSettings.left = maximumLeft
-        if (document.imageSettings.top < minimumTop) document.imageSettings.top = minimumTop
-        if (document.imageSettings.top > maximumTop) document.imageSettings.top = maximumTop
+        if (getImageLeft() < minimumLeft) setImageLeft(minimumLeft)
+        if (getImageLeft() > maximumLeft) setImageLeft(maximumLeft)
+        if (getImageTop() < minimumTop) setImageTop(minimumTop)
+        if (getImageTop() > maximumTop) setImageTop(maximumTop)
     }
     function pan(x, y) {
-        document.imageSettings.left = document.imageSettings.left + x
-        document.imageSettings.top = document.imageSettings.top + y
+        setImageLeft(getImageLeft() + x)
+        setImageTop(getImageTop() + y)
         fixPosition()
         updateImage()
     }
     function zoom(zoom, centerX, centerY) {
-        var sideLeft = centerX - document.imageSettings.left
-        var ratioLeft = sideLeft / (document.imageSettings.width * document.imageSettings.zoom)
-        var newSideLeft = (document.imageSettings.width * zoom) * ratioLeft
-        document.imageSettings.left = centerX - newSideLeft
+        var sideLeft = centerX - getImageLeft()
+        var ratioLeft = sideLeft / (getImageWidth() * document.imageSettings.zoom)
+        var newSideLeft = (getImageWidth() * zoom) * ratioLeft
+        setImageLeft(centerX - newSideLeft)
 
-        var sideTop = centerY - document.imageSettings.top
-        var ratioTop = sideTop / (document.imageSettings.height * document.imageSettings.zoom)
-        var newSideTop = (document.imageSettings.height * zoom) * ratioTop
-        document.imageSettings.top = centerY - newSideTop
+        var sideTop = centerY - getImageTop()
+        var ratioTop = sideTop / (getImageHeight() * document.imageSettings.zoom)
+        var newSideTop = (getImageHeight() * zoom) * ratioTop
+        setImageTop(centerY - newSideTop)
 
         document.imageSettings.zoom = zoom
         fixPosition()
@@ -149,19 +149,19 @@
     }
 
     function fitPageToScreenWidth() {
-        document.imageSettings.zoom = viewportWidth() / document.imageSettings.width
+        document.imageSettings.zoom = getViewportWidth() / getImageWidth()
         fixPosition()
         updateImage()
     }
 
     function fitPageToScreenHeight() {
-        document.imageSettings.zoom = viewportHeight() / document.imageSettings.height
+        document.imageSettings.zoom = getViewportHeight() / getImageHeight()
         fixPosition()
         updateImage()
     }
 
     function fitPageToScreen() {
-        document.imageSettings.zoom = Math.min(viewportHeight() / document.imageSettings.height, viewportWidth() / document.imageSettings.width)
+        document.imageSettings.zoom = Math.min(getViewportHeight() / getImageHeight(), getViewportWidth() / getImageWidth())
         fixPosition()
         updateImage()
     }
@@ -216,20 +216,50 @@
         });
     }
 
+    function setPage(page) {
+        document.imageSettings.page = page
+    }
+    function getPage() {
+        return document.imageSettings.page
+    }
+    function setImageWidth(width) {
+        document.imageSettings.width = width
+    }
+    function getImageWidth() {
+        return document.imageSettings.width
+    }
+    function setImageHeight(height) {
+        document.imageSettings.height = height
+    }
+    function getImageHeight() {
+        return document.imageSettings.height
+    }
+    function setImageLeft(left) {
+        document.imageSettings.left = left
+    }
+    function getImageLeft() {
+        return document.imageSettings.left
+    }
+    function setImageTop(top) {
+        document.imageSettings.top = top
+    }
+    function getImageTop() {
+        return document.imageSettings.top
+    }
+
     function loadImageData(id, page, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
                 var img = getImage()
                 img.onload = function() {
-                    document.imageSettings.page = page
-                    document.imageSettings.width = img.naturalWidth
-                    document.imageSettings.height = img.naturalHeight
-                    document.imageSettings.left = num(img.style.left, 0)
-                    document.imageSettings.top = num(img.style.left, 0)
+                    setPage(page)
+                    setImageWidth(img.naturalWidth)
+                    setImageHeight(img.naturalHeight)
+                    setImageLeft(num(img.style.left, 0))
+                    setImageTop(num(img.style.left, 0))
                     //document.imageSettings.zoom = 1.0
-                    document.imageSettings.minimumZoom = Math.min(viewportHeight() / img.naturalHeight, viewportWidth() / img.naturalWidth)
-                    console.log(document.imageSettings)
+                    document.imageSettings.minimumZoom = Math.min(getViewportHeight() / img.naturalHeight, getViewportWidth() / img.naturalWidth)
                     callback()
                 }
                 img.src = this.responseText
@@ -244,17 +274,17 @@
     }
 
     function endOfRow() {
-        return (getImage().width <= viewportWidth()) || approx(document.imageSettings.left + getImage().width, viewportWidth())
+        return (getImage().width <= getViewportWidth()) || approx(getImageLeft() + getImageWidth(), getViewportWidth())
     }
     function beginningOfRow() {
-        return (getImage().width <= viewportWidth()) || approx(document.imageSettings.left, 0)
+        return (getImage().width <= getViewportWidth()) || approx(getImageLeft(), 0)
     }
 
     function endOfColumn() {
-        return (getImage().height <= viewportHeight()) || approx(document.imageSettings.top + getImage().height, viewportHeight())
+        return (getImage().height <= getViewportHeight()) || approx(getImageTop() + getImageHeight(), getViewportHeight())
     }
     function beginningOfColumn() {
-        return (getImage().height <= viewportHeight()) || approx(document.imageSettings.top, 0)
+        return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0)
     }
 
     function computePositions(imageDimension, viewportDimension) {
@@ -271,27 +301,6 @@
         }
     }
 
-    /*function positionsInRow() {
-        if (getImage().width > viewportWidth()) {
-            var numberOfPositions = Math.ceil(getImage().width / viewportWidth())
-            var iter = (getImage().width - viewportWidth()) / (numberOfPositions-1)
-            var pos = []
-            for (var i = 0; i < numberOfPositions; i++) {
-                pos.push(- i * iter)
-            }
-            return pos
-        } else {
-            return [0]
-        }
-    }*/
-    /*function nextPositionInRow() {
-        var positions = computePositions(getImage().width, viewportWidth())
-        var current = document.imageSettings.left
-        var i = 0
-        while (i < positions.length && positions[i] >= current) i++
-        if (i == positions.length) i = 0
-        return positions[i]
-    }*/
     function nextPosition(imageDimension, viewportDimension, imageValue) {
         var positions = computePositions(imageDimension, viewportDimension)
         var i = 0
@@ -309,11 +318,9 @@
 
     function next() {
         if (endOfRow()) {
-            console.log("end of row")
             if (endOfColumn()) {
-                console.log("end of column")
-                if (document.imageSettings.page < document.comicMaximumPages) {
-                    loadImageData(document.comicId, document.imageSettings.page + 1, function() {
+                if (getPage() < document.comicMaximumPages) {
+                    loadImageData(document.comicId, getPage() + 1, function() {
                         //fitPageToScreenWidth()
                         //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
                         fixPosition()
@@ -321,21 +328,16 @@
                     })
                 }
             } else {
-                console.log("jump to beginning of next row")
-                var nextRowPosition = nextPosition(getImage().width, viewportWidth(), document.imageSettings.left)
-                console.log("next row position: " + nextRowPosition)
-                var nextColumnPosition = nextPosition(getImage().height, viewportHeight(), document.imageSettings.top)
-                console.log("next column position: " + nextColumnPosition)
-                document.imageSettings.left = nextRowPosition
-                document.imageSettings.top = nextColumnPosition
+                var nextRowPosition = nextPosition(getImage().width, getViewportWidth(), getImageLeft())
+                var nextColumnPosition = nextPosition(getImage().height, getViewportHeight(), getImageTop())
+                setImageLeft(nextRowPosition)
+                setImageTop(nextColumnPosition)
                 fixPosition()
                 updateImage()
             }
         } else {
-            console.log("jump to next position in row")
-            var nextRowPosition = nextPosition(getImage().width, viewportWidth(), document.imageSettings.left)
-            console.log("next row position: " + nextRowPosition)
-            document.imageSettings.left = nextRowPosition
+            var nextRowPosition = nextPosition(getImage().width, getViewportWidth(), getImageLeft())
+            setImageLeft(nextRowPosition)
             fixPosition()
             updateImage()
         }
@@ -345,25 +347,21 @@
 
     function previous() {
         if (beginningOfRow()) {
-            console.log("beginning of row")
             if (beginningOfColumn()) {
-                console.log("beginning of column")
-                if (document.imageSettings.page > 0) {
-                    loadImageData(document.comicId, document.imageSettings.page - 1, function() {
-                        //fitPageToScreenWidth()
-                        //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
+                if (getPage() > 0) {
+                    loadImageData(document.comicId, getPage() - 1, function() {
                         fixPosition()
                         updateImage()
                     })
                 }
             } else {
-                document.imageSettings.left = previousPosition(getImage().width, viewportWidth(), document.imageSettings.left)
-                document.imageSettings.top = previousPosition(getImage().height, viewportHeight(), document.imageSettings.top)
+                setImageLeft(previousPosition(getImage().width, getViewportWidth(), getImageLeft()))
+                setImageTop(previousPosition(getImage().height, getViewportHeight(), getImageTop()))
                 fixPosition()
                 updateImage()
             }
         } else {
-            document.imageSettings.left = previousPosition(getImage().width, viewportWidth(), document.imageSettings.left)
+            setImageLeft(previousPosition(getImage().width, getViewportWidth(), getImageLeft()))
             fixPosition()
             updateImage()
         }
