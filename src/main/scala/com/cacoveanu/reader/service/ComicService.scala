@@ -24,14 +24,21 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Entity
 class DbComic {
-  @Id
-  @GeneratedValue(strategy=GenerationType.AUTO)
-  var id: Int = _
-  @Column(unique=true)
-  var path: String = _
+  @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
+  @Column(unique = true) var path: String = _
   var title: String = _
+  var collection: String = _
   var mediaType: MediaType = _
   var cover: Array[Byte] = _
+
+  def this(path: String, title: String, collection: String, mediaType: MediaType, cover: Array[Byte]) {
+    this()
+    this.path = path
+    this.title = title
+    this.collection = collection
+    this.mediaType = mediaType
+    this.cover = cover
+  }
 }
 
 case class Comic(title: String, path: String, cover: ComicPage)
@@ -46,8 +53,7 @@ class ComicService {
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
-  //private val COVER_RESIZE_FACTOR = .2
-  private val COVER_RESIZE_MINIMAL_SIDE = 500 //300
+  private val COVER_RESIZE_MINIMAL_SIDE = 300
 
   @Value("${comics.location}")
   @BeanProperty
@@ -87,7 +93,7 @@ class ComicService {
   }
 
   @Cacheable(Array("comics"))
-  def loadFullComic(id: Int): Option[FullComic] = {
+  def loadFullComic(id: Long): Option[FullComic] = {
     comicRepository.findById(id).asScala match {
       case Some(dbComic) =>
         FileUtil.getExtension(dbComic.path) match {
@@ -202,14 +208,19 @@ class ComicService {
     Some(fileName.substring(0, fileName.lastIndexOf('.')))
   }
 
-  def loadComic(file: String): Option[Comic] =
-    (getComicTitle(file), readPage(file, 0)) match {
-      case (Some(title), Some(cover)) =>
+  private def getComicCollection(path: String): Option[String] = {
+    val pathObject = Paths.get(path);
+    val collectionPath = Paths.get(comicsLocation).relativize(pathObject.getParent)
+    Some(collectionPath.toString)
+  }
+
+  def loadComic(file: String): Option[DbComic] =
+    (getComicTitle(file), getComicCollection(file), readPage(file, 0)) match {
+      case (Some(title), Some(collection), Some(cover)) =>
         imageService.getFormatName(cover.mediaType) match {
           case Some(formatName) =>
             val smallerCoverData = imageService.resizeImageByMinimalSide(cover.data, formatName, COVER_RESIZE_MINIMAL_SIDE)
-            val smallerCover = cover.copy(data = smallerCoverData)
-            Some(Comic(title, file, smallerCover))
+            Some(new DbComic(file, title, collection, cover.mediaType, smallerCoverData))
           case None => None
         }
       case _ => None
@@ -225,14 +236,6 @@ class ComicService {
     val newComics = newFiles.map(f => loadComic(f))
       .filter(comicOptional => comicOptional.isDefined)
       .map(comicOptional => comicOptional.get)
-      .map(c => {
-        val dc = new DbComic
-        dc.path = c.path
-        dc.title = c.title
-        dc.mediaType = c.cover.mediaType
-        dc.cover = c.cover.data
-        dc
-      })
     comicRepository.saveAll(newComics.asJava)
 
     if (forceUpdate) {
@@ -240,10 +243,8 @@ class ComicService {
         .map(c => {
           loadComic(c.path) match {
             case Some(updatedComic) =>
-              c.title = updatedComic.title
-              c.mediaType = updatedComic.cover.mediaType
-              c.cover = updatedComic.cover.data
-              Some(c)
+              updatedComic.id = c.id
+              Some(updatedComic)
             case None => None
           }
         }).filter(o => o.isDefined).map(o => o.get)
@@ -251,11 +252,11 @@ class ComicService {
     }
   }
 
-  def loadComicFiles(path: String): Seq[Comic] =
+  /*def loadComicFiles(path: String): Seq[Comic] =
     scanFilesRegex(path, COMIC_FILE_REGEX)
       .map(file => loadComic(file))
       .filter(comic => comic.isDefined)
-      .map(comic => comic.get)
+      .map(comic => comic.get)*/
 
   private def scan(path: String): Seq[File] = {
     var files = mutable.Seq[File]()

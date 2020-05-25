@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 
 class FullCollectionScan {
 
-  @Test
+  /*@Test
   def scanWholeCollection(): Unit = {
     val path = "C:\\Users\\silvi\\Dropbox\\comics\\"
 
@@ -19,7 +19,7 @@ class FullCollectionScan {
         e.printStackTrace()
         println(e.getMessage)
     }
-  }
+  }*/
 
   @Test
   def debugProblematicComics(): Unit = {

@@ -37,7 +37,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   }
 
   case class UiComic(
-                      @BeanProperty id: Int,
+                      @BeanProperty id: Long,
                       @BeanProperty title: String,
                       @BeanProperty cover: String
                     )
