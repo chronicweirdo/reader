@@ -73,10 +73,10 @@
     function fixPosition() {
         var img = getImage()
 
-        if (document.imageSettings.zoom < document.imageSettings.minimumZoom) document.imageSettings.zoom = document.imageSettings.minimumZoom
+        if (getZoom() < getMinimumZoom()) setZoom(getMinimumZoom())
 
-        var newWidth = getImageWidth() * document.imageSettings.zoom
-        var newHeight = getImageHeight() * document.imageSettings.zoom
+        var newWidth = getOriginalImageWidth() * getZoom()
+        var newHeight = getOriginalImageHeight() * getZoom()
 
         var minimumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.min(0, getViewportWidth() - newWidth)
         var maximumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.max(0, getViewportWidth() - newWidth)
@@ -96,30 +96,30 @@
     }
     function zoom(zoom, centerX, centerY) {
         var sideLeft = centerX - getImageLeft()
-        var ratioLeft = sideLeft / (getImageWidth() * document.imageSettings.zoom)
+        var ratioLeft = sideLeft / (getImageWidth() * getZoom())
         var newSideLeft = (getImageWidth() * zoom) * ratioLeft
         setImageLeft(centerX - newSideLeft)
 
         var sideTop = centerY - getImageTop()
-        var ratioTop = sideTop / (getImageHeight() * document.imageSettings.zoom)
+        var ratioTop = sideTop / (getImageHeight() * getZoom())
         var newSideTop = (getImageHeight() * zoom) * ratioTop
         setImageTop(centerY - newSideTop)
 
-        document.imageSettings.zoom = zoom
+        setZoom(zoom)
         fixPosition()
         updateImage()
     }
     function updateImage() {
         var img = getImage()
-        var settings = document.imageSettings
+        //var settings = document.imageSettings
 
-        var newWidth = settings.width * settings.zoom
-        var newHeight = settings.height * settings.zoom
-        img.width = newWidth
-        img.height = newHeight
+        var newWidth = getOriginalImageWidth() * getZoom()
+        var newHeight = getOriginalImageHeight() * getZoom()
+        setImageWidth(newWidth)
+        setImageHeight(newHeight)
 
-        img.style.left = settings.left
-        img.style.top = settings.top
+        img.style.left = getImageLeft()
+        img.style.top = getImageTop()
     }
     function getImage() {
         return document.getElementsByTagName("img")[0]
@@ -130,7 +130,7 @@
         var zoomCenterX = i.clientX
         var zoomCenterY = i.clientY
         var zoomDelta = 1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1)
-        var newZoom = document.imageSettings.zoom * zoomDelta
+        var newZoom = getZoom() * zoomDelta
         zoom(newZoom, zoomCenterX, zoomCenterY)
     }
     var drag = false;
@@ -149,19 +149,19 @@
     }
 
     function fitPageToScreenWidth() {
-        document.imageSettings.zoom = getViewportWidth() / getImageWidth()
+        setZoom(getViewportWidth() / getImageWidth())
         fixPosition()
         updateImage()
     }
 
     function fitPageToScreenHeight() {
-        document.imageSettings.zoom = getViewportHeight() / getImageHeight()
+        setZoom(getViewportHeight() / getImageHeight())
         fixPosition()
         updateImage()
     }
 
     function fitPageToScreen() {
-        document.imageSettings.zoom = Math.min(getViewportHeight() / getImageHeight(), getViewportWidth() / getImageWidth())
+        setZoom(Math.min(getViewportHeight() / getImageHeight(), getViewportWidth() / getImageWidth()))
         fixPosition()
         updateImage()
     }
@@ -206,7 +206,7 @@
         var pinchCenterY = null
         hammertime.on('pinchstart', function(ev) {
             ev.preventDefault();
-            originalZoom = document.imageSettings.zoom
+            originalZoom = getZoom()
             pinchCenterX = ev.center.x
             pinchCenterY = ev.center.y
         })
@@ -223,16 +223,26 @@
         return document.imageSettings.page
     }
     function setImageWidth(width) {
-        document.imageSettings.width = width
+        //document.imageSettings.width = width
+        getImage().width = width
     }
     function getImageWidth() {
-        return document.imageSettings.width
+        //return document.imageSettings.width
+        return getImage().width
     }
     function setImageHeight(height) {
-        document.imageSettings.height = height
+        //document.imageSettings.height = height
+        getImage().height = height
+    }
+    function getOriginalImageWidth() {
+        return getImage().naturalWidth
+    }
+    function getOriginalImageHeight() {
+        return getImage().naturalHeight
     }
     function getImageHeight() {
-        return document.imageSettings.height
+        //return document.imageSettings.height
+        return getImage().height
     }
     function setImageLeft(left) {
         document.imageSettings.left = left
@@ -246,6 +256,18 @@
     function getImageTop() {
         return document.imageSettings.top
     }
+    function setZoom(zoom) {
+        document.imageSettings.zoom = zoom
+    }
+    function getZoom() {
+        return document.imageSettings.zoom
+    }
+    function setMinimumZoom(zoom) {
+        document.imageSettings.minimumZoom = zoom
+    }
+    function getMinimumZoom() {
+        return document.imageSettings.minimumZoom
+    }
 
     function loadImageData(id, page, callback) {
         var xhttp = new XMLHttpRequest();
@@ -254,12 +276,11 @@
                 var img = getImage()
                 img.onload = function() {
                     setPage(page)
-                    setImageWidth(img.naturalWidth)
-                    setImageHeight(img.naturalHeight)
+                    setImageWidth(getOriginalImageWidth())
+                    setImageHeight(getOriginalImageHeight())
                     setImageLeft(num(img.style.left, 0))
                     setImageTop(num(img.style.left, 0))
-                    //document.imageSettings.zoom = 1.0
-                    document.imageSettings.minimumZoom = Math.min(getViewportHeight() / img.naturalHeight, getViewportWidth() / img.naturalWidth)
+                    setMinimumZoom(Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth()))
                     callback()
                 }
                 img.src = this.responseText
@@ -321,8 +342,6 @@
             if (endOfColumn()) {
                 if (getPage() < document.comicMaximumPages) {
                     loadImageData(document.comicId, getPage() + 1, function() {
-                        //fitPageToScreenWidth()
-                        //zoom(document.imageSettings.zoom, viewportWidth / 2, 0)
                         fixPosition()
                         updateImage()
                     })
@@ -416,14 +435,14 @@
 
             var prev = document.getElementById("prev")
             prev.addEventListener("click", previous)
-            
+
             var nextDiv = document.getElementById("next")
             nextDiv.addEventListener("click", next)
 
             document.comicId = getMeta("comicId")
             document.comicMaximumPages = num(getMeta("pages"))
             document.imageSettings = {}
-            document.imageSettings.zoom = 1.0
+            setZoom(1.0)
             var startPage = num(getMeta("startPage"))
 
             loadImageData(document.comicId, startPage, function() {
