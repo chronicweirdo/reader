@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Comics Reader</title>
+</head>
+<body>
+<p>
+    <a th:each="comic: ${comics}" th:href="'comic?id=' + ${comic.id}">
+    <img th:src="${comic.cover}" th:title="${comic.title}">
+    </a>
+
+</p>
+</body>
+</html>

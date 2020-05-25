@@ -75,12 +75,12 @@ class ComicService {
     }(ExecutionContext.global)
   }
 
-  def getCollection(): Seq[Comic] = {
-    comicRepository.findAll().asScala.map(c => Comic(
+  def getCollection(): Seq[DbComic] = {
+    comicRepository.findAll().asScala.toSeq/*.map(c => Comic(
       c.title,
       c.path,
       ComicPage(c.mediaType, c.cover)
-    )).toSeq
+    )).toSeq9*/
   }
 
   private def isImageType(fileName: String) =

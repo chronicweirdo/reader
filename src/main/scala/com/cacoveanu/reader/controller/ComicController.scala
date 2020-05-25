@@ -4,12 +4,15 @@ import java.net.URLEncoder
 import java.nio.file.{Files, Paths}
 import java.util.Base64
 
+import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, FullComic}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody, RestController}
+
+import scala.beans.BeanProperty
 
 @Controller
 class ComicController @Autowired() (private val comicService: ComicService) {
@@ -33,33 +36,21 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     new String(byteArray)
   }
 
+  case class UiComic(
+                      @BeanProperty id: Int,
+                      @BeanProperty title: String,
+                      @BeanProperty cover: String
+                    )
+
+  private def base64Image(mediaType: MediaType, image: Array[Byte]) =
+    "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
+
   @RequestMapping(Array("/collection"))
-  def getComicCollection(): String = {
-    //val path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)";
-    //val path = "C:\\Users\\silvi\\Dropbox\\comics\\"
-    //val comics = comicService.loadComicFiles(path);
+  def getComicCollection(model: Model): String = {
     val comics = comicService.getCollection()
-
-    val page = new StringBuilder()
-    page.append("<html><body>")
-    page.append("<p>")
-    for (comic <- comics) {
-      page.append("<span>")
-      //page.append(comic.title)
-      //val coverEncoded = new String(Base64.getEncoder().encode(comic.cover.data))
-      //page.append("<img style=\"max-width: 100px;\" title=\"" + comic.title + "\" src=\"data:" + comic.cover.mediaType + ";base64,")
-      //page.append(coverEncoded)
-      //page.append("\">")
-      page.append("<a href=\"comic?path=").append(URLEncoder.encode(comic.path))
-        .append("&page=0\">")
-      page.append(getImageTag(comic.title, comic.cover.mediaType, comic.cover.data, Some(150)))
-      page.append("</a>")
-      page.append("</span>")
-    }
-    page.append("</p>")
-    page.append("</body></html>")
-
-    page.toString()
+    val uiComics = comics.map(comic => UiComic(comic.id, comic.title, base64Image(comic.mediaType, comic.cover)))
+    model.addAttribute("comics", uiComics.asJava)
+    "collection"
   }
 
   @RequestMapping(Array("/comic"))
@@ -88,7 +79,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   }
 
   //@RequestMapping(Array("/comic"))
-  def getComic(@RequestParam("path") path: String, @RequestParam("page") page: Int) = {
+  /*def getComic(@RequestParam("path") path: String, @RequestParam("page") page: Int) = {
     comicService.readPage(path, page) match {
       case Some(comicPage) =>
         val html = new StringBuilder()
@@ -106,5 +97,5 @@ class ComicController @Autowired() (private val comicService: ComicService) {
         html.toString()
       case None => null
     }
-  }
+  }*/
 }
