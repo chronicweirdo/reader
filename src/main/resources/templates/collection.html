@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <title>Comics Reader</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
         h1 {
             margin: .5vw;
         }
@@ -55,6 +60,9 @@
             background-color: black;
             height: 100%;
         }
+        .latestRead {
+            border-bottom: 2px solid black;
+        }
     </style>
     <script>
         function addPagenum(image, page, totalPages) {
@@ -96,6 +104,12 @@
 <body>
 <p th:text="${user}">user name</p>
 <p><a href="/logout">logout</a></p>
+<div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
+    <h1>Latest Read</h1>
+    <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}">
+        <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
+    </a></p>
+</div>
 <div th:each="collection: ${comicCollections}">
     <h1 th:text="${collection.name}">Collection Name</h1>
     <p>

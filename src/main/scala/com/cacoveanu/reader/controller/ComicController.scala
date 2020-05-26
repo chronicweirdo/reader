@@ -4,7 +4,7 @@ import java.net.URLEncoder
 import java.nio.file.{Files, Paths}
 import java.security.Principal
 import java.{lang, util}
-import java.util.Base64
+import java.util.{Base64, Date}
 
 import com.cacoveanu.reader.entity.ComicProgress
 
@@ -48,8 +48,18 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getComicCollection(principal: Principal, model: Model): String = {
     val user = userService.loadUser(principal.getName)
     val comics = comicService.getCollection()
-    val progress: Map[lang.Long, ComicProgress] = comicService.loadComicProgress(user.get).map(p => (p.comic.id, p)).toMap
+    val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
+    val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
 
+    val latestRead = progress.sorted(Ordering.by((_: ComicProgress).lastUpdate).reverse)
+      .take(5)
+      .map(p => UiComic(
+        p.comic.id,
+        p.comic.title,
+        base64Image(p.comic.mediaType, p.comic.cover),
+        p.page,
+        p.totalPages
+      )).asJava
 
     val uiComics = comics
       .groupBy(comic => comic.collection)
@@ -59,8 +69,8 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
           comic.id,
           comic.title,
           base64Image(comic.mediaType, comic.cover),
-          progress.get(comic.id).map(p => p.page).getOrElse(-1),
-          progress.get(comic.id).map(p => p.totalPages).getOrElse(-1)
+          progressByComic.get(comic.id).map(p => p.page).getOrElse(-1),
+          progressByComic.get(comic.id).map(p => p.totalPages).getOrElse(-1)
         )).asJava
       )}
       .toSeq
@@ -70,6 +80,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     val comicsCollection: util.List[UiCollection] = uiComics.asJava
     model.addAttribute("user", principal.getName)
     model.addAttribute("comicCollections", comicsCollection)
+    model.addAttribute("latestRead", latestRead)
     "collection"
   }
 
@@ -91,7 +102,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
     (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
       case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size))
+        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size, new Date()))
         base64Image(comic.pages(page).mediaType, comic.pages(page).data)
       case _ => ""
     }

@@ -154,6 +154,7 @@ Js gestures library:
 - [] Functionality to download/upload comic?
 - [] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
 - [] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
+- [] remember me functionality, and increase the life of the login session (to days! weeks!)
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality

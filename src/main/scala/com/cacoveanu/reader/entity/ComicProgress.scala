@@ -1,5 +1,7 @@
 package com.cacoveanu.reader.entity
 
+import java.util.Date
+
 import javax.persistence.{Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, Table, UniqueConstraint}
 
 @Entity
@@ -22,11 +24,14 @@ class ComicProgress {
 
   var totalPages: Int = _
 
-  def this(user: DbUser, comic: DbComic, page: Int, totalPages: Int) {
+  var lastUpdate: Date = _
+
+  def this(user: DbUser, comic: DbComic, page: Int, totalPages: Int, lastUpdate: Date) {
     this()
     this.user = user
     this.comic = comic
     this.page = page
     this.totalPages = totalPages
+    this.lastUpdate = lastUpdate
   }
 }
