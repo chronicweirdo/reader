@@ -55,14 +55,14 @@ class ComicService {
 
   @Value("${comics.location}")
   @BeanProperty
-  var comicsLocation: String = null
+  var comicsLocation: String = _
 
   @BeanProperty
-  @Autowired var imageService: ImageService = null
+  @Autowired var imageService: ImageService = _
 
   @BeanProperty
   @Autowired
-  var comicRepository: ComicRepository = null
+  var comicRepository: ComicRepository = _
 
   private implicit val executionContext = ExecutionContext.global
 

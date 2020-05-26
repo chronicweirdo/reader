@@ -3,34 +3,70 @@ package com.cacoveanu.reader
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.cache.annotation.EnableCaching
-import org.springframework.context.annotation.Description
+import org.springframework.context.annotation.{Bean, Configuration, Description}
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.{EnableWebSecurity, WebSecurityConfigurerAdapter}
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 
 @SpringBootApplication
 @EnableCaching
 class ReaderApplication {
 
-  /*import org.springframework.context.annotation.Bean
-  import org.thymeleaf.spring5.SpringTemplateEngine
-  import org.thymeleaf.templateresolver.ServletContextTemplateResolver
-
-  @Bean
-  @Description("Thymeleaf Template Resolver") def templateResolver: ServletContextTemplateResolver = {
-    val templateResolver = new ServletContextTemplateResolver()
-    templateResolver.setPrefix("/WEB-INF/views/")
-    templateResolver.setSuffix(".html")
-    templateResolver.setTemplateMode("HTML5")
-    templateResolver
-  }
-
-  @Bean
-  @Description("Thymeleaf Template Engine") def templateEngine: SpringTemplateEngine = {
-    val templateEngine = new SpringTemplateEngine
-    templateEngine.setTemplateResolver(templateResolver)
-    templateEngine.setTemplateEngineMessageSource(messageSource)
-    templateEngine
-  }*/
 }
 
 object ReaderApplication extends App {
   SpringApplication.run(classOf[ReaderApplication])
+}
+
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+
+@Configuration
+class MvcConfig extends WebMvcConfigurer {
+  override def addViewControllers(registry: ViewControllerRegistry): Unit = {
+    //registry.addViewController("/home").setViewName("home")
+    registry.addViewController("/").setViewName("collection")
+    //registry.addViewController("/hello").setViewName("hello")
+    registry.addViewController("/login").setViewName("login")
+  }
+}
+
+@Configuration
+@EnableWebSecurity
+class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+  override def configure(http: HttpSecurity): Unit = {
+    http
+      .authorizeRequests()
+      .antMatchers("/", "/home").permitAll()
+      .anyRequest().authenticated()
+      .and()
+      .formLogin()
+      .loginPage("/login")
+      .permitAll()
+      .and()
+      .logout()
+      .permitAll();
+  }
+
+  import org.springframework.context.annotation.Bean
+  import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+
+  @Bean def passwordEncoder = new BCryptPasswordEncoder
+
+  /*@Bean
+  override def userDetailsService(): UserDetailsService = {
+    val user = User.withDefaultPasswordEncoder
+      .username("user")
+      .password("password")
+      .roles("USER")
+      .build
+
+    new InMemoryUserDetailsManager(user)
+  }*/
 }

@@ -2,6 +2,7 @@ package com.cacoveanu.reader.controller
 
 import java.net.URLEncoder
 import java.nio.file.{Files, Paths}
+import java.security.Principal
 import java.util
 import java.util.Base64
 
@@ -40,7 +41,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   }
 
   @RequestMapping(Array("/collection"))
-  def getComicCollection(model: Model): String = {
+  def getComicCollection(principal: Principal, model: Model): String = {
     val comics = comicService.getCollection()
     val uiComics = comics
       .groupBy(comic => comic.collection)
@@ -53,6 +54,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
 
 
     val comicsCollection: util.List[UiCollection] = uiComics.asJava
+    model.addAttribute("user", principal.getName)
     model.addAttribute("comicCollections", comicsCollection)
     "collection"
   }
