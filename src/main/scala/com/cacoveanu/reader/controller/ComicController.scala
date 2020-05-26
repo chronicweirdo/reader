@@ -3,7 +3,7 @@ package com.cacoveanu.reader.controller
 import java.net.URLEncoder
 import java.nio.file.{Files, Paths}
 import java.security.Principal
-import java.util
+import java.{lang, util}
 import java.util.Base64
 
 import com.cacoveanu.reader.entity.ComicProgress
@@ -27,7 +27,8 @@ case class UiComic(
                     @BeanProperty id: Long,
                     @BeanProperty title: String,
                     @BeanProperty cover: String,
-                    @BeanProperty progress: Int
+                    @BeanProperty progress: Int,
+                    @BeanProperty pages: Int
                   )
 
 @Controller
@@ -47,7 +48,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getComicCollection(principal: Principal, model: Model): String = {
     val user = userService.loadUser(principal.getName)
     val comics = comicService.getCollection()
-    val progress = comicService.loadComicProgress(user.get)
+    val progress: Map[lang.Long, ComicProgress] = comicService.loadComicProgress(user.get).map(p => (p.comic.id, p)).toMap
 
 
     val uiComics = comics
@@ -58,7 +59,8 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
           comic.id,
           comic.title,
           base64Image(comic.mediaType, comic.cover),
-          progress.find(p => p.comic.id == comic.id).map(p => p.page).getOrElse(-1)
+          progress.get(comic.id).map(p => p.page).getOrElse(-1),
+          progress.get(comic.id).map(p => p.totalPages).getOrElse(-1)
         )).asJava
       )}
       .toSeq
@@ -89,7 +91,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
     (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
       case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page))
+        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size))
         base64Image(comic.pages(page).mediaType, comic.pages(page).data)
       case _ => ""
     }

@@ -19,20 +19,27 @@
         .imgdiv img {
             position: relative;
         }
-        .imgdiv span {
+        .imgdiv .pagenum {
             position: absolute;
             right: 10px;
             bottom: 10px;
             background-color: white;
-            padding: 5px;
+            padding: .5em;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: black;
         }
     </style>
     <script>
-        function scaleImage(image, page) {
+        function addPagenum(image, page, totalPages) {
+            var span = document.createElement("span")
+            span.innerText = page + " / " + totalPages
+            span.classList.add("pagenum")
+            image.parentElement.appendChild(span)
+        }
+        function scaleImage(image, page, totalPages) {
             if (page >= 0) {
-                var span = document.createElement("span")
-                span.innerText = page
-                image.parentElement.appendChild(span)
+                addPagenum(image, page, totalPages)
             }
             var imageContainer = document.getElementsByClassName("imgdiv")[0]
             var expectedHeight = imageContainer.offsetHeight
@@ -56,7 +63,7 @@
     <h1 th:text="${collection.name}">Collection Name</h1>
     <p>
         <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
-            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
+            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
         </a></p>
 </div>
 </body>

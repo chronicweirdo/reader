@@ -20,10 +20,13 @@ class ComicProgress {
 
   var page: Int = _
 
-  def this(user: DbUser, comic: DbComic, page: Int) {
+  var totalPages: Int = _
+
+  def this(user: DbUser, comic: DbComic, page: Int, totalPages: Int) {
     this()
     this.user = user
     this.comic = comic
     this.page = page
+    this.totalPages = totalPages
   }
 }
