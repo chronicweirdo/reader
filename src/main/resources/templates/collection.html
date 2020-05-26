@@ -10,11 +10,21 @@
         .imgdiv {
             position: relative;
             display: inline-block;
-            width: 180px;
-            height: 300px;
+            width: 9vw;
+            height: 15vw;
             overflow: hidden;
             text-decoration: none;
             margin: .5vw;
+        }
+        @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
+        only screen and (-o-min-device-pixel-ratio: 13/10),
+        only screen and (min-resolution: 120dpi)
+        {
+            .imgdiv {
+                width: 22vw;
+                height: 37vw;
+                margin: 1vw;
+            }
         }
         .imgdiv img {
             position: relative;

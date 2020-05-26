@@ -135,8 +135,15 @@ Js gestures library:
 ## Next phase of features
 
 - [x] Users for access (cookie based)
-- [] Store comic progress on user (page, zoom level, pan settings? Would require sending pan info to server on every change; better only 2 seconds after pan/zoom operation is over)
-- [] Show read/finished comics on home page, maybe even read progress bar? On bottom or top of page. Or read/total numbers?
+- [x] make ui larger on phone (https://gist.github.com/marcedwards/3446599)
+- [x] Store comic progress on user (page, zoom level, pan settings? Would require sending pan info to server on every change; better only 2 seconds after pan/zoom operation is over)
+    - current implementation does not include zoom level or pan settings
+    - if I add those, how will those values translate when switching devices?
+    - also, there would probably be too much "chatter" between the UI and the backend
+    - keeping it as is for now
+- [x] Show read/finished comics on home page, maybe even read progress bar? On bottom or top of page. Or read/total numbers?
+    - added the read progress bar, on hover (on pc) the number of pages out of total pages is displayed
+    - only comics that were opened will show the progress bar
 - [] Functionality to mark comics as unread
 - [] Functionality to show the latest read and unfinished comics at top of home page
 
