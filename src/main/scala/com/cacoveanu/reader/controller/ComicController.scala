@@ -6,8 +6,10 @@ import java.security.Principal
 import java.util
 import java.util.Base64
 
+import com.cacoveanu.reader.entity.ComicProgress
+
 import scala.jdk.CollectionConverters._
-import com.cacoveanu.reader.service.{ComicProgress, ComicService, UserService}
+import com.cacoveanu.reader.service.{ComicService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -77,11 +79,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
     (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
       case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        val p = new ComicProgress()
-        p.user = user
-        p.comic = comic
-        p.page = page
-        comicService.saveComicProgress(p)
+        comicService.saveComicProgress(new ComicProgress(user, comic, page))
         base64Image(comic.pages(page).mediaType, comic.pages(page).data)
       case _ => ""
     }

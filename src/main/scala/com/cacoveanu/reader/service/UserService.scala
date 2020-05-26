@@ -2,6 +2,7 @@ package com.cacoveanu.reader.service
 
 import java.util
 
+import com.cacoveanu.reader.entity.DbUser
 import com.cacoveanu.reader.repository.UserRepository
 import javax.annotation.PostConstruct
 import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id}
@@ -15,12 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
-@Entity
-class DbUser {
-  @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
-  @Column(nullable = false, unique = true) var username: String = _
-  var password: String = _
-}
+
 
 class ReaderAuthority(name: String) extends GrantedAuthority {
   override def getAuthority: String = name

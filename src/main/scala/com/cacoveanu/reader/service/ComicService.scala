@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.util.concurrent.{ExecutorService, Executors}
 import java.util.zip.ZipFile
 
+import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
 import com.cacoveanu.reader.repository.{ComicProgressRepository, ComicRepository}
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
@@ -21,44 +22,6 @@ import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
-
-@Entity
-class DbComic {
-  @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
-  @Column(unique = true) var path: String = _
-  var title: String = _
-  var collection: String = _
-  var mediaType: MediaType = _
-  var cover: Array[Byte] = _
-
-  @Transient
-  var pages: Seq[ComicPage] = _
-
-  def this(path: String, title: String, collection: String, mediaType: MediaType, cover: Array[Byte]) {
-    this()
-    this.path = path
-    this.title = title
-    this.collection = collection
-    this.mediaType = mediaType
-    this.cover = cover
-  }
-}
-
-@Entity
-@Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "comicId"))))
-class ComicProgress {
-  @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
-  @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name="userId") var user: DbUser = _
-  @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name="comicId") var comic: DbComic = _
-  var page: Int = _
-
-  def this(user: DbUser, comic: DbComic, page: Int) {
-    this()
-    this.user = user
-    this.comic = comic
-    this.page = page
-  }
-}
 
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
