@@ -7,7 +7,7 @@ import java.util
 import java.util.Base64
 
 import scala.jdk.CollectionConverters._
-import com.cacoveanu.reader.service.{ComicProgress, ComicService, FullComic, UserService}
+import com.cacoveanu.reader.service.{ComicProgress, ComicService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -61,14 +61,11 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/comic"))
   def getComic(@RequestParam(name="id") id: Int, model: Model, principal: Principal): String = {
-    val user = userService.loadUser(principal.getName)
-    val dbComic = comicService.loadComicFromDatabase(id)
-    val fullComic = comicService.loadFullComic(id)
-    (user, dbComic, fullComic) match {
-      case (Some(u), Some(c), Some(FullComic(path, title, collection, pages))) =>
-        val progress = comicService.loadComicProgress(u, c)
+    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
+      case (Some(user), Some(comic)) =>
+        val progress = comicService.loadComicProgress(user, comic)
         model.addAttribute("id", id)
-        model.addAttribute("pages", pages.size)
+        model.addAttribute("pages", comic.pages.size)
         model.addAttribute("startPage", progress.map(p => p.page).getOrElse(0))
         "comic"
       case _ => ""
@@ -78,16 +75,14 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @RequestMapping(Array("/imageData"))
   @ResponseBody
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
-    val user = userService.loadUser(principal.getName)
-    val dbComic = comicService.loadComicFromDatabase(id)
-    (user, dbComic, comicService.loadFullComic(id)) match {
-      case (Some(u), Some(c), Some(FullComic(_, _, _, pages))) if pages.indices contains page =>
+    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
+      case (Some(user), Some(comic)) if comic.pages.indices contains page =>
         val p = new ComicProgress()
-        p.user = u
-        p.comic = c
+        p.user = user
+        p.comic = comic
         p.page = page
         comicService.saveComicProgress(p)
-        base64Image(pages(page).mediaType, pages(page).data)
+        base64Image(comic.pages(page).mediaType, comic.pages(page).data)
       case _ => ""
     }
   }

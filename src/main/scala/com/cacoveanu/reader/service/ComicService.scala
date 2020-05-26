@@ -9,7 +9,7 @@ import com.cacoveanu.reader.repository.{ComicProgressRepository, ComicRepository
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
-import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, OneToMany, OneToOne, Table, UniqueConstraint}
+import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, OneToMany, OneToOne, Table, Transient, UniqueConstraint}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
@@ -31,6 +31,9 @@ class DbComic {
   var mediaType: MediaType = _
   var cover: Array[Byte] = _
 
+  @Transient
+  var pages: Seq[ComicPage] = _
+
   def this(path: String, title: String, collection: String, mediaType: MediaType, cover: Array[Byte]) {
     this()
     this.path = path
@@ -43,23 +46,21 @@ class DbComic {
 
 @Entity
 @Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "comicId"))))
-/*(uniqueConstraints=Array(
-  @UniqueConstraint(columnNames = Array("productId", "serial"))
-))*/
 class ComicProgress {
   @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name="userId")
-  var user: DbUser = _
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name="comicId")
-  var comic: DbComic = _
+  @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name="userId") var user: DbUser = _
+  @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(name="comicId") var comic: DbComic = _
   var page: Int = _
+
+  def this(user: DbUser, comic: DbComic, page: Int) {
+    this()
+    this.user = user
+    this.comic = comic
+    this.page = page
+  }
 }
 
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
-
-case class FullComic(path: String, title: String, collection: String, pages: Seq[ComicPage])
 
 @Service
 class ComicService {
@@ -121,22 +122,30 @@ class ComicService {
   }
 
   @Cacheable(Array("comics"))
-  def loadFullComic(id: Long): Option[FullComic] = {
+  def loadFullComic(id: Long): Option[DbComic] = {
     comicRepository.findById(id).asScala match {
-      case Some(dbComic) =>
-        FileUtil.getExtension(dbComic.path) match {
-          case COMIC_TYPE_CBR => loadCbr(dbComic.path)
-          case COMIC_TYPE_CBZ => loadCbz(dbComic.path)
-          case _ => None
-        }
+      case Some(dbComic) => loadPagesFromDisk(dbComic.path) match {
+        case Some(pages) =>
+          dbComic.pages = pages
+          Some(dbComic)
+        case None => None
+      }
       case None => None
     }
   }
 
-  private def loadCbr(path: String): Option[FullComic] = {
+  private def loadPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
+    FileUtil.getExtension(path) match {
+      case COMIC_TYPE_CBR => loadCbrPagesFromDisk(path)
+      case COMIC_TYPE_CBZ => loadCbzPagesFromDisk(path)
+      case _ => None
+    }
+  }
+
+  private def loadCbrPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
     var archive: Archive = null
 
-    val pages = try {
+    try {
       archive = new Archive(new FileInputStream(path))
 
       Some(
@@ -157,11 +166,6 @@ class ComicService {
       case _: Throwable => None
     } finally {
       archive.close()
-    }
-
-    (pages, getComicTitle(path), getComicCollection(path)) match {
-      case (Some(binaryPages), Some(title), Some(collection)) => Some(FullComic(path, title, collection, binaryPages))
-      case _ => None
     }
   }
 
@@ -187,10 +191,10 @@ class ComicService {
     } else None
   }
 
-  private def loadCbz(path: String): Option[FullComic] = {
+  private def loadCbzPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
     var zipFile: ZipFile = null
 
-    val pages = try {
+    try {
       zipFile = new ZipFile(path)
 
       Some(
@@ -207,20 +211,12 @@ class ComicService {
               Some(ComicPage(mediaType, bos.toByteArray))
             case None => None
           })
-          .toSeq
       )
     } catch {
       case _: Throwable => None
     } finally {
       zipFile.close()
     }
-
-    (pages, getComicTitle(path), getComicCollection(path)) match {
-      case (Some(binaryPages), Some(title), Some(collection)) =>
-        Some(FullComic(path, title, collection, binaryPages))
-      case _ => None
-    }
-
   }
 
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
