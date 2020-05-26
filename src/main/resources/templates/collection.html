@@ -29,6 +29,22 @@
             font-weight: bold;
             color: black;
         }
+        .imgdiv .progressbar {
+            position: absolute;
+            display: block;
+            left: 4%;
+            bottom: 4%;
+            width: 88%;
+            height: 4%;
+            background-color: white;
+            border: 1px solid black;
+            padding: 1%;
+        }
+        .imgdiv .progressbar .read {
+            display: block;
+            background-color: black;
+            height: 100%;
+        }
     </style>
     <script>
         function addPagenum(image, page, totalPages) {
@@ -37,9 +53,20 @@
             span.classList.add("pagenum")
             image.parentElement.appendChild(span)
         }
+        function addProgress(image, page, totalPages) {
+            var span = document.createElement("span")
+            span.classList.add("progressbar")
+            span.title = "read " + page + " of " + totalPages + " pages"
+            var prog = document.createElement("span")
+            prog.classList.add("read")
+            prog.style.width = (page / totalPages * 100) + "%"
+            span.appendChild(prog)
+            image.parentElement.appendChild(span)
+        }
         function scaleImage(image, page, totalPages) {
             if (page >= 0) {
-                addPagenum(image, page, totalPages)
+                //addPagenum(image, page, totalPages)
+                addProgress(image, page, totalPages)
             }
             var imageContainer = document.getElementsByClassName("imgdiv")[0]
             var expectedHeight = imageContainer.offsetHeight
