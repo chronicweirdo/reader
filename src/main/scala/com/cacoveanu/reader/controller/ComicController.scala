@@ -40,7 +40,7 @@ class ComicController @Autowired() (private val comicService: ComicService) {
     ""
   }
 
-  @RequestMapping(Array("/collection"))
+  @RequestMapping(Array("/"))
   def getComicCollection(principal: Principal, model: Model): String = {
     val comics = comicService.getCollection()
     val uiComics = comics

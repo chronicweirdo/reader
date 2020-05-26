@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @SpringBootApplication
 @EnableCaching
@@ -30,9 +31,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class MvcConfig extends WebMvcConfigurer {
   override def addViewControllers(registry: ViewControllerRegistry): Unit = {
     //registry.addViewController("/home").setViewName("home")
-    registry.addViewController("/").setViewName("collection")
+    //registry.addViewController("/").setViewName("collection")
     //registry.addViewController("/hello").setViewName("hello")
     registry.addViewController("/login").setViewName("login")
+    registry.addRedirectViewController("/logout", "/login")
   }
 }
 
@@ -43,14 +45,20 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   override def configure(http: HttpSecurity): Unit = {
     http
       .authorizeRequests()
-      .antMatchers("/", "/home").permitAll()
-      .anyRequest().authenticated()
+      .anyRequest().fullyAuthenticated()
+
       .and()
       .formLogin()
       .loginPage("/login")
+      .failureUrl("/login?error")
+      //.successForwardUrl("/collection")
       .permitAll()
+
       .and()
       .logout()
+      .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+      .logoutSuccessUrl("/login")
+      .deleteCookies("JSESSIONID")
       .permitAll();
   }
 

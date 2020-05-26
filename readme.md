@@ -134,9 +134,9 @@ Js gestures library:
     
 ## Next phase of features
 
+- [] Users for access (cookie based)
 - [] When last page is reached, if next page is called, mark the comic as read
 - [] Search functionality on home page
-- [] Users for access (cookie based)
 - [] Store comic progress on user (page, zoom level, pan settings? Would require sending pan info to server on every change; better only 2 seconds after pan/zoom operation is over)
 - [] Show read/finished comics on home page, maybe even read progress bar? On bottom or top of page. Or read/total numbers?
 - [] Functionality to mark comics as unread

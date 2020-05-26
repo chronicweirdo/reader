@@ -38,6 +38,7 @@
 </head>
 <body>
     <p th:text="${user}">user name</p>
+    <p><a href="/logout">logout</a></p>
     <div th:each="collection: ${comicCollections}">
         <h1 th:text="${collection.name}">Collection Name</h1>
         <p><a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}"><img onload="scaleImage(this)" th:src="${comic.cover}" th:title="${comic.title}"></a></p>
