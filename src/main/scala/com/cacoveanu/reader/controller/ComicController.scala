@@ -7,7 +7,7 @@ import java.util
 import java.util.Base64
 
 import scala.jdk.CollectionConverters._
-import com.cacoveanu.reader.service.{ComicService, FullComic}
+import com.cacoveanu.reader.service.{ComicProgress, ComicService, FullComic, UserService}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -28,7 +28,7 @@ case class UiComic(
                   )
 
 @Controller
-class ComicController @Autowired() (private val comicService: ComicService) {
+class ComicController @Autowired() (private val comicService: ComicService, private val userService: UserService) {
 
   private def base64Image(mediaType: MediaType, image: Array[Byte]) =
     "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
@@ -60,12 +60,16 @@ class ComicController @Autowired() (private val comicService: ComicService) {
   }
 
   @RequestMapping(Array("/comic"))
-  def getComic(@RequestParam("id") id: Int, model: Model): String = {
-    comicService.loadFullComic(id) match {
-      case Some(FullComic(path, title, collection, pages)) =>
+  def getComic(@RequestParam(name="id") id: Int, model: Model, principal: Principal): String = {
+    val user = userService.loadUser(principal.getName)
+    val dbComic = comicService.loadComicFromDatabase(id)
+    val fullComic = comicService.loadFullComic(id)
+    (user, dbComic, fullComic) match {
+      case (Some(u), Some(c), Some(FullComic(path, title, collection, pages))) =>
+        val progress = comicService.loadComicProgress(u, c)
         model.addAttribute("id", id)
         model.addAttribute("pages", pages.size)
-        model.addAttribute("startPage", 0)
+        model.addAttribute("startPage", progress.map(p => p.page).getOrElse(0))
         "comic"
       case _ => ""
     }
@@ -73,9 +77,16 @@ class ComicController @Autowired() (private val comicService: ComicService) {
 
   @RequestMapping(Array("/imageData"))
   @ResponseBody
-  def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int): String = {
-    comicService.loadFullComic(id) match {
-      case Some(FullComic(_, _, _, pages)) if pages.indices contains page =>
+  def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
+    val user = userService.loadUser(principal.getName)
+    val dbComic = comicService.loadComicFromDatabase(id)
+    (user, dbComic, comicService.loadFullComic(id)) match {
+      case (Some(u), Some(c), Some(FullComic(_, _, _, pages))) if pages.indices contains page =>
+        val p = new ComicProgress()
+        p.user = u
+        p.comic = c
+        p.page = page
+        comicService.saveComicProgress(p)
         base64Image(pages(page).mediaType, pages(page).data)
       case _ => ""
     }

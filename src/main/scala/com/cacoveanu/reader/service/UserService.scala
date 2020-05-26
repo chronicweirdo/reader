@@ -62,6 +62,11 @@ class UserService extends UserDetailsService{
     userRepository.save(user)
   }
 
+  def loadUser(username: String): Option[DbUser] = {
+    val dbUser = userRepository.findByUsername(username)
+    Option(dbUser)
+  }
+
   override def loadUserByUsername(username: String): UserDetails = {
     val user = userRepository.findByUsername(username)
     if (user == null) throw new UsernameNotFoundException(username)

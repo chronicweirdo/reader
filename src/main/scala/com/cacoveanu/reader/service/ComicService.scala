@@ -5,11 +5,11 @@ import java.nio.file.Paths
 import java.util.concurrent.{ExecutorService, Executors}
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.repository.ComicRepository
+import com.cacoveanu.reader.repository.{ComicProgressRepository, ComicRepository}
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
-import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id, UniqueConstraint}
+import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, OneToMany, OneToOne, Table, UniqueConstraint}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
@@ -41,6 +41,22 @@ class DbComic {
   }
 }
 
+@Entity
+@Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "comicId"))))
+/*(uniqueConstraints=Array(
+  @UniqueConstraint(columnNames = Array("productId", "serial"))
+))*/
+class ComicProgress {
+  @Id @GeneratedValue(strategy = GenerationType.AUTO) var id: java.lang.Long = _
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name="userId")
+  var user: DbUser = _
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name="comicId")
+  var comic: DbComic = _
+  var page: Int = _
+}
+
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
 case class FullComic(path: String, title: String, collection: String, pages: Seq[ComicPage])
@@ -64,6 +80,8 @@ class ComicService {
   @Autowired
   var comicRepository: ComicRepository = _
 
+  @BeanProperty @Autowired var comicProgressRepository: ComicProgressRepository = _
+
   private implicit val executionContext = ExecutionContext.global
 
   @PostConstruct
@@ -77,6 +95,18 @@ class ComicService {
 
   def getCollection(): Seq[DbComic] = {
     comicRepository.findAll().asScala.toSeq
+  }
+
+  def loadComicProgress(user: DbUser, comic: DbComic): Option[ComicProgress] = {
+    val progress = comicProgressRepository.findByUserAndComic(user, comic)
+    if (progress != null) Some(progress)
+    else None
+  }
+
+  def saveComicProgress(progress: ComicProgress) = {
+    val existingProgress = comicProgressRepository.findByUserAndComic(progress.user, progress.comic)
+    if (existingProgress != null) progress.id = existingProgress.id
+    comicProgressRepository.save(progress)
   }
 
   private def isImageType(fileName: String) =
@@ -226,6 +256,10 @@ class ComicService {
     val pathObject = Paths.get(path);
     val collectionPath = Paths.get(comicsLocation).relativize(pathObject.getParent)
     Some(collectionPath.toString)
+  }
+
+  def loadComicFromDatabase(id: Long): Option[DbComic] = {
+    comicRepository.findById(id).asScala
   }
 
   def loadComic(file: String): Option[DbComic] =

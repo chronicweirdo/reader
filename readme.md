@@ -134,15 +134,20 @@ Js gestures library:
     
 ## Next phase of features
 
-- [] Users for access (cookie based)
-- [] When last page is reached, if next page is called, mark the comic as read
-- [] Search functionality on home page
+- [x] Users for access (cookie based)
 - [] Store comic progress on user (page, zoom level, pan settings? Would require sending pan info to server on every change; better only 2 seconds after pan/zoom operation is over)
 - [] Show read/finished comics on home page, maybe even read progress bar? On bottom or top of page. Or read/total numbers?
 - [] Functionality to mark comics as unread
 - [] Functionality to show the latest read and unfinished comics at top of home page
+
+- [] When last page is reached, if next page is called, mark the comic as read
+- [] Search functionality on home page
 - [] A go back button on the comic page?
 - [] Functionality to do periodic rescan of the comics folder
 - [] Functionality to download/upload comic?
 - [] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
 - [] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
+
+- jump to page functionality
+- bookmark page (zoom, pan? viewport size?) functionality
+- export bookmarks as images?

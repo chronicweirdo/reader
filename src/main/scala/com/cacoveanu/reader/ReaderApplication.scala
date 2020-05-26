@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.context.annotation.Bean
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 @SpringBootApplication
 @EnableCaching
@@ -61,9 +63,6 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .deleteCookies("JSESSIONID")
       .permitAll();
   }
-
-  import org.springframework.context.annotation.Bean
-  import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
   @Bean def passwordEncoder = new BCryptPasswordEncoder
 
