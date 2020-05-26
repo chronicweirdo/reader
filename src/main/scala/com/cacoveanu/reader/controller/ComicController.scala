@@ -26,7 +26,8 @@ case class UiCollection(
 case class UiComic(
                     @BeanProperty id: Long,
                     @BeanProperty title: String,
-                    @BeanProperty cover: String
+                    @BeanProperty cover: String,
+                    @BeanProperty progress: Int
                   )
 
 @Controller
@@ -44,12 +45,21 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/"))
   def getComicCollection(principal: Principal, model: Model): String = {
+    val user = userService.loadUser(principal.getName)
     val comics = comicService.getCollection()
+    val progress = comicService.loadComicProgress(user.get)
+
+
     val uiComics = comics
       .groupBy(comic => comic.collection)
       .map { case (collection, entries) => UiCollection(
         collection,
-        entries.map(comic => UiComic(comic.id, comic.title, base64Image(comic.mediaType, comic.cover))).asJava
+        entries.map(comic => UiComic(
+          comic.id,
+          comic.title,
+          base64Image(comic.mediaType, comic.cover),
+          progress.find(p => p.comic.id == comic.id).map(p => p.page).getOrElse(-1)
+        )).asJava
       )}
       .toSeq
       .sortBy(collection => collection.name)

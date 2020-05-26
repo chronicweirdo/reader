@@ -67,6 +67,10 @@ class ComicService {
     else None
   }
 
+  def loadComicProgress(user: DbUser): Seq[ComicProgress] = {
+    comicProgressRepository.findByUser(user).asScala.toSeq
+  }
+
   def saveComicProgress(progress: ComicProgress) = {
     val existingProgress = comicProgressRepository.findByUserAndComic(progress.user, progress.comic)
     if (existingProgress != null) progress.id = existingProgress.id

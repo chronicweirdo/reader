@@ -8,6 +8,7 @@
             margin: .5vw;
         }
         .imgdiv {
+            position: relative;
             display: inline-block;
             width: 180px;
             height: 300px;
@@ -18,9 +19,21 @@
         .imgdiv img {
             position: relative;
         }
+        .imgdiv span {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background-color: white;
+            padding: 5px;
+        }
     </style>
     <script>
-        function scaleImage(image) {
+        function scaleImage(image, page) {
+            if (page >= 0) {
+                var span = document.createElement("span")
+                span.innerText = page
+                image.parentElement.appendChild(span)
+            }
             var imageContainer = document.getElementsByClassName("imgdiv")[0]
             var expectedHeight = imageContainer.offsetHeight
             var expectedWidth = imageContainer.offsetWidth
@@ -37,11 +50,14 @@
     </script>
 </head>
 <body>
-    <p th:text="${user}">user name</p>
-    <p><a href="/logout">logout</a></p>
-    <div th:each="collection: ${comicCollections}">
-        <h1 th:text="${collection.name}">Collection Name</h1>
-        <p><a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}"><img onload="scaleImage(this)" th:src="${comic.cover}" th:title="${comic.title}"></a></p>
-    </div>
+<p th:text="${user}">user name</p>
+<p><a href="/logout">logout</a></p>
+<div th:each="collection: ${comicCollections}">
+    <h1 th:text="${collection.name}">Collection Name</h1>
+    <p>
+        <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
+            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
+        </a></p>
+</div>
 </body>
 </html>
