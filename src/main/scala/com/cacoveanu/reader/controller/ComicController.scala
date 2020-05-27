@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody, RestController}
+import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody, RestController}
 
 import scala.beans.BeanProperty
 
@@ -30,6 +30,10 @@ case class UiComic(
                     @BeanProperty progress: Int,
                     @BeanProperty pages: Int
                   )
+
+class RemoveProgressForm {
+  @BeanProperty var ids: java.util.List[Long] = _
+}
 
 @Controller
 class ComicController @Autowired() (private val comicService: ComicService, private val userService: UserService) {
@@ -95,6 +99,24 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         "comic"
       case _ => ""
     }
+  }
+
+
+
+  @RequestMapping(
+    value=Array("/removeProgress"),
+    method=Array(RequestMethod.POST),
+    consumes=Array(MediaType.APPLICATION_JSON_VALUE)
+  )
+  @ResponseBody
+  def removeProgress(@RequestBody data: RemoveProgressForm, principal: Principal): String = {
+    userService.loadUser(principal.getName) match {
+      case Some(user) =>
+        val progress: Seq[ComicProgress] = comicService.loadComicProgress(user)
+        val progressToDelete = progress.filter(p => data.ids.asScala.contains(p.comic.id))
+        comicService.deleteComicProgress(progressToDelete)
+    }
+    ""
   }
 
   @RequestMapping(Array("/imageData"))

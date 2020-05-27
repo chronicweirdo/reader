@@ -71,6 +71,10 @@ class ComicService {
     comicProgressRepository.findByUser(user).asScala.toSeq
   }
 
+  def deleteComicProgress(progress: Seq[ComicProgress]) = {
+    comicProgressRepository.deleteAll(progress.asJava)
+  }
+
   def saveComicProgress(progress: ComicProgress) = {
     val existingProgress = comicProgressRepository.findByUserAndComic(progress.user, progress.comic)
     if (existingProgress != null) progress.id = existingProgress.id

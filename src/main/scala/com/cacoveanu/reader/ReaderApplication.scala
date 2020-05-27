@@ -57,7 +57,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   override def configure(http: HttpSecurity): Unit = {
     http
+      .csrf().disable().cors().and()
       .authorizeRequests()
+      .antMatchers("/testPost", "/testGet").permitAll()
       .anyRequest().authenticated()
 
       .and()
