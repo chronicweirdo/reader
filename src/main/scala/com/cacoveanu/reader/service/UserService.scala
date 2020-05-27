@@ -41,7 +41,7 @@ class UserPrincipal(val user: DbUser) extends UserDetails {
 }
 
 @Service
-class UserService extends UserDetailsService{
+class UserService extends UserDetailsService {
 
   @BeanProperty @Autowired var userRepository: UserRepository = _
 

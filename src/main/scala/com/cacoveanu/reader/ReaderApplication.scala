@@ -1,5 +1,6 @@
 package com.cacoveanu.reader
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.cache.annotation.EnableCaching
@@ -14,6 +15,13 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.context.annotation.Bean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.crypto.password.PasswordEncoder
+
+import scala.beans.BeanProperty
 
 @SpringBootApplication
 @EnableCaching
@@ -44,10 +52,17 @@ class MvcConfig extends WebMvcConfigurer {
 @EnableWebSecurity
 class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+  @Autowired
+  var userService: UserDetailsService = _
+
   override def configure(http: HttpSecurity): Unit = {
     http
       .authorizeRequests()
-      .anyRequest().fullyAuthenticated()
+      .anyRequest().authenticated()
+
+      .and()
+      .rememberMe().key("uniqueAndSecret")
+      .userDetailsService(userService)
 
       .and()
       .formLogin()
@@ -61,8 +76,18 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
       .logoutSuccessUrl("/login?logout")
       .deleteCookies("JSESSIONID")
-      .permitAll();
+      .permitAll()
   }
+
+
+
+  /*@Bean
+  @Autowired def authenticationProvider(passwordEncoder: PasswordEncoder, userDetailsService: UserDetailsService): DaoAuthenticationProvider = {
+    val daoAuthenticationProvider = new DaoAuthenticationProvider
+    daoAuthenticationProvider.setPasswordEncoder(passwordEncoder)
+    daoAuthenticationProvider.setUserDetailsService(userDetailsService)
+    daoAuthenticationProvider
+  }*/
 
   @Bean def passwordEncoder = new BCryptPasswordEncoder
 
