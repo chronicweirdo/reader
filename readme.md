@@ -145,7 +145,7 @@ Js gestures library:
     - added the read progress bar, on hover (on pc) the number of pages out of total pages is displayed
     - only comics that were opened will show the progress bar
 - [] Functionality to mark comics as unread
-- [] Functionality to show the latest read and unfinished comics at top of home page
+- [x] Functionality to show the latest read and unfinished comics at top of home page
 
 - [] When last page is reached, if next page is called, mark the comic as read
 - [] Search functionality on home page

@@ -21,6 +21,11 @@
             text-decoration: none;
             margin: .5vw;
         }
+        .imgdiv.selected {
+            width: 8.6vw;
+            height: 14.6vw;
+            border: .2vw solid red;
+        }
         @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
         only screen and (-o-min-device-pixel-ratio: 13/10),
         only screen and (min-resolution: 120dpi)
@@ -29,6 +34,11 @@
                 width: 22vw;
                 height: 37vw;
                 margin: 1vw;
+            }
+            .imgdiv.selected {
+                width: 21vw;
+                height: 36vw;
+                border: .5vw solid red;
             }
         }
         .imgdiv img {
@@ -64,6 +74,7 @@
             border-bottom: 2px solid black;
         }
     </style>
+    <script src="hammer.min.js"></script>
     <script>
         function addPagenum(image, page, totalPages) {
             var span = document.createElement("span")
@@ -98,6 +109,25 @@
             var differenceHeight = image.offsetHeight - expectedHeight
             image.style.left = (- differenceWidth / 2) + "px"
             image.style.top = (- differenceHeight / 2) + "px"
+
+            enableTouchGestures(image)
+            image.addEventListener('contextmenu', function(ev) {
+                ev.preventDefault();
+                select(image)
+            }, false);
+        }
+        function enableTouchGestures(element) {
+            //disableEventHandlers(element)
+            var hammertime = new Hammer(element, {
+                domEvents: true
+                });
+
+            hammertime.on('press', function(ev) {
+                console.log("pressed")
+            });
+        }
+        function select(image) {
+            image.parentElement.classList.add("selected")
         }
     </script>
 </head>
