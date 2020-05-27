@@ -74,7 +74,7 @@
             border-bottom: 2px solid black;
         }
     </style>
-    <script src="hammer.min.js"></script>
+    <!--script src="hammer.min.js"></script-->
     <script>
         function addPagenum(image, page, totalPages) {
             var span = document.createElement("span")
@@ -110,30 +110,53 @@
             image.style.left = (- differenceWidth / 2) + "px"
             image.style.top = (- differenceHeight / 2) + "px"
 
-            enableTouchGestures(image)
+            //enableTouchGestures(image)
             image.addEventListener('contextmenu', function(ev) {
                 ev.preventDefault();
-                select(image)
+                toggleSelect(image)
             }, false);
         }
-        function enableTouchGestures(element) {
+        // hammer does not work as well in this context
+        // better to just keep with overriding the browser right click functionality
+        /*function enableTouchGestures(image) {
             //disableEventHandlers(element)
-            var hammertime = new Hammer(element, {
+            var hammertime = new Hammer(image, {
                 domEvents: true
                 });
 
             hammertime.on('press', function(ev) {
-                console.log("pressed")
+                ev.preventDefault()
+                //console.log("pressed")
+                toggleSelect(image)
             });
+        }*/
+        function toggleSelect(image) {
+            image.parentElement.classList.toggle("selected")
+            setActionsStatus()
         }
-        function select(image) {
-            image.parentElement.classList.add("selected")
+        function setActionsStatus() {
+            if (document.getElementsByClassName("selected").length > 0) {
+                document.getElementById("clearSelectionButton").removeAttribute("disabled")
+            } else {
+                document.getElementById("clearSelectionButton").setAttribute("disabled", "disabled")
+            }
+        }
+        function clearSelectionClicked() {
+            var selected = document.getElementsByClassName("selected")
+            while (selected.length > 0) {
+                selected.item(0).classList.remove("selected")
+            }
+            setActionsStatus()
         }
     </script>
 </head>
 <body>
+<header>
+    <button id="clearSelectionButton" disabled="disabled" onclick="clearSelectionClicked()">clear selection</button>
+    <a href="/logout">logout</a>
+</header>
 <p th:text="${user}">user name</p>
-<p><a href="/logout">logout</a></p>
+<p></p>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
     <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}">
