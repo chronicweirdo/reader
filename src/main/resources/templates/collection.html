@@ -285,7 +285,8 @@
         }
         var currentPage = 0
         var pagesLeft = true
-        function loadPage(pagenum) {
+        function loadPage(pagenum, callback) {
+            console.log("loading page " + pagenum)
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -297,12 +298,22 @@
                     } else {
                         pagesLeft = false
                     }
+                    callback()
                 } else if (this.readyState == 4) {
                     console.log(this.status)
                 }
             }
             xhttp.open("GET", "comics?page=" + pagenum, true);
             xhttp.send()
+        }
+        function getViewportHeight() {
+            return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+        }
+        function getScrollTop() {
+            return document.documentElement.scrollTop
+        }
+        function getDocumentHeight() {
+            return document.body.offsetHeight
         }
     </script>
 </head>
@@ -333,16 +344,31 @@
         </a></p>
 </div-->
 <script>
+    var scrollThreshold = 20
+    function loadUntilPageFull() {
+        if ((document.body.offsetHeight <= getViewportHeight()) && pagesLeft) {
+            currentPage += 1
+            loadPage(currentPage, loadUntilPageFull)
+        }
+    }
     window.onload = function() {
-        loadPage(currentPage)
-        window.onscroll = function(ev) {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-                if (pagesLeft) {
-                    currentPage += 1
-                    loadPage(currentPage)
-                }
+        loadPage(currentPage, loadUntilPageFull)
+    }
+    function emptyFunction() {
+        console.log("empty function")
+    }
+    window.onscroll = function(ev) {
+        console.log("viewport height: " + getViewportHeight())
+        console.log("scroll top: " + getScrollTop())
+        console.log("document height: " + getDocumentHeight())
+
+        if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
+            if (pagesLeft) {
+                console.log("trying to load next page on scroll")
+                currentPage += 1
+                loadPage(currentPage, emptyFunction)
             }
-        };
+        }
     }
 </script>
 </body>
