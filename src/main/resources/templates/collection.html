@@ -30,6 +30,9 @@
             padding: .2em;
             display: inline-block
         }
+        header a.disabled {
+            display: none;
+        }
         h1 {
             margin: .5vw;
         }
@@ -43,9 +46,9 @@
             margin: .5vw;
         }
         .imgdiv.selected {
-            width: 8.6vw;
-            height: 14.6vw;
-            border: .2vw solid red;
+            width: 7vw;
+            height: 13vw;
+            border: 1vw solid gold;
         }
         @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
         only screen and (-o-min-device-pixel-ratio: 13/10),
@@ -157,11 +160,11 @@
         }
         function setActionsStatus() {
             if (document.getElementsByClassName("selected").length > 0) {
-                document.getElementById("clearSelectionButton").removeAttribute("disabled")
-                document.getElementById("removeProgressButton").removeAttribute("disabled")
+                document.getElementById("clearSelectionButton").classList.remove("disabled")
+                document.getElementById("removeProgressButton").classList.remove("disabled")
             } else {
-                document.getElementById("clearSelectionButton").setAttribute("disabled", "disabled")
-                document.getElementById("removeProgressButton").setAttribute("disabled", "disabled")
+                document.getElementById("clearSelectionButton").classList.add("disabled")
+                document.getElementById("removeProgressButton").classList.add("disabled")
             }
         }
         function clearSelection() {
