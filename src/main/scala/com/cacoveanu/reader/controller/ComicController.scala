@@ -6,7 +6,7 @@ import java.security.Principal
 import java.{lang, util}
 import java.util.{Base64, Date}
 
-import com.cacoveanu.reader.entity.ComicProgress
+import com.cacoveanu.reader.entity.{ComicProgress, DbComic}
 
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
@@ -25,6 +25,7 @@ case class UiCollection(
 
 case class UiComic(
                     @BeanProperty id: Long,
+                    @BeanProperty collection: String,
                     @BeanProperty title: String,
                     @BeanProperty cover: String,
                     @BeanProperty progress: Int,
@@ -34,6 +35,11 @@ case class UiComic(
 class RemoveProgressForm {
   @BeanProperty var ids: java.util.List[Long] = _
 }
+
+case class CollectionPage(
+                         @BeanProperty collections: java.util.List[String],
+                         @BeanProperty comics: java.util.List[UiComic]
+                         )
 
 @Controller
 class ComicController @Autowired() (private val comicService: ComicService, private val userService: UserService) {
@@ -48,24 +54,46 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     ""
   }
 
+  @RequestMapping(value = Array("/comics"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
+  @ResponseBody
+  def getComicsForPage(@RequestParam("page") page: Int, principal: Principal, model: Model) = {
+    val user = userService.loadUser(principal.getName)
+    val comics: Seq[DbComic] = comicService.getCollectionPage(page)
+    val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
+    val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
+
+    val collections = comics.map(c => c.collection).toSet.toSeq
+    val uiComics = comics
+      .map(comic => UiComic(
+          comic.id,
+          comic.collection,
+          comic.title,
+          base64Image(comic.mediaType, comic.cover),
+          progressByComic.get(comic.id).map(p => p.page).getOrElse(-1),
+          progressByComic.get(comic.id).map(p => p.totalPages).getOrElse(-1)
+        ))
+    CollectionPage(collections.asJava, uiComics.asJava)
+  }
+
   @RequestMapping(Array("/"))
   def getComicCollection(principal: Principal, model: Model): String = {
     val user = userService.loadUser(principal.getName)
-    val comics = comicService.getCollection()
+    //val comics = comicService.getCollection()
     val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
-    val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
+    //val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
 
     val latestRead = progress.sorted(Ordering.by((_: ComicProgress).lastUpdate).reverse)
       .take(5)
       .map(p => UiComic(
         p.comic.id,
+        p.comic.collection,
         p.comic.title,
         base64Image(p.comic.mediaType, p.comic.cover),
         p.page,
         p.totalPages
       )).asJava
 
-    val uiComics = comics
+    /*val uiComics = comics
       .groupBy(comic => comic.collection)
       .map { case (collection, entries) => UiCollection(
         collection,
@@ -78,12 +106,12 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         )).asJava
       )}
       .toSeq
-      .sortBy(collection => collection.name)
+      .sortBy(collection => collection.name)*/
 
 
-    val comicsCollection: util.List[UiCollection] = uiComics.asJava
+    //val comicsCollection: util.List[UiCollection] = uiComics.asJava
     model.addAttribute("user", principal.getName)
-    model.addAttribute("comicCollections", comicsCollection)
+    //model.addAttribute("comicCollections", comicsCollection)
     model.addAttribute("latestRead", latestRead)
     "collection"
   }

@@ -17,6 +17,8 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
+import org.springframework.data.domain.{PageRequest, Sort}
+import org.springframework.data.domain.Sort.Direction
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -32,6 +34,7 @@ class ComicService {
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
   private val COVER_RESIZE_MINIMAL_SIDE = 300
+  private val PAGE_SIZE = 20
 
   @Value("${comics.location}")
   @BeanProperty
@@ -55,6 +58,12 @@ class ComicService {
 
   def forceUpdateLibrary() = Future {
     scanLibrary(comicsLocation, forceUpdate = true)
+  }
+
+  def getCollectionPage(page: Int): Seq[DbComic] = {
+    val sort = Sort.by(Direction.ASC, "id")
+    val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
+    comicRepository.findAllByOrderByCollectionAsc(pageRequest).asScala.toSeq
   }
 
   def getCollection(): Seq[DbComic] = {

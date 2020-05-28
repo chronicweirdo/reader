@@ -231,6 +231,79 @@
                 xhttp.send(JSON.stringify(body));
             }
         }
+        function getCollectionId(collection) {
+            if (collection.length == 0) return "default"
+            else return encodeURIComponent(collection)
+        }
+        function getCollectionHtml(collection) {
+            var collectionId = getCollectionId(collection)
+            var div = document.createElement("div")
+            div.id = collectionId
+            var h1 = document.createElement("h1")
+            h1.innerHTML = collection
+            div.appendChild(h1)
+            return div
+        }
+        function addCollections(collections) {
+            for (var i = 0; i < collections.length; i++) {
+                //console.log(collections[i])
+                var collectionId = getCollectionId(collections[i])
+                //console.log(collectionId)
+                if (document.getElementById(collectionId) == null) {
+                    document.body.appendChild(getCollectionHtml(collections[i]))
+                }
+            }
+        }
+        /*
+                <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
+            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
+        </a></p>
+        */
+        function getComicHtml(comic) {
+            var a = document.createElement("a")
+            a.classList.add("imgdiv")
+            a.href = "comic?id=" + comic.id
+            var img = document.createElement("img")
+            img.onload = function() {
+                scaleImage(img, comic.progress, comic.pages)
+            }
+            img.src = comic.cover
+            img.title = comic.title
+            a.appendChild(img)
+            return a
+        }
+        function addComics(comics) {
+            for (var i = 0; i < comics.length; i++) {
+                var comic = comics[i]
+                //console.log(comic)
+                var collectionId = getCollectionId(comic.collection)
+                var collectionDiv = document.getElementById(collectionId)
+                if (collectionDiv != null) {
+                    collectionDiv.appendChild(getComicHtml(comic))
+                }
+            }
+        }
+        var currentPage = 0
+        var pagesLeft = true
+        function loadPage(pagenum) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var response = JSON.parse(this.responseText)
+                    //console.log(response)
+                    if (response.comics.length > 0) {
+                        addCollections(response.collections)
+                        addComics(response.comics)
+                    } else {
+                        pagesLeft = false
+                    }
+                } else if (this.readyState == 4) {
+                    console.log(this.status)
+                }
+            }
+            xhttp.open("GET", "comics?page=" + pagenum, true);
+            xhttp.send()
+        }
     </script>
 </head>
 <body>
@@ -252,12 +325,25 @@
     <input name="search" id="search" type="text" />
     <a href="/logout">logout</a>
 </div>
-<div th:each="collection: ${comicCollections}">
+<!--div th:each="collection: ${comicCollections}">
     <h1 th:text="${collection.name}">Collection Name</h1>
     <p>
         <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
             <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
         </a></p>
-</div>
+</div-->
+<script>
+    window.onload = function() {
+        loadPage(currentPage)
+        window.onscroll = function(ev) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                if (pagesLeft) {
+                    currentPage += 1
+                    loadPage(currentPage)
+                }
+            }
+        };
+    }
+</script>
 </body>
 </html>
