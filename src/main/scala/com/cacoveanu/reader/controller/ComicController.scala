@@ -103,7 +103,9 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
     //val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
 
-    val latestRead = progress.sorted(Ordering.by((_: ComicProgress).lastUpdate).reverse)
+    val latestRead = progress
+      .filter(p => p.page < p.totalPages - 1) // only select uncompleted comics
+      .sorted(Ordering.by((_: ComicProgress).lastUpdate).reverse)
       .take(5)
       .map(p => UiComic(
         p.comic.id,

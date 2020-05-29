@@ -107,6 +107,17 @@
             border: 1px solid black;
             padding: 1%;
         }
+        .imgdiv .progresscheck {
+            position: absolute;
+            display: block;
+            right: 4%;
+            bottom: 4%;
+            padding: 2% 10%;
+            font-weight: bold;
+            font-size: 1.2em;
+            background-color: white;
+            border: 1px solid black;
+        }
         .imgdiv .progressbar .read {
             display: block;
             background-color: black;
@@ -129,12 +140,17 @@
         }
         function addProgress(image, page, totalPages) {
             var span = document.createElement("span")
-            span.classList.add("progressbar")
-            span.title = "read " + page + " of " + totalPages + " pages"
-            var prog = document.createElement("span")
-            prog.classList.add("read")
-            prog.style.width = (page / totalPages * 100) + "%"
-            span.appendChild(prog)
+            if (page < totalPages - 1) {
+                span.classList.add("progressbar")
+                span.title = "read " + (page + 1) + " of " + totalPages + " pages"
+                var prog = document.createElement("span")
+                prog.classList.add("read")
+                prog.style.width = (page / (totalPages-1) * 100) + "%"
+                span.appendChild(prog)
+            } else {
+                span.innerText = "\u2713"
+                span.classList.add("progresscheck")
+            }
             image.parentElement.appendChild(span)
         }
         function scaleImage(image, page, totalPages) {
@@ -276,6 +292,7 @@
             var a = document.createElement("a")
             a.classList.add("imgdiv")
             a.href = "comic?id=" + comic.id
+            a.setAttribute("comicid", comic.id)
             var img = document.createElement("img")
             img.onload = function() {
                 scaleImage(img, comic.progress, comic.pages)

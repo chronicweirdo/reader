@@ -328,7 +328,7 @@
     }
 
     function goToNextPage() {
-        if (getPage() < document.comicMaximumPages) {
+        if (getPage() < document.comicMaximumPages - 1) {
             loadImageData(document.comicId, getPage() + 1, function() {
                 updateImage()
             })

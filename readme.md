@@ -147,7 +147,7 @@ Js gestures library:
 - [x] Functionality to mark comics as unread
 - [x] Functionality to show the latest read and unfinished comics at top of home page
 
-- [] When last page is reached, if next page is called, mark the comic as read
+- [x] When last page is reached, if next page is called, mark the comic as read
 - [x] Search functionality on home page
 - [] A go back button on the comic page?
 - [] Functionality to do periodic rescan of the comics folder
@@ -156,6 +156,10 @@ Js gestures library:
 - [x] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
 - [~] remember me functionality, and increase the life of the login session (to days! weeks!)
     - does not work between server restarts
+
+- [] refactor collection page (js especially); find icons for selection tools
+- [] improve performance for progress load (only load progress for comics in page)
+- [] improved latest read comics load (db query)
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
