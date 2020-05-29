@@ -60,8 +60,10 @@ class ComicService {
     scanLibrary(comicsLocation, forceUpdate = true)
   }
 
-  def searchComics(term: String): Seq[DbComic] = {
-    comicRepository.search(term).asScala.toSeq
+  def searchComics(term: String, page: Int): Seq[DbComic] = {
+    val sort = Sort.by(Direction.ASC, "id")
+    val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
+    comicRepository.search(term, pageRequest).asScala.toSeq
   }
 
   def getCollectionPage(page: Int): Seq[DbComic] = {

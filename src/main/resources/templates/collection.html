@@ -115,6 +115,9 @@
         .latestRead {
             border-bottom: 2px solid black;
         }
+        #fin {
+            text-align: center;
+        }
     </style>
     <!--script src="hammer.min.js"></script-->
     <script>
@@ -246,13 +249,21 @@
             div.appendChild(h1)
             return div
         }
+        function insertCollectionHtml(collectionHtml) {
+            var fin = document.getElementById("fin")
+            if (fin != null) {
+                document.body.insertBefore(collectionHtml, fin)
+            } else {
+                document.body.appendChild(collectionHtml)
+            }
+        }
         function addCollections(collections) {
             for (var i = 0; i < collections.length; i++) {
                 //console.log(collections[i])
                 var collectionId = getCollectionId(collections[i])
                 //console.log(collectionId)
                 if (document.getElementById(collectionId) == null) {
-                    document.body.appendChild(getCollectionHtml(collections[i]))
+                    insertCollectionHtml(getCollectionHtml(collections[i]))
                 }
             }
         }
@@ -313,23 +324,29 @@
             console.log("searching")
             var term = document.getElementById("search").value
             removeExistingComics()
-            var xhttp = new XMLHttpRequest()
+            currentPage = 0
+            /*var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var response = JSON.parse(this.responseText)
 
-                    addCollections(response.collections)
-                    addComics(response.comics)
-                    setEndOfCollection()
+                    if (response.comics.length > 0) {
+                        addCollections(response.collections)
+                        addComics(response.comics)
+                    } else {
+                        setEndOfCollection()
+                    }
                 } else if (this.readyState == 4) {
                     console.log(this.status)
                 }
             }
-            xhttp.open("GET", "search?term=" + term, true);
-            xhttp.send()
+            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true);
+            xhttp.send()*/
+            loadPage(currentPage, loadUntilPageFull)
         }
         function loadPage(pagenum, callback) {
             //console.log("loading page " + pagenum)
+            var term = document.getElementById("search").value
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -346,7 +363,7 @@
                     console.log(this.status)
                 }
             }
-            xhttp.open("GET", "comics?page=" + pagenum, true);
+            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true);
             xhttp.send()
         }
         function getViewportHeight() {
@@ -357,6 +374,12 @@
         }
         function getDocumentHeight() {
             return document.body.offsetHeight
+        }
+        function loadUntilPageFull() {
+            if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
+                currentPage += 1
+                loadPage(currentPage, loadUntilPageFull)
+            }
         }
     </script>
 </head>
@@ -389,12 +412,7 @@
 </div-->
 <script>
     var scrollThreshold = 20
-    function loadUntilPageFull() {
-        if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
-            currentPage += 1
-            loadPage(currentPage, loadUntilPageFull)
-        }
-    }
+
     window.onload = function() {
         loadPage(currentPage, loadUntilPageFull)
     }

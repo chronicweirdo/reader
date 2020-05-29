@@ -56,9 +56,9 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def getComicsForPage(@RequestParam("term") term: String, principal: Principal, model: Model) = {
+  def getComicsForPage(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model) = {
     val user = userService.loadUser(principal.getName)
-    val comics: Seq[DbComic] = comicService.searchComics(term)
+    val comics: Seq[DbComic] = comicService.searchComics(term, page)
     val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
     val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
 
