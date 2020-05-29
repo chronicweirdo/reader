@@ -35,7 +35,7 @@
         }
         .tools {
             display: block;
-            width: 100%;
+            width: 99vw;
             background-color: black;
             color: gold;
             font-size: 2em;
@@ -226,8 +226,8 @@
                 };
                 xhttp.open("POST", "removeProgress", true);
                 xhttp.setRequestHeader('Content-type', 'application/json');
-                console.log(body)
-                console.log(JSON.stringify(body))
+                //console.log(body)
+                //console.log(JSON.stringify(body))
                 xhttp.send(JSON.stringify(body));
             }
         }
@@ -284,9 +284,21 @@
             }
         }
         var currentPage = 0
-        var pagesLeft = true
+        //var pagesLeft = true
+        function setEndOfCollection() {
+            //pagesLeft = false
+            if (! getEndOfCollection()) {
+                var fin = document.createElement("h1")
+                fin.id = "fin"
+                fin.innerHTML = "~ Fin ~"
+                document.body.appendChild(fin)
+            }
+        }
+        function getEndOfCollection() {
+            return document.getElementById("fin") != null
+        }
         function loadPage(pagenum, callback) {
-            console.log("loading page " + pagenum)
+            //console.log("loading page " + pagenum)
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -296,7 +308,7 @@
                         addCollections(response.collections)
                         addComics(response.comics)
                     } else {
-                        pagesLeft = false
+                        setEndOfCollection()
                     }
                     callback()
                 } else if (this.readyState == 4) {
@@ -346,7 +358,7 @@
 <script>
     var scrollThreshold = 20
     function loadUntilPageFull() {
-        if ((document.body.offsetHeight <= getViewportHeight()) && pagesLeft) {
+        if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
             currentPage += 1
             loadPage(currentPage, loadUntilPageFull)
         }
@@ -358,12 +370,12 @@
         console.log("empty function")
     }
     window.onscroll = function(ev) {
-        console.log("viewport height: " + getViewportHeight())
-        console.log("scroll top: " + getScrollTop())
-        console.log("document height: " + getDocumentHeight())
+        //console.log("viewport height: " + getViewportHeight())
+        //console.log("scroll top: " + getScrollTop())
+        //console.log("document height: " + getDocumentHeight())
 
         if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
-            if (pagesLeft) {
+            if (! getEndOfCollection()) {
                 console.log("trying to load next page on scroll")
                 currentPage += 1
                 loadPage(currentPage, emptyFunction)
