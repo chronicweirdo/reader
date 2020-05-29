@@ -144,16 +144,16 @@ Js gestures library:
 - [x] Show read/finished comics on home page, maybe even read progress bar? On bottom or top of page. Or read/total numbers?
     - added the read progress bar, on hover (on pc) the number of pages out of total pages is displayed
     - only comics that were opened will show the progress bar
-- [] Functionality to mark comics as unread
+- [x] Functionality to mark comics as unread
 - [x] Functionality to show the latest read and unfinished comics at top of home page
 
 - [] When last page is reached, if next page is called, mark the comic as read
-- [] Search functionality on home page
+- [x] Search functionality on home page
 - [] A go back button on the comic page?
 - [] Functionality to do periodic rescan of the comics folder
 - [] Functionality to download/upload comic?
 - [] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
-- [] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
+- [x] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
 - [~] remember me functionality, and increase the life of the login session (to days! weeks!)
     - does not work between server restarts
 
