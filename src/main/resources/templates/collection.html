@@ -317,12 +317,10 @@
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var response = JSON.parse(this.responseText)
-                    if (response.comics.length > 0) {
-                        addCollections(response.collections)
-                        addComics(response.comics)
-                    } else {
-                        setEndOfCollection()
-                    }
+
+                    addCollections(response.collections)
+                    addComics(response.comics)
+                    setEndOfCollection()
                 } else if (this.readyState == 4) {
                     console.log(this.status)
                 }
