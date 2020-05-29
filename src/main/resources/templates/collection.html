@@ -11,7 +11,6 @@
         }
         header {
             display: block;
-            /*width: 100%;*/
             height: 2em;
             top: 0;
             right: 0;
@@ -26,7 +25,10 @@
             background-color: gold;
             color: black;
             padding: .2em;
-            display: inline-block
+            display: inline-block;
+        }
+        header a img {
+            width: 3vw;
         }
         header a.disabled {
             display: none;
@@ -78,9 +80,9 @@
                 margin: 1vw;
             }
             .imgdiv.selected {
-                width: 21vw;
-                height: 36vw;
-                border: .5vw solid red;
+                width: 16vw;
+                height: 31vw;
+                border: 3vw solid gold;
             }
         }
         .imgdiv img {
@@ -130,7 +132,6 @@
             text-align: center;
         }
     </style>
-    <!--script src="hammer.min.js"></script-->
     <script>
         function addPagenum(image, page, totalPages) {
             var span = document.createElement("span")
@@ -155,7 +156,6 @@
         }
         function scaleImage(image, page, totalPages) {
             if (page >= 0) {
-                //addPagenum(image, page, totalPages)
                 addProgress(image, page, totalPages)
             }
             var imageContainer = document.getElementsByClassName("imgdiv")[0]
@@ -171,26 +171,11 @@
             image.style.left = (- differenceWidth / 2) + "px"
             image.style.top = (- differenceHeight / 2) + "px"
 
-            //enableTouchGestures(image)
             image.addEventListener('contextmenu', function(ev) {
                 ev.preventDefault();
                 toggleSelect(image)
             }, false);
         }
-        // hammer does not work as well in this context
-        // better to just keep with overriding the browser right click functionality
-        /*function enableTouchGestures(image) {
-            //disableEventHandlers(element)
-            var hammertime = new Hammer(image, {
-                domEvents: true
-                });
-
-            hammertime.on('press', function(ev) {
-                ev.preventDefault()
-                //console.log("pressed")
-                toggleSelect(image)
-            });
-        }*/
         function toggleSelect(image) {
             image.parentElement.classList.toggle("selected")
             setActionsStatus()
@@ -232,22 +217,15 @@
                 var body = {
                     "ids": selectedIds
                 }
-
-
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        console.log("success")
                         clearSelection()
                         window.location.reload(false)
-                    } else if (this.readyState == 4) {
-                        console.log(this.status)
                     }
                 };
                 xhttp.open("POST", "removeProgress", true);
                 xhttp.setRequestHeader('Content-type', 'application/json');
-                //console.log(body)
-                //console.log(JSON.stringify(body))
                 xhttp.send(JSON.stringify(body));
             }
         }
@@ -275,19 +253,12 @@
         }
         function addCollections(collections) {
             for (var i = 0; i < collections.length; i++) {
-                //console.log(collections[i])
                 var collectionId = getCollectionId(collections[i])
-                //console.log(collectionId)
                 if (document.getElementById(collectionId) == null) {
                     insertCollectionHtml(getCollectionHtml(collections[i]))
                 }
             }
         }
-        /*
-                <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
-            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
-        </a></p>
-        */
         function getComicHtml(comic) {
             var a = document.createElement("a")
             a.classList.add("imgdiv")
@@ -305,7 +276,6 @@
         function addComics(comics) {
             for (var i = 0; i < comics.length; i++) {
                 var comic = comics[i]
-                //console.log(comic)
                 var collectionId = getCollectionId(comic.collection)
                 var collectionDiv = document.getElementById(collectionId)
                 if (collectionDiv != null) {
@@ -314,9 +284,7 @@
             }
         }
         var currentPage = 0
-        //var pagesLeft = true
         function setEndOfCollection() {
-            //pagesLeft = false
             if (! getEndOfCollection()) {
                 var fin = document.createElement("h1")
                 fin.id = "fin"
@@ -338,49 +306,27 @@
             }
         }
         function searchForTerm() {
-            console.log("searching")
             var term = document.getElementById("search").value
             removeExistingComics()
             currentPage = 0
-            /*var xhttp = new XMLHttpRequest()
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var response = JSON.parse(this.responseText)
-
-                    if (response.comics.length > 0) {
-                        addCollections(response.collections)
-                        addComics(response.comics)
-                    } else {
-                        setEndOfCollection()
-                    }
-                } else if (this.readyState == 4) {
-                    console.log(this.status)
-                }
-            }
-            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true);
-            xhttp.send()*/
             loadPage(currentPage, loadUntilPageFull)
         }
         function loadPage(pagenum, callback) {
-            //console.log("loading page " + pagenum)
             var term = document.getElementById("search").value
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var response = JSON.parse(this.responseText)
-                    //console.log(response)
                     if (response.comics.length > 0) {
                         addCollections(response.collections)
                         addComics(response.comics)
                     } else {
                         setEndOfCollection()
                     }
-                    callback()
-                } else if (this.readyState == 4) {
-                    console.log(this.status)
+                    if (callback != null) callback()
                 }
             }
-            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true);
+            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true)
             xhttp.send()
         }
         function getViewportHeight() {
@@ -402,12 +348,9 @@
 </head>
 <body>
 <header>
-    <a id="clearSelectionButton" class="disabled" onclick="clearSelection()">clear selection</a>
-    <!--a id="selectAllButton" onclick="selectAll()">select all</a-->
-    <a id="removeProgressButton" class="disabled" onclick="removeProgress()">remove progress</a>
-
+    <a id="clearSelectionButton" class="disabled" onclick="clearSelection()"><img src="deselect.png"></a>
+    <a id="removeProgressButton" class="disabled" onclick="removeProgress()"><img src="trash.png"></a>
 </header>
-<!--p th:text="${user}">user name</p-->
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
     <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
@@ -420,32 +363,17 @@
     <a onclick="searchForTerm()">Go!</a>
     <a href="/logout">logout</a>
 </div>
-<!--div th:each="collection: ${comicCollections}">
-    <h1 th:text="${collection.name}">Collection Name</h1>
-    <p>
-        <a class="imgdiv" th:each="comic: ${collection.comics}" th:href="'comic?id=' + ${comic.id}">
-            <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
-        </a></p>
-</div-->
 <script>
     var scrollThreshold = 20
 
     window.onload = function() {
         loadPage(currentPage, loadUntilPageFull)
     }
-    function emptyFunction() {
-        console.log("empty function")
-    }
     window.onscroll = function(ev) {
-        //console.log("viewport height: " + getViewportHeight())
-        //console.log("scroll top: " + getScrollTop())
-        //console.log("document height: " + getDocumentHeight())
-
         if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
             if (! getEndOfCollection()) {
-                console.log("trying to load next page on scroll")
                 currentPage += 1
-                loadPage(currentPage, emptyFunction)
+                loadPage(currentPage, null)
             }
         }
     }
