@@ -2,7 +2,8 @@ package com.cacoveanu.reader.entity
 
 import java.util.Date
 
-import javax.persistence.{Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, Table, UniqueConstraint}
+import javax.persistence.{CascadeType, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, Table, UniqueConstraint}
+import org.hibernate.annotations.{OnDelete, OnDeleteAction}
 
 @Entity
 @Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "comicId"))))
@@ -18,6 +19,7 @@ class ComicProgress {
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name="comicId")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   var comic: DbComic = _
 
   var page: Int = _

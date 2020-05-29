@@ -150,25 +150,31 @@ class ComicService {
   }
 
   private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    println("scanning comic: " + path)
-    val archive = new Archive(new FileInputStream(path))
-    val fileHeaders = archive.getFileHeaders().asScala
-      .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getFileNameString))
+    try {
+      println("scanning comic: " + path)
+      val archive = new Archive(new FileInputStream(path))
+      val fileHeaders = archive.getFileHeaders().asScala
+        .filter(f => !f.isDirectory)
+        .filter(f => isImageType(f.getFileNameString))
 
-    if (fileHeaders.indices contains pageNumber) {
-      val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
-      val archiveFile = sortedFileHandlers(pageNumber)
-      val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
-      val fileContents = new ByteArrayOutputStream()
-      archive.extractFile(archiveFile, fileContents)
-      archive.close()
+      if (fileHeaders.indices contains pageNumber) {
+        val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
+        val archiveFile = sortedFileHandlers(pageNumber)
+        val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
+        val fileContents = new ByteArrayOutputStream()
+        archive.extractFile(archiveFile, fileContents)
+        archive.close()
 
-      fileMediaType match {
-        case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
-        case None => None
-      }
-    } else None
+        fileMediaType match {
+          case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
+          case None => None
+        }
+      } else None
+    } catch {
+      case _: Throwable =>
+        println("failed to scan comic: " + path)
+        None
+    }
   }
 
   private def loadCbzPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
@@ -200,26 +206,32 @@ class ComicService {
   }
 
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    val zipFile = new ZipFile(path)
-    val files = zipFile.entries().asScala
-      .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getName))
-      .toSeq
+    try {
+      val zipFile = new ZipFile(path)
+      val files = zipFile.entries().asScala
+        .filter(f => !f.isDirectory)
+        .filter(f => isImageType(f.getName))
+        .toSeq
 
-    if (files.indices contains pageNumber) {
-      val sortedFiles = files.sortBy(f => f.getName)
-      val file = sortedFiles(pageNumber)
-      val fileMediaType = imageService.getMediaType(file.getName)
-      val fileContents = zipFile.getInputStream(file)
-      val bos = new ByteArrayOutputStream()
-      IOUtils.copy(fileContents, bos)
-      zipFile.close();
+      if (files.indices contains pageNumber) {
+        val sortedFiles = files.sortBy(f => f.getName)
+        val file = sortedFiles(pageNumber)
+        val fileMediaType = imageService.getMediaType(file.getName)
+        val fileContents = zipFile.getInputStream(file)
+        val bos = new ByteArrayOutputStream()
+        IOUtils.copy(fileContents, bos)
+        zipFile.close();
 
-      fileMediaType match {
-        case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
-        case None => None
-      }
-    } else None
+        fileMediaType match {
+          case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
+          case None => None
+        }
+      } else None
+    } catch {
+      case _: Throwable =>
+        println("failed to read comic: " + path)
+        None
+    }
   }
 
   private def getComicTitle(path: String): Option[String] = {
