@@ -152,7 +152,10 @@ Js gestures library:
 - [] A go back button on the comic page?
 - [] Functionality to do periodic rescan of the comics folder
 - [] Functionality to download/upload comic?
-- [] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
+- [x] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
+    - 6 pages, before compression: 6857 kb
+    - same 6 pages, after compression: 5071 kb
+    - helps a bit, good for now
 - [x] don't load all comics on the home page from beginning (phase out loading, load on scroll...); but make sure search will look for comics on the server
 - [~] remember me functionality, and increase the life of the login session (to days! weeks!)
     - does not work between server restarts
@@ -160,6 +163,8 @@ Js gestures library:
 - [] refactor collection page (js especially); find icons for selection tools
 - [] improve performance for progress load (only load progress for comics in page)
 - [] improved latest read comics load (db query)
+
+- [] try and see if it makes sense to jump to collection page when reaching the end or beginning and pressing next/before
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
