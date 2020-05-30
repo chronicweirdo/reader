@@ -21,7 +21,7 @@ class FullCollectionScan {
     }
   }*/
 
-  @Test
+  /*@Test
   def debugProblematicComics(): Unit = {
     // scanning comic: C:\Users\silvi\Dropbox\comics\Adventure Time\Specials\Peanut-AdventureTime (FCBD 2012, RaptureStar).cbr
     val path = "C:\\Users\\silvi\\Dropbox\\comics\\Adventure Time\\Specials\\Peanut-AdventureTime (FCBD 2012, RaptureStar).cbr"
@@ -30,5 +30,5 @@ class FullCollectionScan {
     comicService.imageService = imageService
 
     comicService.loadComic(path)
-  }
+  }*/
 }

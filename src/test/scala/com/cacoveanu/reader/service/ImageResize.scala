@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test
 
 class ImageResize {
 
-  val path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)\\The Legend of Korra - Turf Wars - Part 1 (2017) (Digital) (Raven).cbz"
+  //val path = "C:\\Users\\silvi\\Dropbox\\comics\\Avatar The Legend Of Korra\\The Legend of Korra - Turf Wars (001-003)(2017-2018)(digital)(Raven)\\The Legend of Korra - Turf Wars - Part 1 (2017) (Digital) (Raven).cbz"
   val comicService = new ComicService
 
-  @Test def comicServiceShouldLoadImageBytes() {
+  /*@Test def comicServiceShouldLoadImageBytes() {
     val page = comicService.readPage(path, 0)
 
     assert(page.isDefined)
     assert(page.get.data.length > 0)
     println("page length: " + page.get.data.length)
-  }
+  }*/
 
-  @Test def saveImageOutside(): Unit = {
+  /*@Test def saveImageOutside(): Unit = {
     val page = comicService.readPage(path, 0)
 
     page match {
@@ -31,10 +31,10 @@ class ImageResize {
           finally if (outputStream != null) outputStream.close()
         }
     }
-  }
+  }*/
 
   // https://stackoverflow.com/questions/244164/how-can-i-resize-an-image-using-java
-  @Test def resizeImageAndSave(): Unit = {
+  /*@Test def resizeImageAndSave(): Unit = {
     val page = comicService.readPage(path, 0)
 
     page match {
@@ -60,5 +60,5 @@ class ImageResize {
           finally if (outputStream != null) outputStream.close()
         }
     }
-  }
+  }*/
 }
