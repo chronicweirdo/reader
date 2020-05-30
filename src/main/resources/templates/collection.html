@@ -182,10 +182,10 @@
         }
         function setActionsStatus() {
             if (document.getElementsByClassName("selected").length > 0) {
-                document.getElementById("clearSelectionButton").classList.remove("disabled")
+                //document.getElementById("clearSelectionButton").classList.remove("disabled")
                 document.getElementById("removeProgressButton").classList.remove("disabled")
             } else {
-                document.getElementById("clearSelectionButton").classList.add("disabled")
+                //document.getElementById("clearSelectionButton").classList.add("disabled")
                 document.getElementById("removeProgressButton").classList.add("disabled")
             }
         }
@@ -348,7 +348,7 @@
 </head>
 <body>
 <header>
-    <a id="clearSelectionButton" class="disabled" onclick="clearSelection()"><img src="deselect.png"></a>
+    <!--a id="clearSelectionButton" class="disabled" onclick="clearSelection()"><img src="deselect.png"></a-->
     <a id="removeProgressButton" class="disabled" onclick="removeProgress()"><img src="trash.png"></a>
 </header>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
@@ -367,6 +367,18 @@
     var scrollThreshold = 20
 
     window.onload = function() {
+        document.body.addEventListener("contextmenu", function(ev) {
+            ev.preventDefault()
+            console.log(ev.target)
+            //console.log(ev.srcElement)
+            console.log(ev.target.tagName.toLowerCase())
+            console.log("---------")
+            //if (ev.target)
+            var tag = ev.target.tagName.toLowerCase()
+            if (tag != "img" && tag != "a") {
+                clearSelection()
+            }
+        })
         loadPage(currentPage, loadUntilPageFull)
     }
     window.onscroll = function(ev) {
