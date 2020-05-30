@@ -129,6 +129,8 @@
             border-bottom: 2px solid black;
         }
         #fin {
+            font-weight: normal;
+            font-style: italic;
             text-align: center;
         }
     </style>
@@ -171,8 +173,11 @@
             image.style.left = (- differenceWidth / 2) + "px"
             image.style.top = (- differenceHeight / 2) + "px"
 
+            addComicRightClickListener(image)
+        }
+        function addComicRightClickListener(image) {
             image.addEventListener('contextmenu', function(ev) {
-                ev.preventDefault();
+                ev.preventDefault()
                 toggleSelect(image)
             }, false);
         }
@@ -182,10 +187,8 @@
         }
         function setActionsStatus() {
             if (document.getElementsByClassName("selected").length > 0) {
-                //document.getElementById("clearSelectionButton").classList.remove("disabled")
                 document.getElementById("removeProgressButton").classList.remove("disabled")
             } else {
-                //document.getElementById("clearSelectionButton").classList.add("disabled")
                 document.getElementById("removeProgressButton").classList.add("disabled")
             }
         }
@@ -193,13 +196,6 @@
             var selected = document.getElementsByClassName("selected")
             while (selected.length > 0) {
                 selected.item(0).classList.remove("selected")
-            }
-            setActionsStatus()
-        }
-        function selectAll() {
-            var comics = document.getElementsByClassName("imgdiv")
-            for (var i = 0; i < comics.length; i++) {
-                comics.item(i).classList.add("selected")
             }
             setActionsStatus()
         }
@@ -283,7 +279,17 @@
                 }
             }
         }
-        var currentPage = 0
+        function setCurrentPage(currentPage) {
+            document.currentPage = currentPage
+        }
+        function getCurrentPage() {
+            if (document.currentPage) {
+                return document.currentPage
+            } else {
+                document.currentPage = 0
+                return document.currentPage
+            }
+        }
         function setEndOfCollection() {
             if (! getEndOfCollection()) {
                 var fin = document.createElement("h1")
@@ -308,8 +314,8 @@
         function searchForTerm() {
             var term = document.getElementById("search").value
             removeExistingComics()
-            currentPage = 0
-            loadPage(currentPage, loadUntilPageFull)
+            setCurrentPage(0)
+            loadPage(getCurrentPage(), loadUntilPageFull)
         }
         function loadPage(pagenum, callback) {
             var term = document.getElementById("search").value
@@ -340,9 +346,18 @@
         }
         function loadUntilPageFull() {
             if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
-                currentPage += 1
-                loadPage(currentPage, loadUntilPageFull)
+                setCurrentPage(getCurrentPage() + 1)
+                loadPage(getCurrentPage(), loadUntilPageFull)
             }
+        }
+        function addBodyRightClickListener() {
+            document.body.addEventListener("contextmenu", function(ev) {
+                var tag = ev.target.tagName.toLowerCase()
+                if (tag != "img" && tag != "a" && tag != "input") {
+                    ev.preventDefault()
+                    clearSelection()
+                }
+            })
         }
     </script>
 </head>
@@ -364,20 +379,14 @@
     var scrollThreshold = 20
 
     window.onload = function() {
-        document.body.addEventListener("contextmenu", function(ev) {
-            ev.preventDefault()
-            var tag = ev.target.tagName.toLowerCase()
-            if (tag != "img" && tag != "a") {
-                clearSelection()
-            }
-        })
-        loadPage(currentPage, loadUntilPageFull)
+        addBodyRightClickListener()
+        searchForTerm()
     }
     window.onscroll = function(ev) {
         if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
             if (! getEndOfCollection()) {
-                currentPage += 1
-                loadPage(currentPage, null)
+                setCurrentPage(getCurrentPage() + 1)
+                loadPage(getCurrentPage(), null)
             }
         }
     }
