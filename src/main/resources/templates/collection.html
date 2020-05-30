@@ -35,6 +35,8 @@
         .tools {
             display: block;
             width: 99vw;
+            /*background-color: #52B788;*/
+            /*background-color: #1BC475;*/
             background-color: black;
             color: gold;
             font-size: 2em;
@@ -44,11 +46,17 @@
             padding-right: .5vw;
             text-align: center;
         }
-        .tools #search {
+        #search {
             font-size: 1em;
             background-color: gold;
             padding: .1em;
             width: 50vw;
+            color: #444444;
+            font-style: italic;
+        }
+        #search.initialized {
+            color: black;
+            font-style: normal;
         }
         .tools a {
             color: gold;
@@ -124,9 +132,6 @@
             display: block;
             background-color: black;
             height: 98%;
-        }
-        .latestRead {
-            border-bottom: 2px solid black;
         }
         #fin {
             font-weight: normal;
@@ -311,14 +316,26 @@
                 document.body.removeChild(fin)
             }
         }
+        function getSearch() {
+            return document.getElementById("search")
+        }
+        function isSearchInitialized() {
+            return getSearch().classList.contains("initialized")
+        }
+        function getTerm() {
+            if (isSearchInitialized()) {
+                return search.value
+            } else {
+                return ""
+            }
+        }
         function searchForTerm() {
-            var term = document.getElementById("search").value
             removeExistingComics()
             setCurrentPage(0)
             loadPage(getCurrentPage(), loadUntilPageFull)
         }
         function loadPage(pagenum, callback) {
-            var term = document.getElementById("search").value
+            var term = getTerm()
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -359,10 +376,28 @@
                 }
             })
         }
+        function addSearchEnterListener() {
+            var search = document.getElementById("search")
+            search.addEventListener('keyup', function (e) {
+                if (e.keyCode === 13) {
+                    searchForTerm()
+                }
+            })
+        }
+        function setSearchInitialized() {
+            var search = getSearch()
+            search.value = ""
+            search.classList.add("initialized")
+        }
+        function initializeSearch() {
+            if (! isSearchInitialized()) {
+                setSearchInitialized()
+            }
+        }
     </script>
 </head>
 <body>
-<a id="removeProgressButton" class="disabled" onclick="removeProgress()"><img src="trash.png"></a>
+<a id="removeProgressButton" class="disabled" onclick="removeProgress()" title="Delete saved progress"><img src="trash.png"></a>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
     <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
@@ -370,9 +405,8 @@
     </a></p>
 </div>
 <div class="tools">
-    <label for="search">Search:</label>
-    <input name="search" id="search" type="text" />
-    <a onclick="searchForTerm()">Go!</a>
+    <input name="search" id="search" type="text" value="Search" onfocus="initializeSearch()"/>
+    <!--a onclick="searchForTerm()">Go!</a-->
     <a href="/logout">logout</a>
 </div>
 <script>
@@ -380,6 +414,7 @@
 
     window.onload = function() {
         addBodyRightClickListener()
+        addSearchEnterListener()
         searchForTerm()
     }
     window.onscroll = function(ev) {
