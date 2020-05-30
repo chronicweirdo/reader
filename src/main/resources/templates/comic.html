@@ -225,23 +225,23 @@
     function setImageHeight(height) {
         getImage().height = height
     }
+    function getImageHeight() {
+        return getImage().height
+    }
     function getOriginalImageWidth() {
         return getImage().naturalWidth
     }
     function getOriginalImageHeight() {
         return getImage().naturalHeight
     }
-    function getImageHeight() {
-        return getImage().height
-    }
     function setImageLeft(left) {
-        getImage().style.left = left
+        getImage().style.left = left + "px"
     }
     function getImageLeft() {
         return num(getImage().style.left, 0)
     }
     function setImageTop(top) {
-        getImage().style.top = top
+        getImage().style.top = top + "px"
     }
     function getImageTop() {
         return num(getImage().style.top, 0)
