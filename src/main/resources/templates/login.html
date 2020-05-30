@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Chronic Comic Reader</title>
     <style>
         html,body {
@@ -15,6 +16,9 @@
         }
         .container {
             margin: auto;
+            background-color: black;
+            color: gold;
+            padding: 2em;
         }
         h1 {
             font-size: 1.2em;
@@ -34,6 +38,12 @@
             display: inline-block;
             font-size: 1em;
             height: 1.5em;
+            background-color: gold;
+            border: 2px solid white;
+            color: black;
+        }
+        form input::placeholder {
+            color: grey;
         }
         form p.submit {
             text-align: center;
@@ -50,9 +60,9 @@
     <p th:if="${param.error}">Invalid credentials.</p>
     <p th:if="${param.logout}">You have been logged out.</p>
     <form th:action="@{/login}" method="post">
-        <p><label for="username">Username:</label><input id="username" type="text" name="username"/></p>
-        <p><label for="password">Password:</label><input id="password" type="password" name="password"/></p>
-        <p><label>Remember Me:</label><input type="checkbox" name="remember-me" /></p>
+        <p><input id="username" type="text" name="username" placeholder="username"/></p>
+        <p><input id="password" type="password" name="password" placeholder="password"/></p>
+        <p><label>Remember Me:</label><input type="checkbox" name="remember-me" checked></p>
         <p class="submit"><input type="submit" value="Sign In"/></p>
     </form>
 </div>
