@@ -33,7 +33,7 @@ class ComicService {
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
-  private val COVER_RESIZE_MINIMAL_SIDE = 300
+  private val COVER_RESIZE_MINIMAL_SIDE = 500
   private val PAGE_SIZE = 20
 
   @Value("${comics.location}")
