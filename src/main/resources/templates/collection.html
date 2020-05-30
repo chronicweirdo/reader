@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Comics Reader</title>
     <style>
         * {
@@ -9,28 +10,23 @@
             padding: 0;
             border: 0;
         }
-        header {
+        #removeProgressButton {
             display: block;
-            height: 2em;
-            top: 0;
-            right: 0;
-            text-align: right;
-            font-size: 2em;
             position: fixed;
             z-index: 1000;
-        }
-        header a {
             margin-top: .2em;
             margin-right: .2em;
             background-color: gold;
             color: black;
             padding: .2em;
             display: inline-block;
+            top: 0;
+            right: 0;
         }
-        header a img {
+        #removeProgressButton img {
             width: 3vw;
         }
-        header a.disabled {
+        #removeProgressButton.disabled {
             display: none;
         }
         h1 {
@@ -52,6 +48,7 @@
             font-size: 1em;
             background-color: gold;
             padding: .1em;
+            width: 50vw;
         }
         .tools a {
             color: gold;
@@ -74,14 +71,17 @@
         only screen and (-o-min-device-pixel-ratio: 13/10),
         only screen and (min-resolution: 120dpi)
         {
+            #removeProgressButton img {
+                width: 20vw;
+            }
             .imgdiv {
-                width: 22vw;
-                height: 37vw;
+                width: 31vw;
+                height: 53vw;
                 margin: 1vw;
             }
             .imgdiv.selected {
-                width: 16vw;
-                height: 31vw;
+                width: 25vw;
+                height: 47vw;
                 border: 3vw solid gold;
             }
         }
@@ -347,10 +347,7 @@
     </script>
 </head>
 <body>
-<header>
-    <!--a id="clearSelectionButton" class="disabled" onclick="clearSelection()"><img src="deselect.png"></a-->
-    <a id="removeProgressButton" class="disabled" onclick="removeProgress()"><img src="trash.png"></a>
-</header>
+<a id="removeProgressButton" class="disabled" onclick="removeProgress()"><img src="trash.png"></a>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
     <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
@@ -369,11 +366,6 @@
     window.onload = function() {
         document.body.addEventListener("contextmenu", function(ev) {
             ev.preventDefault()
-            console.log(ev.target)
-            //console.log(ev.srcElement)
-            console.log(ev.target.tagName.toLowerCase())
-            console.log("---------")
-            //if (ev.target)
             var tag = ev.target.tagName.toLowerCase()
             if (tag != "img" && tag != "a") {
                 clearSelection()
