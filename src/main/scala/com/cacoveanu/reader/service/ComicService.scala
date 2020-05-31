@@ -82,6 +82,10 @@ class ComicService {
     else None
   }
 
+  def loadCollections(): Seq[String] = {
+    comicRepository.findAllCollections().asScala.toSeq
+  }
+
   def loadComicProgress(user: DbUser): Seq[ComicProgress] = {
     comicProgressRepository.findByUser(user).asScala.toSeq
   }

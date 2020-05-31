@@ -16,4 +16,10 @@ trait ComicRepository extends JpaRepository[DbComic, java.lang.Long] {
     nativeQuery = true
   )
   def search(@Param("term") term: String, pageable: Pageable): java.util.List[DbComic]
+
+  @Query(
+    value="select distinct(collection) dc from db_comic order by dc asc",
+    nativeQuery = true
+  )
+  def findAllCollections(): java.util.List[String]
 }

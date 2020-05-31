@@ -34,7 +34,7 @@
         }
         .tools {
             display: block;
-            width: 99vw;
+            width: 100vw;
             /*background-color: #52B788;*/
             /*background-color: #1BC475;*/
             background-color: black;
@@ -42,9 +42,30 @@
             font-size: 2em;
             padding-top: 1em;
             padding-bottom: 1em;
-            padding-left: .5vw;
-            padding-right: .5vw;
             text-align: center;
+            max-width: 100%;
+        }
+        #collections {
+            position: absolute;
+            display: none;
+            width: 100vw;
+            width: 100%;
+            background-color: black;
+            color: white;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+            font-size: 1.5em;
+        }
+        #collections.visible {
+            display: block;
+        }
+        #collections p {
+            display: block;
+            overflow: scroll;
+        }
+        #collections ul {
+            margin-left: 30px;
         }
         #search {
             font-size: 1em;
@@ -62,14 +83,15 @@
         }
         .tools .bigseparator {
             display: inline-block;
-            width: 10vw;
+            width: 4vw;
         }
         .tools .smallseparator {
             display: inline-block;
-            width: 2vw;
+            width: 1vw;
         }
         .tools a {
             color: gold;
+            text-decoration: underline;
         }
         .imgdiv {
             position: relative;
@@ -363,6 +385,46 @@
             xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true)
             xhttp.send()
         }
+        function loadCollections(callback) {
+            var xhttp = new XMLHttpRequest()
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var collections = JSON.parse(this.responseText)
+                    //console.log(collections)
+                    if (callback != null) {
+                        callback(collections)
+                    }
+                }
+            }
+            xhttp.open("GET", "collections", true)
+            xhttp.send()
+        }
+        function createCollectionsUl(collections) {
+            var ul = document.createElement("ul")
+
+            collections.forEach(c => {
+                var li = document.createElement("li")
+                li.innerText = c
+                ul.appendChild(li)
+            })
+
+            return ul
+        }
+        function showCollectionsDialog() {
+            loadCollections(function(collections) {
+                var collectionsUl = createCollectionsUl(collections)
+                var collectionsDialog = document.getElementById("collections")
+                var collectionsContent = collectionsDialog.getElementsByTagName("p")[0]
+                collectionsContent.appendChild(collectionsUl)
+                collectionsDialog.classList.add("visible")
+            })
+        }
+        function hideCollectionsDialog() {
+            var collectionsDialog = document.getElementById("collections")
+            var collectionsContent = collectionsDialog.getElementsByTagName("p")[0]
+            collectionsContent.innerHTML = ""
+            collectionsDialog.classList.remove("visible")
+        }
         function getViewportHeight() {
             return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
         }
@@ -413,12 +475,10 @@
         <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
     </a></p>
 </div>
-<div class="tools">
-    <input name="search" id="search" type="text" placeholder="Search"/>
-    <span class="bigseparator"></span>
-    <a id="help" href="/help">help</a>
-    <span class="smallseparator"></span>
-    <a id="logout" href="/logout">logout</a>
+<div class="tools"><input name="search" id="search" type="text" placeholder="Search"/><span class="bigseparator"></span><a id="showCollectionsButton" onclick="showCollectionsDialog()">collections</a><span class="smallseparator"></span><a id="help" href="/help">help</a><span class="smallseparator"></span><a id="logout" href="/logout">logout</a></div>
+<div id="collections">
+    <h1>A list of collections, so you know what to search <a onclick="hideCollectionsDialog()">close</a></h1>
+    <p></p>
 </div>
 <script>
     var scrollThreshold = 20

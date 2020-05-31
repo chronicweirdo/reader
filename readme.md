@@ -160,11 +160,14 @@ Js gestures library:
 - [~] remember me functionality, and increase the life of the login session (to days! weeks!)
     - does not work between server restarts
 
-- [] refactor collection page (js especially); find icons for selection tools
+- [x] refactor collection page (js especially); find icons for selection tools
+    - some refactoring was done, gestures were redesigned to only need one icon
 - [] improve performance for progress load (only load progress for comics in page)
-- [] improved latest read comics load (db query)
+- [] improved latest read comics load (db query) - set latest list to only 6 comics
 
-- [] try and see if it makes sense to jump to collection page when reaching the end or beginning and pressing next/before
+- [-] try and see if it makes sense to jump to collection page when reaching the end or beginning and pressing next/before
+    - this would be too confusing
+- [] add logs to file, keep only latest
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality

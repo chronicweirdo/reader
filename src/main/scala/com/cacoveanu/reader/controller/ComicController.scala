@@ -54,6 +54,12 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     ""
   }
 
+  @RequestMapping(Array("/collections"))
+  @ResponseBody
+  def loadCollections() = {
+    comicService.loadCollections().asJava
+  }
+
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
   def getComicsForPage(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model) = {
