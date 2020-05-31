@@ -382,7 +382,7 @@
                     if (callback != null) callback()
                 }
             }
-            xhttp.open("GET", "search?term=" + term + "&page=" + pagenum, true)
+            xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum, true)
             xhttp.send()
         }
         function loadCollections(callback) {
@@ -465,6 +465,13 @@
                 }
             })
         }
+        function getSearchUrlParameter() {
+            var urlString = window.location.href
+            var url = new URL(urlString)
+            var search = url.searchParams.get("search")
+            if (search == null) return null
+            else return decodeURIComponent(search)
+        }
     </script>
 </head>
 <body>
@@ -475,15 +482,16 @@
         <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
     </a></p>
 </div>
-<div class="tools"><input name="search" id="search" type="text" placeholder="Search"/><span class="bigseparator"></span><a id="showCollectionsButton" onclick="showCollectionsDialog()">collections</a><span class="smallseparator"></span><a id="help" href="/help">help</a><span class="smallseparator"></span><a id="logout" href="/logout">logout</a></div>
-<div id="collections">
-    <h1>A list of collections, so you know what to search <a onclick="hideCollectionsDialog()">close</a></h1>
-    <p></p>
-</div>
+<div class="tools"><input name="search" id="search" type="text" placeholder="Search"/><span class="bigseparator"></span><a href="/collections">collections</a><span class="smallseparator"></span><a id="help" href="/help">help</a><span class="smallseparator"></span><a id="logout" href="/logout">logout</a></div>
+
 <script>
     var scrollThreshold = 20
 
     window.onload = function() {
+        var searchParameter = getSearchUrlParameter()
+        if (searchParameter != null) {
+            getSearch().value = searchParameter
+        }
         addBodyRightClickListener()
         addSearchTriggerListener()
         searchForTerm()

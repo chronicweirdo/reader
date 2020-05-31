@@ -24,6 +24,7 @@ import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.matching.Regex
 
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
@@ -60,10 +61,19 @@ class ComicService {
     scanLibrary(comicsLocation, forceUpdate = true)
   }
 
+  private def prepareSearchTerm(original: String): String = {
+    //val original = "Marvel Comics -  Infinity Sagas (Guantlet, War, Crusade, Abyss & The End) - Complete\\01 - Thanos Quest"
+    val lowercase = original.toLowerCase()
+    val pattern = "[A-Za-z0-9]+".r
+    val matches: Regex.MatchIterator = pattern.findAllIn(lowercase)
+    val result = "%" + matches.mkString("%") + "%"
+    result
+  }
+
   def searchComics(term: String, page: Int): Seq[DbComic] = {
     val sort = Sort.by(Direction.ASC, "id")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
-    comicRepository.search(term, pageRequest).asScala.toSeq
+    comicRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
   }
 
   def getCollectionPage(page: Int): Seq[DbComic] = {

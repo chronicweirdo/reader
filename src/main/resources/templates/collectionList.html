@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Collection List</title>
+</head>
+<body>
+<h1>A list of collections, so you know what to choose</h1>
+<p>
+    <ul>
+        <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
+    </ul>
+</p>
+</body>
+</html>

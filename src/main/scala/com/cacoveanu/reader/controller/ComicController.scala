@@ -55,9 +55,10 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   }
 
   @RequestMapping(Array("/collections"))
-  @ResponseBody
-  def loadCollections() = {
-    comicService.loadCollections().asJava
+  def loadCollections(model: Model): String = {
+    val collections = comicService.loadCollections().asJava
+    model.addAttribute("collections", collections)
+    "collectionList"
   }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
@@ -68,7 +69,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
     val progressByComic: Map[lang.Long, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
 
-    val collections = comics.map(c => c.collection).toSet.toSeq
+    val collections = comics.map(c => c.collection).toSet.toSeq.sorted
     val uiComics = comics
       .map(comic => UiComic(
         comic.id,
@@ -83,7 +84,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(value = Array("/comics"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def getComicsForPage(@RequestParam("page") page: Int, principal: Principal, model: Model) = {
+  def getComicsForPage(@RequestParam("page") page: Int, principal: Principal) = {
     val user = userService.loadUser(principal.getName)
     val comics: Seq[DbComic] = comicService.getCollectionPage(page)
     val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get)
