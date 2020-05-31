@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
+import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.data.domain.Sort.Direction
 
@@ -28,8 +29,14 @@ import scala.util.matching.Regex
 
 case class ComicPage(mediaType: MediaType, data: Array[Byte])
 
+object ComicService {
+  val log: Logger = LoggerFactory.getLogger(classOf[ComicService])
+}
+
 @Service
 class ComicService {
+
+  import ComicService.log
 
   private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
@@ -171,7 +178,7 @@ class ComicService {
 
   private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
     try {
-      println("scanning comic: " + path)
+      log.info("scanning comic: " + path)
       val archive = new Archive(new FileInputStream(path))
       val fileHeaders = archive.getFileHeaders().asScala
         .filter(f => !f.isDirectory)
@@ -192,7 +199,7 @@ class ComicService {
       } else None
     } catch {
       case _: Throwable =>
-        println("failed to scan comic: " + path)
+        log.error("failed to scan comic: " + path)
         None
     }
   }
@@ -227,6 +234,7 @@ class ComicService {
 
   private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
     try {
+      log.info("scanning comic: " + path)
       val zipFile = new ZipFile(path)
       val files = zipFile.entries().asScala
         .filter(f => !f.isDirectory)
@@ -249,7 +257,7 @@ class ComicService {
       } else None
     } catch {
       case _: Throwable =>
-        println("failed to read comic: " + path)
+        log.error("failed to read comic: " + path)
         None
     }
   }
