@@ -370,8 +370,9 @@
             var term = getTerm()
             console.log(term)
             var xhttp = new XMLHttpRequest();
+            var timestamp = + new Date()
             xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
+                if (this.readyState == 4 && this.status == 200 && document.searchTimestamp == timestamp) {
                     var response = JSON.parse(this.responseText)
                     if (response.comics.length > 0) {
                         addCollections(response.collections)
@@ -383,6 +384,7 @@
                 }
             }
             xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum, true)
+            document.searchTimestamp = timestamp
             xhttp.send()
         }
         function loadCollections(callback) {
