@@ -2,12 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Collection List</title>
+    <style>
+        body {
+            font-size: 2em;
+            background-color: black;
+            color: gold;
+        }
+        h1 {
+            font-size: 1.2em;
+        }
+        a {
+            color: gold;
+        }
+    </style>
 </head>
 <body>
 <h1>A list of collections, so you know what to choose</h1>
 <p>
     <ul>
+        <li><a href="/">everything!</a></li>
         <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
     </ul>
 </p>

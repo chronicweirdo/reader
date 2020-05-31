@@ -56,7 +56,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {
-    val collections = comicService.loadCollections().asJava
+    val collections = comicService.loadCollections().filter(c => ! c.isEmpty).asJava
     model.addAttribute("collections", collections)
     "collectionList"
   }
