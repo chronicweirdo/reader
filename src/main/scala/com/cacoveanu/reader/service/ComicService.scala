@@ -20,6 +20,7 @@ import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.data.domain.Sort.Direction
+import org.springframework.scheduling.annotation.Scheduled
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -61,6 +62,11 @@ class ComicService {
 
   @PostConstruct
   def updateLibrary() = Future {
+    scanLibrary(comicsLocation)
+  }
+
+  @Scheduled(fixedRate = 3600000)
+  def scheduledRescan() = Future {
     scanLibrary(comicsLocation)
   }
 
@@ -256,8 +262,8 @@ class ComicService {
         }
       } else None
     } catch {
-      case _: Throwable =>
-        log.error("failed to read comic: " + path)
+      case e: Throwable =>
+        log.error("failed to read comic: " + path, e)
         None
     }
   }

@@ -168,6 +168,7 @@ Js gestures library:
 - [-] try and see if it makes sense to jump to collection page when reaching the end or beginning and pressing next/before
     - this would be too confusing
 - [] add logs to file, keep only latest
+- [] jump to specific page when double clicking on sides in comic screen
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
