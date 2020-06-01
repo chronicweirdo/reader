@@ -27,8 +27,6 @@
         left: 0;
         width: 10vw;
         height: 100vh;
-        /*background-color: green;*/
-        opacity: .5;
     }
     #next {
         display: block;
@@ -37,8 +35,6 @@
         right: 0;
         width: 10vw;
         height: 100vh;
-        /*background-color: blue;*/
-        opacity: .5;
     }
     #canv {
         display: block;
@@ -47,14 +43,34 @@
         left: 10vw;
         width: 80vw;
         height: 100vh;
-        /*background-color: yellow;*/
-        opacity: .5;
+    }
+    #spinner {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 5vw;
+        height: 5vw;
+        display: none;
+    }
+    #spinner svg {
+        width: 100%;
+        height: 100%
     }
     p {
         text-align: center;
     }
     img {
         position: fixed;
+    }
+
+    @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
+    only screen and (-o-min-device-pixel-ratio: 13/10),
+    only screen and (min-resolution: 120dpi)
+    {
+        #spinner {
+            width: 15vw;
+            height: 15vw;
+        }
     }
 </style>
     <script src="hammer.min.js"></script>
@@ -262,23 +278,29 @@
 
     function loadImageData(id, page, callback) {
         var xhttp = new XMLHttpRequest();
+        var timestamp = + new Date()
         xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-                var img = getImage()
-                img.onload = function() {
-                    setPage(page)
-                    setImageWidth(getOriginalImageWidth())
-                    setImageHeight(getOriginalImageHeight())
-                    setImageLeft(0)
-                    setImageTop(0)
-                    updateMinimumZoom()
-                    callback()
+            if (this.readyState == 4 && document.searchTimestamp == timestamp) {
+                hideSpinner()
+                if (this.status == 200 && this.responseText.length > 0) {
+                    var img = getImage()
+                    img.onload = function() {
+                        setPage(page)
+                        setImageWidth(getOriginalImageWidth())
+                        setImageHeight(getOriginalImageHeight())
+                        setImageLeft(0)
+                        setImageTop(0)
+                        updateMinimumZoom()
+                        callback()
+                    }
+                    img.src = this.responseText
                 }
-                img.src = this.responseText
             }
         };
-        xhttp.open("GET", "imageData?id=" + id + "&page=" + page, true);
-        xhttp.send();
+        xhttp.open("GET", "imageData?id=" + id + "&page=" + page, true)
+        showSpinner()
+        document.searchTimestamp = timestamp
+        xhttp.send()
     }
 
     function approx(val1, val2) {
@@ -357,8 +379,16 @@
             setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft()))
             updateImage()
         }
+    }
 
+    function showSpinner() {
+        var spinner = document.getElementById("spinner")
+        spinner.style.display = "block"
+    }
 
+    function hideSpinner() {
+        var spinner = document.getElementById("spinner")
+        spinner.style.display = "none"
     }
 
     function goToPreviousView() {
@@ -415,6 +445,15 @@
 <div id="prev"></div>
 <div id="next"></div>
 <div id="canv"></div>
+<div id="spinner">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+        <rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect>
+        <rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none">
+            <animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate>
+            <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate>
+        </rect>
+    </svg>
+</div>
 <script>
         window.onload = function() {
             document.onkeydown = function(e) {

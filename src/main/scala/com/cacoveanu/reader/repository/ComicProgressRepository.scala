@@ -3,6 +3,7 @@ package com.cacoveanu.reader.repository
 import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
+import org.springframework.data.repository.query.Param
 
 trait ComicProgressRepository extends JpaRepository[ComicProgress, java.lang.Long] {
 
@@ -11,11 +12,11 @@ trait ComicProgressRepository extends JpaRepository[ComicProgress, java.lang.Lon
   def findByUser(user: DbUser): java.util.List[ComicProgress]
 
   @Query(
-    value="select * from comic_progress c where (c.page < c.total_pages - 1)",
-    countQuery = "select * from comic_progress c where (c.page < c.total_pages - 1)",
+    value="select * from comic_progress c where c.user_id=:#{#user.id} and (c.page < c.total_pages - 1)",
+    countQuery = "select * from comic_progress c where c.user_id=:#{#user.id} and (c.page < c.total_pages - 1)",
     nativeQuery = true
   )
-  def findUnreadByUser(user: DbUser, pageable: Pageable): java.util.List[ComicProgress]
+  def findUnreadByUser(@Param("user") user: DbUser, pageable: Pageable): java.util.List[ComicProgress]
 
   def findByUserAndComicIn(user: DbUser, comics: java.util.List[DbComic]): java.util.List[ComicProgress]
 }
