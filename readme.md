@@ -162,12 +162,13 @@ Js gestures library:
 
 - [x] refactor collection page (js especially); find icons for selection tools
     - some refactoring was done, gestures were redesigned to only need one icon
-- [] improve performance for progress load (only load progress for comics in page)
-- [] improved latest read comics load (db query) - set latest list to only 6 comics
+- [x] improve performance for progress load (only load progress for comics in page)
+- [x] improved latest read comics load (db query) - set latest list to only 6 comics
 
 - [-] try and see if it makes sense to jump to collection page when reaching the end or beginning and pressing next/before
     - this would be too confusing
-- [] add logs to file, keep only latest
+- [x] add logs to file, keep only latest
+    - actually, rolling file appender to keep for 5 days
 - [] jump to specific page when double clicking on sides in comic screen
 
 - jump to page functionality
