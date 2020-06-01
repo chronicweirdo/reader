@@ -172,7 +172,7 @@ Js gestures library:
 - [] jump to specific page when double clicking on sides in comic screen
 - [x] add spinner when loading data through ajax
 - [x] remove autocomplete from inputs
-- [] add clear field button for search
+- [x] add clear field button for search
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
