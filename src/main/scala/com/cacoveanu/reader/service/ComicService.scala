@@ -2,21 +2,20 @@ package com.cacoveanu.reader.service
 
 import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
-import java.util.concurrent.{ExecutorService, Executors}
-import java.util.zip.ZipFile
+import java.util.zip.{ZipEntry, ZipFile}
 
 import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
 import com.cacoveanu.reader.repository.{ComicProgressRepository, ComicRepository}
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
-import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, ManyToOne, OneToMany, OneToOne, Table, Transient, UniqueConstraint}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
+import com.github.junrar.rarfile.FileHeader
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.data.domain.Sort.Direction
@@ -24,7 +23,6 @@ import org.springframework.scheduling.annotation.Scheduled
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
-import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
@@ -65,7 +63,7 @@ class ComicService {
     scanLibrary(comicsLocation)
   }
 
-  @Scheduled(fixedRate = 3600000)
+  @Scheduled(cron = "0 0 * * * *")
   def scheduledRescan() = Future {
     scanLibrary(comicsLocation)
   }
@@ -75,7 +73,6 @@ class ComicService {
   }
 
   private def prepareSearchTerm(original: String): String = {
-    //val original = "Marvel Comics -  Infinity Sagas (Guantlet, War, Crusade, Abyss & The End) - Complete\\01 - Thanos Quest"
     val lowercase = original.toLowerCase()
     val pattern = "[A-Za-z0-9]+".r
     val matches: Regex.MatchIterator = pattern.findAllIn(lowercase)
@@ -101,8 +98,7 @@ class ComicService {
 
   def loadComicProgress(user: DbUser, comic: DbComic): Option[ComicProgress] = {
     val progress = comicProgressRepository.findByUserAndComic(user, comic)
-    if (progress != null) Some(progress)
-    else None
+    Option(progress)
   }
 
   def loadCollections(): Seq[String] = {
@@ -126,18 +122,12 @@ class ComicService {
   private def isImageType(fileName: String) =
     Seq("jpg", "jpeg", "png", "gif") contains FileUtil.getExtension(fileName)
 
-  def readPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    FileUtil.getExtension(path) match {
-      case COMIC_TYPE_CBR => readCbrPage(path, pageNumber)
-      case COMIC_TYPE_CBZ => readCbzPage(path, pageNumber)
-      case _ => None
-    }
-  }
+  def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
 
   @Cacheable(Array("comics"))
   def loadFullComic(id: Long): Option[DbComic] = {
     comicRepository.findById(id).asScala match {
-      case Some(dbComic) => loadPagesFromDisk(dbComic.path) match {
+      case Some(dbComic) => readPagesFromDisk(dbComic.path) match {
         case Some(pages) =>
           dbComic.pages = pages
           Some(dbComic)
@@ -147,131 +137,99 @@ class ComicService {
     }
   }
 
-  private def loadPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
+  private def readPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     FileUtil.getExtension(path) match {
-      case COMIC_TYPE_CBR => loadCbrPagesFromDisk(path)
-      case COMIC_TYPE_CBZ => loadCbzPagesFromDisk(path)
+      case COMIC_TYPE_CBR => readCbrPagesFromDisk(path, pages)
+      case COMIC_TYPE_CBZ => readCbzPagesFromDisk(path, pages)
       case _ => None
     }
   }
 
-  private def loadCbrPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
+  private def readCbrPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+    log.info(s"reading comic (pages=$pages): $path")
     var archive: Archive = null
 
     try {
       archive = new Archive(new FileInputStream(path))
 
-      Some(
-        archive.getFileHeaders.asScala
-          .filter(f => !f.isDirectory)
-          .filter(f => isImageType(f.getFileNameString))
-          .sortBy(f => f.getFileNameString)
-          .flatMap(archiveFile => imageService.getMediaType(archiveFile.getFileNameString) match {
-            case Some(mediaType) =>
-              val fileContents = new ByteArrayOutputStream()
-              archive.extractFile(archiveFile, fileContents)
-              Some(ComicPage(mediaType, fileContents.toByteArray))
-            case None => None
-          })
-          .toSeq
-      )
+      val sortedImageFiles: Seq[FileHeader] = archive.getFileHeaders.asScala.toSeq
+        .filter(f => !f.isDirectory)
+        .filter(f => isImageType(f.getFileNameString))
+        .sortBy(f => f.getFileNameString)
+
+      val selectedImageFiles: Seq[FileHeader] = pages match {
+        case Some(pgs) =>
+          sortedImageFiles
+            .zipWithIndex
+            .filter { case (_, index) => pgs.contains(index) }
+            .map { case (fileHeader, _) => fileHeader }
+        case None =>
+          sortedImageFiles
+      }
+
+      val selectedImageData: Seq[ComicPage] = selectedImageFiles
+        .flatMap(archiveFile => imageService.getMediaType(archiveFile.getFileNameString) match {
+          case Some(mediaType) =>
+            val fileContents = new ByteArrayOutputStream()
+            archive.extractFile(archiveFile, fileContents)
+            Some(ComicPage(mediaType, fileContents.toByteArray))
+          case None => None
+        })
+
+      Some(selectedImageData)
     } catch {
-      case _: Throwable => None
+      case e: Throwable =>
+        log.error("failed to read comic pages for " + path, e)
+        None
     } finally {
       archive.close()
     }
   }
 
-  private def readCbrPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    try {
-      log.info("scanning comic: " + path)
-      val archive = new Archive(new FileInputStream(path))
-      val fileHeaders = archive.getFileHeaders().asScala
-        .filter(f => !f.isDirectory)
-        .filter(f => isImageType(f.getFileNameString))
-
-      if (fileHeaders.indices contains pageNumber) {
-        val sortedFileHandlers = fileHeaders.sortBy(f => f.getFileNameString)
-        val archiveFile = sortedFileHandlers(pageNumber)
-        val fileMediaType: Option[MediaType] = imageService.getMediaType(archiveFile.getFileNameString)
-        val fileContents = new ByteArrayOutputStream()
-        archive.extractFile(archiveFile, fileContents)
-        archive.close()
-
-        fileMediaType match {
-          case Some(mediaType) => Some(ComicPage(mediaType, fileContents.toByteArray))
-          case None => None
-        }
-      } else None
-    } catch {
-      case _: Throwable =>
-        log.error("failed to scan comic: " + path)
-        None
-    }
-  }
-
-  private def loadCbzPagesFromDisk(path: String): Option[Seq[ComicPage]] = {
+  private def readCbzPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     var zipFile: ZipFile = null
 
     try {
       zipFile = new ZipFile(path)
 
-      Some(
-        zipFile.entries().asScala
-          .filter(f => !f.isDirectory)
-          .filter(f => isImageType(f.getName))
-          .toSeq
-          .sortBy(f => f.getName)
-          .flatMap(file => imageService.getMediaType(file.getName) match {
-            case Some(mediaType) =>
-              val fileContents = zipFile.getInputStream(file)
-              val bos = new ByteArrayOutputStream()
-              IOUtils.copy(fileContents, bos)
-              Some(ComicPage(mediaType, bos.toByteArray))
-            case None => None
-          })
-      )
+      val sortedImageFiles: Seq[ZipEntry] = zipFile.entries().asScala
+        .filter(f => !f.isDirectory)
+        .filter(f => isImageType(f.getName))
+        .toSeq
+        .sortBy(f => f.getName)
+
+      val selectedImageFiles: Seq[ZipEntry] = pages match {
+        case Some(pgs) =>
+          sortedImageFiles
+            .zipWithIndex
+            .filter { case (_, index) => pgs.contains(index) }
+            .map { case (fileHeader, _) => fileHeader }
+        case None =>
+          sortedImageFiles
+      }
+
+      val selectedImageData: Seq[ComicPage] = selectedImageFiles
+        .flatMap(file => imageService.getMediaType(file.getName) match {
+          case Some(mediaType) =>
+            val fileContents = zipFile.getInputStream(file)
+            val bos = new ByteArrayOutputStream()
+            IOUtils.copy(fileContents, bos)
+            Some(ComicPage(mediaType, bos.toByteArray))
+          case None => None
+        })
+
+      Some(selectedImageData)
     } catch {
-      case _: Throwable => None
+      case e: Throwable =>
+        log.error("failed to read comic pages for " + path, e)
+        None
     } finally {
       zipFile.close()
     }
   }
 
-  private def readCbzPage(path: String, pageNumber: Int): Option[ComicPage] = {
-    try {
-      log.info("scanning comic: " + path)
-      val zipFile = new ZipFile(path)
-      val files = zipFile.entries().asScala
-        .filter(f => !f.isDirectory)
-        .filter(f => isImageType(f.getName))
-        .toSeq
-
-      if (files.indices contains pageNumber) {
-        val sortedFiles = files.sortBy(f => f.getName)
-        val file = sortedFiles(pageNumber)
-        val fileMediaType = imageService.getMediaType(file.getName)
-        val fileContents = zipFile.getInputStream(file)
-        val bos = new ByteArrayOutputStream()
-        IOUtils.copy(fileContents, bos)
-        zipFile.close();
-
-        fileMediaType match {
-          case Some(mediaType) => Some(ComicPage(mediaType, bos.toByteArray))
-          case None => None
-        }
-      } else None
-    } catch {
-      case e: Throwable =>
-        log.error("failed to read comic: " + path, e)
-        None
-    }
-  }
-
   private def getComicTitle(path: String): Option[String] = {
-    val pathObject = Paths.get(path);
-    val fileName = pathObject.getFileName.toString
-    Some(fileName.substring(0, fileName.lastIndexOf('.')))
+    Option(FileUtil.getFileName(path))
   }
 
   private def getComicCollection(path: String): Option[String] = {
@@ -285,7 +243,7 @@ class ComicService {
   }
 
   def loadComic(file: String): Option[DbComic] =
-    (getComicTitle(file), getComicCollection(file), readPage(file, 0)) match {
+    (getComicTitle(file), getComicCollection(file), readCover(file)) match {
       case (Some(title), Some(collection), Some(cover)) =>
         imageService.getFormatName(cover.mediaType) match {
           case Some(formatName) =>
@@ -297,9 +255,10 @@ class ComicService {
     }
 
   private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
+    log.info(s"scanning (forced=$forceUpdate) library at $libraryPath")
     val comicsInDatabase = comicRepository.findAll().asScala
     val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
-    val filesInLibrary = scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
+    val filesInLibrary = FileUtil.scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
     val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
     val comicsToDelete = comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
     comicRepository.deleteAll(comicsToDelete.asJava)
@@ -317,29 +276,6 @@ class ComicService {
         })
       comicRepository.saveAll(updatedComics.asJava)
     }
-  }
-
-  private def scan(path: String): Seq[File] = {
-    var files = mutable.Seq[File]()
-    files = files :+ new File(path)
-    var processed = 0
-    while (processed < files.length) {
-      val current = files(processed)
-      if (current.exists() && current.isDirectory()) {
-        val children: Array[File] = current.listFiles()
-        files ++= current.listFiles
-      }
-      processed += 1
-    }
-
-    files.toSeq
-  }
-
-  private def scanFilesRegex(path: String, regex: String) = {
-    val pattern = regex.r
-    scan(path)
-      .filter(f => f.isFile)
-      .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
-      .map(f => f.getAbsolutePath)
+    log.info(s"finished scanning (forced=$forceUpdate) library at $libraryPath")
   }
 }
