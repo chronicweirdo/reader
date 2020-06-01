@@ -170,6 +170,9 @@ Js gestures library:
 - [x] add logs to file, keep only latest
     - actually, rolling file appender to keep for 5 days
 - [] jump to specific page when double clicking on sides in comic screen
+- [x] add spinner when loading data through ajax
+- [x] remove autocomplete from inputs
+- [] add clear field button for search
 
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
