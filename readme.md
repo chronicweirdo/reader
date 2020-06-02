@@ -169,7 +169,8 @@ Js gestures library:
     - this would be too confusing
 - [x] add logs to file, keep only latest
     - actually, rolling file appender to keep for 5 days
-- [] jump to specific page when double clicking on sides in comic screen
+- [x] jump to specific page when double clicking on sides in comic screen
+    - this functionality has been implemented in a different manner: right click / hold on comic page to display a tools box, which shows the comic title, the number of pages and the current page, and the current page is an editable input field
 - [x] add spinner when loading data through ajax
 - [x] remove autocomplete from inputs
 - [x] add clear field button for search
