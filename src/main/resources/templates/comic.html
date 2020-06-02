@@ -201,17 +201,25 @@
     }
 
     function fitPageToScreenWidth() {
-        setZoom(getViewportWidth() / getImageWidth())
+        setZoom(getViewportWidth() / getOriginalImageWidth())
         updateImage()
     }
 
     function fitPageToScreenHeight() {
-        setZoom(getViewportHeight() / getImageHeight())
+        setZoom(getViewportHeight() / getOriginalImageHeight())
         updateImage()
     }
 
+    function isPageFitToScreen() {
+        return getZoomForFitToScreen() == getZoom()
+    }
+
+    function getZoomForFitToScreen() {
+        return Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
+    }
+
     function fitPageToScreen() {
-        setZoom(Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth()))
+        setZoom(getZoomForFitToScreen())
         updateImage()
     }
 
@@ -552,18 +560,21 @@
 <script>
         window.onload = function() {
             document.onkeydown = function(e) {
-                if (e.keyCode == '38') {
-                    // up arrow
+                //console.log(e.keyCode)
+                if (e.keyCode == '38' || e.keyCode == '87') {
+                    // up arrow or w
+                    pan(0, getViewportHeight() / 2)
                 }
-                else if (e.keyCode == '40') {
-                    // down arrow
+                else if (e.keyCode == '40' || e.keyCode == '83') {
+                    // down arrow or s
+                    pan(0, - (getViewportHeight() / 2))
                 }
-                else if (e.keyCode == '37') {
-                    // left arrow
+                else if (e.keyCode == '37' || e.keyCode == '65') {
+                    // left arrow or a
                     goToPreviousView()
                 }
-                else if (e.keyCode == '39') {
-                    // right arrow
+                else if (e.keyCode == '39' || e.keyCode == '68') {
+                    // right arrow or d
                     goToNextView()
                 }
             }
@@ -577,7 +588,11 @@
             canv.addEventListener("mousemove", mouseMove)
             canv.addEventListener("dblclick", function(event) {
                 event.preventDefault()
-                fitPageToScreen()
+                if (isPageFitToScreen()) {
+                    fitPageToScreenWidth()
+                } else {
+                    fitPageToScreen()
+                }
             })
             //if (! onMobile()) {
                 canv.addEventListener("contextmenu", function(ev) {
