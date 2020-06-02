@@ -517,24 +517,24 @@
     }
 
     function addPagenumTriggerListener() {
-            var pagenum = document.getElementById("pagenum")
-            pagenum.addEventListener('keyup', function (e) {
-                if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
-                    window.clearTimeout(document.pageChangeTimeout)
-                    document.pageChangeTimeout = null
-                }
-                if (e.keyCode === 13) {
-                    // if enter, search
-                    jumpToPage()
-                } else {
-                    // if other key, wait to see if finished typing
-                    document.pageChangeTimeout = window.setTimeout(jumpToPage, 1000)
-                }
-            })
-            pagenum.addEventListener('mouseup', function (e) {
+        var pagenum = document.getElementById("pagenum")
+        pagenum.addEventListener('keyup', function (e) {
+            if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
+                window.clearTimeout(document.pageChangeTimeout)
+                document.pageChangeTimeout = null
+            }
+            if (e.keyCode === 13) {
+                // if enter, search
                 jumpToPage()
-            })
-        }
+            } else {
+                // if other key, wait to see if finished typing
+                document.pageChangeTimeout = window.setTimeout(jumpToPage, 1000)
+            }
+        })
+        pagenum.addEventListener('mouseup', function (e) {
+            jumpToPage()
+        })
+    }
 
 </script>
 </head>
@@ -589,7 +589,7 @@
             canv.addEventListener("dblclick", function(event) {
                 event.preventDefault()
                 if (isPageFitToScreen()) {
-                    fitPageToScreenWidth()
+                    zoom(getZoom() * 3, event.clientX, event.clientY)
                 } else {
                     fitPageToScreen()
                 }

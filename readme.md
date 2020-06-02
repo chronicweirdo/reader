@@ -188,3 +188,5 @@ Use [nssm](http://nssm.cc/). Run `nssm install chronicreader`. Used the followin
 - Startup directory: `C:\chronicreader`
 - Arguments: `-jar reader-1.0.0.jar`
 - Startup type: `Automatic`
+
+New release can be done by stopping the service, copying the new jar, and starting the service back up. As long as the jar has the same name, it will be picked up.
