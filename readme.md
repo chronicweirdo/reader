@@ -149,8 +149,9 @@ Js gestures library:
 
 - [x] When last page is reached, if next page is called, mark the comic as read
 - [x] Search functionality on home page
-- [] A go back button on the comic page?
-- [] Functionality to do periodic rescan of the comics folder
+- [x] A go back button on the comic page?
+    - implemented in the tools page
+- [x] Functionality to do periodic rescan of the comics folder
 - [] Functionality to download/upload comic?
 - [x] Response compression https://howtodoinjava.com/spring-boot2/rest/response-gzip-compression/
     - 6 pages, before compression: 6857 kb
@@ -178,3 +179,12 @@ Js gestures library:
 - jump to page functionality
 - bookmark page (zoom, pan? viewport size?) functionality
 - export bookmarks as images?
+
+## Install Jar as Windows Service
+
+Use [nssm](http://nssm.cc/). Run `nssm install chronicreader`. Used the following parameters:
+
+- Path: `C:\Program Files\Java\jdk1.8.0_201\bin\java.exe`
+- Startup directory: `C:\chronicreader`
+- Arguments: `-jar reader-1.0.0.jar`
+- Startup type: `Automatic`
