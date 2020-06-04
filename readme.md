@@ -193,7 +193,7 @@ New release can be done by stopping the service, copying the new jar, and starti
 
 ## Further version one functionality, after using the app
 
-- [] show page numbers in status bar
+- [x] show page numbers in status bar
 - [x] toggle full screen on zoom on mobile
     - kind of distracting
 - [-] toggle full screen on triple click?

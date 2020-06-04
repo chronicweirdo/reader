@@ -5,6 +5,7 @@
     <meta name="viewport"
           content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="comicId" content="1" th:content="${id}">
+    <meta name="comicTitle" content="1" th:content="${title}">
     <meta name="pages" content="20" th:content=${pages}>
     <meta name="startPage" content="0" th:content=${startPage}>
     <meta name="defaultFit" content="screen">
@@ -384,6 +385,7 @@
                     var img = getImage()
                     img.onload = function() {
                         setPage(page)
+                        setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
                         setImageWidth(getOriginalImageWidth())
                         setImageHeight(getOriginalImageHeight())
                         setImageLeft(0)
@@ -399,6 +401,9 @@
         showSpinner()
         document.searchTimestamp = timestamp
         xhttp.send()
+    }
+    function setPageTitle(title) {
+        document.title = title
     }
 
     function approx(val1, val2) {
@@ -668,6 +673,7 @@
             addPagenumTriggerListener()
 
             document.comicId = getMeta("comicId")
+            document.comicTitle = getMeta("comicTitle")
             document.comicMaximumPages = num(getMeta("pages"))
             document.imageSettings = {}
             setZoom(1.0)
