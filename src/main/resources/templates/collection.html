@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Chronic Comic Reader</title>
+    <title>Chronic Comic Reader - Library</title>
     <style>
         * {
             margin: 0;
@@ -411,40 +411,43 @@
         }
         function searchForTerm() {
             removeExistingComics()
-            setCurrentPage(0)
-            loadPage(getCurrentPage(), loadUntilPageFull)
+            setCurrentPage(-1)
+            loadNextPage(loadUntilPageFull)
         }
-        function loadPage(pagenum, callback) {
-            var term = getTerm()
-            console.log(term)
-            var xhttp = new XMLHttpRequest();
-            var timestamp = + new Date()
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && document.searchTimestamp == timestamp) {
-                    hideSpinner()
-                    if (this.status == 200) {
-                        var response = JSON.parse(this.responseText)
-                        if (response.comics.length > 0) {
-                            addCollections(response.collections)
-                            addComics(response.comics)
-                        } else {
-                            setEndOfCollection()
+        function loadNextPage(callback) {
+            if (document.searchTimestamp === undefined || document.searchTimestamp == null) {
+                var pagenum = getCurrentPage() + 1
+                var term = getTerm()
+                var xhttp = new XMLHttpRequest();
+                var timestamp = + new Date()
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && document.searchTimestamp == timestamp) {
+                        hideSpinner()
+                        document.searchTimestamp = null
+                        if (this.status == 200) {
+                            setCurrentPage(pagenum)
+                            var response = JSON.parse(this.responseText)
+                            if (response.comics.length > 0) {
+                                addCollections(response.collections)
+                                addComics(response.comics)
+                            } else {
+                                setEndOfCollection()
+                            }
+                            if (callback != null) callback()
                         }
-                        if (callback != null) callback()
                     }
                 }
+                xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum, true)
+                document.searchTimestamp = timestamp
+                showSpinner()
+                xhttp.send()
             }
-            xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum, true)
-            document.searchTimestamp = timestamp
-            showSpinner()
-            xhttp.send()
         }
         function loadCollections(callback) {
             var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var collections = JSON.parse(this.responseText)
-                    //console.log(collections)
                     if (callback != null) {
                         callback(collections)
                     }
@@ -490,8 +493,7 @@
         }
         function loadUntilPageFull() {
             if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
-                setCurrentPage(getCurrentPage() + 1)
-                loadPage(getCurrentPage(), loadUntilPageFull)
+                loadNextPage(loadUntilPageFull)
             }
         }
         function addBodyRightClickListener() {
@@ -563,8 +565,7 @@
     window.onscroll = function(ev) {
         if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
             if (! getEndOfCollection()) {
-                setCurrentPage(getCurrentPage() + 1)
-                loadPage(getCurrentPage(), null)
+                loadNextPage(null)
             }
         }
     }

@@ -87,9 +87,9 @@ class ComicService {
   }
 
   def getCollectionPage(page: Int): Seq[DbComic] = {
-    val sort = Sort.by(Direction.ASC, "id")
+    val sort = Sort.by(Direction.ASC, "collection", "id")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
-    comicRepository.findAllByOrderByCollectionAsc(pageRequest).asScala.toSeq
+    comicRepository.findAll(pageRequest).asScala.toSeq
   }
 
   def getCollection(): Seq[DbComic] = {

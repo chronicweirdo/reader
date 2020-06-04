@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param
 
 trait ComicRepository extends JpaRepository[DbComic, java.lang.Long] {
 
-  def findAllByOrderByCollectionAsc(pageable: Pageable): java.util.List[DbComic]
+  //def findAll(pageable: Pageable): java.util.List[DbComic]
 
   @Query(
     value="select * from db_comic c where lower(c.title) like %:term% or lower(c.collection) like %:term% order by c.collection asc",
