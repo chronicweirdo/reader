@@ -201,4 +201,4 @@ New release can be done by stopping the service, copying the new jar, and starti
 - [x] full screen toggle switch in tools, no more auto full screen
 - [] reload home page when clearing search?
 - [x] Adjust tablet sizing of home page to account for the scroll bar size (make comic pages a tini bit smaller)
-- [] set zindex of spinner to high on home page
+- [x] set zindex of spinner to high on home page
