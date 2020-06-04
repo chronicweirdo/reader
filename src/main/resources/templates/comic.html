@@ -75,6 +75,11 @@
     }
     #tools a {
         color: gold;
+        text-decoration: underline;
+        margin-left: 1em;
+    }
+    #tools p a:first-child {
+        margin-left: 0;
     }
     #spinner {
         position: fixed;
@@ -153,7 +158,7 @@
         setZoom(zoom)
         updateImage()
     }
-    /*function toggleFullScreen() {
+    function toggleFullScreen() {
         var doc = window.document;
         var docEl = doc.documentElement;
 
@@ -166,7 +171,7 @@
         else {
             cancelFullScreen.call(doc);
         }
-    }*/
+    }
     function makeFullScreen() {
         var doc = window.document;
         var docEl = doc.documentElement;
@@ -184,7 +189,7 @@
     }
 
     function isAutoFullScreenEnabled() {
-        return true;
+        return false;
     }
 
     function updateImage() {
@@ -588,7 +593,7 @@
 <div id="tools" style="display: none">
     <h1 th:text="${title}">Comic Title</h1>
     <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
-    <p><a href="/">back</a></p>
+    <p><a onclick="toggleFullScreen()">fullscreen</a><a href="/">back</a></p>
 </div>
 <div id="spinner">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">

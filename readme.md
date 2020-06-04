@@ -190,3 +190,15 @@ Use [nssm](http://nssm.cc/). Run `nssm install chronicreader`. Used the followin
 - Startup type: `Automatic`
 
 New release can be done by stopping the service, copying the new jar, and starting the service back up. As long as the jar has the same name, it will be picked up.
+
+## Further version one functionality, after using the app
+
+- [] show page numbers in status bar
+- [x] toggle full screen on zoom on mobile
+    - kind of distracting
+- [-] toggle full screen on triple click?
+    - not workable, we need to go through the second click to get to the third, kind of complicated to set up all the timing and everything
+- [x] full screen toggle switch in tools, no more auto full screen
+- [] reload home page when clearing search?
+- [] Adjust tablet sizing of home page to account for the scroll bar size (make comic pages a tini bit smaller)
+- [] set zindex of spinner to high on home page
