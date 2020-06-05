@@ -90,10 +90,6 @@
             font-weight: bold;
             color: black;
         }
-        .tools .bigseparator {
-            display: inline-block;
-            width: 1vw;
-        }
         .tools a {
             margin-left: 2vw;
             color: gold;
@@ -136,17 +132,6 @@
                 width: 15vw;
                 height: 15vw;
             }
-            /*#search {
-                width: 80vw;
-                padding-right: 10vw;
-                margin-bottom: 1em;
-            }
-            .tools .bigseparator {
-                width: 0;
-            }
-            .tools .smallseparator {
-                width: 5vw;
-            }*/
             #removeProgressButton img {
                 width: 20vw;
             }
@@ -402,9 +387,13 @@
         }
         function clearTerm() {
             var search = getSearch()
-            search.value = ""
-            search.dispatchEvent(new Event('keyup'))
-            search.focus()
+            if (search.value === "") {
+                window.location = "/"
+            } else {
+                search.value = ""
+                search.dispatchEvent(new Event('keyup'))
+                search.focus()
+            }
         }
         function searchForTerm() {
             removeExistingComics()
