@@ -63,6 +63,16 @@ class UserService extends UserDetailsService {
     Option(dbUser)
   }
 
+  def changePassword(user: DbUser, oldPassword: String, newPassword: String): Boolean = {
+    if (passwordEncoder.matches(oldPassword, user.password)) {
+      user.password = passwordEncoder.encode(newPassword)
+      userRepository.save(user)
+      true
+    } else {
+      false
+    }
+  }
+
   override def loadUserByUsername(username: String): UserDetails = {
     val user = userRepository.findByUsername(username)
     if (user == null) throw new UsernameNotFoundException(username)

@@ -9,10 +9,12 @@ import com.cacoveanu.reader.entity.{ComicProgress, DbComic}
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
+import org.springframework.http.{HttpMethod, MediaType}
+import org.springframework.web.servlet.ModelAndView
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody, RestController}
+import org.springframework.web.servlet.view.RedirectView
 
 import scala.beans.BeanProperty
 
@@ -32,6 +34,12 @@ case class UiComic(
 
 class RemoveProgressForm {
   @BeanProperty var ids: java.util.List[Long] = _
+}
+
+class ChangePasswordForm {
+  @BeanProperty var oldPassword: String = _
+  @BeanProperty var newPassword: String = _
+  @BeanProperty var newPasswordConfirm: String = _
 }
 
 case class CollectionPage(
@@ -64,6 +72,32 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/settings"))
   def loadSettings(): String = "settings"
+
+  @RequestMapping(value=Array("/password"), method = Array(RequestMethod.GET))
+  def passwordResetPage(): String = "passwordReset"
+
+  @RequestMapping(
+    value=Array("/password"),
+    method=Array(RequestMethod.POST),
+    consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  )
+  @ResponseBody
+  def passwordResetAction(body: ChangePasswordForm, principal: Principal): RedirectView = {
+    if (body.newPassword != body.newPasswordConfirm) {
+      new RedirectView("/password?error")
+    } else {
+      userService.loadUser(principal.getName) match {
+        case Some(user) =>
+          if (userService.changePassword(user, body.oldPassword, body.newPassword)) {
+            new RedirectView("/")
+          } else {
+            new RedirectView("/password?error")
+          }
+        case None => new RedirectView("/password?error")
+      }
+    }
+
+  }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
