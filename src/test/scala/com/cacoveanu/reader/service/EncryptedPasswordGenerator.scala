@@ -5,6 +5,7 @@ import scala.io.StdIn._
 
 object EncryptedPasswordGenerator extends App {
 
+  println("write password:")
   val password = readLine()
 
   val encoder = new BCryptPasswordEncoder()
