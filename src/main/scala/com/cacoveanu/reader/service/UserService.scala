@@ -47,7 +47,7 @@ class UserService extends UserDetailsService {
 
   @BeanProperty @Autowired var passwordEncoder: PasswordEncoder = _
 
-  @PostConstruct
+  /*@PostConstruct
   def defaultUser(): Unit = {
     val defaultUserName = "test"
     val existingUser = userRepository.findByUsername(defaultUserName)
@@ -56,7 +56,7 @@ class UserService extends UserDetailsService {
     user.username = defaultUserName
     user.password = passwordEncoder.encode("test")
     userRepository.save(user)
-  }
+  }*/
 
   def loadUser(username: String): Option[DbUser] = {
     val dbUser = userRepository.findByUsername(username)
