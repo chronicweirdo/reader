@@ -240,58 +240,6 @@
             var differenceHeight = image.offsetHeight - expectedHeight
             image.style.left = (- differenceWidth / 2) + "px"
             image.style.top = (- differenceHeight / 2) + "px"
-
-            addComicRightClickListener(image)
-        }
-        function addComicRightClickListener(image) {
-            image.addEventListener('contextmenu', function(ev) {
-                ev.preventDefault()
-                toggleSelect(image)
-            }, false);
-        }
-        function toggleSelect(image) {
-            image.parentElement.classList.toggle("selected")
-            setActionsStatus()
-        }
-        function setActionsStatus() {
-            if (document.getElementsByClassName("selected").length > 0) {
-                document.getElementById("removeProgressButton").classList.remove("disabled")
-            } else {
-                document.getElementById("removeProgressButton").classList.add("disabled")
-            }
-        }
-        function clearSelection() {
-            var selected = document.getElementsByClassName("selected")
-            while (selected.length > 0) {
-                selected.item(0).classList.remove("selected")
-            }
-            setActionsStatus()
-        }
-        function getSelectedIds() {
-            var selected = document.getElementsByClassName("selected")
-            var ids = []
-            for (var i = 0; i < selected.length; i++) {
-                ids.push(parseInt(selected.item(i).getAttribute("comicid")))
-            }
-            return ids
-        }
-        function removeProgress() {
-            var selectedIds = getSelectedIds()
-            if (selectedIds.length > 0) {
-                var body = {
-                    "ids": selectedIds
-                }
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        clearSelection()
-                        window.location.reload(false)
-                    }
-                };
-                xhttp.open("POST", "removeProgress", true);
-                xhttp.setRequestHeader('Content-type', 'application/json');
-                xhttp.send(JSON.stringify(body));
-            }
         }
         function getCollectionId(collection) {
             if (collection.length == 0) return "default"
@@ -482,15 +430,6 @@
                 loadNextPage(loadUntilPageFull)
             }
         }
-        function addBodyRightClickListener() {
-            document.body.addEventListener("contextmenu", function(ev) {
-                var tag = ev.target.tagName.toLowerCase()
-                if (tag != "img" && tag != "a" && tag != "input") {
-                    ev.preventDefault()
-                    clearSelection()
-                }
-            })
-        }
         function addSearchTriggerListener() {
             var search = document.getElementById("search")
             search.addEventListener('keyup', function (e) {
@@ -517,7 +456,6 @@
     </script>
 </head>
 <body>
-<a id="removeProgressButton" class="disabled" onclick="removeProgress()" title="Delete saved progress"><img src="trash.png"></a>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
     <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
@@ -546,7 +484,6 @@
         if (searchParameter != null) {
             getSearch().value = searchParameter
         }
-        addBodyRightClickListener()
         addSearchTriggerListener()
         searchForTerm()
     }
