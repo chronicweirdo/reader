@@ -1,5 +1,7 @@
 package com.cacoveanu.reader.repository
 
+import java.util.Optional
+
 import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
@@ -10,6 +12,8 @@ trait ComicProgressRepository extends JpaRepository[ComicProgress, java.lang.Lon
   def findByUserAndComic(user: DbUser, comic: DbComic): ComicProgress
 
   def findByUser(user: DbUser): java.util.List[ComicProgress]
+
+  def findByUserAndComicId(user: DbUser, comicId: Long): Optional[ComicProgress]
 
   @Query(
     value="select * from comic_progress c where c.user_id=:#{#user.id} and (c.page < c.total_pages - 1)",

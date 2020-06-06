@@ -9,7 +9,7 @@ import com.cacoveanu.reader.entity.{ComicProgress, DbComic}
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.{HttpMethod, MediaType}
+import org.springframework.http.{HttpMethod, HttpStatus, MediaType, ResponseEntity}
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -157,7 +157,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
 
 
-  @RequestMapping(
+  /*@RequestMapping(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.POST),
     consumes=Array(MediaType.APPLICATION_JSON_VALUE)
@@ -171,6 +171,24 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         comicService.deleteComicProgress(progressToDelete)
     }
     ""
+  }*/
+
+  @RequestMapping(
+    value=Array("/removeProgress"),
+    method=Array(RequestMethod.DELETE)
+  )
+  def removeProgressFromComic(@RequestParam("id") id: Long, principal: Principal): ResponseEntity[String] = {
+    userService.loadUser(principal.getName) match {
+      case Some(user) =>
+        comicService.loadComicProgress(user, id) match {
+          case Some(progress) =>
+            comicService.deleteComicProgress(progress)
+            new ResponseEntity[String](HttpStatus.OK)
+          case None =>
+            new ResponseEntity[String](HttpStatus.NOT_FOUND)
+        }
+      case None => new ResponseEntity[String](HttpStatus.UNAUTHORIZED)
+    }
   }
 
   @RequestMapping(Array("/imageData"))

@@ -109,6 +109,10 @@ class ComicService {
     comicProgressRepository.findByUser(user).asScala.toSeq
   }
 
+  def loadComicProgress(user: DbUser, comicId: Long) = {
+    comicProgressRepository.findByUserAndComicId(user, comicId).asScala
+  }
+
   def loadTopComicProgress(user: DbUser, limit: Int): Seq[ComicProgress] = {
     val sort = Sort.by(Direction.DESC, "last_update")
     val pageRequest = PageRequest.of(0, limit, sort)
@@ -117,6 +121,10 @@ class ComicService {
 
   def loadComicProgress(user: DbUser, comics: Seq[DbComic]): Seq[ComicProgress] = {
     comicProgressRepository.findByUserAndComicIn(user, comics.asJava).asScala.toSeq
+  }
+
+  def deleteComicProgress(progress: ComicProgress) = {
+    comicProgressRepository.delete(progress)
   }
 
   def deleteComicProgress(progress: Seq[ComicProgress]) = {
