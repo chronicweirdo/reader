@@ -10,22 +10,39 @@
             font-size: 2em;
             background-color: black;
             color: gold;
+            font-family: Georgia, 'Times New Roman', Times, serif;
         }
         h1 {
+            margin-left: 30px;
             font-size: 1.2em;
+            font-family: Arial, Helvetica, sans-serif;
         }
         a {
             color: gold;
         }
+        ol li {
+            margin-left: 30px;
+        }
+        #container {
+            width: 1000px;
+            margin: auto;
+        }
+        @media all and (max-width: 999px) {
+            #container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-<h1>A list of collections, so you know what to choose</h1>
-<p>
-    <ul>
+<div id="container">
+    <h1>A list of collections, so you know what to choose</h1>
+    <p>
+    <ol>
         <li><a href="/">everything!</a></li>
         <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
-    </ul>
-</p>
+    </ol>
+    </p>
+</div>
 </body>
 </html>

@@ -10,52 +10,44 @@
             font-size: 2em;
             background-color: black;
             color: gold;
+            /*font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;*/
+            font-family: Georgia, 'Times New Roman', Times, serif;
         }
         h1 {
             font-size: 1.2em;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        h2 {
+            font-size: 1.1em;
+            font-family: Arial, Helvetica, sans-serif;
         }
         a {
             color: gold;
         }
+        #container {
+            width: 1000px;
+            margin: auto;
+        }
+        @media all and (max-width: 999px) {
+            #container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-<h1>Chronic Comic Reader Help</h1>
-<h2>Library Page</h2>
-<p>This page lets you navigate the available collection of comics, search, view progress of comics you have opened and read.</p>
-<p>Available actions:</p>
-<ul>
-    <li>new comics get loaded as you scroll</li>
-    <li>on the desktop, select comics by right clicking on them; deselect all comics by right clicking on some part of the page other than a comic cover</li>
-    <li>on mobile, select comics by long pressing on them; deselect all comics by long pressing on some part of the page other than a comic cover</li>
-    <li>clear progress from selected comics by clicking the top right "trash" icon; this icon is only displayed when one or more comics are selected</li>
-    <li>search comics in the collection by using the search field; press enter to trigger a search, or just wait two seconds after you finished typing</li>
-    <li>clear the search field by clicking the "x" button inside it; this will trigger the page to display the full collection of comics</li>
-    <li>click on a comic to start reading it</li>
-</ul>
+<div id="container">
+    <h1>Chronic Comic Reader Help</h1>
+    <h2>Library Page</h2>
+    <p>This page lets you navigate the available collection of comics, search, view progress of comics you have opened and read. New comics are loaded as you scroll. Use the search field to look for available comics. Click on a comic to start reading it.</p>
 
-<h2>Collections Page</h2>
-<p>Every comic can be part of a collection. The collections page displays all the collections in the app and can be a faster way of discovering what is available. You can click on a collection to go back to the library page and only display the comics in that collection.</p>
+    <h2>Collections Page</h2>
+    <p>Every comic can be part of a collection. The collections page displays all the collections in the app and can be a faster way of discovering what is available. You can click on a collection to go back to the library page and only display the comics in that collection.</p>
 
-<h2>Comic Page</h2>
-<p>When a comic is opened, the last viewed page is displayed. If this comic was not read before, the first page, or cover, is displayed. The page is initially scaled to fit the screen.</p>
-<p>The comic page is split into three sections: left, center and right. The left and right sections take 10% of the screen width each, and the center takes the rest, 80%.</p>
-<p>You can perform the following actions on this page:</p>
-<ul>
-    <li>zoom in and out on desktop using the mouse wheel on the center section</li>
-    <li>zoom in and out on mobile by using the pinch gesture on the center section</li>
-    <li>move the page on desktop by clicking on the center section and dragging the page around</li>
-    <li>move the page on mobile by pressing on the center section and dragging the page around with your finger</li>
-    <li>you can move to the next view by clicking or pressing (mobile) on the right side of the screen; the next view depends on the zoom level, it will display the next part of the page that is not visible in a left-to-right top-to-bottom order, or it can move to the next page in the comic if the lower right corner of the current page is visible </li>
-    <li>you can move to the previous view by clicking or pressing (mobile) on the left side of the screen; the previous view depends on the zoom level, it will display the previous part of the page that is not visible in a right-to-left bottom-to-top order, or it can move to the previous page in the comic if the top left corner of the current page is visible</li>
-    <li>if the page is zoomed in, double click or double tap (mobile) on the center section to fit the page to screen</li>
-    <li>if the page fits the screen, double click or double tap (mobile) on some part of the page to zoom in to that specific part</li>
-    <li>display the tool box for the current comic by right clicking or pressing and holding (mobile) on the center section; the tool box displays the title of the comic, shows the current page and the total number of pages, lets you skip to any page in the comic, lets you switch to full screen mode or can take you back to the library page</li>
-    <li>to hide the tool box, right click or press and hold (mobile) on the center section outside of the toolbox</li>
-    <li>you can go back to the library page by clicking the back button in your browser, clicking the back button on your mobile phone or using the back gesture, or by opening the tool box and using the back link inside it; when closing the comic, your progress is remembered</li>
-</ul>
+    <h2>Comic Page</h2>
+    <p>Pinch-zoom and press mouse/tap and drag to adjust the size and position of the comic page. Click on left and right sides of the screen to move to next view. Single click/tap to display the comic tools, double click/tap to zoom in or out. If you have a keyboard, use arrow keys or W/A/S/D to navigate. Use back button or gesture to go back to library page.</p>
 
-<p><a href="/">Go back.</a></p>
-
+    <p><a href="/">Go back.</a></p>
+</div>
 </body>
 </html>

@@ -10,6 +10,7 @@
             font-size: 2em;
             background-color: black;
             color: gold;
+            font-family: Arial, Helvetica, sans-serif;
         }
         h1 {
             font-size: 1.2em;
@@ -17,15 +18,25 @@
         a {
             color: gold;
         }
+        #container {
+            width: 1000px;
+            margin: auto;
+        }
+        @media all and (max-width: 999px) {
+            #container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-<h1>Chronic Comic Reader Settings</h1>
-<p><a href="/collections">Collections</a></p>
-<p><a href="/help">Help</a></p>
-<p><a href="/password">Change password</a></p>
-<p><a href="/">Go back</a></p>
-<p><a href="/logout">Logout</a></p>
-
+<div id="container">
+    <h1>Chronic Comic Reader Settings</h1>
+    <p><a href="/collections">Collections</a></p>
+    <p><a href="/help">Help</a></p>
+    <p><a href="/password">Change password</a></p>
+    <p><a href="/">Go back</a></p>
+    <p><a href="/logout">Logout</a></p>
+</div>
 </body>
 </html>
