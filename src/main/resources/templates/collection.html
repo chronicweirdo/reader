@@ -82,6 +82,11 @@
             border-width: 2px;
             border-color: white;
         }
+        @media all and (max-width: 399px) {
+            #search {
+                width: 40vw;
+            }
+        }
         #search::placeholder {
             color: #444444;
             font-style: italic;
@@ -109,11 +114,6 @@
             text-decoration: none;
             margin: .5vw;
         }
-        .imgdiv.selected {
-            width: 13vw;
-            height: 23vw;
-            border: 1vw solid gold;
-        }
         #spinner {
             position: fixed;
             bottom: 0;
@@ -135,18 +135,10 @@
                 width: 15vw;
                 height: 15vw;
             }
-            #removeProgressButton img {
-                width: 20vw;
-            }
             .imgdiv {
                 width: 30vw;
                 height: 50vw;
                 margin: 1vw;
-            }
-            .imgdiv.selected {
-                width: 24vw;
-                height: 44vw;
-                border: 3vw solid gold;
             }
         }
         .imgdiv img {
