@@ -652,21 +652,35 @@
             canv.addEventListener("mouseup", mouseUp)
             canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
-            canv.addEventListener("dblclick", function(event) {
+            /*canv.addEventListener("dblclick", function(event) {
                 event.preventDefault()
                 if (isPageFitToScreen()) {
                     zoom(getZoom() * 3, event.clientX, event.clientY)
                 } else {
                     fitPageToScreen()
                 }
+            })*/
+            canv.addEventListener("click", function(event) {
+                event.preventDefault()
+                var timestamp = + new Date()
+                document.clickTimestamp = timestamp
+                window.setTimeout(function() {
+                    if (document.clickTimestamp && document.clickTimestamp != null) {
+                        if (document.clickTimestamp > timestamp) {
+                            //there has been aother click in the meantime, double click
+                            if (isPageFitToScreen()) {
+                                zoom(getZoom() * 3, event.clientX, event.clientY)
+                            } else {
+                                fitPageToScreen()
+                            }
+                        } else {
+                            // simple click
+                            toggleTools()
+                        }
+                        document.clickTimestamp = null
+                    }
+                }, 300)
             })
-            //if (! onMobile()) {
-                canv.addEventListener("contextmenu", function(ev) {
-                    ev.preventDefault()
-                    //history.back()
-                    toggleTools()
-                })
-            //}
 
             var prevDiv = document.getElementById("prev")
             prevDiv.addEventListener("click", goToPreviousView)
