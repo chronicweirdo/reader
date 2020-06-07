@@ -329,13 +329,11 @@
     }
 
     function setPage(page) {
-        //document.imageSettings.page = page
         if (page < 1) page = 1
         if (page > document.comicMaximumPages) page = document.comicMaximumPages
         document.getElementById("pagenum").value = page
     }
     function getPage() {
-        //return document.imageSettings.page
         return num(document.getElementById("pagenum").value)
     }
     function setImageWidth(width) {
@@ -382,10 +380,73 @@
         return document.imageSettings.minimumZoom
     }
 
-    function loadImageData(id, page, callback) {
-        var xhttp = new XMLHttpRequest();
-        var timestamp = + new Date()
+    function evictOldest() {
+        if (document.comicPageCache) {
+            var oldest = null
+            var oldestPage = null
+            for (let [key, value] of Object.entries(document.comicPageCache)) {
+                if (oldest == null) {
+                    oldest = value.timestamp
+                    oldestPage = key
+                } else if (value.timestamp < oldest) {
+                    oldest = value.timestamp
+                    oldestPage = key
+                }
+            }
+            console.log("evicting page " + oldestPage)
+            delete document.comicPageCache[oldestPage]
+        }
+    }
+    function addToCache(page, data) {
+        if (! document.comicPageCache) document.comicPageCache = {}
+        document.comicPageCache[page] = {
+            "timestamp": + new Date(),
+            "data": data
+        }
+        // evict some old data if cache is too large
+        while (Object.keys(document.comicPageCache).length > 5) {
+            evictOldest()
+        }
+    }
+    function getFromCache(page) {
+        if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
+            return document.comicPageCache[page].data
+        } else {
+            return null
+        }
+    }
+    function cacheContains(page) {
+        if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    function downloadImageData(id, page, callback) {
+        var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
+                addToCache(page, this.responseText)
+                if (callback != null) {
+                    callback()
+                }
+            }
+        }
+        xhttp.open("GET", "imageData?id=" + id + "&page=" + (page-1), true)
+        xhttp.send()
+    }
+
+    function prefetch(id, page) {
+        if (! cacheContains(page)) {
+            downloadImageData(id, page, null)
+        }
+    }
+
+    function loadImageData(id, page, callback) {
+        //var xhttp = new XMLHttpRequest();
+        var timestamp = + new Date()
+        /*xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && document.searchTimestamp == timestamp) {
                 hideSpinner()
                 if (this.status == 200 && this.responseText.length > 0) {
@@ -403,11 +464,42 @@
                     img.src = this.responseText
                 }
             }
-        };
-        xhttp.open("GET", "imageData?id=" + id + "&page=" + (page-1), true)
+        };*/
+        //xhttp.open("GET", "imageData?id=" + id + "&page=" + (page-1), true)
         showSpinner()
         document.searchTimestamp = timestamp
-        xhttp.send()
+        //xhttp.send()
+        var displayImageData = function(data) {
+            if (document.searchTimestamp == timestamp) {
+                hideSpinner()
+                var img = getImage()
+                img.onload = function() {
+                    setPage(page)
+                    setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
+                    setImageWidth(getOriginalImageWidth())
+                    setImageHeight(getOriginalImageHeight())
+                    setImageLeft(0)
+                    setImageTop(0)
+                    updateMinimumZoom()
+                    if (callback != null) {
+                        callback()
+                    }
+                    prefetch(id, page+1)
+                    prefetch(id, page+1)
+                }
+                img.src = data
+            }
+        }
+        var imageData = getFromCache(page)
+        if (imageData != null) {
+            console.log("image already in cache")
+            displayImageData(imageData)
+        } else {
+            console.log("downloading image")
+            downloadImageData(id, page, function() {
+                displayImageData(getFromCache(page))
+            })
+        }
     }
     function setPageTitle(title) {
         document.title = title
@@ -700,6 +792,7 @@
             var startPage = num(getMeta("startPage")) + 1
 
             loadImageData(document.comicId, startPage, function() {
+                console.log("fitting page to correct")
                 var fit = getMeta("defaultFit")
                 if (fit == "width") {
                     fitPageToScreenWidth()
