@@ -196,9 +196,21 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
     (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
       case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size, new Date()))
         base64Image(comic.pages(page).mediaType, comic.pages(page).data)
       case _ => ""
+    }
+  }
+
+  @RequestMapping(
+    value=Array("/markProgress"),
+    method=Array(RequestMethod.PUT)
+  )
+  def markProgress(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): ResponseEntity[String] = {
+    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
+      case (Some(user), Some(comic)) if comic.pages.indices contains page =>
+        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size, new Date()))
+        new ResponseEntity[String](HttpStatus.OK)
+      case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }
   }
 }

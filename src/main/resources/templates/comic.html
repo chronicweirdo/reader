@@ -428,6 +428,12 @@
         }
     }
 
+    function markComicProgress(page) {
+        var xhttp = new XMLHttpRequest()
+        xhttp.open("PUT", "markProgress?id=" + getComicId() + "&page=" + (page-1), true)
+        xhttp.send()
+    }
+
     function downloadImageData(page, callback) {
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
@@ -458,6 +464,7 @@
                 var img = getImage()
                 img.onload = function() {
                     setPage(page)
+                    markComicProgress(page)
                     setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
                     setImageWidth(getOriginalImageWidth())
                     setImageHeight(getOriginalImageHeight())
