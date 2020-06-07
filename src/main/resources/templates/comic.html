@@ -393,9 +393,14 @@
                     oldestPage = key
                 }
             }
-            console.log("evicting page " + oldestPage)
             delete document.comicPageCache[oldestPage]
         }
+    }
+    function getMaximumCacheSize() {
+        return 7
+    }
+    function getCacheSize() {
+        return Object.keys(document.comicPageCache).length
     }
     function addToCache(page, data) {
         if (! document.comicPageCache) document.comicPageCache = {}
@@ -404,7 +409,7 @@
             "data": data
         }
         // evict some old data if cache is too large
-        while (Object.keys(document.comicPageCache).length > 5) {
+        while (getCacheSize() > getMaximumCacheSize()) {
             evictOldest()
         }
     }
@@ -423,7 +428,7 @@
         }
     }
 
-    function downloadImageData(id, page, callback) {
+    function downloadImageData(page, callback) {
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
@@ -433,44 +438,22 @@
                 }
             }
         }
-        xhttp.open("GET", "imageData?id=" + id + "&page=" + (page-1), true)
+        xhttp.open("GET", "imageData?id=" + getComicId() + "&page=" + (page-1), true)
         xhttp.send()
     }
 
-    function prefetch(id, page) {
+    function prefetch(page) {
         if (! cacheContains(page)) {
-            downloadImageData(id, page, null)
+            downloadImageData(page, null)
         }
     }
 
-    function loadImageData(id, page, callback) {
-        //var xhttp = new XMLHttpRequest();
+    function displayPage(page, callback) {
         var timestamp = + new Date()
-        /*xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && document.searchTimestamp == timestamp) {
-                hideSpinner()
-                if (this.status == 200 && this.responseText.length > 0) {
-                    var img = getImage()
-                    img.onload = function() {
-                        setPage(page)
-                        setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
-                        setImageWidth(getOriginalImageWidth())
-                        setImageHeight(getOriginalImageHeight())
-                        setImageLeft(0)
-                        setImageTop(0)
-                        updateMinimumZoom()
-                        callback()
-                    }
-                    img.src = this.responseText
-                }
-            }
-        };*/
-        //xhttp.open("GET", "imageData?id=" + id + "&page=" + (page-1), true)
         showSpinner()
-        document.searchTimestamp = timestamp
-        //xhttp.send()
-        var displayImageData = function(data) {
-            if (document.searchTimestamp == timestamp) {
+        document.pageDisplayTimestamp = timestamp
+        var displayPageInternalCallback = function(data) {
+            if (document.pageDisplayTimestamp == timestamp) {
                 hideSpinner()
                 var img = getImage()
                 img.onload = function() {
@@ -484,20 +467,18 @@
                     if (callback != null) {
                         callback()
                     }
-                    prefetch(id, page+1)
-                    prefetch(id, page+1)
+                    prefetch(page+1)
+                    prefetch(page-1)
                 }
                 img.src = data
             }
         }
         var imageData = getFromCache(page)
         if (imageData != null) {
-            console.log("image already in cache")
-            displayImageData(imageData)
+            displayPageInternalCallback(imageData)
         } else {
-            console.log("downloading image")
-            downloadImageData(id, page, function() {
-                displayImageData(getFromCache(page))
+            downloadImageData(page, function() {
+                displayPageInternalCallback(getFromCache(page))
             })
         }
     }
@@ -552,10 +533,13 @@
         return positions[i - 1]
     }
 
+    function getComicId() {
+        return document.comicId
+    }
+
     function goToNextPage() {
         if (getPage() < document.comicMaximumPages) {
-            console.log(getPage())
-            loadImageData(document.comicId, getPage() + 1, function() {
+            displayPage(getPage() + 1, function() {
                 updateImage()
             })
         }
@@ -563,7 +547,7 @@
 
     function goToPreviousPage() {
         if (getPage() > 1) {
-            loadImageData(document.comicId, getPage() - 1, function() {
+            displayPage(getPage() - 1, function() {
                 updateImage()
             })
         }
@@ -662,7 +646,7 @@
 
     function jumpToPage() {
         var page = getPage()
-        loadImageData(document.comicId, page, function() {
+        displayPage(page, function() {
             updateImage()
         })
     }
@@ -688,7 +672,6 @@
     }
 
     function removeProgress() {
-        console.log("removing progress")
         var xhttp = new XMLHttpRequest()
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
@@ -725,7 +708,6 @@
 <script>
         window.onload = function() {
             document.onkeydown = function(e) {
-                //console.log(e.keyCode)
                 if (e.keyCode == '38' || e.keyCode == '87') {
                     // up arrow or w
                     pan(0, getViewportHeight() / 2)
@@ -791,8 +773,7 @@
             setZoom(1.0)
             var startPage = num(getMeta("startPage")) + 1
 
-            loadImageData(document.comicId, startPage, function() {
-                console.log("fitting page to correct")
+            displayPage(startPage, function() {
                 var fit = getMeta("defaultFit")
                 if (fit == "width") {
                     fitPageToScreenWidth()
