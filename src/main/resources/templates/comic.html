@@ -281,11 +281,19 @@
         });
       };
 
+    function disablePinch(element) {
+        disableEventHandlers(element)
+        var hmr = new Hammer(element, { domEvents: true })
+        hmr.get('pinch').set({ enable: true });
+        hmr.on('pinchstart', function(ev) { ev.preventDefault() })
+        hmr.on('pinch', function(ev) { ev.preventDefault() })
+    }
+
     function enableTouchGestures(element) {
         disableEventHandlers(element)
         var hammertime = new Hammer(element, {
             domEvents: true
-            });
+            })
         hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
         hammertime.get('pinch').set({ enable: true });
 
@@ -651,14 +659,7 @@
             canv.addEventListener("mouseup", mouseUp)
             canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
-            /*canv.addEventListener("dblclick", function(event) {
-                event.preventDefault()
-                if (isPageFitToScreen()) {
-                    zoom(getZoom() * 3, event.clientX, event.clientY)
-                } else {
-                    fitPageToScreen()
-                }
-            })*/
+
             canv.addEventListener("click", function(event) {
                 event.preventDefault()
                 var timestamp = + new Date()
@@ -682,20 +683,12 @@
             })
 
             var prevDiv = document.getElementById("prev")
+            disablePinch(prevDiv)
             prevDiv.addEventListener("click", goToPreviousView)
-            // click functionality interferes with next div functionality
-            /*prevDiv.addEventListener("dblclick", function(event) {
-                event.preventDefault()
-                goToPreviousPage()
-            })*/
 
             var nextDiv = document.getElementById("next")
+            disablePinch(nextDiv)
             nextDiv.addEventListener("click", goToNextView)
-            // click functionality interferes with next div functionality
-            /*nextDiv.addEventListener("dblclick", function(event) {
-                event.preventDefault()
-                goToNextPage()
-            })*/
 
             addPagenumTriggerListener()
 
