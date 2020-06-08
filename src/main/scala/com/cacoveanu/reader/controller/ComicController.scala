@@ -50,9 +50,9 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/rescan"))
   @ResponseBody
-  def rescan() = {
-    comicService.forceUpdateLibrary()
-    ""
+  def rescan(@RequestParam(name="force", required = false) force: Boolean = false): RedirectView = {
+    comicService.scan(force)
+    new RedirectView("/")
   }
 
   @RequestMapping(Array("/collections"))

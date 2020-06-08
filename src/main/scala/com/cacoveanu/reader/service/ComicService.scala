@@ -69,9 +69,7 @@ class ComicService {
   @Scheduled(cron = "0 0 * * * *")
   def scheduledRescan() = scan(false)
 
-  def forceUpdateLibrary() = scan(true)
-
-  private def scan(force: Boolean = false) = Future {
+  def scan(force: Boolean = false) = Future {
     if (scanningCollection.compareAndSet(false, true)) {
       scanLibrary(comicsLocation, forceUpdate = force)
       scanningCollection.set(false)
