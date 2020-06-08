@@ -64,31 +64,19 @@ class ComicService {
   private implicit val executionContext = ExecutionContext.global
 
   @PostConstruct
-  def updateLibrary() = Future {
-    if (scanningCollection.compareAndSet(false, true)) {
-      scanLibrary(comicsLocation)
-      scanningCollection.set(false)
-    } else {
-      log.info("failed to force update the library, scan already in progress")
-    }
-  }
+  def updateLibrary() = scan(false)
 
   @Scheduled(cron = "0 0 * * * *")
-  def scheduledRescan() = Future {
-    if (scanningCollection.compareAndSet(false, true)) {
-      scanLibrary(comicsLocation)
-      scanningCollection.set(false)
-    } else {
-      log.info("failed to update the library, scan already in progress")
-    }
-  }
+  def scheduledRescan() = scan(false)
 
-  def forceUpdateLibrary() = Future {
+  def forceUpdateLibrary() = scan(true)
+
+  private def scan(force: Boolean = false) = Future {
     if (scanningCollection.compareAndSet(false, true)) {
-      scanLibrary(comicsLocation, forceUpdate = true)
+      scanLibrary(comicsLocation, forceUpdate = force)
       scanningCollection.set(false)
     } else {
-      log.info("failed to force update the library, scan already in progress")
+      log.info("failed to " + (if (force) "force " else "") + "update the library, scan already in progress")
     }
   }
 
@@ -112,10 +100,6 @@ class ComicService {
     comicRepository.findAll(pageRequest).asScala.toSeq
   }
 
-  def getCollection(): Seq[DbComic] = {
-    comicRepository.findAll().asScala.toSeq
-  }
-
   def loadComicProgress(user: DbUser, comic: DbComic): Option[ComicProgress] = {
     val progress = comicProgressRepository.findByUserAndComic(user, comic)
     Option(progress)
@@ -125,11 +109,7 @@ class ComicService {
     comicRepository.findAllCollections().asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser): Seq[ComicProgress] = {
-    comicProgressRepository.findByUser(user).asScala.toSeq
-  }
-
-  def loadComicProgress(user: DbUser, comicId: Long) = {
+  def loadComicProgress(user: DbUser, comicId: Long): Option[ComicProgress] = {
     comicProgressRepository.findByUserAndComicId(user, comicId).asScala
   }
 
@@ -145,10 +125,6 @@ class ComicService {
 
   def deleteComicProgress(progress: ComicProgress) = {
     comicProgressRepository.delete(progress)
-  }
-
-  def deleteComicProgress(progress: Seq[ComicProgress]) = {
-    comicProgressRepository.deleteAll(progress.asJava)
   }
 
   def saveComicProgress(progress: ComicProgress) = {
@@ -167,7 +143,7 @@ class ComicService {
   }
 
   private def computePagesForPart(part: Int) = {
-    ((part * COMIC_PART_SIZE) to (part * COMIC_PART_SIZE + COMIC_PART_SIZE - 1))
+    (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
   }
 
   def loadComic(id: Long): Option[DbComic] = {
@@ -186,19 +162,6 @@ class ComicService {
       case None => None
     }
   }
-
-  /*@Cacheable(Array("comics"))
-  def loadFullComic(id: Long): Option[DbComic] = {
-    comicRepository.findById(id).asScala match {
-      case Some(dbComic) => readPagesFromDisk(dbComic.path) match {
-        case Some(pages) =>
-          dbComic.pages = pages
-          Some(dbComic)
-        case None => None
-      }
-      case None => None
-    }
-  }*/
 
   private def readPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     FileUtil.getExtension(path) match {
@@ -350,7 +313,9 @@ class ComicService {
             Some(new DbComic(file, title, collection, cover.mediaType, smallerCoverData, totalPages))
           case None => None
         }
-      case _ => None
+      case _ =>
+        log.info(s" failed to load metadata for $file")
+        None
     }
 
   private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
@@ -358,25 +323,19 @@ class ComicService {
     val comicsInDatabase = comicRepository.findAll().asScala
     val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
     val filesInLibrary = FileUtil.scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
-    //log.info(s"scanned file library, found ${filesInLibrary.size} files")
     val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
-    //log.info(s"found ${newFiles.size} new files")
     comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
       .toSeq
       .toBatches()
       .foreach(batch => {
-        //log.info("deleting missing files batch")
         comicRepository.deleteAll(batch.asJava)
       })
-    //comicRepository.deleteAll(comicsToDelete.asJava)
     newFiles
       .toBatches()
       .foreach(batch => {
         val toSave = batch.flatMap(f => loadComicMetadataFromDisk(f))
-        //log.info(s"saving ${toSave.size} new files")
         comicRepository.saveAll(toSave.asJava)
       })
-    //comicRepository.saveAll(newComics.asJava)
 
     if (forceUpdate) {
       comicsInDatabase
@@ -390,7 +349,6 @@ class ComicService {
               Some(updatedComic)
             case None => None
           })
-          //log.info(s"updating ${toSave.size} existing files")
           comicRepository.saveAll(toSave.asJava)
         })
     }
