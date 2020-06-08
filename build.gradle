@@ -13,17 +13,6 @@ repositories {
 	mavenCentral()
 }
 
-/*sourceSets {
-	main {
-		scala {
-			srcDirs = ['src/main/scala', 'src/main/java']
-		}
-		java {
-			srcDirs = []
-		}
-	}
-}*/
-
 dependencies {
 	implementation 'org.scala-lang:scala-library:2.13.2'
 	implementation 'com.github.junrar:junrar:4.0.0'
@@ -33,13 +22,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-test'
-	//implementation 'org.springframework:spring-aspects:4.3.27.RELEASE'
-	//implementation 'org.aspectj:aspectjrt:1.9.5'
-	//implementation 'org.aspectj:aspectjweaver:1.9.5'
-	//implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-	//implementation 'org.slf4j:slf4j-api:1.7.6'
-	//implementation 'org.slf4j:slf4j-log4j12:1.7.5'
-
 	implementation 'org.postgresql:postgresql:9.4-1206-jdbc42'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
