@@ -28,7 +28,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-case class ComicPage(num: Int, mediaType: MediaType, data: Array[Byte])
+case class ComicPage(num: Int, mediaType: String, data: Array[Byte])
 
 object ComicService {
   val log: Logger = LoggerFactory.getLogger(classOf[ComicService])
@@ -44,7 +44,8 @@ class ComicService {
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
   private val COVER_RESIZE_MINIMAL_SIDE = 500
   private val PAGE_SIZE = 20
-  private val COMIC_PART_SIZE = 10
+  private val COMIC_PART_SIZE = 20
+  private val DB_UPDATE_BATCH_SIZE = 40
 
   private val scanningCollection = new AtomicBoolean(false)
 
@@ -131,9 +132,6 @@ class ComicService {
     comicProgressRepository.save(progress)
   }
 
-  private def isImageType(fileName: String) =
-    Seq("jpg", "jpeg", "png", "gif") contains FileUtil.getExtension(fileName)
-
   def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
 
   def computePartNumberForPage(page: Int) = {
@@ -169,7 +167,7 @@ class ComicService {
     }
   }
 
-  private def countPagesFromDisk(path: String): Option[Int] =
+  private[service] def countPagesFromDisk(path: String): Option[Int] =
     FileUtil.getExtension(path) match {
       case COMIC_TYPE_CBR => countCbrPagesFromDisk(path)
       case COMIC_TYPE_CBZ => countCbzPagesFromDisk(path)
@@ -179,7 +177,7 @@ class ComicService {
   private def getValidCbrPages(archive: Archive) = {
     archive.getFileHeaders.asScala.toSeq
       .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getFileNameString))
+      .filter(f => imageService.isImageType(f.getFileNameString))
       .sortBy(f => f.getFileNameString)
   }
 
@@ -234,7 +232,7 @@ class ComicService {
   private def getValidCbzPages(zipFile: ZipFile) = {
     zipFile.entries().asScala
       .filter(f => !f.isDirectory)
-      .filter(f => isImageType(f.getName))
+      .filter(f => imageService.isImageType(f.getName))
       .toSeq
       .sortBy(f => f.getName)
   }
@@ -288,11 +286,11 @@ class ComicService {
     }
   }
 
-  private def getComicTitle(path: String): Option[String] = {
+  private[service] def getComicTitle(path: String): Option[String] = {
     Option(FileUtil.getFileName(path))
   }
 
-  private def getComicCollection(path: String): Option[String] = {
+  private[service] def getComicCollection(path: String): Option[String] = {
     val pathObject = Paths.get(path);
     val collectionPath = Paths.get(comicsLocation).relativize(pathObject.getParent)
     Some(collectionPath.toString)
@@ -324,12 +322,12 @@ class ComicService {
     val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
     comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
       .toSeq
-      .toBatches()
+      .toBatches(DB_UPDATE_BATCH_SIZE)
       .foreach(batch => {
         comicRepository.deleteAll(batch.asJava)
       })
     newFiles
-      .toBatches()
+      .toBatches(DB_UPDATE_BATCH_SIZE)
       .foreach(batch => {
         val toSave = batch.flatMap(f => loadComicMetadataFromDisk(f))
         comicRepository.saveAll(toSave.asJava)
@@ -339,7 +337,7 @@ class ComicService {
       comicsInDatabase
         .filter(c => comicPathsInDatabase.contains(c.path))
         .toSeq
-        .toBatches()
+        .toBatches(DB_UPDATE_BATCH_SIZE)
         .foreach(batch => {
           val toSave = batch.flatMap(c => loadComicMetadataFromDisk(c.path) match {
             case Some(updatedComic) =>

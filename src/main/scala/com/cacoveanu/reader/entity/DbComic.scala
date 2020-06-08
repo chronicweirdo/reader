@@ -18,7 +18,7 @@ class DbComic {
 
   var collection: String = _
 
-  var mediaType: MediaType = _
+  var mediaType: String = _
 
   var cover: Array[Byte] = _
 
@@ -27,7 +27,7 @@ class DbComic {
   @Transient
   var pages: Seq[ComicPage] = _
 
-  def this(path: String, title: String, collection: String, mediaType: MediaType, cover: Array[Byte], totalPages: Int) = {
+  def this(path: String, title: String, collection: String, mediaType: String, cover: Array[Byte], totalPages: Int) = {
     this()
     this.path = path
     this.title = title

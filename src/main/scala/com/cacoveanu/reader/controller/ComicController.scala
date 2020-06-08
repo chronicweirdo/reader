@@ -45,7 +45,7 @@ case class CollectionPage(
 @Controller
 class ComicController @Autowired() (private val comicService: ComicService, private val userService: UserService) {
 
-  private def base64Image(mediaType: MediaType, image: Array[Byte]) =
+  private def base64Image(mediaType: String, image: Array[Byte]) =
     "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
 
   @RequestMapping(Array("/rescan"))
