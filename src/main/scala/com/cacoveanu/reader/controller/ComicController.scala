@@ -143,11 +143,11 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
 
   @RequestMapping(Array("/comic"))
   def getComic(@RequestParam(name="id") id: Int, model: Model, principal: Principal): String = {
-    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
+    (userService.loadUser(principal.getName), comicService.loadComic(id)) match {
       case (Some(user), Some(comic)) =>
         val progress = comicService.loadComicProgress(user, comic)
         model.addAttribute("id", id)
-        model.addAttribute("pages", comic.pages.size)
+        model.addAttribute("pages", comic.totalPages)
         model.addAttribute("title", comic.title)
         model.addAttribute("startPage", progress.map(p => p.page).getOrElse(0))
         "comic"
@@ -194,9 +194,12 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @RequestMapping(Array("/imageData"))
   @ResponseBody
   def getImageData(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): String = {
-    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
-      case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        base64Image(comic.pages(page).mediaType, comic.pages(page).data)
+    (userService.loadUser(principal.getName), comicService.loadComicPart(id, comicService.computePartNumberForPage(page))) match {
+      case (Some(user), Some(comic)) =>
+        comic.pages.find(p => p.num == page) match {
+          case Some(p) => base64Image(p.mediaType, p.data)
+          case None => ""
+        }
       case _ => ""
     }
   }
@@ -206,9 +209,9 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     method=Array(RequestMethod.PUT)
   )
   def markProgress(@RequestParam("id") id: Int, @RequestParam("page") page: Int, principal: Principal): ResponseEntity[String] = {
-    (userService.loadUser(principal.getName), comicService.loadFullComic(id)) match {
-      case (Some(user), Some(comic)) if comic.pages.indices contains page =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.pages.size, new Date()))
+    (userService.loadUser(principal.getName), comicService.loadComic(id)) match {
+      case (Some(user), Some(comic)) if page < comic.totalPages =>
+        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.totalPages, new Date()))
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }
