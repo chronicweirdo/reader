@@ -9,11 +9,10 @@ import com.cacoveanu.reader.entity.{ComicProgress, DbComic}
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.{HttpMethod, HttpStatus, MediaType, ResponseEntity}
-import org.springframework.web.servlet.ModelAndView
+import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody, RestController}
+import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
 import scala.beans.BeanProperty
@@ -31,10 +30,6 @@ case class UiComic(
                     @BeanProperty progress: Int,
                     @BeanProperty pages: Int
                   )
-
-class RemoveProgressForm {
-  @BeanProperty var ids: java.util.List[Long] = _
-}
 
 class ChangePasswordForm {
   @BeanProperty var oldPassword: String = _
