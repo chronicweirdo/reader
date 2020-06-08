@@ -155,24 +155,6 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
     }
   }
 
-
-
-  /*@RequestMapping(
-    value=Array("/removeProgress"),
-    method=Array(RequestMethod.POST),
-    consumes=Array(MediaType.APPLICATION_JSON_VALUE)
-  )
-  @ResponseBody
-  def removeProgress(@RequestBody data: RemoveProgressForm, principal: Principal): String = {
-    userService.loadUser(principal.getName) match {
-      case Some(user) =>
-        val progress: Seq[ComicProgress] = comicService.loadComicProgress(user)
-        val progressToDelete = progress.filter(p => data.ids.asScala.contains(p.comic.id))
-        comicService.deleteComicProgress(progressToDelete)
-    }
-    ""
-  }*/
-
   @RequestMapping(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)

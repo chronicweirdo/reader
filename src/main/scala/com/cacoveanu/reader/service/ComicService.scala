@@ -2,6 +2,7 @@ package com.cacoveanu.reader.service
 
 import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.{ZipEntry, ZipFile}
 
 import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
@@ -45,6 +46,8 @@ class ComicService {
   private val PAGE_SIZE = 20
   private val COMIC_PART_SIZE = 10
 
+  private val scanningCollection = new AtomicBoolean(false)
+
   @Value("${comics.location}")
   @BeanProperty
   var comicsLocation: String = _
@@ -60,18 +63,33 @@ class ComicService {
 
   private implicit val executionContext = ExecutionContext.global
 
-  //@PostConstruct
+  @PostConstruct
   def updateLibrary() = Future {
-    scanLibrary(comicsLocation)
+    if (scanningCollection.compareAndSet(false, true)) {
+      scanLibrary(comicsLocation)
+      scanningCollection.set(false)
+    } else {
+      log.info("failed to force update the library, scan already in progress")
+    }
   }
 
   @Scheduled(cron = "0 0 * * * *")
   def scheduledRescan() = Future {
-    scanLibrary(comicsLocation)
+    if (scanningCollection.compareAndSet(false, true)) {
+      scanLibrary(comicsLocation)
+      scanningCollection.set(false)
+    } else {
+      log.info("failed to update the library, scan already in progress")
+    }
   }
 
   def forceUpdateLibrary() = Future {
-    scanLibrary(comicsLocation, forceUpdate = true)
+    if (scanningCollection.compareAndSet(false, true)) {
+      scanLibrary(comicsLocation, forceUpdate = true)
+      scanningCollection.set(false)
+    } else {
+      log.info("failed to force update the library, scan already in progress")
+    }
   }
 
   private def prepareSearchTerm(original: String): String = {
@@ -151,11 +169,6 @@ class ComicService {
   private def computePagesForPart(part: Int) = {
     ((part * COMIC_PART_SIZE) to (part * COMIC_PART_SIZE + COMIC_PART_SIZE - 1))
   }
-
-  /*def loadPartialComicForPage(id: Long, page: Int): Option[DbComic] = {
-    val part = computePartNumberForPage(page)
-    loadComicPart(id, part)
-  }*/
 
   def loadComic(id: Long): Option[DbComic] = {
     comicRepository.findById(id).asScala
@@ -345,14 +358,14 @@ class ComicService {
     val comicsInDatabase = comicRepository.findAll().asScala
     val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
     val filesInLibrary = FileUtil.scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
-    log.info(s"scanned file library, found ${filesInLibrary.size} files")
+    //log.info(s"scanned file library, found ${filesInLibrary.size} files")
     val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
-    log.info(s"found ${newFiles.size} new files")
+    //log.info(s"found ${newFiles.size} new files")
     comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
       .toSeq
       .toBatches()
       .foreach(batch => {
-        log.info("deleting missing files batch")
+        //log.info("deleting missing files batch")
         comicRepository.deleteAll(batch.asJava)
       })
     //comicRepository.deleteAll(comicsToDelete.asJava)
@@ -360,7 +373,7 @@ class ComicService {
       .toBatches()
       .foreach(batch => {
         val toSave = batch.flatMap(f => loadComicMetadataFromDisk(f))
-        log.info(s"saving ${toSave.size} new files")
+        //log.info(s"saving ${toSave.size} new files")
         comicRepository.saveAll(toSave.asJava)
       })
     //comicRepository.saveAll(newComics.asJava)
@@ -377,7 +390,7 @@ class ComicService {
               Some(updatedComic)
             case None => None
           })
-          log.info(s"updating ${toSave.size} existing files")
+          //log.info(s"updating ${toSave.size} existing files")
           comicRepository.saveAll(toSave.asJava)
         })
     }
