@@ -28,7 +28,7 @@ class ComicProgress {
 
   var lastUpdate: Date = _
 
-  def this(user: DbUser, comic: DbComic, page: Int, totalPages: Int, lastUpdate: Date) {
+  def this(user: DbUser, comic: DbComic, page: Int, totalPages: Int, lastUpdate: Date) = {
     this()
     this.user = user
     this.comic = comic

@@ -26,7 +26,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-case class ComicPage(mediaType: MediaType, data: Array[Byte])
+case class ComicPage(num: Int, mediaType: MediaType, data: Array[Byte])
 
 object ComicService {
   val log: Logger = LoggerFactory.getLogger(classOf[ComicService])
@@ -170,29 +170,27 @@ class ComicService {
     try {
       archive = new Archive(new FileInputStream(path))
 
-      val sortedImageFiles: Seq[FileHeader] = archive.getFileHeaders.asScala.toSeq
+      val sortedImageFiles: Seq[(FileHeader, Int)] = archive.getFileHeaders.asScala.toSeq
         .filter(f => !f.isDirectory)
         .filter(f => isImageType(f.getFileNameString))
         .sortBy(f => f.getFileNameString)
+        .zipWithIndex
 
-      val selectedImageFiles: Seq[FileHeader] = pages match {
+      val selectedImageFiles: Seq[(FileHeader, Int)] = pages match {
         case Some(pgs) =>
-          sortedImageFiles
-            .zipWithIndex
-            .filter { case (_, index) => pgs.contains(index) }
-            .map { case (fileHeader, _) => fileHeader }
+          sortedImageFiles.filter { case (_, index) => pgs.contains(index) }
         case None =>
           sortedImageFiles
       }
 
       val selectedImageData: Seq[ComicPage] = selectedImageFiles
-        .flatMap(archiveFile => imageService.getMediaType(archiveFile.getFileNameString) match {
+        .flatMap{ case(archiveFile, index) => imageService.getMediaType(archiveFile.getFileNameString) match {
           case Some(mediaType) =>
             val fileContents = new ByteArrayOutputStream()
             archive.extractFile(archiveFile, fileContents)
-            Some(ComicPage(mediaType, fileContents.toByteArray))
+            Some(ComicPage(index, mediaType, fileContents.toByteArray))
           case None => None
-        })
+        }}
 
       Some(selectedImageData)
     } catch {
@@ -210,31 +208,29 @@ class ComicService {
     try {
       zipFile = new ZipFile(path)
 
-      val sortedImageFiles: Seq[ZipEntry] = zipFile.entries().asScala
+      val sortedImageFiles: Seq[(ZipEntry, Int)] = zipFile.entries().asScala
         .filter(f => !f.isDirectory)
         .filter(f => isImageType(f.getName))
         .toSeq
         .sortBy(f => f.getName)
+        .zipWithIndex
 
-      val selectedImageFiles: Seq[ZipEntry] = pages match {
+      val selectedImageFiles: Seq[(ZipEntry, Int)] = pages match {
         case Some(pgs) =>
-          sortedImageFiles
-            .zipWithIndex
-            .filter { case (_, index) => pgs.contains(index) }
-            .map { case (fileHeader, _) => fileHeader }
+          sortedImageFiles.filter { case (_, index) => pgs.contains(index) }
         case None =>
           sortedImageFiles
       }
 
       val selectedImageData: Seq[ComicPage] = selectedImageFiles
-        .flatMap(file => imageService.getMediaType(file.getName) match {
+        .flatMap{ case (file, index) => imageService.getMediaType(file.getName) match {
           case Some(mediaType) =>
             val fileContents = zipFile.getInputStream(file)
             val bos = new ByteArrayOutputStream()
             IOUtils.copy(fileContents, bos)
-            Some(ComicPage(mediaType, bos.toByteArray))
+            Some(ComicPage(index, mediaType, bos.toByteArray))
           case None => None
-        })
+        }}
 
       Some(selectedImageData)
     } catch {
