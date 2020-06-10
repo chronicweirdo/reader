@@ -397,7 +397,7 @@
         }
     }
     function getMaximumCacheSize() {
-        return 7
+        return 10
     }
     function getCacheSize() {
         return Object.keys(document.comicPageCache).length
@@ -448,9 +448,13 @@
         xhttp.send()
     }
 
-    function prefetch(page) {
+    function prefetch(page, callback) {
         if (! cacheContains(page)) {
-            downloadImageData(page, null)
+            downloadImageData(page, callback)
+        } else {
+            if (callback != null) {
+                callback()
+            }
         }
     }
 
@@ -474,8 +478,15 @@
                     if (callback != null) {
                         callback()
                     }
-                    prefetch(page+1)
-                    prefetch(page-1)
+                    prefetch(page+1, function() {
+                        prefetch(page+2, function() {
+                            prefetch(page+3, function() {
+                                prefetch(page-1, function() {
+                                    prefetch(page-2, null)
+                                })
+                            })
+                        })
+                    })
                 }
                 img.src = data
             }
