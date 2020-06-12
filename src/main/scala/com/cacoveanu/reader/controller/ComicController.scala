@@ -144,6 +144,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         model.addAttribute("id", id)
         model.addAttribute("pages", comic.totalPages)
         model.addAttribute("title", comic.title)
+        model.addAttribute("collection", comic.collection)
         model.addAttribute("startPage", progress.map(p => p.page).getOrElse(0))
         "comic"
       case _ => ""
