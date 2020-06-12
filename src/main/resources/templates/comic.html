@@ -233,18 +233,47 @@
         zoom(newZoom, zoomCenterX, zoomCenterY)
     }
     var drag = false;
+    var mouseDownX = null;
+    var mouseDownY = null;
     function mouseDown(e) {
         e.preventDefault()
+        mouseDownX = e.clientX
+        mouseDownY = e.clientY
         drag = true;
     }
     function mouseUp(e) {
         drag = false;
+        if (mouseDownX == e.clientX && mouseDownY == e.clientY) {
+            // the mouse did not move, it's a click
+            click(e)
+        }
     }
     var panSpeed = 2
     function mouseMove(e) {
         if (drag) {
             pan(e.movementX * panSpeed, e.movementY * panSpeed)
         }
+    }
+    function click(event) {
+        event.preventDefault()
+        var timestamp = + new Date()
+        document.clickTimestamp = timestamp
+        window.setTimeout(function() {
+            if (document.clickTimestamp && document.clickTimestamp != null) {
+                if (document.clickTimestamp > timestamp) {
+                    //there has been aother click in the meantime, double click
+                    if (isPageFitToScreen()) {
+                        zoom(getZoom() * 2.5, event.clientX, event.clientY)
+                    } else {
+                        fitPageToScreen()
+                    }
+                } else {
+                    // simple click
+                    toggleTools()
+                }
+                document.clickTimestamp = null
+            }
+        }, 300)
     }
 
     function fitPageToScreenWidth() {
@@ -755,28 +784,6 @@
             canv.addEventListener("mouseup", mouseUp)
             canv.addEventListener("mouseout", mouseUp)
             canv.addEventListener("mousemove", mouseMove)
-
-            canv.addEventListener("click", function(event) {
-                event.preventDefault()
-                var timestamp = + new Date()
-                document.clickTimestamp = timestamp
-                window.setTimeout(function() {
-                    if (document.clickTimestamp && document.clickTimestamp != null) {
-                        if (document.clickTimestamp > timestamp) {
-                            //there has been aother click in the meantime, double click
-                            if (isPageFitToScreen()) {
-                                zoom(getZoom() * 2.5, event.clientX, event.clientY)
-                            } else {
-                                fitPageToScreen()
-                            }
-                        } else {
-                            // simple click
-                            toggleTools()
-                        }
-                        document.clickTimestamp = null
-                    }
-                }, 300)
-            })
 
             var prevDiv = document.getElementById("prev")
             disablePinch(prevDiv)
