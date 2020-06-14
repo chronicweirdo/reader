@@ -383,6 +383,14 @@
     function getOriginalImageHeight() {
         return getImage().naturalHeight
     }
+    function getHorizontalJumpPercentage() {
+        if (getViewportHeight() > getViewportWidth()) return .9
+        else return .5
+    }
+    function getVerticalJumpPercentage() {
+        if (getViewportHeight() > getViewportWidth()) return .5
+        else return .9
+    }
     function setImageLeft(left) {
         getImage().style.left = left + "px"
     }
@@ -551,33 +559,17 @@
         return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0)
     }
 
-    function computePositions(imageDimension, viewportDimension) {
-        if (imageDimension > viewportDimension) {
-            var numberOfPositions = Math.ceil(imageDimension / viewportDimension)
-            var iter = (imageDimension - viewportDimension) / (numberOfPositions-1)
-            var pos = []
-            for (var i = 0; i < numberOfPositions; i++) {
-                pos.push(- i * iter)
-            }
-            return pos
-        } else {
-            return [0]
-        }
+    function getNextPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage) {
+        if (imageValue <= viewportDimension - imageDimension) return 0
+        var proposedNextPosition = (imageValue - viewportDimension *  viewportJumpPercentage) | 0
+        if (proposedNextPosition < viewportDimension - imageDimension) return viewportDimension - imageDimension
+        return proposedNextPosition
     }
-
-    function getNextPosition(imageDimension, viewportDimension, imageValue) {
-        var positions = computePositions(imageDimension, viewportDimension)
-        var i = 0
-        while (i < positions.length && positions[i] >= imageValue) i++
-        if (i == positions.length) i = 0
-        return positions[i]
-    }
-    function getPreviousPosition(imageDimension, viewportDimension, imageValue) {
-        var positions = computePositions(imageDimension, viewportDimension)
-        var i = 0
-        while (i < positions.length && positions[i] > imageValue) i++
-        if (i == 0) i = positions.length
-        return positions[i - 1]
+    function getPreviousPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage) {
+        if (imageValue >= 0) return viewportDimension - imageDimension
+        var proposedPreviousPosition = (imageValue + viewportDimension * viewportJumpPercentage) | 0
+        if (proposedPreviousPosition > 0) return 0
+        return proposedPreviousPosition
     }
 
     function getComicId() {
@@ -605,12 +597,12 @@
             if (isEndOfColumn()) {
                 goToNextPage()
             } else {
-                setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft()))
-                setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop()))
+                setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
+                setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage()))
                 updateImage()
             }
         } else {
-            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft()))
+            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
             updateImage()
         }
     }
@@ -649,12 +641,12 @@
             if (isBeginningOfColumn()) {
                 goToPreviousPage()
             } else {
-                setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft()))
-                setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop()))
+                setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
+                setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage()))
                 updateImage()
             }
         } else {
-            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft()))
+            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
             updateImage()
         }
 
