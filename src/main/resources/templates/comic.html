@@ -537,15 +537,23 @@
         document.title = title
     }
 
-    function approx(val1, val2) {
-        return Math.abs(val1 - val2) < 1
+    function approx(val1, val2, threshold = 1) {
+        return Math.abs(val1 - val2) < threshold
+    }
+
+    function getRowThreshold() {
+        return getImageWidth() * .1
+    }
+
+    function getColumnThreshold() {
+        return getImageHeight() * .15
     }
 
     function isEndOfRow() {
-        return (getImage().width <= getViewportWidth()) || approx(getImageLeft() + getImageWidth(), getViewportWidth())
+        return (getImage().width <= getViewportWidth()) || approx(getImageLeft() + getImageWidth(), getViewportWidth(), getRowThreshold())
     }
     function isBeginningOfRow() {
-        return (getImage().width <= getViewportWidth()) || approx(getImageLeft(), 0)
+        return (getImage().width <= getViewportWidth()) || approx(getImageLeft(), 0, getRowThreshold())
     }
 
     function isEndOfColumn() {
@@ -555,14 +563,14 @@
         return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0)
     }
 
-    function getNextPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage) {
-        if (imageValue <= viewportDimension - imageDimension) return 0
+    function getNextPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
+        if (approx(imageValue, viewportDimension - imageDimension, threshold)) return 0
         var proposedNextPosition = (imageValue - viewportDimension *  viewportJumpPercentage) | 0
         if (proposedNextPosition < viewportDimension - imageDimension) return viewportDimension - imageDimension
         return proposedNextPosition
     }
-    function getPreviousPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage) {
-        if (imageValue >= 0) return viewportDimension - imageDimension
+    function getPreviousPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
+        if (approx(imageValue, 0, threshold)) return viewportDimension - imageDimension
         var proposedPreviousPosition = (imageValue + viewportDimension * viewportJumpPercentage) | 0
         if (proposedPreviousPosition > 0) return 0
         return proposedPreviousPosition
@@ -593,12 +601,12 @@
             if (isEndOfColumn()) {
                 goToNextPage()
             } else {
-                setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
-                setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage()))
+                setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
+                setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
                 updateImage()
             }
         } else {
-            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
+            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
             updateImage()
         }
     }
@@ -637,12 +645,12 @@
             if (isBeginningOfColumn()) {
                 goToPreviousPage()
             } else {
-                setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
-                setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage()))
+                setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
+                setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
                 updateImage()
             }
         } else {
-            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage()))
+            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
             updateImage()
         }
 
