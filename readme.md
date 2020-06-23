@@ -205,6 +205,7 @@ New release can be done by stopping the service, copying the new jar, and starti
 - [x] Make drag work on all areas of the screen (drag can also start on edges)
 - [x] Make drag faster
 - [x] make double click work the same everywhere on the page (including edges)
+- [] Use comic checksum to id comics (to be used in case the comic name and path changes)
 - [] add preferences for users
     - preferences could be added for pan speed (currently 3), jump zoom factor (currently 2.5), how many recent comics to display (currently 6)
     - maybe a preference to turn on or off experimental features, if they exist (jump between panels or not, if it is implemented)

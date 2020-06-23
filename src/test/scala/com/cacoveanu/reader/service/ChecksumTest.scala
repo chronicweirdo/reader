@@ -8,8 +8,13 @@ import java.util.Base64
 
 object ChecksumTest {
 
-  def getFileChecksum(path: String) = {
-    val md = MessageDigest.getInstance("MD5")
+  /*
+    SHA1
+    SHA-256
+    SHA-512
+   */
+  def getFileChecksum(path: String, algorithm: String = "MD5") = {
+    val md = MessageDigest.getInstance(algorithm)
     try {
       val is = Files.newInputStream(Paths.get(path))
       val dis = new DigestInputStream(is, md)
@@ -52,9 +57,9 @@ object ChecksumTest {
     val f2 = "C:\\Users\\silvi\\Desktop\\comic2.cbz"
     val f3 = "C:\\Users\\silvi\\Desktop\\a very different name for a comic.cbz"
 
-    println(base64(getFileChecksum(f1)))
-    println(base64(getFileChecksum(f2)))
-    println(base64(getFileChecksum(f3)))
+    println(base64(getFileChecksum(f1, "SHA-512")))
+    println(base64(getFileChecksum(f2, "SHA-512")))
+    println(base64(getFileChecksum(f3, "SHA-512")))
   }
 
 }
