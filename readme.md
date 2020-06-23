@@ -213,3 +213,5 @@ New release can be done by stopping the service, copying the new jar, and starti
 ## Panel Detection
 
 Edge detection https://en.wikipedia.org/wiki/Edge_detection
+
+http://www.pages.drexel.edu/~nk752/cannyTut2.html

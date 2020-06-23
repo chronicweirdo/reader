@@ -108,6 +108,34 @@ object EdgeDetection {
     out
   }
 
+  def canny(img: BufferedImage): BufferedImage = {
+    val sobelHorizontal = new CustomFilter(3, 3, Array(1f, 2f, 1f, 0, 0, 0, -1f, -2f, -1f))
+    val gx = sobelHorizontal.process(img)
+    val sobelVertical = new CustomFilter(3, 3, Array(1f, 0, -1, 2, 0, -2, 1, 0, -1))
+    val gy = sobelVertical.process(img)
+
+    // compute edge gradient values
+    val gradient = Array[Double](img.getHeight() * img.getWidth())
+    val edgeDirection = Array[Int](img.getHeight() * img.getWidth())
+    for (y <- 1 until img.getHeight - 1) {
+      for (x <- 1 until img.getWidth - 1) {
+        gradient(img.getWidth * y + x) = Math.sqrt(Math.pow(gx.getRGB(x, y), 2) + Math.pow(gy.getRGB(x, y), 2))
+        val angle = (Math.atan2(gy.getRGB(x, y), gx.getRGB(x, y)) / Math.PI) * 180.0
+
+        /* Convert actual edge direction to approximate value *//* Convert actual edge direction to approximate value */
+        val newAngle = if (((angle < 22.5) && (angle > -22.5)) || (angle > 157.5) || (angle < -157.5)) 0
+          else if (((angle > 22.5) && (angle < 67.5)) || ((angle < -112.5) && (angle > -157.5))) 45
+          else if (((angle > 67.5) && (angle < 112.5)) || ((angle < -67.5) && (angle > -112.5))) 90
+          else if (((angle > 112.5) && (angle < 157.5)) || ((angle < -22.5) && (angle > -67.5))) 135
+          else 0
+        edgeDirection(img.getWidth * y + x) = newAngle
+      }
+    }
+
+    null
+
+  }
+
   def main(args: Array[String]): Unit = {
     val inputImagePath = "input.jpg"
 
