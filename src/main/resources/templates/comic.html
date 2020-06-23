@@ -241,11 +241,11 @@
         mouseDownY = e.clientY
         drag = true;
     }
-    function mouseUp(e) {
+    function mouseUp(e, clickAction, doubleClickAction) {
         drag = false;
         if (mouseDownX == e.clientX && mouseDownY == e.clientY) {
             // the mouse did not move, it's a click
-            click(e)
+            click(e, clickAction, doubleClickAction)
         }
     }
     var panSpeed = 2
@@ -254,7 +254,14 @@
             pan(e.movementX * panSpeed, e.movementY * panSpeed)
         }
     }
-    function click(event) {
+    function zoomJump(event) {
+        if (isPageFitToScreen()) {
+            zoom(getZoom() * 2.5, event.clientX, event.clientY)
+        } else {
+            fitPageToScreen()
+        }
+    }
+    function click(event, clickAction, doubleClickAction) {
         event.preventDefault()
         var timestamp = + new Date()
         document.clickTimestamp = timestamp
@@ -262,14 +269,10 @@
             if (document.clickTimestamp && document.clickTimestamp != null) {
                 if (document.clickTimestamp > timestamp) {
                     //there has been aother click in the meantime, double click
-                    if (isPageFitToScreen()) {
-                        zoom(getZoom() * 2.5, event.clientX, event.clientY)
-                    } else {
-                        fitPageToScreen()
-                    }
+                    if (doubleClickAction != null) doubleClickAction(event)
                 } else {
                     // simple click
-                    toggleTools()
+                    if (clickAction != null) clickAction(event)
                 }
                 document.clickTimestamp = null
             }
@@ -309,14 +312,6 @@
           };
         });
       };
-
-    function disablePinch(element) {
-        disableEventHandlers(element)
-        var hmr = new Hammer(element, { domEvents: true })
-        hmr.get('pinch').set({ enable: true });
-        hmr.on('pinchstart', function(ev) { ev.preventDefault() })
-        hmr.on('pinch', function(ev) { ev.preventDefault() })
-    }
 
     function enableTouchGestures(element) {
         disableEventHandlers(element)
@@ -727,6 +722,36 @@
         window.history.back();
     }
 
+    function enableGesturesOnElement(element, clickAction, doubleClickAction) {
+        enableTouchGestures(element)
+        element.addEventListener("wheel", mouseWheelScroll)
+        element.addEventListener("mousedown", mouseDown)
+        element.addEventListener("mouseup", (event) => mouseUp(event, clickAction, doubleClickAction))
+        element.addEventListener("mouseout", mouseUp)
+        element.addEventListener("mousemove", mouseMove)
+    }
+
+    function enableKeyboardGestures() {
+        document.onkeydown = function(e) {
+            if (e.keyCode == '38' || e.keyCode == '87') {
+                // up arrow or w
+                pan(0, getViewportHeight() / 2)
+            }
+            else if (e.keyCode == '40' || e.keyCode == '83') {
+                // down arrow or s
+                pan(0, - (getViewportHeight() / 2))
+            }
+            else if (e.keyCode == '37' || e.keyCode == '65') {
+                // left arrow or a
+                goToPreviousView()
+            }
+            else if (e.keyCode == '39' || e.keyCode == '68') {
+                // right arrow or d
+                goToNextView()
+            }
+        }
+    }
+
 </script>
 </head>
 <body onresize="handleResize()">
@@ -755,40 +780,11 @@
 </div>
 <script>
         window.onload = function() {
-            document.onkeydown = function(e) {
-                if (e.keyCode == '38' || e.keyCode == '87') {
-                    // up arrow or w
-                    pan(0, getViewportHeight() / 2)
-                }
-                else if (e.keyCode == '40' || e.keyCode == '83') {
-                    // down arrow or s
-                    pan(0, - (getViewportHeight() / 2))
-                }
-                else if (e.keyCode == '37' || e.keyCode == '65') {
-                    // left arrow or a
-                    goToPreviousView()
-                }
-                else if (e.keyCode == '39' || e.keyCode == '68') {
-                    // right arrow or d
-                    goToNextView()
-                }
-            }
+            enableKeyboardGestures()
 
-            var canv = document.getElementById("canv")
-            enableTouchGestures(canv)
-            canv.addEventListener("wheel", mouseWheelScroll)
-            canv.addEventListener("mousedown", mouseDown)
-            canv.addEventListener("mouseup", mouseUp)
-            canv.addEventListener("mouseout", mouseUp)
-            canv.addEventListener("mousemove", mouseMove)
-
-            var prevDiv = document.getElementById("prev")
-            disablePinch(prevDiv)
-            prevDiv.addEventListener("click", goToPreviousView)
-
-            var nextDiv = document.getElementById("next")
-            disablePinch(nextDiv)
-            nextDiv.addEventListener("click", goToNextView)
+            enableGesturesOnElement(document.getElementById("canv"), toggleTools, zoomJump)
+            enableGesturesOnElement(document.getElementById("prev"), goToPreviousView, zoomJump)
+            enableGesturesOnElement(document.getElementById("next"), goToNextView, zoomJump)
 
             addPagenumTriggerListener()
 
