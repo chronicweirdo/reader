@@ -202,3 +202,14 @@ New release can be done by stopping the service, copying the new jar, and starti
 - [] reload home page when clearing search?
 - [x] Adjust tablet sizing of home page to account for the scroll bar size (make comic pages a tini bit smaller)
 - [x] set zindex of spinner to high on home page
+- [x] Make drag work on all areas of the screen (drag can also start on edges)
+- [x] Make drag faster
+- [x] make double click work the same everywhere on the page (including edges)
+- [] add preferences for users
+    - preferences could be added for pan speed (currently 3), jump zoom factor (currently 2.5), how many recent comics to display (currently 6)
+    - maybe a preference to turn on or off experimental features, if they exist (jump between panels or not, if it is implemented)
+- [] use image processing to identify the comic panels, and jump from panel to panel (adjusting pan and zoom so the full panel is in view);
+
+## Panel Detection
+
+Edge detection https://en.wikipedia.org/wiki/Edge_detection
