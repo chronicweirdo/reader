@@ -248,10 +248,12 @@
             click(e, clickAction, doubleClickAction)
         }
     }
-    var panSpeed = 2
+    function getPanSpeed() {
+        return 3
+    }
     function mouseMove(e) {
         if (drag) {
-            pan(e.movementX * panSpeed, e.movementY * panSpeed)
+            pan(e.movementX * getPanSpeed(), e.movementY * getPanSpeed())
         }
     }
     function zoomJump(event) {
@@ -321,14 +323,13 @@
         hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
         hammertime.get('pinch').set({ enable: true });
 
-        var touchscreenPanAttenuator = 1
         var panPreviousDeltaX = 0
         var panPreviousDeltaY = 0
 
         hammertime.on('pan', function(ev) {
             var currentDeltaX = ev.deltaX - panPreviousDeltaX
             var currentDeltaY = ev.deltaY - panPreviousDeltaY
-            pan(currentDeltaX * touchscreenPanAttenuator, currentDeltaY * touchscreenPanAttenuator)
+            pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
             panPreviousDeltaX = ev.deltaX
             panPreviousDeltaY = ev.deltaY
         });
