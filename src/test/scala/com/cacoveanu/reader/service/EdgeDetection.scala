@@ -7,6 +7,7 @@ import java.nio.file.{Files, Paths}
 import java.awt.Graphics2D
 
 import javax.imageio.ImageIO
+import jcanny.JCanny
 
 trait MyFilter {
   def process(image: BufferedImage): BufferedImage
@@ -89,6 +90,24 @@ object EdgeDetection {
     out
   }*/
 
+  def rgb(r: Int, g: Int, b: Int, a: Int = 255) = ((a&0x0ff)<<24)|((r&0x0ff)<<16)|((g&0x0ff)<<8)|(b&0x0ff)
+
+  def threshold(img: BufferedImage, t: Int): BufferedImage = {
+    val out = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY)
+    for (x <- 0 until img.getWidth()) {
+      for (y <- 0 until img.getHeight()) {
+        //println(img.getRGB(x, y))
+        if (img.getRGB(x, y) >= t) {
+          out.setRGB(x, y, img.getRGB(x, y))
+        } else {
+          out.setRGB(x, y, 0)
+        }
+      }
+    }
+
+    out
+  }
+
   def combine(img1: BufferedImage, img2: BufferedImage): BufferedImage = {
     val out = new BufferedImage(
       Math.min(img1.getWidth(), img2.getWidth()),
@@ -140,6 +159,14 @@ object EdgeDetection {
     val inputImagePath = "input.jpg"
 
     val image: BufferedImage = loadImage(inputImagePath)
+    val grayImage = toGrayscale(image)
+    val blackImage = toBW(image)
+    val hFilter = new CustomFilter(3, 1, Array(-1f, 0, 1))
+    var hEdges = grayImage
+    //for (i <- 0 to 5)
+    hEdges = hFilter.process(hEdges)
+    hEdges = threshold(hEdges, rgb(220, 220, 220))
+    imageToFile(hEdges, "h.jpg")
 
     /*for (x <- 0 to (image.getWidth / 4)) {
       for (y <- 0 to (image.getHeight / 4)) {
@@ -147,7 +174,7 @@ object EdgeDetection {
       }
     }*/
 
-    val gaussianFilter = new GaussianFilter
+    /*val gaussianFilter = new GaussianFilter
     val blurredImage = gaussianFilter.process(image)
     val bwImage = toBW(blurredImage)
 
@@ -165,7 +192,7 @@ object EdgeDetection {
     imageToFile(s2, "s2.jpg")
 
     val s = combine(s1, s2)
-    imageToFile(s, "s.jpg")
+    imageToFile(s, "s.jpg")*/
 
     //val g: Graphics = image.getGraphics
 

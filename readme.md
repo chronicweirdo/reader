@@ -215,3 +215,7 @@ New release can be done by stopping the service, copying the new jar, and starti
 Edge detection https://en.wikipedia.org/wiki/Edge_detection
 
 http://www.pages.drexel.edu/~nk752/cannyTut2.html
+
+https://docs.opencv.org/2.4/doc/tutorials/introduction/desktop_java/java_dev_intro.html
+
+https://github.com/rstreet85/JCanny
