@@ -215,6 +215,16 @@ New release can be done by stopping the service, copying the new jar, and starti
 
 https://docs.oracle.com/javase/tutorial/essential/io/notification.html
 
+- since switching to using file checksum for comic id, scanning the disk will take several minutes
+- can't do this every hour, maybe should not do this evey 3 hours either (it takes over )
+- I need a new scanner service that deals with this
+- a watcher on every folder, for changes
+- if a folder is deleted, remove its watcher
+- if a folder is added, also add a watcher
+- if a file in a folder is added, full scan and save to database
+- if a file in a folder is changed, again full scan and save to database
+- if a file in a folde
+
 ## Panel Detection
 
 Edge detection https://en.wikipedia.org/wiki/Edge_detection

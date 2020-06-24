@@ -48,6 +48,16 @@ object FileUtil {
       .map(f => f.getAbsolutePath)
   }
 
+  def scanFilesRegexWithChecksum(path: String, regex: String): Map[String, String] = {
+    val pattern = regex.r
+    scan(path)
+      .filter(f => f.isFile)
+      .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
+      .map(f => f.getAbsolutePath)
+      .map(f => (getFileChecksum(f), f))
+      .toMap
+  }
+
   /*
     SHA1
     SHA-256
