@@ -4,19 +4,30 @@ import java.nio.file.{FileSystems, Path, Paths, StandardWatchEventKinds, WatchKe
 
 import com.cacoveanu.reader.util.FileUtil
 import javax.annotation.PostConstruct
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import sun.swing.FilePane.FileChooserUIAccessor
 
 import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.concurrent.{ExecutionContext, Future}
+
+trait FolderChangeListener {
+  def handle(created: Seq[String], modified: Seq[String], deleted: Seq[String]): Unit
+}
 
 /**
  * This class watches a folder and all its subfolders for changes.
  * When a subfolder is created, changed, or deleted, the watched subfolders are updated accordingly.
  * When files change, are added or deleted, lists of files (full paths) are generated and sent to a listener
- * that know what to do with that information
+ * that know what to do with that information.
+ *
+ * The service has two threads:
+ * - one polls the file system continuously, detects changes and sends information about those changes to a queue
+ * - another monitors the changes queue and, after a time threshold, publishes those changes to the listener service
+ * (which in this case will be the comic service)
+ *
+ * This would probably work a lot nicer with actors.
  */
 class ScannerService {
 
@@ -24,10 +35,14 @@ class ScannerService {
   @BeanProperty
   var rootFolder: String = _
 
+  @BeanProperty
+  @Autowired
+  var listener: FolderChangeListener = _
+
   var watchService: WatchService = _
   var watchKeyMap: mutable.Map[WatchKey, String] = new mutable.HashMap[WatchKey, String]()
 
-  val changes = new java.util.concurrent.ConcurrentHashMap[(String, String), Unit]()
+  var changes = Seq[(String, String)]()
   var lastChange: Long = System.currentTimeMillis()
 
   val changeThreshold = 4000
@@ -36,13 +51,11 @@ class ScannerService {
 
   @PostConstruct
   def init(): Unit = {
-    // get all folders and subfolders of the root folder
     val folders = FileUtil.scanFolders(rootFolder)
-    println(folders)
 
     watchService = FileSystems.getDefault.newWatchService
     folders.foreach(f => {
-      registerPath(Paths.get(f))//.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
+      registerPath(Paths.get(f))
     })
 
     run()
@@ -61,34 +74,27 @@ class ScannerService {
     }
   }
 
-
   def run(): Unit = Future {
     while(true) {
       val watchKey = watchService.take()
-      //println(watchKey)
-      //println(watchKeyMap(watchKey))
       if (watchKey != null && watchKeyMap.contains(watchKey)) {
         val source = watchKeyMap(watchKey)
-        //println(s"got something for $source")
         for (event <- watchKey.pollEvents.asScala) {
-          val eventName = event.kind().name()
-          //println(eventName)
-          val context = event.context().toString
-          val fullContext = Paths.get(source, context)//.toAbsolutePath.toString
-          if (fullContext.toFile.isDirectory) {
-            if (eventName == "ENTRY_CREATE") {
-              // add watcher on the new folder
-              registerPath(fullContext)
-            } else if (eventName == "ENTRY_DELETE") {
-              deregisterPath(fullContext)
+          val eventKind = event.kind().name()
+          val context = Paths.get(source, event.context().toString)
+          if (context.toFile.isDirectory) {
+            if (eventKind == StandardWatchEventKinds.ENTRY_CREATE.name()) {
+              registerPath(context)
+            } else if (eventKind == StandardWatchEventKinds.ENTRY_CREATE.name()) {
+              deregisterPath(context)
             }
           }
-          //println(fullContext)
-          changes.put((eventName, fullContext.toAbsolutePath.toString), ())
+          this.synchronized {
+            changes = changes :+ (eventKind, context.toAbsolutePath.toString)
+          }
         }
         lastChange = System.currentTimeMillis()
         watchKey.reset()
-        println()
       }
     }
   }
@@ -96,17 +102,19 @@ class ScannerService {
   def emit(): Unit = Future {
     while(true) {
       if (System.currentTimeMillis() - lastChange > changeThreshold) {
-        val ch = this.synchronized {
-          // emit changes
-          val newChanges = changes.keys().asScala.toSeq
-          changes.clear()
-          newChanges
+        val changesBatch = this.synchronized {
+          val c = changes
+          changes = Seq()
+          c
         }
-        if (ch.nonEmpty) {
-          println(ch)
+        if (changesBatch.nonEmpty) {
+          val created = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_CREATE.name()).map(_._2)
+          val modified = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_MODIFY.name()).map(_._2)
+          val deleted = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_DELETE.name()).map(_._2)
+          listener.handle(created, modified, deleted)
         }
       }
-      Thread.sleep(1000)
+      Thread.sleep(changeThreshold)
     }
   }
 }
@@ -114,6 +122,11 @@ class ScannerService {
 object ScannerService extends App {
   val service = new ScannerService()
   service.rootFolder = "C:\\Users\\silvi\\Desktop\\New folder"
+  service.listener = (c: Seq[String], m: Seq[String], d: Seq[String]) => {
+    println(s"created: $c")
+    println(s"modified: $m")
+    println(s"deleted: $d")
+  }
   service.init()
   println("press key to end")
   System.in.read()
