@@ -72,7 +72,7 @@ class ComicService {
 
   def scan(force: Boolean = false) = Future {
     if (scanningCollection.compareAndSet(false, true)) {
-      newScanLibrary(comicsLocation, forceUpdate = force)
+      scanLibrary(comicsLocation, forceUpdate = force)
       scanningCollection.set(false)
     } else {
       log.info("failed to " + (if (force) "force " else "") + "update the library, scan already in progress")
@@ -319,82 +319,6 @@ class ComicService {
     }
 
   private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
-    log.info(s"scanning (forced=$forceUpdate) library at $libraryPath")
-    val comicsInDatabase = comicRepository.findAll().asScala
-    //val comicsInDatabaseIds = comicsInDatabase.map(c => c.id).toSet
-    val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
-    val filesInLibrary = FileUtil.scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
-
-    val (filesAlreadyInDatabase, filesNotInDatabase) = filesInLibrary.partition(f => comicPathsInDatabase.contains(f))
-    // first, scan new files
-    log.info(s"scanning ${filesNotInDatabase.size} new files")
-    val newFilesIds: Seq[String] = filesNotInDatabase.toBatches(DB_UPDATE_BATCH_SIZE).flatMap(batch => {
-      val comicsToUpdate = batch.flatMap(f => loadFullComicMetadataFromDisk(f))
-      val savedIds = comicRepository.saveAll(comicsToUpdate.asJava).asScala.map(c => c.id)
-      savedIds
-    })
-    log.info("finished scanning new files")
-
-    // next, update existing files
-    log.info(s"updating ${filesAlreadyInDatabase.size} files")
-    val updatedFilesIds: Seq[String] = filesAlreadyInDatabase.toBatches(DB_UPDATE_BATCH_SIZE).flatMap(batch => {
-      val databaseChecksums: Map[String, String] = comicsInDatabase.filter(c => batch.contains(c.path)).map(c => (c.path, c.id)).toMap
-      val unmodifiedIds = databaseChecksums.map(e => e._2)
-      val remainingFromBatch = batch.filter(f => databaseChecksums(f) != FileUtil.getFileChecksum(f))
-      val comicsToUpdate = remainingFromBatch.flatMap(f => loadFullComicMetadataFromDisk(f))
-      val savedIds = comicRepository.saveAll(comicsToUpdate.asJava).asScala.map(c => c.id)
-      savedIds ++ unmodifiedIds
-    })
-    log.info("finished updating files")
-
-    val comicsOnDiskIds: Seq[String] = newFilesIds ++ updatedFilesIds
-
-    // finally, delete whatever comics were no longer found on disk
-    val deletedComics = comicsInDatabase.filter(c => !comicsOnDiskIds.contains(c.id))
-    log.info(s"deleting ${deletedComics.size} comics")
-    deletedComics.toSeq.toBatches(DB_UPDATE_BATCH_SIZE).foreach(batch => {
-      comicRepository.deleteAll(batch.asJava)
-    })
-    log.info("finished deleting comics")
-    //val updatedComics = comicsOnDisk.filter()
-
-    /*comicsOnDisk.toBatches(DB_UPDATE_BATCH_SIZE).foreach(batch => {
-      comicRepository.saveAll(batch.asJava)
-    })*/
-
-    /*val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
-    comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
-      .toSeq
-      .toBatches(DB_UPDATE_BATCH_SIZE)
-      .foreach(batch => {
-        comicRepository.deleteAll(batch.asJava)
-      })*/
-    /*newFiles
-      .toBatches(DB_UPDATE_BATCH_SIZE)
-      .foreach(batch => {
-        val toSave = batch.flatMap(f => loadComicMetadataFromDisk(f))
-        comicRepository.saveAll(toSave.asJava)
-      })*/
-
-    /*if (forceUpdate) {
-      comicsInDatabase
-        .filter(c => comicPathsInDatabase.contains(c.path))
-        .toSeq
-        .toBatches(DB_UPDATE_BATCH_SIZE)
-        .foreach(batch => {
-          val toSave = batch.flatMap(c => loadComicMetadataFromDisk(c.path) match {
-            case Some(updatedComic) =>
-              updatedComic.id = c.id
-              Some(updatedComic)
-            case None => None
-          })
-          comicRepository.saveAll(toSave.asJava)
-        })
-    }*/
-    log.info(s"finished scanning (forced=$forceUpdate) library at $libraryPath")
-  }
-
-  private def newScanLibrary(libraryPath: String, forceUpdate: Boolean = false) = {
     log.info(s"scanning library path $libraryPath")
     log.info(s"loading comics from database")
     val comicsInDatabase = comicRepository.findAll().asScala
@@ -422,7 +346,7 @@ class ComicService {
     })
     log.info("finished deleting comics")
 
-    val deepScan = false
+    val deepScan = forceUpdate
     log.info(s"updating ${filesAlreadyInDatabase.size} files")
     val updatedFilesIds: Seq[String] = filesAlreadyInDatabase.toSeq.toBatches(DB_UPDATE_BATCH_SIZE).flatMap(batch => {
       if (deepScan) {
@@ -444,6 +368,6 @@ class ComicService {
         comicRepository.saveAll(updatedComics.asJava).asScala.map(c => c.id)
       }
     })
-    log.info("finished updating files")
+    log.info(s"finished updating ${updatedFilesIds.size} files")
   }
 }
