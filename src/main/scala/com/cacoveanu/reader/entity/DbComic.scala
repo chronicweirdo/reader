@@ -8,8 +8,8 @@ import org.springframework.http.MediaType
 class DbComic {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  var id: java.lang.Long = _
+  //@GeneratedValue(strategy = GenerationType.AUTO)
+  var id: String = _
 
   @Column(unique = true)
   var path: String = _
@@ -27,8 +27,9 @@ class DbComic {
   @Transient
   var pages: Seq[ComicPage] = _
 
-  def this(path: String, title: String, collection: String, mediaType: String, cover: Array[Byte], totalPages: Int) = {
+  def this(id: String, path: String, title: String, collection: String, mediaType: String, cover: Array[Byte], totalPages: Int) = {
     this()
+    this.id = id
     this.path = path
     this.title = title
     this.collection = collection

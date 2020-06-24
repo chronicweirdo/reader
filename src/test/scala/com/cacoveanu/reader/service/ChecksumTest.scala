@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.util.Base64
+import org.apache.commons.codec.binary.Base32
 
 object ChecksumTest {
 
@@ -27,6 +28,14 @@ object ChecksumTest {
 
   def base64(arr: Array[Byte]): String = {
     new String(Base64.getEncoder().encode(arr))
+  }
+
+  def base64Url(arr: Array[Byte]): String = {
+    new String(Base64.getUrlEncoder().encode(arr))
+  }
+
+  def base32(arr: Array[Byte]): String = {
+    new Base32().encodeAsString(arr).replaceAll("=", "").toLowerCase()
   }
 
   /*import java.io.FileInputStream
@@ -57,9 +66,16 @@ object ChecksumTest {
     val f2 = "C:\\Users\\silvi\\Desktop\\comic2.cbz"
     val f3 = "C:\\Users\\silvi\\Desktop\\a very different name for a comic.cbz"
 
-    println(base64(getFileChecksum(f1, "SHA-512")))
-    println(base64(getFileChecksum(f2, "SHA-512")))
-    println(base64(getFileChecksum(f3, "SHA-512")))
+    println(base64(getFileChecksum(f1)))
+    println(base64(getFileChecksum(f2)))
+    println(base64(getFileChecksum(f3)))
+    println(base64Url(getFileChecksum(f1)))
+    println(base64Url(getFileChecksum(f2)))
+    println(base64Url(getFileChecksum(f3)))
+    println(base32(getFileChecksum(f1)))
+    println(base32(getFileChecksum(f2)))
+    println(base32(getFileChecksum(f3)))
+
   }
 
 }

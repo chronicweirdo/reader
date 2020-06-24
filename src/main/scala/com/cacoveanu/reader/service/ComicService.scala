@@ -67,7 +67,7 @@ class ComicService {
   @PostConstruct
   def updateLibrary() = scan(false)
 
-  @Scheduled(cron = "0 0 * * * *")
+  @Scheduled(cron = "0 0 */3 * * *")
   def scheduledRescan() = scan(false)
 
   def scan(force: Boolean = false) = Future {
@@ -108,7 +108,7 @@ class ComicService {
     comicRepository.findAllCollections().asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comicId: Long): Option[ComicProgress] = {
+  def loadComicProgress(user: DbUser, comicId: String): Option[ComicProgress] = {
     comicProgressRepository.findByUserAndComicId(user, comicId).asScala
   }
 
@@ -142,12 +142,12 @@ class ComicService {
     (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
   }
 
-  def loadComic(id: Long): Option[DbComic] = {
+  def loadComic(id: String): Option[DbComic] = {
     comicRepository.findById(id).asScala
   }
 
   @Cacheable(Array("parts"))
-  def loadComicPart(id: Long, part: Int): Option[DbComic] = {
+  def loadComicPart(id: String, part: Int): Option[DbComic] = {
     comicRepository.findById(id).asScala match {
       case Some(dbComic) => readPagesFromDisk(dbComic.path, Some(computePagesForPart(part))) match {
         case Some(pages) =>
@@ -290,23 +290,27 @@ class ComicService {
     Option(FileUtil.getFileName(path))
   }
 
+  def getComicId(path: String): Option[String] = {
+    Option(FileUtil.getFileChecksum(path))
+  }
+
   private[service] def getComicCollection(path: String): Option[String] = {
     val pathObject = Paths.get(path);
     val collectionPath = Paths.get(comicsLocation).relativize(pathObject.getParent)
     Some(collectionPath.toString)
   }
 
-  def loadComicFromDatabase(id: Long): Option[DbComic] = {
+  def loadComicFromDatabase(id: String): Option[DbComic] = {
     comicRepository.findById(id).asScala
   }
 
   def loadComicMetadataFromDisk(file: String): Option[DbComic] =
-    (getComicTitle(file), getComicCollection(file), readCover(file), countPagesFromDisk(file)) match {
-      case (Some(title), Some(collection), Some(cover), Some(totalPages)) =>
+    (getComicId(file), getComicTitle(file), getComicCollection(file), readCover(file), countPagesFromDisk(file)) match {
+      case (Some(id), Some(title), Some(collection), Some(cover), Some(totalPages)) =>
         imageService.getFormatName(cover.mediaType) match {
           case Some(formatName) =>
             val smallerCoverData = imageService.resizeImageByMinimalSide(cover.data, formatName, COVER_RESIZE_MINIMAL_SIDE)
-            Some(new DbComic(file, title, collection, cover.mediaType, smallerCoverData, totalPages))
+            Some(new DbComic(id, file, title, collection, cover.mediaType, smallerCoverData, totalPages))
           case None => None
         }
       case _ =>
@@ -317,23 +321,62 @@ class ComicService {
   private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
     log.info(s"scanning (forced=$forceUpdate) library at $libraryPath")
     val comicsInDatabase = comicRepository.findAll().asScala
+    //val comicsInDatabaseIds = comicsInDatabase.map(c => c.id).toSet
     val comicPathsInDatabase = comicsInDatabase.map(c => c.path)
     val filesInLibrary = FileUtil.scanFilesRegex(libraryPath, COMIC_FILE_REGEX)
-    val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
+
+    val (filesAlreadyInDatabase, filesNotInDatabase) = filesInLibrary.partition(f => comicPathsInDatabase.contains(f))
+    // first, scan new files
+    log.info(s"scanning ${filesNotInDatabase.size} new files")
+    val newFilesIds: Seq[String] = filesNotInDatabase.toBatches(DB_UPDATE_BATCH_SIZE).flatMap(batch => {
+      val comicsToUpdate = batch.flatMap(f => loadComicMetadataFromDisk(f))
+      val savedIds = comicRepository.saveAll(comicsToUpdate.asJava).asScala.map(c => c.id)
+      savedIds
+    })
+    log.info("finished scanning new files")
+
+    // next, update existing files
+    log.info(s"updating ${filesAlreadyInDatabase.size} files")
+    val updatedFilesIds: Seq[String] = filesAlreadyInDatabase.toBatches(DB_UPDATE_BATCH_SIZE).flatMap(batch => {
+      val databaseChecksums: Map[String, String] = comicsInDatabase.filter(c => batch.contains(c.path)).map(c => (c.path, c.id)).toMap
+      val unmodifiedIds = databaseChecksums.map(e => e._2)
+      val remainingFromBatch = batch.filter(f => databaseChecksums(f) != FileUtil.getFileChecksum(f))
+      val comicsToUpdate = remainingFromBatch.flatMap(f => loadComicMetadataFromDisk(f))
+      val savedIds = comicRepository.saveAll(comicsToUpdate.asJava).asScala.map(c => c.id)
+      savedIds ++ unmodifiedIds
+    })
+    log.info("finished updating files")
+
+    val comicsOnDiskIds: Seq[String] = newFilesIds ++ updatedFilesIds
+
+    // finally, delete whatever comics were no longer found on disk
+    val deletedComics = comicsInDatabase.filter(c => !comicsOnDiskIds.contains(c.id))
+    log.info(s"deleting ${deletedComics.size} comics")
+    deletedComics.toSeq.toBatches(DB_UPDATE_BATCH_SIZE).foreach(batch => {
+      comicRepository.deleteAll(batch.asJava)
+    })
+    log.info("finished deleting comics")
+    //val updatedComics = comicsOnDisk.filter()
+
+    /*comicsOnDisk.toBatches(DB_UPDATE_BATCH_SIZE).foreach(batch => {
+      comicRepository.saveAll(batch.asJava)
+    })*/
+
+    /*val newFiles = filesInLibrary.filter(f => ! comicPathsInDatabase.contains(f))
     comicsInDatabase.filter(c => !filesInLibrary.contains(c.path))
       .toSeq
       .toBatches(DB_UPDATE_BATCH_SIZE)
       .foreach(batch => {
         comicRepository.deleteAll(batch.asJava)
-      })
-    newFiles
+      })*/
+    /*newFiles
       .toBatches(DB_UPDATE_BATCH_SIZE)
       .foreach(batch => {
         val toSave = batch.flatMap(f => loadComicMetadataFromDisk(f))
         comicRepository.saveAll(toSave.asJava)
-      })
+      })*/
 
-    if (forceUpdate) {
+    /*if (forceUpdate) {
       comicsInDatabase
         .filter(c => comicPathsInDatabase.contains(c.path))
         .toSeq
@@ -347,7 +390,7 @@ class ComicService {
           })
           comicRepository.saveAll(toSave.asJava)
         })
-    }
+    }*/
     log.info(s"finished scanning (forced=$forceUpdate) library at $libraryPath")
   }
 }

@@ -211,6 +211,10 @@ New release can be done by stopping the service, copying the new jar, and starti
     - maybe a preference to turn on or off experimental features, if they exist (jump between panels or not, if it is implemented)
 - [] use image processing to identify the comic panels, and jump from panel to panel (adjusting pan and zoom so the full panel is in view);
 
+## A better scanner
+
+https://docs.oracle.com/javase/tutorial/essential/io/notification.html
+
 ## Panel Detection
 
 Edge detection https://en.wikipedia.org/wiki/Edge_detection

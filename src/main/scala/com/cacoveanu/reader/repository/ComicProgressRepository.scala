@@ -13,7 +13,7 @@ trait ComicProgressRepository extends JpaRepository[ComicProgress, java.lang.Lon
 
   def findByUser(user: DbUser): java.util.List[ComicProgress]
 
-  def findByUserAndComicId(user: DbUser, comicId: Long): Optional[ComicProgress]
+  def findByUserAndComicId(user: DbUser, comicId: String): Optional[ComicProgress]
 
   @Query(
     value="select * from comic_progress c where c.user_id=:#{#user.id} and (c.page < c.total_pages - 1)",

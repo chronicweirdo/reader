@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
 
-trait ComicRepository extends JpaRepository[DbComic, java.lang.Long] {
+trait ComicRepository extends JpaRepository[DbComic, String] {
 
   //def findAll(pageable: Pageable): java.util.List[DbComic]
 
