@@ -48,6 +48,12 @@ object FileUtil {
       .map(f => f.getAbsolutePath)
   }
 
+  def scanFolders(path: String): Seq[String] = {
+    scan(path)
+      .filter(f => f.isDirectory)
+      .map(f => f.getAbsolutePath)
+  }
+
   def scanFilesRegexWithChecksum(path: String, regex: String): Map[String, String] = {
     val pattern = regex.r
     scan(path)
