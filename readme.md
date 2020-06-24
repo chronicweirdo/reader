@@ -223,7 +223,10 @@ https://docs.oracle.com/javase/tutorial/essential/io/notification.html
 - if a folder is added, also add a watcher
 - if a file in a folder is added, full scan and save to database
 - if a file in a folder is changed, again full scan and save to database
-- if a file in a folde
+
+### The problem with the scanner service
+
+- if a folder is moved, the parent folders (original and new) will appear as changed - but this does not mean that data in both those folders needs to be rescaned
 
 ## Panel Detection
 

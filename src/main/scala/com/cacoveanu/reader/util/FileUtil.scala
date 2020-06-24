@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.util
 
-import java.io.File
+import java.io.{File, InputStream}
 import java.nio.file.{Files, Paths}
 import java.security.{DigestInputStream, MessageDigest}
 import java.util.Base64
@@ -71,11 +71,14 @@ object FileUtil {
    */
   def getFileChecksum(path: String, algorithm: String = "MD5") = {
     val md = MessageDigest.getInstance(algorithm)
+    var is: InputStream = null
     try {
-      val is = Files.newInputStream(Paths.get(path))
+      is = Files.newInputStream(Paths.get(path))
       //val dis = new DigestInputStream(is, md)
       var buffer = new Array[Byte](1024)
       LazyList.continually(is.read(buffer)).takeWhile(_ != -1).foreach(md.update(buffer, 0, _))
+    } finally {
+      if (is != null) is.close()
     }
     val digest = md.digest
     base32(digest)

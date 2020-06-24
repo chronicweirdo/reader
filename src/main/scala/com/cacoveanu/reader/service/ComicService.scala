@@ -374,20 +374,29 @@ class ComicService extends FileSystemChangeListener {
   override def handleFileSystemChanges(created: Seq[String], modified: Seq[String], deleted: Seq[String]): Unit = {
     Future {
       log.info(s"detected ${created.size} created, ${modified.size} modified and ${deleted.size} deleted files")
-      val filesToScan: Set[String] = (created.flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
-        ++ modified.flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))).toSet
+      val filesToScan: Set[(String, String)] = created.flatMap(f => FileUtil.scanFilesRegexWithChecksum(f, COMIC_FILE_REGEX)).toSet
       log.info(s"${filesToScan.size} files to scan")
 
-      val newSavedIds = filesToScan.toSeq
+      val diskPathToChecksum = filesToScan.map(e => (e._2, e._1)).toMap
+      // see if we have files that have changed contents (different checksum for same path in db, those have to be deleted first)
+      val filesThatHaveModifiedContents = comicRepository
+        .findByPathIn(filesToScan.map(_._2).toSeq.asJava)
+        .asScala
+        .filter(c => diskPathToChecksum(c.path) != c.id)
+      log.info(s"must delete ${filesThatHaveModifiedContents.size} comics that have modified contents")
+      comicRepository.deleteAll(filesThatHaveModifiedContents.asJava)
+      log.info(s"deleted the comics")
+
+      val newSavedIds = filesToScan.map(_._2).toSeq
         .toBatches(DB_UPDATE_BATCH_SIZE)
         .flatMap(batch => {
           val comics = batch.flatMap(loadFullComicMetadataFromDisk)
           comicRepository.saveAll(comics.asJava).asScala.map(_.id)
         })
-      log.info(s"saved ${newSavedIds.size} files")
+      log.info(s"saved ${newSavedIds.size} new files")
 
       val deletedSavedIds = deleted
-        .flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
+        .toSet.removedAll(filesToScan.map(_._2)).toSeq
         .toBatches(DB_UPDATE_BATCH_SIZE)
         .flatMap(batch => {
           val comics = comicRepository.findByPathIn(batch.asJava)
@@ -395,6 +404,31 @@ class ComicService extends FileSystemChangeListener {
           comics.asScala.map(_.id)
         })
       log.info(s"deleted ${deletedSavedIds.size} files")
+
+      /*
+        modified files seem to be irrelevant for comic archive files
+
+      // for modified only files, remove "created" files (duh, they are modified, only handle files
+      val modifiedFiles = modified.filter(f => new File(f).isFile).toSet.removedAll(filesToScan).toSeq
+      // modified files have changed contents, so changed checksum, so changed id, so the old path needs to be deleted, then rescanned
+      val modifiedFilesDeletedIds = modifiedFiles
+        .flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
+        .toBatches(DB_UPDATE_BATCH_SIZE)
+        .flatMap(batch => {
+          val comics = comicRepository.findByPathIn(batch.asJava)
+          comicRepository.deleteAll(comics)
+          comics.asScala.map(_.id)
+        })
+      log.info(s"deleted ${modifiedFilesDeletedIds.size} database entries for modified files")
+      val newModifiedSavedIds = modifiedFiles
+        .flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
+        .toBatches(DB_UPDATE_BATCH_SIZE)
+        .flatMap(batch => {
+          val comics = batch.flatMap(loadFullComicMetadataFromDisk)
+          comicRepository.saveAll(comics.asJava).asScala.map(_.id)
+        })
+      log.info(s"saved ${newModifiedSavedIds.size} database entries for modified files")
+       */
     }(ExecutionContext.global)
   }
 }
