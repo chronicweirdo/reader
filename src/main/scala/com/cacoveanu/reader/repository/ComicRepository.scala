@@ -22,4 +22,6 @@ trait ComicRepository extends JpaRepository[DbComic, String] {
     nativeQuery = true
   )
   def findAllCollections(): java.util.List[String]
+
+  def findByPathIn(pathList: java.util.List[String]): java.util.List[DbComic]
 }

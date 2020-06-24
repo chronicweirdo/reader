@@ -35,7 +35,7 @@ object ComicService {
 }
 
 @Service
-class ComicService {
+class ComicService extends FileSystemChangeListener {
 
   import ComicService.log
 
@@ -64,10 +64,10 @@ class ComicService {
 
   private implicit val executionContext = ExecutionContext.global
 
-  @PostConstruct
+  //@PostConstruct
   def updateLibrary() = scan(false)
 
-  @Scheduled(cron = "0 0 */3 * * *")
+  //@Scheduled(cron = "0 0 */3 * * *")
   def scheduledRescan() = scan(false)
 
   def scan(force: Boolean = false) = Future {
@@ -369,5 +369,32 @@ class ComicService {
       }
     })
     log.info(s"finished updating ${updatedFilesIds.size} files")
+  }
+
+  override def handleFileSystemChanges(created: Seq[String], modified: Seq[String], deleted: Seq[String]): Unit = {
+    Future {
+      log.info(s"detected ${created.size} created, ${modified.size} modified and ${deleted.size} deleted files")
+      val filesToScan: Set[String] = (created.flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
+        ++ modified.flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))).toSet
+      log.info(s"${filesToScan.size} files to scan")
+
+      val newSavedIds = filesToScan.toSeq
+        .toBatches(DB_UPDATE_BATCH_SIZE)
+        .flatMap(batch => {
+          val comics = batch.flatMap(loadFullComicMetadataFromDisk)
+          comicRepository.saveAll(comics.asJava).asScala.map(_.id)
+        })
+      log.info(s"saved ${newSavedIds.size} files")
+
+      val deletedSavedIds = deleted
+        .flatMap(f => FileUtil.scanFilesRegex(f, COMIC_FILE_REGEX))
+        .toBatches(DB_UPDATE_BATCH_SIZE)
+        .flatMap(batch => {
+          val comics = comicRepository.findByPathIn(batch.asJava)
+          comicRepository.deleteAll(comics)
+          comics.asScala.map(_.id)
+        })
+      log.info(s"deleted ${deletedSavedIds.size} files")
+    }(ExecutionContext.global)
   }
 }

@@ -5,6 +5,7 @@ import java.nio.file.{FileSystems, Path, Paths, StandardWatchEventKinds, WatchKe
 import com.cacoveanu.reader.util.FileUtil
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.{Autowired, Value}
+import org.springframework.stereotype.Service
 import sun.swing.FilePane.FileChooserUIAccessor
 
 import scala.jdk.CollectionConverters._
@@ -12,8 +13,8 @@ import scala.beans.BeanProperty
 import scala.collection.{immutable, mutable}
 import scala.concurrent.{ExecutionContext, Future}
 
-trait FolderChangeListener {
-  def handle(created: Seq[String], modified: Seq[String], deleted: Seq[String]): Unit
+trait FileSystemChangeListener {
+  def handleFileSystemChanges(created: Seq[String], modified: Seq[String], deleted: Seq[String]): Unit
 }
 
 /**
@@ -29,6 +30,7 @@ trait FolderChangeListener {
  *
  * This would probably work a lot nicer with actors.
  */
+@Service
 class ScannerService {
 
   @Value("${comics.location}")
@@ -37,14 +39,14 @@ class ScannerService {
 
   @BeanProperty
   @Autowired
-  var listener: FolderChangeListener = _
+  var listener: FileSystemChangeListener = _
 
   var changes = Seq[(String, String)]()
   var lastChange: Long = System.currentTimeMillis()
 
   val changeThreshold = 4000
 
-  private implicit val executionContext = ExecutionContext.global
+  //private implicit val executionContext = ExecutionContext.global
 
   @PostConstruct
   def init(): Unit = {
@@ -55,17 +57,17 @@ class ScannerService {
       (registerPath(watchService, Paths.get(f)), f)
     }).toMap
 
-    run(watchService, watchKeyMap)
-    emit()
+    new Thread(() => run(watchService, watchKeyMap)).start()
+    new Thread(() => emit()).start()
   }
 
   def registerPath(watchService: WatchService, p: Path): WatchKey = {
     p.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
   }
 
-  def run(watchService: WatchService, wkm: Map[WatchKey, String]): Unit = Future {
+  def run(watchService: WatchService, wkm: Map[WatchKey, String]): Unit = {
     var watchKeyMap = wkm
-    while(true) {
+    while (true) {
       val watchKey = watchService.take()
       if (watchKey != null && watchKeyMap.contains(watchKey)) {
         val source = watchKeyMap(watchKey)
@@ -94,8 +96,8 @@ class ScannerService {
     }
   }
 
-  def emit(): Unit = Future {
-    while(true) {
+  def emit(): Unit = {
+    while (true) {
       if (System.currentTimeMillis() - lastChange > changeThreshold) {
         val changesBatch = this.synchronized {
           val c = changes
@@ -106,7 +108,7 @@ class ScannerService {
           val created = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_CREATE.name()).map(_._2)
           val modified = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_MODIFY.name()).map(_._2)
           val deleted = changesBatch.filter(_._1 == StandardWatchEventKinds.ENTRY_DELETE.name()).map(_._2)
-          listener.handle(created, modified, deleted)
+          listener.handleFileSystemChanges(created, modified, deleted)
         }
       }
       Thread.sleep(changeThreshold)
