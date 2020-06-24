@@ -39,9 +39,6 @@ class ScannerService {
   @Autowired
   var listener: FolderChangeListener = _
 
-  var watchService: WatchService = _
-  var watchKeyMap: mutable.Map[WatchKey, String] = new mutable.HashMap[WatchKey, String]()
-
   var changes = Seq[(String, String)]()
   var lastChange: Long = System.currentTimeMillis()
 
@@ -53,28 +50,21 @@ class ScannerService {
   def init(): Unit = {
     val folders = FileUtil.scanFolders(rootFolder)
 
-    watchService = FileSystems.getDefault.newWatchService
-    folders.foreach(f => {
-      registerPath(Paths.get(f))
-    })
+    val watchService = FileSystems.getDefault.newWatchService
+    val watchKeyMap = folders.map(f => {
+      (registerPath(watchService, Paths.get(f)), f)
+    }).toMap
 
-    run()
+    run(watchService, watchKeyMap)
     emit()
   }
 
-  def registerPath(p: Path) = {
-    val watchKey = p.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
-    watchKeyMap.put(watchKey, p.toAbsolutePath.toString)
+  def registerPath(watchService: WatchService, p: Path): WatchKey = {
+    p.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
   }
 
-  def deregisterPath(path: Path) = {
-    watchKeyMap.find(e => e._2 == path.toAbsolutePath.toString) match {
-      case Some((k, _)) => watchKeyMap.remove(k)
-      case None => None
-    }
-  }
-
-  def run(): Unit = Future {
+  def run(watchService: WatchService, wkm: Map[WatchKey, String]): Unit = Future {
+    var watchKeyMap = wkm
     while(true) {
       val watchKey = watchService.take()
       if (watchKey != null && watchKeyMap.contains(watchKey)) {
@@ -82,15 +72,20 @@ class ScannerService {
         for (event <- watchKey.pollEvents.asScala) {
           val eventKind = event.kind().name()
           val context = Paths.get(source, event.context().toString)
+          val contextPath = context.toAbsolutePath.toString
           if (context.toFile.isDirectory) {
             if (eventKind == StandardWatchEventKinds.ENTRY_CREATE.name()) {
-              registerPath(context)
+              watchKeyMap = watchKeyMap + (registerPath(watchService, context) -> contextPath)
             } else if (eventKind == StandardWatchEventKinds.ENTRY_CREATE.name()) {
-              deregisterPath(context)
+              watchKeyMap.find(e => e._2 == contextPath) match {
+                case Some((k, _)) =>
+                  watchKeyMap = watchKeyMap - k
+                case None => None
+              }
             }
           }
           this.synchronized {
-            changes = changes :+ (eventKind, context.toAbsolutePath.toString)
+            changes = changes :+ (eventKind, contextPath)
           }
         }
         lastChange = System.currentTimeMillis()
