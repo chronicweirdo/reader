@@ -1,0 +1,163 @@
+<html>
+    <head>
+        <style>
+            #content {
+                display: none;
+            }
+            #prev {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 5vw;
+                height: 100vh;
+                background-color: red;
+            }
+            #next {
+                display: block;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 5vw;
+                height: 100vh;
+                background-color: blue;
+            }
+            #page {
+                border: 1px solid red;
+                padding: 2em;
+                margin: 5vw;
+                width: 50vw;
+                font-size: 1.2em;
+            }
+        </style>
+        <script>
+            function getData(callback) {
+                var xhttp = new XMLHttpRequest()
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
+                        callback(this.responseText)
+                    }
+                }
+                xhttp.open("GET", "part0005.html", true)
+                xhttp.send()
+            }
+            function extractContents(data, callback) {
+                let parser = new DOMParser()
+                let doc = parser.parseFromString(data, "text/html")
+                let content = doc.querySelectorAll("body > *")
+                var contentDiv = document.getElementById("content")
+                for (var i = 0; i < content.length; i++) { 
+                    contentDiv.appendChild(content[i])
+                }
+
+                if (callback != null) callback()
+            }
+
+            var globalStartPosition = 0
+            var globalEndPosition = 0
+
+            function nextPage() {
+                if (globalStartPosition == 0 && globalEndPosition == 0) {
+                    globalEndPosition = fillPage(globalStartPosition)
+                } else {
+                    globalEndPosition = fillPage(globalEndPosition)
+                }
+            }
+
+            function fillPage(startPosition) {
+                var jump = 10
+                var size = 100
+                var previousSize = null
+
+                clearPage()
+                console.log("starting page finding")
+                while (! scrollNecessary()) {
+                    previousSize = size
+                    size = size + jump
+                    console.log("trying out size " + size)
+                    //var actualEndPosition = 
+                    fillPageFor(startPosition, startPosition + size)
+                    //var actualSize = actualEndPosition - startPosition
+                    //size = actualSize
+                }
+                //size = size - jump
+                fillPageFor(startPosition, startPosition + previousSize)
+                return startPosition + previousSize
+            }
+            function clearPage() {
+                document.getElementById("page").innerHTML = ""
+            }
+
+            function fillPageFor(startPosition, endPosition) {
+                var content = document.getElementById("content")
+                var range = document.createRange()
+                var startLocation = findNodeForPosition(content, startPosition)
+                var endLocation = findNodeForPosition(content, endPosition)
+                range.setStart(startLocation.element, startLocation.position)
+                range.setEnd(endLocation.element, endLocation.position)
+                var page = document.getElementById("page")
+                page.innerHTML = ""
+                page.appendChild(range.cloneContents())
+                return endLocation.position
+            }
+
+            function positionOfSpaceBefore(str, pos) {
+                for (var i = pos; i > 0; i--) {
+                    if (str.charAt(i) == ' ') return i
+                }
+                return 0
+            }
+
+            function findNodeForPosition(el, position) {
+                if (el.nodeType == Node.TEXT_NODE) {
+                    if (el.nodeValue.length >= position) {
+                        //var hard = position
+                        //var soft = positionOfSpaceBefore(el.nodeValue, position)
+                        return { "element": el, "position": position }
+                    } else {
+                        return { "remaining": position - el.nodeValue.length}
+                    }
+                } else if (el.nodeType == Node.ELEMENT_NODE) {
+                    var children = el.childNodes
+                    var remainingPosition = position
+                    for (var i = 0; i < children.length; i++) {
+                        var result = findNodeForPosition(children[i], remainingPosition)
+                        if (result.element) {
+                            return result
+                        } else {
+                            remainingPosition = result.remaining
+                        }
+                    }
+                    return { "remaining": remainingPosition}
+                }
+                return null
+            }
+
+            function scrollNecessary() {
+                return (document.body.scrollWidth > document.body.clientWidth) || (document.body.scrollHeight > document.body.clientHeight)
+            }
+        </script>
+    </head>
+    <body>
+        <div id="content"></div>
+        <div id="prev"></div>
+        <div id="next"></div>
+        <div id="page"></div>
+        <script>
+            //var currentPage = 0
+            var prev = document.getElementById("prev")
+            prev.addEventListener("click", function() {
+                //currentPage = currentPage - 1
+                //displayPage(currentPage)
+            })
+            var next = document.getElementById("next")
+            next.addEventListener("click", function() {
+                //currentPage = currentPage + 1
+                //displayPage(currentPage)
+                nextPage()
+            })
+
+            getData((data) => extractContents(data, () => nextPage()))
+        </script>
+    </body>
+</html>
