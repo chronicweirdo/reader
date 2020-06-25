@@ -19,7 +19,12 @@
                 for (var i = 0; i < content.length; i++) {
                     document.body.appendChild(content[i])
                 }
-                console.log(countCharactersInDom(document.body))
+                //console.log(countCharactersInDom(document.body))
+                console.log(content[1])
+                //console.log(findNodeForPosition(content[1], 1))
+                var splc = split(content[1], 5)
+                document.body.insertBefore(splc, content[1])
+                console.log()
             }
             function countCharactersInDom(el) {
                 // https://www.w3schools.com/jsref/prop_node_nodetype.asp
@@ -36,9 +41,57 @@
                     return 0
                 }
             }
-            function countCharacters(text) {
-                return text.length
+            // split a node into two nodes, based on a character count
+            // go through the node recursively, find the position where the split should be made
+            // https://stackoverflow.com/questions/7237865/splitting-node-content-in-javascript-dom
+            function split(node, chars) {
+                var range = document.createRange()
+                range.setStart(node, 0)
+                range.setEnd(findNodeForPosition(node, chars), chars)
+                var c = range.extractContents()
+                return c
             }
+            function findNodeForPosition(el, position) {
+                if (el.nodeType == Node.TEXT_NODE) {
+                    if (el.nodeValue.length >= position) {
+                        return el
+                    } else {
+                        return null
+                    }
+                } else if (el.nodeType == Node.ELEMENT_NODE) {
+                    var children = el.childNodes
+                    var remainingPosition = position
+                    for (var i = 0; i < children.length; i++) {
+                        var node = findNodeForPosition(children[i], remainingPosition)
+                        if (node != null) {
+                            return node
+                        } else {
+                            remainingPosition = remainingPosition - countCharactersInDom(children[i])
+                        }
+                    }
+                }
+                return null
+            }
+            /*function splitNode(node, offset, limit) {
+                var parent = limit.parentNode;
+                var parentOffset = getNodeIndex(parent, limit);
+
+                var doc = node.ownerDocument;
+                var leftRange = doc.createRange();
+                leftRange.setStart(parent, parentOffset);
+                leftRange.setEnd(node, offset);
+                var left = leftRange.extractContents();
+                parent.insertBefore(left, limit);
+            }
+            function getNodeIndex(parent, node) {
+                var index = parent.childNodes.length;
+                while (index--) {
+                    if (node === parent.childNodes[index]) {
+                        break;
+                    }
+                }
+                return index;
+            }*/
         </script>
     </head>
     <body>
