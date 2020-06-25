@@ -1,10 +1,28 @@
 <html>
     <head>
         <style>
+            #prev {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 5vw;
+                height: 100vh;
+                background-color: red;
+            }
+            #next {
+                display: block;
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 5vw;
+                height: 100vh;
+                background-color: blue;
+            }
             .page {
                 border: 1px solid red;
                 padding: 2em;
-                margin: 2em;
+                margin: 5vw;
                 width: 50vw;
             }
         </style>
@@ -171,10 +189,25 @@
         </script>
     </head>
     <body>
+        <div id="prev"></div>
+        <div id="next"></div>
         <script>
-            var charsInPage = computeRowsAndColumns()
+            var currentPage = 0
+            var prev = document.getElementById("prev")
+            prev.addEventListener("click", function() {
+                currentPage = currentPage - 1
+                displayPage(currentPage)
+            })
+            var next = document.getElementById("next")
+            next.addEventListener("click", function() {
+                currentPage = currentPage + 1
+                displayPage(currentPage)
+            })
+
+            var rc = computeRowsAndColumns()
+            var charsInPage = rc.rows * rc.columns
             console.log(charsInPage)
-            //getData((data) => extractContents(data, charsInPage, () => displayPage(0)))
+            getData((data) => extractContents(data, charsInPage, () => displayPage(0)))
         </script>
     </body>
 </html>
