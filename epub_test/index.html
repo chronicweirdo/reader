@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <script>
+            function getData(callback) {
+                var xhttp = new XMLHttpRequest()
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
+                        callback(this.responseText)
+                    }
+                }
+                xhttp.open("GET", "part0005.html", true)
+                xhttp.send()
+            }
+            function extractContents(data) {
+                let parser = new DOMParser()
+                let doc = parser.parseFromString(data, "text/html")
+                let content = doc.querySelectorAll("body > *")//.innerHTML
+                console.log(content)
+                //let elements = doc.querySelector("*")
+                //console.log(elements)
+                for (var i = 0; i < content.length; i++) {
+                    document.body.appendChild(content[i])
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <script>
+            getData(extractContents)
+        </script>
+    </body>
+</html>

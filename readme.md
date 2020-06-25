@@ -260,3 +260,7 @@ This, as a feature, is pretty complex, the advantage of this is not obvious. The
     - some complications and difficulties will arise around non-text elements:
         - images, maybe we can dedicate a full page to those, maybe even transition some of the comic side features like zooming and panning
         - tables, these will most likely have to be split somehow
+        
+## Bypass CORS when debugging:
+
+Firefox, at `about:config` change the `security.fileuri.strict_origin_policy` to `false`
