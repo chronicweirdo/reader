@@ -19,18 +19,21 @@
                 xhttp.open("GET", "part0005.html", true)
                 xhttp.send()
             }
-            function extractContents(data) {
+            function extractContents(data, pageCharsThreshold, callback) {
                 let parser = new DOMParser()
                 let doc = parser.parseFromString(data, "text/html")
                 let content = doc.querySelectorAll("body > *")
-                var bigPage = document.querySelector(".page")
+                //var bigPage = document.querySelector(".page")
+                var bigPage = document.createElement("div")
+                bigPage.classList.add("page")
+                document.body.appendChild(bigPage)
 
                 for (var i = 0; i < content.length; i++) {
                     bigPage.appendChild(content[i])
                 }
 
                 
-                splitBigPage()
+                splitBigPage(pageCharsThreshold)
                 /*findSplitPositions(bigPage)
                 console.log(splits)
                 for (var i = 0; i < splits.length; i++) {
@@ -42,10 +45,11 @@
                     var c = range.extractContents()
                     document.body.insertBefore(toPage(c), page)
                 }*/
+                if (callback != null) callback()
             }
-            function splitBigPage() {
+            function splitBigPage(pageCharsThreshold) {
                 var keepSplitting = true
-                var threshold = 1000
+                var threshold = pageCharsThreshold
                 while (keepSplitting) {
                     var pages = document.querySelectorAll(".page")
                     var page = pages[pages.length - 1]
@@ -119,10 +123,6 @@
                 return null
             }
 
-            var splits = []
-            var pageCharacterThreshold = 1000
-            var currentCharacters = 0
-
             function positionOfSpaceBefore(str, pos) {
                 for (var i = pos; i > 0; i--) {
                     if (str.charAt(i) == ' ') return i
@@ -130,38 +130,51 @@
                 return 0
             }
 
-            function findSplitPositions(current) {
-                if (current.nodeType == Node.TEXT_NODE) {
-                    if (current.nodeValue.length + currentCharacters > pageCharacterThreshold) {
-                        console.log("part " + splits.length)
-                        // there's a split point in here
-                        console.log(current.nodeValue)
-                        console.log("current characters: " + currentCharacters)
-                        console.log("current node length: " + current.nodeValue.length)
-                        var hardSplit = current.nodeValue.length - (pageCharacterThreshold - currentCharacters)
-                        console.log("hard spliut: " + hardSplit)
-                        var softSplit = positionOfSpaceBefore(current.nodeValue, hardSplit)
-                        console.log("soft split: " + softSplit)
-                        splits.push({"e": current, "p": softSplit})
-                        currentCharacters = current.nodeValue.length - softSplit
-                        console.log("current characters after split: " + currentCharacters)
-                    } else {
-                        currentCharacters = currentCharacters + current.nodeValue.length
-                        console.log("cc: " + currentCharacters)
-                    }
-                } else if (current.nodeType == Node.ELEMENT_NODE) {
-                    var children = current.childNodes
-                    for (var i = 0; i < children.length; i++) {
-                        findSplitPositions(children[i])
-                    }
+            function displayPage(num) {
+                var pages = document.querySelectorAll(".page")
+                for (var i = 0; i < pages.length; i++) {
+                    pages[i].style.display = "none"
                 }
+                pages[num].style.display = "block"
+
+            }
+            function computeRowsAndColumns() {
+                var div = document.createElement("div")
+                div.classList.add("page")
+                document.body.appendChild(div)
+                var c = 0
+                var testText = "test "
+                var rows = 0
+                var columns = []
+                var divHeight = div.clientHeight
+                while (! scrollNecessary()) {
+                    div.appendChild(document.createTextNode(testText))
+                    if (divHeight < div.clientHeight) {
+                        // jumped to a new row
+                        rows = rows + 1
+                        divHeight = div.clientHeight
+                        columns.push(0)
+                    }
+                    columns[columns.length-1] += testText.length
+                    c = c + testText.length
+                }
+                rows = rows - 1
+                c = c - testText.length
+                var avgc = Math.floor(c / rows)
+                document.body.removeChild(div)
+                return { "columns": avgc, "rows": rows }
+
+            }
+            function scrollNecessary() {
+                return (document.body.scrollWidth > document.body.clientWidth) || (document.body.scrollHeight > document.body.clientHeight)
             }
         </script>
     </head>
     <body>
-        <div class="page"></div>
         <script>
-            getData(extractContents)
+            var charsInPage = computeRowsAndColumns()
+            console.log(charsInPage)
+            //getData((data) => extractContents(data, charsInPage, () => displayPage(0)))
         </script>
     </body>
 </html>
