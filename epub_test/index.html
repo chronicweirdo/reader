@@ -14,13 +14,30 @@
             function extractContents(data) {
                 let parser = new DOMParser()
                 let doc = parser.parseFromString(data, "text/html")
-                let content = doc.querySelectorAll("body > *")//.innerHTML
-                console.log(content)
-                //let elements = doc.querySelector("*")
-                //console.log(elements)
+                let content = doc.querySelectorAll("body > *")// doc.body.childNodes // this is a HTMLCo
+
                 for (var i = 0; i < content.length; i++) {
                     document.body.appendChild(content[i])
                 }
+                console.log(countCharactersInDom(document.body))
+            }
+            function countCharactersInDom(el) {
+                // https://www.w3schools.com/jsref/prop_node_nodetype.asp
+                if (el.nodeType == Node.TEXT_NODE) {
+                    return el.nodeValue.length
+                } else if (el.nodeType == Node.ELEMENT_NODE) {
+                    var count = 0
+                    var children = el.childNodes
+                    for (var i = 0; i < children.length; i++) {
+                        count = count + countCharactersInDom(children[i])
+                    }
+                    return count
+                } else {
+                    return 0
+                }
+            }
+            function countCharacters(text) {
+                return text.length
             }
         </script>
     </head>
