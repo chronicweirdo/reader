@@ -3,6 +3,9 @@
         <style>
             .page {
                 border: 1px solid red;
+                padding: 2em;
+                margin: 2em;
+                width: 50vw;
             }
         </style>
         <script>
@@ -27,8 +30,8 @@
                 }
 
                 
-                //splitBigPage()
-                findSplitPositions(bigPage)
+                splitBigPage()
+                /*findSplitPositions(bigPage)
                 console.log(splits)
                 for (var i = 0; i < splits.length; i++) {
                     var pages = document.querySelectorAll(".page")
@@ -38,11 +41,7 @@
                     range.setEnd(splits[i].e, splits[i].p)
                     var c = range.extractContents()
                     document.body.insertBefore(toPage(c), page)
-                }
-                /*console.log(content[1])
-                var splc = split(content[1], 5)
-                document.body.insertBefore(splc, content[1])
-                console.log()*/
+                }*/
             }
             function splitBigPage() {
                 var keepSplitting = true
@@ -99,7 +98,9 @@
             function findNodeForPosition(el, position) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
-                        return { "e": el, "p": position }
+                        var hardSplit = position
+                        var softSplit = positionOfSpaceBefore(el.nodeValue, hardSplit)
+                        return { "e": el, "p": softSplit }
                     } else {
                         return null
                     }
@@ -122,15 +123,31 @@
             var pageCharacterThreshold = 1000
             var currentCharacters = 0
 
+            function positionOfSpaceBefore(str, pos) {
+                for (var i = pos; i > 0; i--) {
+                    if (str.charAt(i) == ' ') return i
+                }
+                return 0
+            }
+
             function findSplitPositions(current) {
                 if (current.nodeType == Node.TEXT_NODE) {
                     if (current.nodeValue.length + currentCharacters > pageCharacterThreshold) {
+                        console.log("part " + splits.length)
                         // there's a split point in here
-                        var charactersBeforeSplit = current.nodeValue.length - (pageCharacterThreshold - currentCharacters)
-                        splits.push({"e": current, "p": charactersBeforeSplit})
-                        currentCharacters = current.nodeValue.length - charactersBeforeSplit
+                        console.log(current.nodeValue)
+                        console.log("current characters: " + currentCharacters)
+                        console.log("current node length: " + current.nodeValue.length)
+                        var hardSplit = current.nodeValue.length - (pageCharacterThreshold - currentCharacters)
+                        console.log("hard spliut: " + hardSplit)
+                        var softSplit = positionOfSpaceBefore(current.nodeValue, hardSplit)
+                        console.log("soft split: " + softSplit)
+                        splits.push({"e": current, "p": softSplit})
+                        currentCharacters = current.nodeValue.length - softSplit
+                        console.log("current characters after split: " + currentCharacters)
                     } else {
                         currentCharacters = currentCharacters + current.nodeValue.length
+                        console.log("cc: " + currentCharacters)
                     }
                 } else if (current.nodeType == Node.ELEMENT_NODE) {
                     var children = current.childNodes
