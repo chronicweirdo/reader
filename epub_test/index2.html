@@ -76,29 +76,31 @@
                     size = size + jump
                     console.log("trying out size " + size)
                     //var actualEndPosition = 
-                    fillPageFor(startPosition, startPosition + size)
+                    fillPageFor(startPosition, startPosition + size, false)
                     //var actualSize = actualEndPosition - startPosition
                     //size = actualSize
                 }
                 //size = size - jump
-                fillPageFor(startPosition, startPosition + previousSize)
-                return startPosition + previousSize
+                var actualEndPosition = fillPageFor(startPosition, startPosition + previousSize, true)
+                return actualEndPosition
             }
             function clearPage() {
                 document.getElementById("page").innerHTML = ""
             }
 
-            function fillPageFor(startPosition, endPosition) {
+            function fillPageFor(startPosition, endPosition, soft) {
                 var content = document.getElementById("content")
                 var range = document.createRange()
-                var startLocation = findNodeForPosition(content, startPosition)
-                var endLocation = findNodeForPosition(content, endPosition)
+                var startLocation = findNodeForPosition(content, startPosition, false)
+                var endLocation = findNodeForPosition(content, endPosition, soft)
                 range.setStart(startLocation.element, startLocation.position)
                 range.setEnd(endLocation.element, endLocation.position)
                 var page = document.getElementById("page")
                 page.innerHTML = ""
                 page.appendChild(range.cloneContents())
-                return endLocation.position
+                if (soft) console.log("difference: " + endLocation.difference)
+                var actualEndLocation = endPosition - endLocation.difference
+                return actualEndLocation
             }
 
             function positionOfSpaceBefore(str, pos) {
@@ -108,12 +110,17 @@
                 return 0
             }
 
-            function findNodeForPosition(el, position) {
+            function findNodeForPosition(el, position, soft) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
-                        //var hard = position
-                        //var soft = positionOfSpaceBefore(el.nodeValue, position)
-                        return { "element": el, "position": position }
+                        if (soft) {
+                            console.log("finding soft position")
+                            var actual = positionOfSpaceBefore(el.nodeValue, position)
+                            var difference = position - actual
+                            return { "element": el, "position": actual, "difference": difference }
+                        } else {
+                            return { "element": el, "position": position, "difference": 0 }
+                        }
                     } else {
                         return { "remaining": position - el.nodeValue.length}
                     }
@@ -121,7 +128,7 @@
                     var children = el.childNodes
                     var remainingPosition = position
                     for (var i = 0; i < children.length; i++) {
-                        var result = findNodeForPosition(children[i], remainingPosition)
+                        var result = findNodeForPosition(children[i], remainingPosition, soft)
                         if (result.element) {
                             return result
                         } else {
