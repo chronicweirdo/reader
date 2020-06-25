@@ -1,5 +1,10 @@
 <html>
     <head>
+        <style>
+            .page {
+                border: 1px solid red;
+            }
+        </style>
         <script>
             function getData(callback) {
                 var xhttp = new XMLHttpRequest()
@@ -14,17 +19,38 @@
             function extractContents(data) {
                 let parser = new DOMParser()
                 let doc = parser.parseFromString(data, "text/html")
-                let content = doc.querySelectorAll("body > *")// doc.body.childNodes // this is a HTMLCo
+                let content = doc.querySelectorAll("body > *")
+                var bigPage = document.querySelector(".page")
 
                 for (var i = 0; i < content.length; i++) {
-                    document.body.appendChild(content[i])
+                    bigPage.appendChild(content[i])
                 }
-                //console.log(countCharactersInDom(document.body))
-                console.log(content[1])
-                //console.log(findNodeForPosition(content[1], 1))
+
+                var keepSplitting = true
+                var threshold = 1000
+                while (keepSplitting) {
+                    var pages = document.querySelectorAll(".page")
+                    var page = pages[pages.length - 1]
+                    var charactersInPage = countCharactersInDom(page)
+                    console.log("characters in page: " + charactersInPage)
+                    if (charactersInPage > threshold) {
+                        var splittedElement = split(page, threshold)
+                        document.body.insertBefore(toPage(splittedElement), page)
+                    } else {
+                        keepSplitting = false
+                    }
+                }
+                
+                /*console.log(content[1])
                 var splc = split(content[1], 5)
                 document.body.insertBefore(splc, content[1])
-                console.log()
+                console.log()*/
+            }
+            function toPage(content) {
+                var div = document.createElement("div")
+                div.classList.add("page")
+                div.append(content)
+                return div
             }
             function countCharactersInDom(el) {
                 // https://www.w3schools.com/jsref/prop_node_nodetype.asp
@@ -44,17 +70,22 @@
             // split a node into two nodes, based on a character count
             // go through the node recursively, find the position where the split should be made
             // https://stackoverflow.com/questions/7237865/splitting-node-content-in-javascript-dom
+            // https://developer.mozilla.org/en-US/docs/Web/API/Range/Range
             function split(node, chars) {
                 var range = document.createRange()
                 range.setStart(node, 0)
-                range.setEnd(findNodeForPosition(node, chars), chars)
+                var nodeForPosition = findNodeForPosition(node, chars)
+                console.log("found node for position: " + chars)
+                console.log(nodeForPosition)
+                range.setEnd(nodeForPosition.e, nodeForPosition.p)
+                //range.setEnd(node, chars)
                 var c = range.extractContents()
                 return c
             }
             function findNodeForPosition(el, position) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
-                        return el
+                        return { "e": el, "p": position }
                     } else {
                         return null
                     }
@@ -72,29 +103,10 @@
                 }
                 return null
             }
-            /*function splitNode(node, offset, limit) {
-                var parent = limit.parentNode;
-                var parentOffset = getNodeIndex(parent, limit);
-
-                var doc = node.ownerDocument;
-                var leftRange = doc.createRange();
-                leftRange.setStart(parent, parentOffset);
-                leftRange.setEnd(node, offset);
-                var left = leftRange.extractContents();
-                parent.insertBefore(left, limit);
-            }
-            function getNodeIndex(parent, node) {
-                var index = parent.childNodes.length;
-                while (index--) {
-                    if (node === parent.childNodes[index]) {
-                        break;
-                    }
-                }
-                return index;
-            }*/
         </script>
     </head>
     <body>
+        <div class="page"></div>
         <script>
             getData(extractContents)
         </script>
