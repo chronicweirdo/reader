@@ -37,7 +37,7 @@
                 xhttp.open("GET", "part0005.html", true)
                 xhttp.send()
             }
-            function extractContents(data, pageCharsThreshold, callback) {
+            function extractContents(data, rc, callback) {
                 let parser = new DOMParser()
                 let doc = parser.parseFromString(data, "text/html")
                 let content = doc.querySelectorAll("body > *")
@@ -51,7 +51,7 @@
                 }
 
                 
-                splitBigPage(pageCharsThreshold)
+                splitBigPage(rc)
                 /*findSplitPositions(bigPage)
                 console.log(splits)
                 for (var i = 0; i < splits.length; i++) {
@@ -65,16 +65,17 @@
                 }*/
                 if (callback != null) callback()
             }
-            function splitBigPage(pageCharsThreshold) {
+            function splitBigPage(rc) {
                 var keepSplitting = true
-                var threshold = pageCharsThreshold
+                var threshold = rc.rows * rc.columns
+                console.log("threshold chars: " + threshold)
                 while (keepSplitting) {
                     var pages = document.querySelectorAll(".page")
                     var page = pages[pages.length - 1]
-                    var charactersInPage = countCharactersInDom(page)
+                    var charactersInPage = countCharactersInDom(page, rc.columns)
                     //console.log("characters in page: " + charactersInPage)
                     if (charactersInPage > threshold) {
-                        var splittedElement = split(page, threshold)
+                        var splittedElement = split(page, threshold, rc.columns)
                         document.body.insertBefore(toPage(splittedElement), page)
                     } else {
                         keepSplitting = false
@@ -87,15 +88,17 @@
                 div.append(content)
                 return div
             }
-            function countCharactersInDom(el) {
+            function countCharactersInDom(el, charsInRow) {
                 // https://www.w3schools.com/jsref/prop_node_nodetype.asp
                 if (el.nodeType == Node.TEXT_NODE) {
                     return el.nodeValue.length
                 } else if (el.nodeType == Node.ELEMENT_NODE) {
                     var count = 0
+                    if (el.tagName == "p") count = count + charsInRow * 3
                     var children = el.childNodes
                     for (var i = 0; i < children.length; i++) {
-                        count = count + countCharactersInDom(children[i])
+                        
+                        count = count + countCharactersInDom(children[i], charsInRow)
                     }
                     return count
                 } else {
@@ -106,10 +109,10 @@
             // go through the node recursively, find the position where the split should be made
             // https://stackoverflow.com/questions/7237865/splitting-node-content-in-javascript-dom
             // https://developer.mozilla.org/en-US/docs/Web/API/Range/Range
-            function split(node, chars) {
+            function split(node, chars, charsInRow) {
                 var range = document.createRange()
                 range.setStart(node, 0)
-                var nodeForPosition = findNodeForPosition(node, chars)
+                var nodeForPosition = findNodeForPosition(node, chars, charsInRow)
                 //console.log("found node for position: " + chars)
                 //console.log(nodeForPosition)
                 range.setEnd(nodeForPosition.e, nodeForPosition.p)
@@ -117,7 +120,7 @@
                 var c = range.extractContents()
                 return c
             }
-            function findNodeForPosition(el, position) {
+            function findNodeForPosition(el, position, charsInRow) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
                         var hardSplit = position
@@ -130,11 +133,11 @@
                     var children = el.childNodes
                     var remainingPosition = position
                     for (var i = 0; i < children.length; i++) {
-                        var node = findNodeForPosition(children[i], remainingPosition)
+                        var node = findNodeForPosition(children[i], remainingPosition, charsInRow)
                         if (node != null) {
                             return node
                         } else {
-                            remainingPosition = remainingPosition - countCharactersInDom(children[i])
+                            remainingPosition = remainingPosition - countCharactersInDom(children[i], charsInRow)
                         }
                     }
                 }
@@ -205,9 +208,9 @@
             })
 
             var rc = computeRowsAndColumns()
-            var charsInPage = rc.rows * rc.columns
-            console.log(charsInPage)
-            getData((data) => extractContents(data, charsInPage, () => displayPage(0)))
+            //var charsInPage = rc.rows * rc.columns
+            //console.log(charsInPage)
+            getData((data) => extractContents(data, rc, () => displayPage(0)))
         </script>
     </body>
 </html>
