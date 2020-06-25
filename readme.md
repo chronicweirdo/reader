@@ -225,6 +225,9 @@ https://docs.oracle.com/javase/tutorial/essential/io/notification.html
 - if a file in a folder is changed, again full scan and save to database
 - if a file in a folde
 
+- a separate branch was made for this, but the idea is for the moment abandoned; navigating the various file change events is too complicated and the benefits are minimal
+- a different approach would be to detect changes on the library folder and subfolder, and after a time threshold (3 minutes, for example), to trigger a full rescan
+
 ## Panel Detection
 
 Edge detection https://en.wikipedia.org/wiki/Edge_detection
@@ -234,3 +237,26 @@ http://www.pages.drexel.edu/~nk752/cannyTut2.html
 https://docs.opencv.org/2.4/doc/tutorials/introduction/desktop_java/java_dev_intro.html
 
 https://github.com/rstreet85/JCanny
+
+The best Idea I have now is to:
+
+- detect straight edges in the image (horizontal, vertical, maybe various diagonals)
+- intersect edges them and then find all the poligons thus formed
+- order the poligons left->right top->bottom
+- send the poligons top-left and bottom-right corners in order to the UI 
+
+This, as a feature, is pretty complex, the advantage of this is not obvious. The user would not have enough control, if the algorithm can't detect the
+
+## The EPUB branch of the project
+
+- epub files are archives with html contents
+- there are a couple of ways to define the order of contents, tedious work to understand those
+- the complicated problem here is how to split an html into pages
+- I am tempted to now do this in browser:
+    - load the whole html contents file
+    - based on page size (a number, not the actual pixels size of the font) decide the number of words that make it into a page
+        - I will then need to find the correlation between the page size and the font sizes to use, and test this across multiple devices (if I find the right math formula, even better)
+    - split the contents into pages - by wrapping each page into a div (i did a similar thing for "powerpoint" like browser functionality in the past, but at that time I did not have to decide what fit into a page)
+    - some complications and difficulties will arise around non-text elements:
+        - images, maybe we can dedicate a full page to those, maybe even transition some of the comic side features like zooming and panning
+        - tables, these will most likely have to be split somehow
