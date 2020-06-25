@@ -26,13 +26,32 @@
                     bigPage.appendChild(content[i])
                 }
 
+                
+                //splitBigPage()
+                findSplitPositions(bigPage)
+                console.log(splits)
+                for (var i = 0; i < splits.length; i++) {
+                    var pages = document.querySelectorAll(".page")
+                    var page = pages[pages.length - 1]
+                    var range = document.createRange()
+                    range.setStart(page, 0)
+                    range.setEnd(splits[i].e, splits[i].p)
+                    var c = range.extractContents()
+                    document.body.insertBefore(toPage(c), page)
+                }
+                /*console.log(content[1])
+                var splc = split(content[1], 5)
+                document.body.insertBefore(splc, content[1])
+                console.log()*/
+            }
+            function splitBigPage() {
                 var keepSplitting = true
                 var threshold = 1000
                 while (keepSplitting) {
                     var pages = document.querySelectorAll(".page")
                     var page = pages[pages.length - 1]
                     var charactersInPage = countCharactersInDom(page)
-                    console.log("characters in page: " + charactersInPage)
+                    //console.log("characters in page: " + charactersInPage)
                     if (charactersInPage > threshold) {
                         var splittedElement = split(page, threshold)
                         document.body.insertBefore(toPage(splittedElement), page)
@@ -40,11 +59,6 @@
                         keepSplitting = false
                     }
                 }
-                
-                /*console.log(content[1])
-                var splc = split(content[1], 5)
-                document.body.insertBefore(splc, content[1])
-                console.log()*/
             }
             function toPage(content) {
                 var div = document.createElement("div")
@@ -75,8 +89,8 @@
                 var range = document.createRange()
                 range.setStart(node, 0)
                 var nodeForPosition = findNodeForPosition(node, chars)
-                console.log("found node for position: " + chars)
-                console.log(nodeForPosition)
+                //console.log("found node for position: " + chars)
+                //console.log(nodeForPosition)
                 range.setEnd(nodeForPosition.e, nodeForPosition.p)
                 //range.setEnd(node, chars)
                 var c = range.extractContents()
@@ -102,6 +116,28 @@
                     }
                 }
                 return null
+            }
+
+            var splits = []
+            var pageCharacterThreshold = 1000
+            var currentCharacters = 0
+
+            function findSplitPositions(current) {
+                if (current.nodeType == Node.TEXT_NODE) {
+                    if (current.nodeValue.length + currentCharacters > pageCharacterThreshold) {
+                        // there's a split point in here
+                        var charactersBeforeSplit = current.nodeValue.length - (pageCharacterThreshold - currentCharacters)
+                        splits.push({"e": current, "p": charactersBeforeSplit})
+                        currentCharacters = current.nodeValue.length - charactersBeforeSplit
+                    } else {
+                        currentCharacters = currentCharacters + current.nodeValue.length
+                    }
+                } else if (current.nodeType == Node.ELEMENT_NODE) {
+                    var children = current.childNodes
+                    for (var i = 0; i < children.length; i++) {
+                        findSplitPositions(children[i])
+                    }
+                }
             }
         </script>
     </head>
