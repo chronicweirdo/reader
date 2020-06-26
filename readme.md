@@ -276,7 +276,18 @@ This, as a feature, is pretty complex, the advantage of this is not obvious. The
     - need a new approach to page computing: maybe grow a page word by word, rather than an arbitrary number of characters
     
 - problem: while iterating word by word might work, right now I have the issue that my betterTextContent and the actual positions in the content hierarchy do not match
+- solution: found, a different approach to finding positions in text (buld an index of positions to text nodes), and the pages are built word by word.
         
 ## Bypass CORS when debugging:
 
 Firefox, at `about:config` change the `security.fileuri.strict_origin_policy` to `false`
+
+## Ebook Reader next steps
+
+- learn about the ebook format, what is the expected structure of the archive, where to get the expected structure of the book
+- implement loading of ebook from disk
+- make links work - retrieve the file or image from the ebook archive (this would probably mean modifying and replacing all links inside the ebook as it gets loaded)
+- have a different handling of page breaks? (may be difficult and not worth the effort)
+- book navigation (with table of contents)
+- bookmarks and other navigation features
+- 

@@ -1,6 +1,11 @@
 <html>
     <head>
         <style>
+            body {
+                margin: 0;
+                padding: 0;
+                border: 0;
+            }
             #content {
                 display: none;
             }
@@ -20,13 +25,13 @@
                 right: 0;
                 width: 5vw;
                 height: 100vh;
-                background-color: blue;
+                background-color: #0000ffaa;
             }
             #page {
-                border: 1px solid red;
-                padding: 2em;
+                border: 1px solid #ff0000aa;
+                padding: 1vw;
                 margin: 5vw;
-                width: 50vw;
+                width: 88vw;
                 font-size: 1.2em;
             }
         </style>
@@ -36,11 +41,12 @@
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
                         extractContents(this.responseText)
-                        //findPages()
                         if (callback != null) callback()
                     }
                 }
-                xhttp.open("GET", "part0005.html", true)
+                //xhttp.open("GET", "part0005.html", true)
+                xhttp.open("GET", "18_chapter3_1.xhtml", true)
+                //xhttp.open("GET", "SparkTheRevolu_chap_4.html", true)
                 xhttp.send()
             }
             function extractContents(data) {
@@ -52,23 +58,6 @@
                     contentDiv.appendChild(content[i])
                 }
             }
-            /*function findPages() {
-                var pages = []
-                var documentEnd = false
-                var currentPosition = 0
-                pages.push(currentPosition)
-                while (! documentEnd) {
-                    var result = loadPage(currentPosition, pages.length)
-                    currentPosition = result.endPosition
-                    pages.push(currentPosition)
-                    documentEnd = result.documentEnd
-                }
-                clearPage()
-                console.log(pages)
-                document.pages = pages
-                document.currentPage = 0
-                fillPage(document.pages[0], document.pages[1], false)
-            }*/
 
             function previousPage() {
                 if (document.currentPage > 0) {
@@ -89,90 +78,9 @@
                 }
             }
 
-            /*function loadPage(startPosition, pn) {
-                //var jump = 10
-                var endPosition = startPosition + 100
-                var previousEndPosition = null
-
-                clearPage()
-                var documentEnd = false
-                var returnedEnd = null
-                var pageToLog = 1
-                while ((! scrollNecessary()) && (! documentEnd) && (endPosition != previousEndPosition)) {
-                    previousEndPosition = endPosition
-                    endPosition = endPosition + 1
-                    returnedEnd = fillPage(startPosition, endPosition, true)
-                    if (pn == pageToLog) console.log("returned end: " + returnedEnd)
-                    if (returnedEnd < endPosition) {
-                        documentEnd = true
-                    }
-                    if (pn == pageToLog) console.log("scroll necessary: " + scrollNecessary())
-                }
-                if (! documentEnd) {
-                    if (pn == pageToLog) console.log("suggested end position: " + previousEndPosition)
-                    var endpos = fillPage(startPosition, previousEndPosition, false)
-                    if (pn == pageToLog) console.log("actual end position: " + endpos)
-                    return { "endPosition": endpos, "documentEnd": false }
-                } else {
-                    return { "endPosition": returnedEnd, "documentEnd": true}
-                }
-            }*/
             function clearPage() {
                 document.getElementById("page").innerHTML = ""
             }
-
-            /*function fillPage(startPosition, endPosition, handleWords) {
-                var content = document.getElementById("content")
-                var range = document.createRange()
-                var startLocation = findLocation(content, startPosition, false)
-                var endLocation = findLocation(content, endPosition, handleWords)
-                range.setStart(startLocation.element, startLocation.position)
-                if (endLocation != null && endLocation.element) {
-                    range.setEnd(endLocation.element, endLocation.position)
-                } else {
-                    var contentAll = document.querySelectorAll("#content > *")
-                    var lastElement = contentAll[contentAll.length - 1]
-                    range.setEndAfter(lastElement)
-                }
-                var page = document.getElementById("page")
-                page.innerHTML = ""
-                page.appendChild(range.cloneContents())
-                if (endLocation.remaining) {
-                    return endPosition - endLocation.remaining
-                } else {
-                    return endPosition
-                }
-            }*/
-
-            /*function positionOfSpaceBefore(str, pos) {
-                for (var i = pos; i > 0; i--) {
-                    if (str.charAt(i) == ' ') return i
-                }
-                return 0
-            }*/
-
-            /*function findSpaceAfter(position) {
-                var el = document.getElementById("content")
-                var text = betterTextContent(el)
-                for (var i = position + 1; i < text.length; i++) {
-                    // treat multiple spaces as one ?
-                    if (text.charAt(i) == ' ') return i
-                }
-                return text.length
-            }*/
-
-            /*function betterTextContent(el) {
-                if (el.nodeType == Node.TEXT_NODE) {
-                    return el.nodeValue
-                } else if (el.nodeType == Node.ELEMENT_NODE) {
-                    var children = el.childNodes
-                    var text = ""
-                    for (var i = 0; i < children.length; i++) {
-                        text = text + " " + betterTextContent(children[i])
-                    }
-                    return text
-                } else return ""
-            }*/
 
             function findSpaceAfter(str, pos) {
                 for (var i = pos; i < str.length; i++) {
@@ -181,40 +89,11 @@
                 return str.length
             }
 
-            /*function findLocation(el, position, handleWords) {
-                if (el.nodeType == Node.TEXT_NODE) {
-                    if (el.nodeValue.length >= position) {
-                        if (handleWords) {
-                            return { "element": el, "position": findSpaceAfter(el.nodeValue, position) }
-                        } else {
-                            return { "element": el, "position": position }
-                        }
-                    } else {
-                        return { "remaining": position - el.nodeValue.length}
-                    }
-                } else if (el.nodeType == Node.ELEMENT_NODE) {
-                    var children = el.childNodes
-                    var remainingPosition = position
-                    for (var i = 0; i < children.length; i++) {
-                        var result = findLocation(children[i], remainingPosition, handleWords)
-                        if (result.element) {
-                            return result
-                        } else {
-                            remainingPosition = result.remaining
-                        }
-                    }
-                    return { "remaining": remainingPosition}
-                }
-                return null
-            }*/
-
             function computeStartPositionsOfElements(root) {
                 console.log("computing start positions of elements")
-                var positionToElement = [] //new Map()
-                //var elementToPosition = new Map()
+                var positionToElement = []
                 var recursive = function(element, currentPosition) {
                     if (element.nodeType == Node.TEXT_NODE) {
-                        //elementToPosition.set(element, currentPosition)
                         positionToElement.push([currentPosition, element])
                         return currentPosition + element.nodeValue.length
                     } else if (element.nodeType == Node.ELEMENT_NODE) {
@@ -231,12 +110,9 @@
             }
 
             function getElementForPosition(positions, position) {
-                if (debugLogging) console.log(positions)
-                if (debugLogging) console.log("getting element for position " + position)
                 for (var i = 1; i < positions.length; i++) {
                     if (positions[i][0] > position) return positions[i-1]
                 }
-                console.log("no element found for position")
                 return positions[positions.length - 1]
             }
             function getPositions() {
@@ -250,18 +126,16 @@
                 return last[0] + last[1].nodeValue.length
             }
 
-            // find the end position for this start position that constituder a full page
+            // find the end position for this start position that constitudes a full page
             function findPage(startPosition) {
                 var initialJump = 100
                 var endPosition = getNextSpaceForPosition(getPositions(), startPosition + initialJump)
                 var previousEndPosition = null
-                //console.log(endPosition)
                 copyTextToPage(getPositions(), startPosition, endPosition)
                 while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
                     previousEndPosition = endPosition
                     endPosition = getNextSpaceForPosition(getPositions(), endPosition + 1)
                     copyTextToPage(getPositions(), startPosition, endPosition)
-                    //console.log(endPosition)
                 }
                 if (scrollNecessary() && previousEndPosition != null) {
                     copyTextToPage(getPositions(), startPosition, previousEndPosition)
@@ -271,22 +145,16 @@
                 }
             }
 
-            var debugLogging = false
-
             function findPages() {
                 var pages = []
                 pages.push(0)
                 while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
                     var endPosition = findPage(pages[pages.length - 1])
-                    console.log(endPosition)
                     pages.push(endPosition)
                 }
                 clearPage()
-                console.log(pages)
                 document.pages = pages
                 document.currentPage = 0
-                debugLogging = true
-                //fillPage(document.pages[0], document.pages[1], false)
                 copyTextToPage(getPositions(), document.pages[0], document.pages[1])
             }
 
@@ -295,14 +163,11 @@
                 var range = document.createRange()
 
                 var startEl = getElementForPosition(positions, from)
-                if (debugLogging) console.log(startEl)
                 var startElement = startEl[1]
                 var locationInStartEl = from - startEl[0]
-                //console.log(locationInStartEl)
                 range.setStart(startElement, locationInStartEl)
 
                 var endEl = getElementForPosition(positions, to)
-                //console.log(endEl)
                 var locationInEndEl = to - endEl[0]
                 range.setEnd(endEl[1], locationInEndEl)
 
@@ -321,13 +186,7 @@
                 }
                 if (index == null) return getMaxPosition()
 
-                if (debugLogging) console.log("index for element containing space: " + index)
-                if (debugLogging) console.log("element text: " + positions[index][1].nodeValue)
-                if (debugLogging) console.log("size of text: " + positions[index][1].nodeValue.length)
-                if (debugLogging) console.log("looking for space after position: " + (position - positions[index][0]))
                 var nextSpaceInElementText = findSpaceAfter(positions[index][1].nodeValue, position - positions[index][0])
-                if (debugLogging) console.log("found space at: " + nextSpaceInElementText)
-
 
                 if (nextSpaceInElementText < positions[index][1].nodeValue.length) {
                     return positions[index][0] + nextSpaceInElementText
@@ -363,11 +222,7 @@
             getData(() => {
                 var positions = computeStartPositionsOfElements(document.getElementById("content"))
                 setPositions(positions)
-                console.log("max position: " + getMaxPosition())
-                //var endPage = findPage(0)
-                //console.log(endPage)
                 findPages()
-                //findPage(45993)
             })
         </script>
     </body>
