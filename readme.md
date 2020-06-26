@@ -274,6 +274,8 @@ This, as a feature, is pretty complex, the advantage of this is not obvious. The
     - adding 10 characters may mean we grab the next paragrapf, triggering overflow, but maybe we still have enough space for the last word in the paragraph; I can consistently observe situations where only the last word of a paragraph is moved to the next page
 - solutions:
     - need a new approach to page computing: maybe grow a page word by word, rather than an arbitrary number of characters
+    
+- problem: while iterating word by word might work, right now I have the issue that my betterTextContent and the actual positions in the content hierarchy do not match
         
 ## Bypass CORS when debugging:
 

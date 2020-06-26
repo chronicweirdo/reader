@@ -90,36 +90,32 @@
             }
 
             function loadPage(startPosition, pn) {
-                var jump = 10
-                var size = 100
-                var previousSize = null
+                //var jump = 10
+                var endPosition = startPosition + 100
+                var previousEndPosition = null
 
                 clearPage()
                 var documentEnd = false
                 var returnedEnd = null
-                while ((! scrollNecessary()) && (! documentEnd)) {
-                    previousSize = size
-                    var nextSpace = findSpaceAfter(startPosition + size)
-                    if (pn == 2) console.log("next space: " + nextSpace)
-                    if (nextSpace != null) {
-                        size = size + (nextSpace - startPosition - size + 1)
-                    } else {
-                        console.log("nospace")
-                        size = size + jump
-                    }
-                    if (pn == 2) console.log("new size: " + size)
-                    returnedEnd = fillPage(startPosition, startPosition + size, false)
-                    if (pn == 2) console.log("returned end: " + returnedEnd)
-                    if (returnedEnd < startPosition + size) {
+                var pageToLog = 1
+                while ((! scrollNecessary()) && (! documentEnd) && (endPosition != previousEndPosition)) {
+                    previousEndPosition = endPosition
+                    var nextSpace = findSpaceAfter(endPosition)
+                    if (pn == pageToLog) console.log("next space: " + nextSpace)
+                    if (pn == pageToLog) console.log("char at next space: " + betterTextContent(document.getElementById("content")).charAt(nextSpace))
+                    if (pn == pageToLog) console.log("char before next space: " + betterTextContent(document.getElementById("content")).charAt(nextSpace-1))
+                    endPosition = nextSpace
+                    returnedEnd = fillPage(startPosition, endPosition)
+                    if (pn == pageToLog) console.log("returned end: " + returnedEnd)
+                    if (returnedEnd < endPosition) {
                         documentEnd = true
                     }
-                    if (pn == 2) console.log("scroll necessary: " + scrollNecessary())
+                    if (pn == pageToLog) console.log("scroll necessary: " + scrollNecessary())
                 }
                 if (! documentEnd) {
-                    if (pn == 2) console.log("selected size: " + previousSize)
-                    if (pn == 2) console.log("suggested end position: " + (startPosition + previousSize))
-                    var endpos = fillPage(startPosition, startPosition + previousSize, false)
-                    if (pn == 2) console.log("actual end position: " + endpos)
+                    if (pn == pageToLog) console.log("suggested end position: " + previousEndPosition)
+                    var endpos = fillPage(startPosition, previousEndPosition)
+                    if (pn == pageToLog) console.log("actual end position: " + endpos)
                     return { "endPosition": endpos, "documentEnd": false }
                 } else {
                     return { "endPosition": returnedEnd, "documentEnd": true}
@@ -129,11 +125,11 @@
                 document.getElementById("page").innerHTML = ""
             }
 
-            function fillPage(startPosition, endPosition, soft) {
+            function fillPage(startPosition, endPosition) {
                 var content = document.getElementById("content")
                 var range = document.createRange()
-                var startLocation = findLocation(content, startPosition, false)
-                var endLocation = findLocation(content, endPosition, soft)
+                var startLocation = findLocation(content, startPosition)
+                var endLocation = findLocation(content, endPosition)
                 range.setStart(startLocation.element, startLocation.position)
                 if (endLocation != null && endLocation.element) {
                     range.setEnd(endLocation.element, endLocation.position)
@@ -148,7 +144,7 @@
                 if (endLocation.remaining) {
                     return endPosition - endLocation.remaining
                 } else {
-                    return endPosition - endLocation.difference
+                    return endPosition
                 }
             }
 
@@ -163,9 +159,10 @@
                 var el = document.getElementById("content")
                 var text = betterTextContent(el)
                 for (var i = position + 1; i < text.length; i++) {
-                    if (text.charAt(i) == ' ') return i
+                    // treat multiple spaces as one ?
+                    if (text.charAt(i) == ' '/* && text.charAt(i+1) != ' '*/) return i
                 }
-                return null
+                return text.length
             }
 
             function betterTextContent(el) {
@@ -181,16 +178,10 @@
                 } else return ""
             }
 
-            function findLocation(el, position, soft) {
+            function findLocation(el, position) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
-                        if (soft) {
-                            var actual = positionOfSpaceBefore(el.nodeValue, position)
-                            var difference = position - actual
-                            return { "element": el, "position": actual, "difference": difference }
-                        } else {
-                            return { "element": el, "position": position, "difference": 0 }
-                        }
+                        return { "element": el, "position": position }
                     } else {
                         return { "remaining": position - el.nodeValue.length}
                     }
@@ -198,7 +189,7 @@
                     var children = el.childNodes
                     var remainingPosition = position
                     for (var i = 0; i < children.length; i++) {
-                        var result = findLocation(children[i], remainingPosition, soft)
+                        var result = findLocation(children[i], remainingPosition)
                         if (result.element) {
                             return result
                         } else {
