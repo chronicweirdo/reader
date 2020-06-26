@@ -58,7 +58,7 @@
                 var currentPosition = 0
                 pages.push(currentPosition)
                 while (! documentEnd) {
-                    var result = loadPage(currentPosition)
+                    var result = loadPage(currentPosition, pages.length)
                     currentPosition = result.endPosition
                     pages.push(currentPosition)
                     documentEnd = result.documentEnd
@@ -89,7 +89,7 @@
                 }
             }
 
-            function loadPage(startPosition) {
+            function loadPage(startPosition, pn) {
                 var jump = 10
                 var size = 100
                 var previousSize = null
@@ -99,14 +99,28 @@
                 var returnedEnd = null
                 while ((! scrollNecessary()) && (! documentEnd)) {
                     previousSize = size
-                    size = size + jump
+                    var nextSpace = findSpaceAfter(startPosition + size)
+                    if (pn == 2) console.log("next space: " + nextSpace)
+                    if (nextSpace != null) {
+                        size = size + (nextSpace - startPosition - size + 1)
+                    } else {
+                        console.log("nospace")
+                        size = size + jump
+                    }
+                    if (pn == 2) console.log("new size: " + size)
                     returnedEnd = fillPage(startPosition, startPosition + size, false)
+                    if (pn == 2) console.log("returned end: " + returnedEnd)
                     if (returnedEnd < startPosition + size) {
                         documentEnd = true
                     }
+                    if (pn == 2) console.log("scroll necessary: " + scrollNecessary())
                 }
                 if (! documentEnd) {
-                    return { "endPosition": fillPage(startPosition, startPosition + previousSize, true), "documentEnd": false }
+                    if (pn == 2) console.log("selected size: " + previousSize)
+                    if (pn == 2) console.log("suggested end position: " + (startPosition + previousSize))
+                    var endpos = fillPage(startPosition, startPosition + previousSize, false)
+                    if (pn == 2) console.log("actual end position: " + endpos)
+                    return { "endPosition": endpos, "documentEnd": false }
                 } else {
                     return { "endPosition": returnedEnd, "documentEnd": true}
                 }
@@ -143,6 +157,28 @@
                     if (str.charAt(i) == ' ') return i
                 }
                 return 0
+            }
+
+            function findSpaceAfter(position) {
+                var el = document.getElementById("content")
+                var text = betterTextContent(el)
+                for (var i = position + 1; i < text.length; i++) {
+                    if (text.charAt(i) == ' ') return i
+                }
+                return null
+            }
+
+            function betterTextContent(el) {
+                if (el.nodeType == Node.TEXT_NODE) {
+                    return el.nodeValue
+                } else if (el.nodeType == Node.ELEMENT_NODE) {
+                    var children = el.childNodes
+                    var text = ""
+                    for (var i = 0; i < children.length; i++) {
+                        text = text + " " + betterTextContent(children[i])
+                    }
+                    return text
+                } else return ""
             }
 
             function findLocation(el, position, soft) {
