@@ -68,12 +68,12 @@
                 document.pages = pages
                 document.currentPage = 0
                 fillPage(document.pages[0], document.pages[1], false)
-            }
+            }*/
 
             function previousPage() {
                 if (document.currentPage > 0) {
                     document.currentPage = document.currentPage - 1
-                    fillPage(document.pages[document.currentPage], document.pages[document.currentPage + 1], false)
+                    copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
                 } else {
                     console.log("beginning of doc")
                 }
@@ -83,11 +83,11 @@
                 // see if there is a next page
                 if (document.currentPage < document.pages.length - 2) {
                     document.currentPage = document.currentPage + 1
-                    fillPage(document.pages[document.currentPage], document.pages[document.currentPage + 1], false)
+                    copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
                 } else {
                     console.log("end of doc")
                 }
-            }*/
+            }
 
             /*function loadPage(startPosition, pn) {
                 //var jump = 10
@@ -178,7 +178,7 @@
                 for (var i = pos; i < str.length; i++) {
                     if (str.charAt(i) == ' ') return i
                 }
-                return str.length-1
+                return str.length
             }
 
             /*function findLocation(el, position, handleWords) {
@@ -231,11 +231,13 @@
             }
 
             function getElementForPosition(positions, position) {
-                var prev = null
-                for (var p of positions) {
-                    if (p[0] > position) return prev
-                    prev = p
+                if (debugLogging) console.log(positions)
+                if (debugLogging) console.log("getting element for position " + position)
+                for (var i = 1; i < positions.length; i++) {
+                    if (positions[i][0] > position) return positions[i-1]
                 }
+                console.log("no element found for position")
+                return positions[positions.length - 1]
             }
             function getPositions() {
                 return document.positions
@@ -253,13 +255,13 @@
                 var initialJump = 100
                 var endPosition = getNextSpaceForPosition(getPositions(), startPosition + initialJump)
                 var previousEndPosition = null
-                console.log(endPosition)
+                //console.log(endPosition)
                 copyTextToPage(getPositions(), startPosition, endPosition)
-                while (! scrollNecessary() && endPosition < getMaxPosition()) {
+                while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
                     previousEndPosition = endPosition
                     endPosition = getNextSpaceForPosition(getPositions(), endPosition + 1)
                     copyTextToPage(getPositions(), startPosition, endPosition)
-                    console.log(endPosition)
+                    //console.log(endPosition)
                 }
                 if (scrollNecessary() && previousEndPosition != null) {
                     copyTextToPage(getPositions(), startPosition, previousEndPosition)
@@ -269,11 +271,31 @@
                 }
             }
 
+            var debugLogging = false
+
+            function findPages() {
+                var pages = []
+                pages.push(0)
+                while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
+                    var endPosition = findPage(pages[pages.length - 1])
+                    console.log(endPosition)
+                    pages.push(endPosition)
+                }
+                clearPage()
+                console.log(pages)
+                document.pages = pages
+                document.currentPage = 0
+                debugLogging = true
+                //fillPage(document.pages[0], document.pages[1], false)
+                copyTextToPage(getPositions(), document.pages[0], document.pages[1])
+            }
+
+
             function copyTextToPage(positions, from, to) {
                 var range = document.createRange()
 
                 var startEl = getElementForPosition(positions, from)
-                //console.log(startEl)
+                if (debugLogging) console.log(startEl)
                 var startElement = startEl[1]
                 var locationInStartEl = from - startEl[0]
                 //console.log(locationInStartEl)
@@ -290,18 +312,31 @@
             }
 
             function getNextSpaceForPosition(positions, position) {
-                var elementWithPosition = null
-                var folowingElement = null
-                for (var p of positions) {
-                    followingElement = p
-                    if (p[0] > position) break
-                    elementWithPosition = p
+                var index = null
+                for (var i = 1; i < positions.length-1; i++) {
+                    if (positions[i][0] > position) {
+                        index = i - 1
+                        break
+                    }
                 }
-                var nextSpaceInElementText = findSpaceAfter(elementWithPosition[1].nodeValue, position - elementWithPosition[0])
-                if (nextSpaceInElementText < followingElement[0]) {
-                    return elementWithPosition[0] + nextSpaceInElementText
+                if (index == null) return getMaxPosition()
+
+                if (debugLogging) console.log("index for element containing space: " + index)
+                if (debugLogging) console.log("element text: " + positions[index][1].nodeValue)
+                if (debugLogging) console.log("size of text: " + positions[index][1].nodeValue.length)
+                if (debugLogging) console.log("looking for space after position: " + (position - positions[index][0]))
+                var nextSpaceInElementText = findSpaceAfter(positions[index][1].nodeValue, position - positions[index][0])
+                if (debugLogging) console.log("found space at: " + nextSpaceInElementText)
+
+
+                if (nextSpaceInElementText < positions[index][1].nodeValue.length) {
+                    return positions[index][0] + nextSpaceInElementText
                 } else {
-                    return followingElement[0]
+                    if (index < positions.length-1) {
+                        return positions[index+1][0]
+                    } else {
+                        return getMaxPosition()
+                    }
                 }
             }
 
@@ -328,8 +363,11 @@
             getData(() => {
                 var positions = computeStartPositionsOfElements(document.getElementById("content"))
                 setPositions(positions)
-                var endPage = findPage(0)
-                console.log(endPage)
+                console.log("max position: " + getMaxPosition())
+                //var endPage = findPage(0)
+                //console.log(endPage)
+                findPages()
+                //findPage(45993)
             })
         </script>
     </body>
