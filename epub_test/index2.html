@@ -35,13 +35,15 @@
                 var xhttp = new XMLHttpRequest()
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-                        callback(this.responseText)
+                        extractContents(this.responseText)
+                        findPages()
+                        if (callback != null) callback()
                     }
                 }
                 xhttp.open("GET", "part0005.html", true)
                 xhttp.send()
             }
-            function extractContents(data, callback) {
+            function extractContents(data) {
                 let parser = new DOMParser()
                 let doc = parser.parseFromString(data, "text/html")
                 let content = doc.querySelectorAll("body > *")
@@ -49,20 +51,41 @@
                 for (var i = 0; i < content.length; i++) { 
                     contentDiv.appendChild(content[i])
                 }
-
-                if (callback != null) callback()
+            }
+            function findPages() {
+                var pages = []
+                var documentEnd = false
+                var currentPosition = 0
+                pages.push(currentPosition)
+                while (! documentEnd) {
+                    var result = loadPage(currentPosition)
+                    currentPosition = result.endPosition
+                    pages.push(currentPosition)
+                    documentEnd = result.documentEnd
+                }
+                clearPage()
+                console.log(pages)
+                document.pages = pages
+                document.currentPage = 0
+                fillPage(document.pages[0], document.pages[1], false)
             }
 
-            var globalStartPosition = 0
-            var globalEndPosition = 0
+            function previousPage() {
+                if (document.currentPage > 0) {
+                    document.currentPage = document.currentPage - 1
+                    fillPage(document.pages[document.currentPage], document.pages[document.currentPage + 1], false)
+                } else {
+                    console.log("beginning of doc")
+                }
+            }
 
             function nextPage() {
-                if (globalStartPosition == 0 && globalEndPosition == 0) {
-                    globalEndPosition = loadPage(globalStartPosition)
+                // see if there is a next page
+                if (document.currentPage < document.pages.length - 2) {
+                    document.currentPage = document.currentPage + 1
+                    fillPage(document.pages[document.currentPage], document.pages[document.currentPage + 1], false)
                 } else {
-                    var from = globalEndPosition
-                    globalEndPosition = loadPage(globalEndPosition)
-                    console.log(from + " -> " + globalEndPosition)
+                    console.log("end of doc")
                 }
             }
 
@@ -91,9 +114,9 @@
                 }
                 //size = size - jump
                 if (! documentEnd) {
-                    return fillPage(startPosition, startPosition + previousSize, true)
+                    return { "endPosition": fillPage(startPosition, startPosition + previousSize, true), "documentEnd": false }
                 } else {
-                    return returnedEnd
+                    return { "endPosition": returnedEnd, "documentEnd": true}
                 }
             }
             function clearPage() {
@@ -136,7 +159,7 @@
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
                         if (soft) {
-                            console.log("finding soft position")
+                            //console.log("finding soft position")
                             var actual = positionOfSpaceBefore(el.nodeValue, position)
                             var difference = position - actual
                             return { "element": el, "position": actual, "difference": difference }
@@ -178,6 +201,7 @@
             prev.addEventListener("click", function() {
                 //currentPage = currentPage - 1
                 //displayPage(currentPage)
+                previousPage()
             })
             var next = document.getElementById("next")
             next.addEventListener("click", function() {
@@ -186,7 +210,7 @@
                 nextPage()
             })
 
-            getData((data) => extractContents(data, () => nextPage()))
+            getData()
         </script>
     </body>
 </html>
