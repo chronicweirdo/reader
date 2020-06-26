@@ -58,49 +58,71 @@
 
             function nextPage() {
                 if (globalStartPosition == 0 && globalEndPosition == 0) {
-                    globalEndPosition = fillPage(globalStartPosition)
+                    globalEndPosition = loadPage(globalStartPosition)
                 } else {
-                    globalEndPosition = fillPage(globalEndPosition)
+                    var from = globalEndPosition
+                    globalEndPosition = loadPage(globalEndPosition)
+                    console.log(from + " -> " + globalEndPosition)
                 }
             }
 
-            function fillPage(startPosition) {
+            function loadPage(startPosition) {
                 var jump = 10
                 var size = 100
                 var previousSize = null
 
                 clearPage()
-                console.log("starting page finding")
-                while (! scrollNecessary()) {
+                //console.log("starting page finding")
+                var documentEnd = false
+                var returnedEnd = null
+                while ((! scrollNecessary()) && (! documentEnd)) {
                     previousSize = size
                     size = size + jump
-                    console.log("trying out size " + size)
+                    //console.log("trying out size " + size)
                     //var actualEndPosition = 
-                    fillPageFor(startPosition, startPosition + size, false)
+                    returnedEnd = fillPage(startPosition, startPosition + size, false)
                     //var actualSize = actualEndPosition - startPosition
                     //size = actualSize
+                    if (returnedEnd < startPosition + size) {
+                        console.log("document end!")
+                        console.log(returnedEnd)
+                        documentEnd = true
+                    }
                 }
                 //size = size - jump
-                var actualEndPosition = fillPageFor(startPosition, startPosition + previousSize, true)
-                return actualEndPosition
+                if (! documentEnd) {
+                    return fillPage(startPosition, startPosition + previousSize, true)
+                } else {
+                    return returnedEnd
+                }
             }
             function clearPage() {
                 document.getElementById("page").innerHTML = ""
             }
 
-            function fillPageFor(startPosition, endPosition, soft) {
+            function fillPage(startPosition, endPosition, soft) {
                 var content = document.getElementById("content")
                 var range = document.createRange()
-                var startLocation = findNodeForPosition(content, startPosition, false)
-                var endLocation = findNodeForPosition(content, endPosition, soft)
+                var startLocation = findLocation(content, startPosition, false)
+                var endLocation = findLocation(content, endPosition, soft)
+                //console.log(endLocation)
                 range.setStart(startLocation.element, startLocation.position)
-                range.setEnd(endLocation.element, endLocation.position)
+                if (endLocation != null && endLocation.element) {
+                    range.setEnd(endLocation.element, endLocation.position)
+                } else {
+                    var contentAll = document.querySelectorAll("#content > *")
+                    var lastElement = contentAll[contentAll.length - 1]
+                    range.setEndAfter(lastElement)
+                }
                 var page = document.getElementById("page")
                 page.innerHTML = ""
                 page.appendChild(range.cloneContents())
-                if (soft) console.log("difference: " + endLocation.difference)
-                var actualEndLocation = endPosition - endLocation.difference
-                return actualEndLocation
+                //if (soft) console.log("difference: " + endLocation.difference)
+                if (endLocation.remaining) {
+                    return endPosition - endLocation.remaining
+                } else {
+                    return endPosition - endLocation.difference
+                }
             }
 
             function positionOfSpaceBefore(str, pos) {
@@ -110,7 +132,7 @@
                 return 0
             }
 
-            function findNodeForPosition(el, position, soft) {
+            function findLocation(el, position, soft) {
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
                         if (soft) {
@@ -128,7 +150,7 @@
                     var children = el.childNodes
                     var remainingPosition = position
                     for (var i = 0; i < children.length; i++) {
-                        var result = findNodeForPosition(children[i], remainingPosition, soft)
+                        var result = findLocation(children[i], remainingPosition, soft)
                         if (result.element) {
                             return result
                         } else {
