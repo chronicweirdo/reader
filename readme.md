@@ -290,4 +290,5 @@ Firefox, at `about:config` change the `security.fileuri.strict_origin_policy` to
 - have a different handling of page breaks? (may be difficult and not worth the effort)
 - book navigation (with table of contents)
 - bookmarks and other navigation features
-- 
+
+Epub spec: http://idpf.org/epub/dir/
