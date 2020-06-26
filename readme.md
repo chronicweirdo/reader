@@ -261,6 +261,20 @@ This, as a feature, is pretty complex, the advantage of this is not obvious. The
         - images, maybe we can dedicate a full page to those, maybe even transition some of the comic side features like zooming and panning
         - tables, these will most likely have to be split somehow
         
+- right not, I have a workable algorithm that:
+    - reads the html document
+    - puts it into a hidden storage
+    - precomputes the pages using the browser rendering
+    - displays the pages, moves between pages
+- the algorithm computing how much constitutes a page does so by:
+    - starting with 100 characters
+    - keeps adding 10 characters to the page and checks if scroll is now necessary of not
+    - the moment scroll becomes necessary we know the page has overflow, so we use the previous page size
+- problems:
+    - adding 10 characters may mean we grab the next paragrapf, triggering overflow, but maybe we still have enough space for the last word in the paragraph; I can consistently observe situations where only the last word of a paragraph is moved to the next page
+- solutions:
+    - need a new approach to page computing: maybe grow a page word by word, rather than an arbitrary number of characters
+        
 ## Bypass CORS when debugging:
 
 Firefox, at `about:config` change the `security.fileuri.strict_origin_policy` to `false`

@@ -95,24 +95,16 @@
                 var previousSize = null
 
                 clearPage()
-                //console.log("starting page finding")
                 var documentEnd = false
                 var returnedEnd = null
                 while ((! scrollNecessary()) && (! documentEnd)) {
                     previousSize = size
                     size = size + jump
-                    //console.log("trying out size " + size)
-                    //var actualEndPosition = 
                     returnedEnd = fillPage(startPosition, startPosition + size, false)
-                    //var actualSize = actualEndPosition - startPosition
-                    //size = actualSize
                     if (returnedEnd < startPosition + size) {
-                        console.log("document end!")
-                        console.log(returnedEnd)
                         documentEnd = true
                     }
                 }
-                //size = size - jump
                 if (! documentEnd) {
                     return { "endPosition": fillPage(startPosition, startPosition + previousSize, true), "documentEnd": false }
                 } else {
@@ -128,7 +120,6 @@
                 var range = document.createRange()
                 var startLocation = findLocation(content, startPosition, false)
                 var endLocation = findLocation(content, endPosition, soft)
-                //console.log(endLocation)
                 range.setStart(startLocation.element, startLocation.position)
                 if (endLocation != null && endLocation.element) {
                     range.setEnd(endLocation.element, endLocation.position)
@@ -140,7 +131,6 @@
                 var page = document.getElementById("page")
                 page.innerHTML = ""
                 page.appendChild(range.cloneContents())
-                //if (soft) console.log("difference: " + endLocation.difference)
                 if (endLocation.remaining) {
                     return endPosition - endLocation.remaining
                 } else {
@@ -159,7 +149,6 @@
                 if (el.nodeType == Node.TEXT_NODE) {
                     if (el.nodeValue.length >= position) {
                         if (soft) {
-                            //console.log("finding soft position")
                             var actual = positionOfSpaceBefore(el.nodeValue, position)
                             var difference = position - actual
                             return { "element": el, "position": actual, "difference": difference }
@@ -196,17 +185,12 @@
         <div id="next"></div>
         <div id="page"></div>
         <script>
-            //var currentPage = 0
             var prev = document.getElementById("prev")
             prev.addEventListener("click", function() {
-                //currentPage = currentPage - 1
-                //displayPage(currentPage)
                 previousPage()
             })
             var next = document.getElementById("next")
             next.addEventListener("click", function() {
-                //currentPage = currentPage + 1
-                //displayPage(currentPage)
                 nextPage()
             })
 
