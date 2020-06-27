@@ -292,3 +292,10 @@ Firefox, at `about:config` change the `security.fileuri.strict_origin_policy` to
 - bookmarks and other navigation features
 
 Epub spec: http://idpf.org/epub/dir/
+
+- `content.opf` seems to contain all the linked items and media
+- `toc.ncx` contains the reading order
+
+- one idea would be to read the OPF file, then take all files from there and merge them, merge HTML in order, add images to HTML as base64, change all links inside html to document internal links; but this would load too much in memory, if the book has a lot of image we get a lot of data
+- the other approach would be to have a method to load any "href" from inside a book ID, and when data is loaded and returned we post-proces some of it, like:
+    - for HTML files, we replace all HREF links to also include the book id; we also replace all image SRC to also include the book id
