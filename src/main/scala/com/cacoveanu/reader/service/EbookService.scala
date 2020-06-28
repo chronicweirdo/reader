@@ -7,6 +7,7 @@ import java.util.zip.ZipFile
 
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 import scala.jdk.CollectionConverters._
@@ -62,6 +63,8 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
   private def extractHrefString(elem: Elem) = elem.attribute("href").map(c => c.head).map(n => n.toString()).getOrElse("")
 
+  private def extractSrcString(elem: Elem) = elem.attribute("src").map(c => c.head).map(n => n.toString()).getOrElse("")
+
   private def transformElementWithHref(e: Node): Node = {
     val original: Elem = e.asInstanceOf[Elem]
     val originalHref = extractHrefString(original)
@@ -69,9 +72,17 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
     original % Attribute("href", Unparsed(newHref), Null)
   }
 
+  private def transformElementWithSrc(e: Node): Node = {
+    val original: Elem = e.asInstanceOf[Elem]
+    val originalSrc = extractSrcString(original)
+    val newSrc = getNewLink(originalSrc)
+    original % Attribute("src", Unparsed(newSrc), Null)
+  }
+
   override def transform(n: Node) = n match {
     case e @ <a>{_*}</a> => transformElementWithHref(e)
     case e @ <link>{_*}</link> => transformElementWithHref(e)
+    case e @ <img>{_*}</img> => transformElementWithSrc(e)
     case _ => n
   }
 }
@@ -149,13 +160,32 @@ class EbookService {
 
   private def getFiletype(path: String) = {
     val dot = path.lastIndexOf(".")
-    path.substring(dot + 1).toLowerCase()
+    val extension = path.substring(dot + 1).toLowerCase()
+    extension match {
+      case "html" => MediaType.TEXT_HTML_VALUE
+      case "jpg" => MediaType.IMAGE_JPEG_VALUE
+      case "jpeg" => MediaType.IMAGE_JPEG_VALUE
+      case "gif" => MediaType.IMAGE_GIF_VALUE
+      case "png" => MediaType.IMAGE_PNG_VALUE
+      case "css" => "text/css"
+    }
   }
 
-  def loadResource(bookId: String, resourcePath: String) = {
-    readFromEpub("Algorithms.epub", resourcePath).map(b => getFiletype(resourcePath) match {
-      case "html" => processHtml(new String(b,"UTF-8"), resourcePath)
-      case _ => new String(b)
-    })
+  def loadResource(bookId: String, resourcePath: String): Option[(String, Array[Byte])] = {
+    readFromEpub("Algorithms.epub", resourcePath) match {
+      case Some(bytes) =>
+        getFiletype(resourcePath) match {
+          case "text/html" =>
+            val data: Array[Byte] = processHtml(new String(bytes, "UTF-8"), resourcePath)
+              .getBytes("UTF-8")
+            Some(("text/html", data))
+          case "text/css" => Some(("text/css", bytes))
+          case "image/jpeg" => Some(("image/jpeg", bytes))
+          case "image/png" => Some(("image/png", bytes))
+          case "image/gif" => Some(("image/gif", bytes))
+          case _ => None
+        }
+      case None => None
+    }
   }
 }
