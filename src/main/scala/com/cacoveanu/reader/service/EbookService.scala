@@ -7,10 +7,12 @@ import java.util.zip.ZipFile
 
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.stereotype.Service
 
 import scala.jdk.CollectionConverters._
 import scala.xml._
 import scala.xml.transform._
+
 
 object EbookService {
   val log: Logger = LoggerFactory.getLogger(classOf[EbookService])
@@ -18,7 +20,7 @@ object EbookService {
   def main(args: Array[String]): Unit = {
     val service = new EbookService
 
-    val path = "text/part0001.html"
+    val path = "text/part0004.html"
     val data = service.readFromEpub("Algorithms.epub", path)
     data.foreach(b => {
       val html = new String(b)
@@ -38,14 +40,23 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
   private val folder = getFolder(htmlPath)
 
+  private def splitPath(path: String) = {
+    val di = path.lastIndexOf("#")
+    if (di > 0) (path.substring(0, di), path.substring(di+1))
+    else (path, null)
+  }
+
   private def getNewLink(remotePath: String): String = {
+    println(">>> " + remotePath)
     val remoteUri = new URI(remotePath)
     if (remoteUri.isAbsolute) {
       remotePath
     } else {
-      val remotePathWithFolder = if (folder.length > 0) folder + "/" + remotePath else remotePath
-      val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString
-      s"book?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}"
+      val (externalPath, internalPath) = splitPath(remotePath)
+      val remotePathWithFolder = if (folder.length > 0) folder + "/" + externalPath else externalPath
+      val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString.replaceAll("\\\\", "/")
+      s"book?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}" + (if (internalPath != null) "#" + internalPath else "")
+      //s"book?id=$bookId&path=$normalizedPath"
     }
   }
 
@@ -65,6 +76,7 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
   }
 }
 
+@Service
 class EbookService {
 
   import EbookService.log
@@ -133,5 +145,17 @@ class EbookService {
     } finally {
       zipFile.close()
     }
+  }
+
+  private def getFiletype(path: String) = {
+    val dot = path.lastIndexOf(".")
+    path.substring(dot + 1).toLowerCase()
+  }
+
+  def loadResource(bookId: String, resourcePath: String) = {
+    readFromEpub("Algorithms.epub", resourcePath).map(b => getFiletype(resourcePath) match {
+      case "html" => processHtml(new String(b,"UTF-8"), resourcePath)
+      case _ => new String(b)
+    })
   }
 }
