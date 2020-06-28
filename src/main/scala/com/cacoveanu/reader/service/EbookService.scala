@@ -1,7 +1,8 @@
 package com.cacoveanu.reader.service
 
 import java.io.ByteArrayOutputStream
-import java.net.URLEncoder
+import java.net.{URI, URL, URLEncoder}
+import java.nio.file.{LinkOption, Paths}
 import java.util.zip.ZipFile
 
 import org.apache.tomcat.util.http.fileupload.IOUtils
@@ -17,27 +18,49 @@ object EbookService {
   def main(args: Array[String]): Unit = {
     val service = new EbookService
 
-    val data = service.readFromEpub("Algorithms.epub", "text/part0001.html")
+    val path = "text/part0001.html"
+    val data = service.readFromEpub("Algorithms.epub", path)
     data.foreach(b => {
       val html = new String(b)
-      val newHtml = service.processHtml(html)
+      val newHtml = service.processHtml(html, path)
       println(newHtml)
     })
   }
 }
 
-class HrefRewriteRule(bookId: String) extends RewriteRule {
+class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
+
+  private def getFolder(path: String) = {
+    val lio = path.lastIndexOf("/")
+    if (lio > 0) path.substring(0, lio)
+    else ""
+  }
+
+  private val folder = getFolder(htmlPath)
+
+  private def getNewLink(remotePath: String): String = {
+    val remoteUri = new URI(remotePath)
+    if (remoteUri.isAbsolute) {
+      remotePath
+    } else {
+      val remotePathWithFolder = if (folder.length > 0) folder + "/" + remotePath else remotePath
+      val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString
+      s"book?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}"
+    }
+  }
+
+  private def extractHrefString(elem: Elem) = elem.attribute("href").map(c => c.head).map(n => n.toString()).getOrElse("")
+
+  private def transformElementWithHref(e: Node): Node = {
+    val original: Elem = e.asInstanceOf[Elem]
+    val originalHref = extractHrefString(original)
+    val newHref = getNewLink(originalHref)
+    original % Attribute("href", Unparsed(newHref), Null)
+  }
+
   override def transform(n: Node) = n match {
-    case e @ <a>{_*}</a> =>
-      val original: Elem = e.asInstanceOf[Elem]
-      //println("!!! " + original.attribute("href"))//.foreach(n => println("!!!" + n.asInstanceOf[Attribute].value))
-      val originalHref = original.attribute("href").map(c => c.head).map(n => n.toString()).getOrElse("")
-      println("!!! " + originalHref)
-      // is relative or absolute path? only change relative paths
-      // is path relative to the root of the book archive, or to some subfolder? make it relative to root!
-      val newHref = s"book?id=$bookId&path=${URLEncoder.encode(originalHref, "UTF-8")}"
-      //original % Attribute(null, "attr1", "200", Attribute(null, "attr2", "100", Null))
-      original % Attribute(null, "href", newHref, Null)
+    case e @ <a>{_*}</a> => transformElementWithHref(e)
+    case e @ <link>{_*}</link> => transformElementWithHref(e)
     case _ => n
   }
 }
@@ -81,13 +104,13 @@ class EbookService {
     }
   }*/
 
-  private def processHtml(html: String): String = {
+  private def processHtml(html: String, path: String): String = {
     // make XML
     val xml = XML.loadString(html)
     // adjust all links
 
 
-    val xml2 = new RuleTransformer(new HrefRewriteRule("1")).transform(xml)
+    val xml2 = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml)
 
     xml2.toString()
   }
