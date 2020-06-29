@@ -138,12 +138,13 @@ class EbookService {
 
   private def processHtml(html: String, path: String): String = {
     // make XML
-    val xml = XML.loadString(html)
+    val xml: Elem = XML.loadString(html)
     // adjust all links
-    val xml2 = new RuleTransformer(new ResourcesAppendRule()).transform(xml)
-    val xml3 = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml2)
+    val xml2: collection.Seq[Node] = new RuleTransformer(new ResourcesAppendRule()).transform(xml)
+    val xml3: collection.Seq[Node] = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml2)
 
-    xml3.toString()
+    //println(xml3.size)
+    xml3.head.toString()
   }
 
   private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
