@@ -5,7 +5,12 @@ function setup() {
     addPage()
     setupDocumentStyle()
     computeStartPositionsOfElements(document.getElementById("content"))
+    console.log("starting finding pages")
+    var st = new Date()
     findPages()
+    var end = new Date()
+    var dur = end - st
+    console.log("find pages duration: " + dur)
     jumpToLocation()
     console.log("setup complete")
 }
@@ -64,15 +69,27 @@ function addPage() {
 }
 
 function wrapContents() {
-    let content = document.querySelectorAll("body > *")
-    var range = document.createRange()
-    range.setStartBefore(content[0])
-    range.setEndAfter(content[content.length - 1])
+    //var content = document.querySelectorAll("body > *")
+    //var content = document.body.childNodes
+    //console.log(content[0])
+    //console.log(content[content.length - 1])
     var contentDiv = document.createElement("div")
     contentDiv.id = "content"
     contentDiv.style.display = "none"
     document.body.appendChild(contentDiv)
+
+    var range = document.createRange()
+    //range.setStart(content[0], 0)
+    range.setStart(document.body.firstChild, 0)
+    //range.setEndAfter(content[content.length - 1])
+    //range.setEnd(content[content.length - 1], 0)
+    range.setEndBefore(contentDiv)
+
     contentDiv.appendChild(range.extractContents())
+    //content.forEach(e => contentDiv.appendChild(e))
+    //console.log(range.extractContents())
+    //contentDiv.append(range.cloneContents())
+    //for (e in range.cloneContents()) contentDiv.appendChild(e)
 }
 
 function previousPage() {
@@ -189,13 +206,16 @@ function getMaxPosition() {
 
 // find the end position for this start position that constitudes a full page
 function findPage(startPosition) {
+    console.log("find page for " + startPosition)
     var initialJump = 100
-    var endPosition = getNextSpaceForPosition(getPositions(), startPosition + initialJump)
+    //var endPosition = getNextSpaceForPosition(/*getPositions(),*/ startPosition + initialJump)
+    var endPosition = findNextSpaceForPosition(startPosition + initialJump)
     var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
         previousEndPosition = endPosition
-        endPosition = getNextSpaceForPosition(getPositions(), endPosition + 1)
+        //endPosition = getNextSpaceForPosition(/*getPositions(),*/ endPosition + 1)
+        endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
     }
     if (scrollNecessary() && previousEndPosition != null) {
@@ -237,7 +257,8 @@ function copyTextToPage(positions, from, to) {
     page.appendChild(range.cloneContents())
 }
 
-function getNextSpaceForPosition(positions, position) {
+function getNextSpaceForPosition(/*positions, */position) {
+    var positions = getPositions()
     var index = null
     for (var i = 1; i < positions.length-1; i++) {
         if (positions[i][0] > position) {
@@ -258,6 +279,43 @@ function getNextSpaceForPosition(positions, position) {
             return getMaxPosition()
         }
     }
+}
+
+function findNextSpaceForPosition(position) {
+    var positions = getPositions()
+    // find text node that contains the current position
+    var i = 0
+    while (i < positions.length-1 && positions[i+1][0] < position) i = i + 1
+    /*for (i = 0; i < positions.length-1; i++) {
+        if (positions[i+1][0] > position) break;
+    }*/
+
+    var el = positions[i][1]
+    // find space after
+    var p = position - positions[i][0]
+    var str = el.nodeValue
+    while (p < str.length && str.charAt(p) != ' ') p = p + 1
+
+    if (p == str.length) {
+        if (i == positions.length - 1) return getMaxPosition()
+        else return positions[i+1][0]
+    } else {
+        return positions[i][0] + p
+    }
+}
+
+function findPreviousSpaceForPosition(position) {
+    var positions = getPositions()
+    // find text node that contains the current position
+    var i = 0
+    while (i < positions.length-1 && positions[i+1][0] < position) i = i + 1
+
+    var el = positions[i][1]
+    // find space before
+    var p = position - positions[i][0]
+    while (p > 0 && el.nodeValue.charAt(p) != ' ') p = p - 1
+
+    return positions[i][0] + p
 }
 
 function scrollNecessary() {
