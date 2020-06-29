@@ -198,10 +198,11 @@ function getMaxPosition() {
 }
 
 // find the end position for this start position that constitudes a full page
-function findPage(startPosition) {
-    console.log("find page for " + startPosition)
-    var initialJump = 100
+function findPage(startPosition, initialJump) {
+    console.log("find page for " + startPosition + " with jump " + initialJump)
+    //var initialJump = 100
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
+    console.log("end position: " + endPosition)
     var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
@@ -209,19 +210,26 @@ function findPage(startPosition) {
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
     }
-    if (scrollNecessary() && previousEndPosition != null) {
+    while (scrollNecessary()) {
+        endPosition = findPreviousSpaceForPosition(endPosition - 1)
+        copyTextToPage(getPositions(), startPosition, endPosition)
+    }
+    /*if (scrollNecessary() && previousEndPosition != null) {
         copyTextToPage(getPositions(), startPosition, previousEndPosition)
         return previousEndPosition
     } else {
         return endPosition
-    }
+    }*/
+    return endPosition
 }
 
 function findPages() {
     var pages = []
     pages.push(0)
     while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
-        var endPosition = findPage(pages[pages.length - 1])
+        var jump = 100
+        if (pages.length > 2) jump = pages[pages.length - 1] - pages[pages.length - 2]
+        var endPosition = findPage(pages[pages.length - 1], jump)
         pages.push(endPosition)
     }
     clearPage()
@@ -258,7 +266,7 @@ function findNextSpaceForPosition(position) {
     var str = el.nodeValue
     while (p < str.length && str.charAt(p) != ' ') p = p + 1
 
-    if (p == str.length) {
+    if (p >= str.length) {
         if (i == positions.length - 1) return getMaxPosition()
         else return positions[i+1][0]
     } else {

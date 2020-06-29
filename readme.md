@@ -309,5 +309,6 @@ Next problems to solve:
 - report back to server the start position of the page, when a page has beed flipped
 - [] optimize the pagination algorithm
     - find pages duration: 11473
+    - optimized from 11507 -> 2836 (miliseconds)
     
 - find a better solution for mime types
