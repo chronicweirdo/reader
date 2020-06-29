@@ -31,6 +31,15 @@ object EbookService {
   }
 }
 
+// add <script src="reader.js"></script> to every html header
+class ResourcesAppendRule() extends RewriteRule {
+  override def transform(n: Node) = n match {
+    case elem@Elem(prefix, label, attr, scope, nodes@_*) if label == "head" =>
+      Elem(prefix, label, attr, scope, true, nodes ++ <script src="/reader.js"></script>: _*)
+    case _ => n
+  }
+}
+
 class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
   private def getFolder(path: String) = {
@@ -131,11 +140,10 @@ class EbookService {
     // make XML
     val xml = XML.loadString(html)
     // adjust all links
+    val xml2 = new RuleTransformer(new ResourcesAppendRule()).transform(xml)
+    val xml3 = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml2)
 
-
-    val xml2 = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml)
-
-    xml2.toString()
+    xml3.toString()
   }
 
   private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
