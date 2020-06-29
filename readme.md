@@ -305,10 +305,17 @@ Next problems to solve:
 - [x] when returning a html file, include the pagination algorithm
 - [x] detect when the opened link has an internal reference (#), find the page for that reference (when building pages, create a name/id to page map?) and navigate to it
 - [x] add functionality to navigate to a section + a position (not a page, but a position); when a html link with a position is opened, automatically display the page that contains that position (this can just be a # with only a number, representing the position - maybe it doesn't clash with anything)
-- add functionality to navigate to next and previous section (when page gets loaded it should contain that information)
+- add functionality to navigate to next and previous section (when page gets loaded it should contain that information) 
+    - maybe put that info in the metadata of the file, an xml filter
 - report back to server the start position of the page, when a page has beed flipped
+    - will need to find a good way of jumping through the book without resetting the progress
 - [x] optimize the pagination algorithm
     - find pages duration: 11473
     - optimized from 11507 -> 2836 (miliseconds)
+- add spinner when computing pages, hide everything else
+- different font sizes for mobile and desktop
+- scan table of contents and compute the order of files
+- redirect to latest section+position when loading a book
+
     
 - find a better solution for mime types
