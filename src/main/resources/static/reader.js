@@ -124,13 +124,6 @@ function clearPage() {
     document.getElementById("page").innerHTML = ""
 }
 
-function findSpaceAfter(str, pos) {
-    for (var i = pos; i < str.length; i++) {
-        if (str.charAt(i) == ' ') return i
-    }
-    return str.length
-}
-
 function computeStartPositionsOfElements(root) {
     console.log("computing start positions of elements")
     var positionToElement = []
@@ -208,13 +201,11 @@ function getMaxPosition() {
 function findPage(startPosition) {
     console.log("find page for " + startPosition)
     var initialJump = 100
-    //var endPosition = getNextSpaceForPosition(/*getPositions(),*/ startPosition + initialJump)
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
     var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
         previousEndPosition = endPosition
-        //endPosition = getNextSpaceForPosition(/*getPositions(),*/ endPosition + 1)
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
     }
@@ -257,41 +248,12 @@ function copyTextToPage(positions, from, to) {
     page.appendChild(range.cloneContents())
 }
 
-function getNextSpaceForPosition(/*positions, */position) {
-    var positions = getPositions()
-    var index = null
-    for (var i = 1; i < positions.length-1; i++) {
-        if (positions[i][0] > position) {
-            index = i - 1
-            break
-        }
-    }
-    if (index == null) return getMaxPosition()
-
-    var nextSpaceInElementText = findSpaceAfter(positions[index][1].nodeValue, position - positions[index][0])
-
-    if (nextSpaceInElementText < positions[index][1].nodeValue.length) {
-        return positions[index][0] + nextSpaceInElementText
-    } else {
-        if (index < positions.length-1) {
-            return positions[index+1][0]
-        } else {
-            return getMaxPosition()
-        }
-    }
-}
-
 function findNextSpaceForPosition(position) {
     var positions = getPositions()
-    // find text node that contains the current position
     var i = 0
     while (i < positions.length-1 && positions[i+1][0] < position) i = i + 1
-    /*for (i = 0; i < positions.length-1; i++) {
-        if (positions[i+1][0] > position) break;
-    }*/
 
     var el = positions[i][1]
-    // find space after
     var p = position - positions[i][0]
     var str = el.nodeValue
     while (p < str.length && str.charAt(p) != ' ') p = p + 1
@@ -306,12 +268,10 @@ function findNextSpaceForPosition(position) {
 
 function findPreviousSpaceForPosition(position) {
     var positions = getPositions()
-    // find text node that contains the current position
     var i = 0
     while (i < positions.length-1 && positions[i+1][0] < position) i = i + 1
 
     var el = positions[i][1]
-    // find space before
     var p = position - positions[i][0]
     while (p > 0 && el.nodeValue.charAt(p) != ' ') p = p - 1
 
