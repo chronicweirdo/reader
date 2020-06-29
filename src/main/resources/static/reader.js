@@ -4,10 +4,19 @@ function setup() {
     addButtons()
     addPage()
     setupDocumentStyle()
-    var positions = computeStartPositionsOfElements(document.getElementById("content"))
-    setPositions(positions)
+    computeStartPositionsOfElements(document.getElementById("content"))
     findPages()
+    jumpToLocation()
     console.log("setup complete")
+}
+
+function jumpToLocation() {
+    var url = window.location.href
+    if (url.lastIndexOf("#") > 0) {
+        var id = url.substring(url.lastIndexOf("#") + 1, url.length)
+        //console.log(id)
+        displayPage(getPageForId(id))
+    }
 }
 
 function setupDocumentStyle() {
@@ -85,6 +94,15 @@ function nextPage() {
     }
 }
 
+function displayPage(page) {
+    if (page >= 0 && page < document.pages.length - 1) {
+        document.currentPage = page
+        copyTextToPage(getPositions(), document.pages[page], document.pages[page + 1])
+    } else {
+        console.log("page out of range")
+    }
+}
+
 function clearPage() {
     document.getElementById("page").innerHTML = ""
 }
@@ -99,11 +117,15 @@ function findSpaceAfter(str, pos) {
 function computeStartPositionsOfElements(root) {
     console.log("computing start positions of elements")
     var positionToElement = []
+    var idPositions = []
     var recursive = function(element, currentPosition) {
         if (element.nodeType == Node.TEXT_NODE) {
             positionToElement.push([currentPosition, element])
             return currentPosition + element.nodeValue.length
         } else if (element.nodeType == Node.ELEMENT_NODE) {
+            if (element.id && element.id != null) {
+                idPositions.push([element.id, currentPosition])
+            }
             var children = element.childNodes
             var newCurrentPosition = currentPosition
             for (var i = 0; i < children.length; i++) {
@@ -113,6 +135,9 @@ function computeStartPositionsOfElements(root) {
         }
     }
     recursive(root, 0)
+    setPositions(positionToElement)
+    setIdPositions(idPositions)
+    console.log("computed start positions")
     return positionToElement
 }
 
@@ -129,6 +154,32 @@ function getPositions() {
 
 function setPositions(positions) {
     document.positions = positions
+}
+
+function setIdPositions(idPositions) {
+    document.idPositions = idPositions
+}
+
+function getIdPositions(idPositions) {
+    return document.idPositions
+}
+
+function getPositionForId(id) {
+    for (var i = 0; i < document.idPositions.length; i++) {
+        if (document.idPositions[i][0] == id) return document.idPositions[i][1]
+    }
+    return 0
+}
+
+function getPageForPosition(position) {
+    for (var i = 1; i < document.pages.length - 1; i++) {
+        if (document.pages[i] > position) return i-1
+    }
+    return document.pages.length - 2
+}
+
+function getPageForId(id) {
+    return getPageForPosition(getPositionForId(id))
 }
 
 function getMaxPosition() {
