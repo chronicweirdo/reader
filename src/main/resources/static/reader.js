@@ -19,8 +19,13 @@ function jumpToLocation() {
     var url = window.location.href
     if (url.lastIndexOf("#") > 0) {
         var id = url.substring(url.lastIndexOf("#") + 1, url.length)
-        //console.log(id)
-        displayPage(getPageForId(id))
+        if (isNaN(id)) {
+            console.log("jumping to id " + id)
+            displayPage(getPageForId(id))
+        } else {
+            console.log("jumping to position " + id)
+            displayPage(getPageForPosition(+id))
+        }
     }
 }
 
@@ -69,27 +74,16 @@ function addPage() {
 }
 
 function wrapContents() {
-    //var content = document.querySelectorAll("body > *")
-    //var content = document.body.childNodes
-    //console.log(content[0])
-    //console.log(content[content.length - 1])
     var contentDiv = document.createElement("div")
     contentDiv.id = "content"
     contentDiv.style.display = "none"
     document.body.appendChild(contentDiv)
 
     var range = document.createRange()
-    //range.setStart(content[0], 0)
     range.setStart(document.body.firstChild, 0)
-    //range.setEndAfter(content[content.length - 1])
-    //range.setEnd(content[content.length - 1], 0)
     range.setEndBefore(contentDiv)
 
     contentDiv.appendChild(range.extractContents())
-    //content.forEach(e => contentDiv.appendChild(e))
-    //console.log(range.extractContents())
-    //contentDiv.append(range.cloneContents())
-    //for (e in range.cloneContents()) contentDiv.appendChild(e)
 }
 
 function previousPage() {
@@ -199,10 +193,10 @@ function getMaxPosition() {
 
 // find the end position for this start position that constitudes a full page
 function findPage(startPosition, initialJump) {
-    console.log("find page for " + startPosition + " with jump " + initialJump)
+    //console.log("find page for " + startPosition + " with jump " + initialJump)
     //var initialJump = 100
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
-    console.log("end position: " + endPosition)
+    //console.log("end position: " + endPosition)
     var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
