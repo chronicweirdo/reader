@@ -303,8 +303,11 @@ Epub spec: http://idpf.org/epub/dir/
 Next problems to solve:
 
 - [x] when returning a html file, include the pagination algorithm
-- detect when the opened link has an internal reference (#), find the page for that reference (when building pages, create a name/id to page map?) and navigate to it
-- add functionality to navigate to a section + a position (not a page, but a position); when a html link with a position is opened, automatically display the page that contains that position
+- [x] detect when the opened link has an internal reference (#), find the page for that reference (when building pages, create a name/id to page map?) and navigate to it
+- add functionality to navigate to a section + a position (not a page, but a position); when a html link with a position is opened, automatically display the page that contains that position (this can just be a # with only a number, representing the position - maybe it doesn't clash with anything)
+- add functionality to navigate to next and previous section (when page gets loaded it should contain that information)
 - report back to server the start position of the page, when a page has beed flipped
-- [] optimize the pagination algorithm () 
+- [] optimize the pagination algorithm
+    - find pages duration: 11473
+    
 - find a better solution for mime types
