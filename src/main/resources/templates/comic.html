@@ -326,23 +326,13 @@
         var panPreviousDeltaX = 0
         var panPreviousDeltaY = 0
 
-        hammertime.on('pan', function(ev) {
-            var currentDeltaX = ev.deltaX - panPreviousDeltaX
-            var currentDeltaY = ev.deltaY - panPreviousDeltaY
-            pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
-            panPreviousDeltaX = ev.deltaX
-            panPreviousDeltaY = ev.deltaY
-        });
-        hammertime.on('panend', function(ev) {
-            panPreviousDeltaX = 0
-            panPreviousDeltaY = 0
-        });
-
+        var pinching = false
         var originalZoom = null
         var pinchCenterX = null
         var pinchCenterY = null
         hammertime.on('pinchstart', function(ev) {
             ev.preventDefault();
+            pinching = true
             originalZoom = getZoom()
             pinchCenterX = ev.center.x
             pinchCenterY = ev.center.y
@@ -350,7 +340,34 @@
         hammertime.on('pinch', function(ev) {
             ev.preventDefault()
             zoom(originalZoom * ev.scale, pinchCenterX, pinchCenterY)
+            var currentDeltaX = ev.deltaX - panPreviousDeltaX
+            var currentDeltaY = ev.deltaY - panPreviousDeltaY
+            pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
+            panPreviousDeltaX = ev.deltaX
+            panPreviousDeltaY = ev.deltaY
         });
+        hammertime.on('pinchend', function(ev) {
+            panPreviousDeltaX = 0
+            panPreviousDeltaY = 0
+        })
+
+        hammertime.on('pan', function(ev) {
+            if (! pinching) {
+                var currentDeltaX = ev.deltaX - panPreviousDeltaX
+                var currentDeltaY = ev.deltaY - panPreviousDeltaY
+                pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
+                panPreviousDeltaX = ev.deltaX
+                panPreviousDeltaY = ev.deltaY
+            }
+        })
+        hammertime.on('panend', function(ev) {
+            if (! pinching) {
+                panPreviousDeltaX = 0
+                panPreviousDeltaY = 0
+            }
+            // a pinch always ends with a pan
+            pinching = false
+        })
     }
 
     function setPage(page) {
