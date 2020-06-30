@@ -10,6 +10,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
+import scala.collection.immutable
 import scala.jdk.CollectionConverters._
 import scala.xml._
 import scala.xml.transform._
@@ -21,13 +22,15 @@ object EbookService {
   def main(args: Array[String]): Unit = {
     val service = new EbookService
 
-    val path = "text/part0004.html"
+    val path = "text/part0011.html"
     val data = service.readFromEpub("Algorithms.epub", path)
     data.foreach(b => {
       val html = new String(b)
-      val newHtml = service.processHtml(html, path)
+      val newHtml = service.processHtml(html, path, "1")
       println(newHtml)
     })
+
+    //service.loadToc("1").foreach(println)
   }
 }
 
@@ -39,6 +42,23 @@ class ResourcesAppendRule() extends RewriteRule {
     case _ => n
   }
 }
+
+// <meta name="comicId" content="1">
+class MetaAppendRule(metas: Map[String, String]) extends RewriteRule {
+  override def transform(n: Node) = n match {
+    case elem@Elem(prefix, label, attr, scope, nodes@_*) if label == "head" =>
+      val metaNodes: immutable.Iterable[Elem] = metas.map(e => <meta name={e._1} content={e._2}></meta>)
+      //metaNodes.foreach(n => println(">>> " + n.toString()))
+      val newHeaderNodes: Seq[Node] = nodes ++ metaNodes
+      newHeaderNodes.foreach(n => println(">>> " + n.toString()))
+      Elem(prefix, label, attr, scope, true, newHeaderNodes : _*)
+    case _ => n
+  }
+}
+
+case class TocEntry(index: Int, title: String, link: String)
+
+case class Resource(mimeType: String, content: Array[Byte], prev: Option[String], next: Option[String])
 
 class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
@@ -57,7 +77,7 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
   }
 
   private def getNewLink(remotePath: String): String = {
-    println(">>> " + remotePath)
+    //println(">>> " + remotePath)
     val remoteUri = new URI(remotePath)
     if (remoteUri.isAbsolute) {
       remotePath
@@ -136,15 +156,24 @@ class EbookService {
     }
   }*/
 
-  private def processHtml(html: String, path: String): String = {
+  private def processHtml(html: String, path: String, bookId: String): String = {
     // make XML
     val xml: Elem = XML.loadString(html)
     // adjust all links
     val xml2: collection.Seq[Node] = new RuleTransformer(new ResourcesAppendRule()).transform(xml)
-    val xml3: collection.Seq[Node] = new RuleTransformer(new LinkRewriteRule("1", path)).transform(xml2)
+    val xml3: collection.Seq[Node] = new RuleTransformer(new LinkRewriteRule(bookId, path)).transform(xml2)
+
+    val toc = loadToc(bookId)
+    val metas: Map[String, String] = Map(
+      "nextSection" -> getNext(toc, path).map(e => e.link),
+      "prevSection" -> getPrev(toc, path).map(e => e.link),
+      "bookId" -> Some(bookId)
+    ).filter(e => e._2.isDefined).map(e => (e._1, e._2.getOrElse("")))
+    println(metas)
+    val xml4 = new RuleTransformer(new MetaAppendRule(metas)).transform(xml3)
 
     //println(xml3.size)
-    xml3.head.toString()
+    xml4.head.toString()
   }
 
   private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
@@ -180,12 +209,57 @@ class EbookService {
     }
   }
 
+  /*
+  <navPoint class="chapter" id="num_1" playOrder="0">
+      <navLabel>
+        <text>Title Page</text>
+      </navLabel>
+      <content src="text/part0000.html#0-2c29a077dda942b280918b0a86e88a42"/>
+    </navPoint>
+   */
+  private def parseToc(xmlString: String) = {
+    val xml: Elem = XML.loadString(xmlString)
+    (xml \\ "navPoint").map(n => TocEntry(
+      (n \\ "@playOrder").text.toInt,
+      (n \\ "text").text,
+      (n \\ "@src").text
+    ))
+  }
+
+  def loadToc(bookId: String) = {
+    readFromEpub("Algorithms.epub", "toc.ncx") match {
+      case Some(bytes) => parseToc(new String(bytes, "UTF-8"))
+      case None => Seq()
+    }
+  }
+
+  private def getBaseResourcePath(resourcePath: String) = if (resourcePath.indexOf('#') > 0) resourcePath.substring(0, resourcePath.indexOf('#') - 1)
+  else resourcePath
+
+  private def getPrev(toc: Seq[TocEntry], resourcePath: String) = {
+    val baseResourcePath = getBaseResourcePath(resourcePath)
+
+    toc.zipWithIndex.find(e => getBaseResourcePath(e._1.link) == baseResourcePath).map(_._2) match {
+      case Some(index) => toc.zipWithIndex.find(e => e._2 == index - 1).map(_._1)
+      case None => None
+    }
+  }
+
+  private def getNext(toc: Seq[TocEntry], resourcePath: String) = {
+    val baseResourcePath = getBaseResourcePath(resourcePath)
+
+    toc.zipWithIndex.find(e => getBaseResourcePath(e._1.link) == baseResourcePath).map(_._2) match {
+      case Some(index) => toc.zipWithIndex.find(e => e._2 == index + 1).map(_._1)
+      case None => None
+    }
+  }
+
   def loadResource(bookId: String, resourcePath: String): Option[(String, Array[Byte])] = {
     readFromEpub("Algorithms.epub", resourcePath) match {
       case Some(bytes) =>
         getFiletype(resourcePath) match {
           case "text/html" =>
-            val data: Array[Byte] = processHtml(new String(bytes, "UTF-8"), resourcePath)
+            val data: Array[Byte] = processHtml(new String(bytes, "UTF-8"), resourcePath, bookId)
               .getBytes("UTF-8")
             Some(("text/html", data))
           case "text/css" => Some(("text/css", bytes))

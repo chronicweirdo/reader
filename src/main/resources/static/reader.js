@@ -92,6 +92,11 @@ function previousPage() {
         copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
     } else {
         console.log("beginning of doc")
+        var bookId = getMeta("bookId")
+        var prevSection = getMeta("prevSection")
+        if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
+            window.location = "book?id=" + bookId + "&path=" + prevSection
+        }
     }
 }
 
@@ -102,6 +107,11 @@ function nextPage() {
         copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
     } else {
         console.log("end of doc")
+        var bookId = getMeta("bookId")
+        var nextSection = getMeta("nextSection")
+        if (nextSection && nextSection.length > 0 && bookId && bookId.length > 0) {
+            window.location = "book?id=" + bookId + "&path=" + nextSection
+        }
     }
 }
 
@@ -282,6 +292,18 @@ function findPreviousSpaceForPosition(position) {
 
 function scrollNecessary() {
     return (document.body.scrollWidth > document.body.clientWidth) || (document.body.scrollHeight > document.body.clientHeight)
+}
+
+function getMeta(metaName) {
+    const metas = document.getElementsByTagName('meta');
+
+    for (let i = 0; i < metas.length; i++) {
+        if (metas[i].getAttribute('name') === metaName) {
+        return metas[i].getAttribute('content');
+        }
+    }
+
+    return '';
 }
 
 window.onload = function() {
