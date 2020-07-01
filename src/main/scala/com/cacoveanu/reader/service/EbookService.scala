@@ -22,7 +22,7 @@ object EbookService {
   def main(args: Array[String]): Unit = {
     val service = new EbookService
 
-    val path = "text/part0011.html"
+    val path = "text/part0004.html"
     val data = service.readFromEpub("Algorithms.epub", path)
     data.foreach(b => {
       val html = new String(b)
@@ -242,8 +242,11 @@ class EbookService {
     }
   }
 
-  private def getBaseResourcePath(resourcePath: String) = if (resourcePath.indexOf('#') > 0) resourcePath.substring(0, resourcePath.indexOf('#') - 1)
-  else resourcePath
+  private def getBaseResourcePath(resourcePath: String) = {
+    val r = if (resourcePath.indexOf('#') > 0) resourcePath.substring(0, resourcePath.indexOf('#'))
+    else resourcePath
+    r
+  }
 
   private def getPrev(toc: Seq[TocEntry], resourcePath: String) = {
     val baseResourcePath = getBaseResourcePath(resourcePath)

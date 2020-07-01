@@ -1,6 +1,6 @@
 function setup() {
     console.log("setting up pagination")
-    setupDocumentStyle()
+    //setupDocumentStyle()
     wrapContents()
     addPage()
     addButtons()
@@ -37,20 +37,20 @@ function jumpToLocation() {
     }
 }
 
-function setupDocumentStyle() {
+/*function setupDocumentStyle() {
     document.body.style.overflow = "hidden"
-}
+}*/
 
 function addButtons() {
     var prev = document.createElement("div")
     prev.id = "prev"
-    prev.style.display = "block"
+    /*prev.style.display = "block"
     prev.style.position = "fixed"
     prev.style.top = "0"
     prev.style.left = "0"
     prev.style.width = "5vw"
     prev.style.height = "100vh"
-    prev.style["background-color"] = "red"
+    prev.style["background-color"] = "red"*/
     prev.addEventListener("click", function() {
         previousPage()
     })
@@ -58,13 +58,13 @@ function addButtons() {
 
     var next = document.createElement("div")
     next.id = "next"
-    next.style.display = "block"
+    /*next.style.display = "block"
     next.style.position = "fixed"
     next.style.top = "0"
     next.style.right = "0"
     next.style.width = "5vw"
     next.style.height = "100vh"
-    next.style["background-color"] = "blue"
+    next.style["background-color"] = "blue"*/
     next.addEventListener("click", function() {
         nextPage()
     })
@@ -73,21 +73,17 @@ function addButtons() {
 function addPage() {
     var pageContainer = document.createElement("div")
     pageContainer.id="pageContainer"
-    pageContainer.style.width = "100vw"
+    /*pageContainer.style.width = "100vw"
     pageContainer.style.height = "100vh"
     pageContainer.style.overflow = "hidden"
-    //pageContainer.style.position = "fixed"
-    //pageContainer.style.top = "0"
-    //pageContainer.style.left = "0"
     pageContainer.style.padding = "0"
-    pageContainer.style.margin = "0"
+    pageContainer.style.margin = "0"*/
     var page = document.createElement("div")
     page.id = "page"
-    page.style.border = "1px solid #ff0000aa"
+    /*page.style.border = "1px solid #ff0000aa"
     page.style.padding = "1vw"
     page.style.margin = "5vw"
-    //page.style.width = "87vw"
-    page.style["font-size"] = "1.2em"
+    page.style["font-size"] = "1.2em"*/
     pageContainer.appendChild(page)
     document.body.appendChild(pageContainer)
     document.pageContainer = pageContainer
@@ -104,24 +100,24 @@ function addPage() {
     </svg>
 </div>
 */
-function addSpinner() {
+/*function addSpinner() {
     var spinner = document.createElement("div")
     spinner.id = "spinner"
     spinner.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid"><rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect><rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none"><animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate><animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate></rect></svg>'
     document.body.appendChild(spinner)
-}
+}*/
 
-function showSpinner() {
+/*function showSpinner() {
     console.log("showing spiner")
     var spinner = document.getElementById("spinner")
     spinner.style.display = "block"
-}
+}*/
 
-function hideSpinner() {
+/*function hideSpinner() {
     console.log("hiding spinner")
     var spinner = document.getElementById("spinner")
     spinner.style.display = "none"
-}
+}*/
 
 function addLoadingScreen() {
     var loadingScreen = document.createElement("div")
@@ -143,7 +139,7 @@ function hideLoadingScreen() {
 function wrapContents() {
     var contentDiv = document.createElement("div")
     contentDiv.id = "content"
-    contentDiv.style.display = "none"
+    //contentDiv.style.display = "none"
     document.body.appendChild(contentDiv)
 
     var range = document.createRange()

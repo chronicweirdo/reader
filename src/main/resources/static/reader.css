@@ -1,3 +1,13 @@
+body {
+    overflow: hidden;
+    background-color: white;
+    color: white;
+}
+
+#content {
+    display: none
+}
+
 #spinner {
     position: fixed;
     bottom: 0;
@@ -11,14 +21,54 @@ width: 100%;
 height: 100%
 }
 
+#prev {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 5vw;
+    height: 100vh;
+    background-color: red;
+}
+
+#next {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 5vw;
+    height: 100vh;
+    background-color: blue;
+}
+
+#pageContainer {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0
+    margin: 0
+}
+
+#page {
+    border: 1px solid #ff0000aa;
+    padding: 1vw;
+    margin: 5vw;
+    font-size: 1.2em;
+    color: black;
+}
+
 #loading {
-position: fixed;
-top: 0;
-left: 0;
-width: 100vw;
-height: 100vh;
-background-color: green;
-z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: green;
+    z-index: 1000;
+    font-size: 2em;
+    text-align: center;
+    padding-top: 40vh;
+    color: black;
 }
 
 @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
