@@ -92,6 +92,7 @@ function previousPage() {
     if (document.currentPage > 0) {
         document.currentPage = document.currentPage - 1
         copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
+        reportPosition(document.pages[document.currentPage])
     } else {
         console.log("beginning of doc")
         var bookId = getMeta("bookId")
@@ -107,6 +108,7 @@ function nextPage() {
     if (document.currentPage < document.pages.length - 2) {
         document.currentPage = document.currentPage + 1
         copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
+        reportPosition(document.pages[document.currentPage])
     } else {
         console.log("end of doc")
         var bookId = getMeta("bookId")
@@ -121,6 +123,7 @@ function displayPage(page) {
     if (page >= 0 && page < document.pages.length - 1) {
         document.currentPage = page
         copyTextToPage(getPositions(), document.pages[page], document.pages[page + 1])
+        reportPosition(document.pages[page])
     } else {
         console.log("page out of range")
     }
@@ -293,6 +296,29 @@ function getMeta(metaName) {
     }
 
     return '';
+}
+
+function getPathname() {
+    var a = document.createElement('a');
+    a.href = window.location;
+    return a.pathname + a.search
+    /*    return {
+            href: a.href,
+            host: a.host,
+            hostname: a.hostname,
+            port: a.port,
+            pathname: a.pathname,
+            protocol: a.protocol,
+            hash: a.hash,
+            search: a.search
+        };
+    }*/
+}
+
+function reportPosition(position) {
+    var xhttp = new XMLHttpRequest()
+    xhttp.open("PUT", "reportPosition?id=" + getMeta("bookId") + "&link=" + (encodeURIComponent(getPathname())) + "&position=" + position, true)
+    xhttp.send()
 }
 
 window.onload = function() {
