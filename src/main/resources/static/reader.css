@@ -1,0 +1,32 @@
+#spinner {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 5vw;
+    height: 5vw;
+    display: none;
+}
+#spinner svg {
+width: 100%;
+height: 100%
+}
+
+#loading {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+background-color: green;
+z-index: 1000;
+}
+
+@media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
+only screen and (-o-min-device-pixel-ratio: 13/10),
+only screen and (min-resolution: 120dpi)
+{
+    #spinner {
+        width: 15vw;
+        height: 15vw;
+    }
+}

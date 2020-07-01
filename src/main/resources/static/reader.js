@@ -1,18 +1,26 @@
 function setup() {
     console.log("setting up pagination")
-    wrapContents()
-    addButtons()
-    addPage()
     setupDocumentStyle()
-    computeStartPositionsOfElements(document.getElementById("content"))
-    console.log("starting finding pages")
-    var st = new Date()
-    findPages()
-    var end = new Date()
-    var dur = end - st
-    console.log("find pages duration: " + dur)
-    jumpToLocation()
-    console.log("setup complete")
+    wrapContents()
+    addPage()
+    addButtons()
+    //addSpinner()
+    addLoadingScreen()
+
+    window.setTimeout(function() {
+        //showSpinner()
+        computeStartPositionsOfElements(document.getElementById("content"))
+        console.log("starting finding pages")
+        var st = new Date()
+        findPages()
+        var end = new Date()
+        var dur = end - st
+        console.log("find pages duration: " + dur)
+        jumpToLocation()
+        //hideSpinner()
+        hideLoadingScreen()
+        console.log("setup complete")
+    }, 300)
 }
 
 function jumpToLocation() {
@@ -63,14 +71,73 @@ function addButtons() {
     document.body.appendChild(next)
 }
 function addPage() {
+    var pageContainer = document.createElement("div")
+    pageContainer.id="pageContainer"
+    pageContainer.style.width = "100vw"
+    pageContainer.style.height = "100vh"
+    pageContainer.style.overflow = "hidden"
+    //pageContainer.style.position = "fixed"
+    //pageContainer.style.top = "0"
+    //pageContainer.style.left = "0"
+    pageContainer.style.padding = "0"
+    pageContainer.style.margin = "0"
     var page = document.createElement("div")
     page.id = "page"
     page.style.border = "1px solid #ff0000aa"
     page.style.padding = "1vw"
     page.style.margin = "5vw"
-    page.style.width = "87vw"
+    //page.style.width = "87vw"
     page.style["font-size"] = "1.2em"
-    document.body.appendChild(page)
+    pageContainer.appendChild(page)
+    document.body.appendChild(pageContainer)
+    document.pageContainer = pageContainer
+}
+
+/*
+<div id="spinner">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+        <rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect>
+        <rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none">
+            <animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate>
+            <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate>
+        </rect>
+    </svg>
+</div>
+*/
+function addSpinner() {
+    var spinner = document.createElement("div")
+    spinner.id = "spinner"
+    spinner.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid"><rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect><rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none"><animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate><animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate></rect></svg>'
+    document.body.appendChild(spinner)
+}
+
+function showSpinner() {
+    console.log("showing spiner")
+    var spinner = document.getElementById("spinner")
+    spinner.style.display = "block"
+}
+
+function hideSpinner() {
+    console.log("hiding spinner")
+    var spinner = document.getElementById("spinner")
+    spinner.style.display = "none"
+}
+
+function addLoadingScreen() {
+    var loadingScreen = document.createElement("div")
+    loadingScreen.id = "loading"
+    loadingScreen.innerHTML = "Loading..."
+    document.body.appendChild(loadingScreen)
+}
+
+function showLoadingScreen() {
+    var loadingScreen = document.getElementById("loading")
+    loadingScreen.style.display = "block"
+}
+
+function hideLoadingScreen() {
+    var loadingScreen = document.getElementById("loading")
+    loadingScreen.style.display = "none"
 }
 
 function wrapContents() {
@@ -207,16 +274,18 @@ function findPage(startPosition, initialJump) {
     //var initialJump = 100
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
     //console.log("end position: " + endPosition)
-    var previousEndPosition = null
+    //var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
-        previousEndPosition = endPosition
+        //previousEndPosition = endPosition
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
+        //console.log(endPosition)
     }
     while (scrollNecessary()) {
         endPosition = findPreviousSpaceForPosition(endPosition - 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
+        //console.log(endPosition)
     }
     /*if (scrollNecessary() && previousEndPosition != null) {
         copyTextToPage(getPositions(), startPosition, previousEndPosition)
@@ -291,7 +360,10 @@ function findPreviousSpaceForPosition(position) {
 }
 
 function scrollNecessary() {
-    return (document.body.scrollWidth > document.body.clientWidth) || (document.body.scrollHeight > document.body.clientHeight)
+    //var el = document.getElementById("pageContainer")
+    //return (el.scrollWidth > el.clientWidth) || (el.scrollHeight > el.clientHeight)
+    //return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
+    return document.pageContainer.scrollHeight > document.pageContainer.offsetHeight || document.pageContainer.scrollWidth > document.pageContainer.offsetWidth
 }
 
 function getMeta(metaName) {

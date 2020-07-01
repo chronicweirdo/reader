@@ -35,10 +35,19 @@ object EbookService {
 }
 
 // add <script src="reader.js"></script> to every html header
-class ResourcesAppendRule() extends RewriteRule {
+// <link href="book?id=1&amp;path=stylesheet.css" type="text/css" rel="stylesheet">
+class ResourcesAppendRule(resources: Map[String, String]) extends RewriteRule {
+  private def getJavascriptNode(link: String) = <script src={link}></script>
+  private def getCssNode(link: String) = <link href={link} type="text/css" rel="stylesheet"></link>
   override def transform(n: Node) = n match {
     case elem@Elem(prefix, label, attr, scope, nodes@_*) if label == "head" =>
-      Elem(prefix, label, attr, scope, true, nodes ++ <script src="/reader.js"></script>: _*)
+      val resourceNodes = resources.flatMap(e => e._1 match {
+        case "js" => Some(getJavascriptNode(e._2))
+        case "css" => Some(getCssNode(e._2))
+        case _ => None
+      })
+      //Elem(prefix, label, attr, scope, true, nodes ++ <script src="/reader.js"></script>: _*)
+      Elem(prefix, label, attr, scope, true, nodes ++ resourceNodes: _*)
     case _ => n
   }
 }
@@ -160,8 +169,8 @@ class EbookService {
     // make XML
     val xml: Elem = XML.loadString(html)
     // adjust all links
-    val xml2: collection.Seq[Node] = new RuleTransformer(new ResourcesAppendRule()).transform(xml)
-    val xml3: collection.Seq[Node] = new RuleTransformer(new LinkRewriteRule(bookId, path)).transform(xml2)
+    val xml2: collection.Seq[Node] = new RuleTransformer(new LinkRewriteRule(bookId, path)).transform(xml)
+    val xml3: collection.Seq[Node] = new RuleTransformer(new ResourcesAppendRule(Map("js" -> "/reader.js", "css" -> "/reader.css"))).transform(xml2)
 
     val toc = loadToc(bookId)
     val metas: Map[String, String] = Map(
