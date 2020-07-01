@@ -1,14 +1,11 @@
 function setup() {
     console.log("setting up pagination")
-    //setupDocumentStyle()
     wrapContents()
     addPage()
     addButtons()
-    //addSpinner()
     addLoadingScreen()
 
     window.setTimeout(function() {
-        //showSpinner()
         computeStartPositionsOfElements(document.getElementById("content"))
         console.log("starting finding pages")
         var st = new Date()
@@ -17,10 +14,9 @@ function setup() {
         var dur = end - st
         console.log("find pages duration: " + dur)
         jumpToLocation()
-        //hideSpinner()
         hideLoadingScreen()
         console.log("setup complete")
-    }, 300)
+    }, 100)
 }
 
 function jumpToLocation() {
@@ -37,20 +33,9 @@ function jumpToLocation() {
     }
 }
 
-/*function setupDocumentStyle() {
-    document.body.style.overflow = "hidden"
-}*/
-
 function addButtons() {
     var prev = document.createElement("div")
     prev.id = "prev"
-    /*prev.style.display = "block"
-    prev.style.position = "fixed"
-    prev.style.top = "0"
-    prev.style.left = "0"
-    prev.style.width = "5vw"
-    prev.style.height = "100vh"
-    prev.style["background-color"] = "red"*/
     prev.addEventListener("click", function() {
         previousPage()
     })
@@ -58,13 +43,6 @@ function addButtons() {
 
     var next = document.createElement("div")
     next.id = "next"
-    /*next.style.display = "block"
-    next.style.position = "fixed"
-    next.style.top = "0"
-    next.style.right = "0"
-    next.style.width = "5vw"
-    next.style.height = "100vh"
-    next.style["background-color"] = "blue"*/
     next.addEventListener("click", function() {
         nextPage()
     })
@@ -73,51 +51,12 @@ function addButtons() {
 function addPage() {
     var pageContainer = document.createElement("div")
     pageContainer.id="pageContainer"
-    /*pageContainer.style.width = "100vw"
-    pageContainer.style.height = "100vh"
-    pageContainer.style.overflow = "hidden"
-    pageContainer.style.padding = "0"
-    pageContainer.style.margin = "0"*/
     var page = document.createElement("div")
     page.id = "page"
-    /*page.style.border = "1px solid #ff0000aa"
-    page.style.padding = "1vw"
-    page.style.margin = "5vw"
-    page.style["font-size"] = "1.2em"*/
     pageContainer.appendChild(page)
     document.body.appendChild(pageContainer)
     document.pageContainer = pageContainer
 }
-
-/*
-<div id="spinner">
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
-        <rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect>
-        <rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none">
-            <animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate>
-            <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate>
-        </rect>
-    </svg>
-</div>
-*/
-/*function addSpinner() {
-    var spinner = document.createElement("div")
-    spinner.id = "spinner"
-    spinner.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid"><rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect><rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none"><animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate><animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate></rect></svg>'
-    document.body.appendChild(spinner)
-}*/
-
-/*function showSpinner() {
-    console.log("showing spiner")
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "block"
-}*/
-
-/*function hideSpinner() {
-    console.log("hiding spinner")
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "none"
-}*/
 
 function addLoadingScreen() {
     var loadingScreen = document.createElement("div")
@@ -264,31 +203,17 @@ function getMaxPosition() {
     return last[0] + last[1].nodeValue.length
 }
 
-// find the end position for this start position that constitudes a full page
 function findPage(startPosition, initialJump) {
-    //console.log("find page for " + startPosition + " with jump " + initialJump)
-    //var initialJump = 100
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
-    //console.log("end position: " + endPosition)
-    //var previousEndPosition = null
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
-        //previousEndPosition = endPosition
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
-        //console.log(endPosition)
     }
     while (scrollNecessary()) {
         endPosition = findPreviousSpaceForPosition(endPosition - 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
-        //console.log(endPosition)
     }
-    /*if (scrollNecessary() && previousEndPosition != null) {
-        copyTextToPage(getPositions(), startPosition, previousEndPosition)
-        return previousEndPosition
-    } else {
-        return endPosition
-    }*/
     return endPosition
 }
 
@@ -306,7 +231,6 @@ function findPages() {
     document.currentPage = 0
     copyTextToPage(getPositions(), document.pages[0], document.pages[1])
 }
-
 
 function copyTextToPage(positions, from, to) {
     var range = document.createRange()
@@ -356,9 +280,6 @@ function findPreviousSpaceForPosition(position) {
 }
 
 function scrollNecessary() {
-    //var el = document.getElementById("pageContainer")
-    //return (el.scrollWidth > el.clientWidth) || (el.scrollHeight > el.clientHeight)
-    //return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
     return document.pageContainer.scrollHeight > document.pageContainer.offsetHeight || document.pageContainer.scrollWidth > document.pageContainer.offsetWidth
 }
 
