@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
+import org.springframework.web.servlet.view.RedirectView
 
 @Controller
 class EbookController @Autowired() (private val ebookService: EbookService) {
@@ -22,6 +23,16 @@ class EbookController @Autowired() (private val ebookService: EbookService) {
         }
       case None => ResponseEntity.notFound().build()
     }
+  }
+
+  @RequestMapping(Array("/loadBook"))
+  @ResponseBody
+  def loadBook(@RequestParam("id") bookId: String) = {
+    // load book progress
+    val resource = "text/part0004.html"
+    val position = 2000
+    // redirect to book resource based on progess
+    new RedirectView(s"/book?id=$bookId&path=$resource#$position" )
   }
 
 }

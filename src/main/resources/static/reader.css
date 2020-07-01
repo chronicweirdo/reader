@@ -8,19 +8,6 @@ body {
     display: none
 }
 
-#spinner {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 5vw;
-    height: 5vw;
-    display: none;
-}
-#spinner svg {
-width: 100%;
-height: 100%
-}
-
 #prev {
     display: block;
     position: fixed;
@@ -28,7 +15,7 @@ height: 100%
     left: 0;
     width: 5vw;
     height: 100vh;
-    background-color: red;
+    /*background-color: red;*/
 }
 
 #next {
@@ -38,7 +25,7 @@ height: 100%
     right: 0;
     width: 5vw;
     height: 100vh;
-    background-color: blue;
+    /*background-color: blue;*/
 }
 
 #pageContainer {
@@ -50,7 +37,7 @@ height: 100%
 }
 
 #page {
-    border: 1px solid #ff0000aa;
+    /*border: 1px solid #ff0000aa;*/
     padding: 1vw;
     margin: 5vw;
     font-size: 1.2em;
@@ -63,7 +50,7 @@ height: 100%
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: green;
+    background-color: white;
     z-index: 1000;
     font-size: 2em;
     text-align: center;
@@ -75,8 +62,10 @@ height: 100%
 only screen and (-o-min-device-pixel-ratio: 13/10),
 only screen and (min-resolution: 120dpi)
 {
-    #spinner {
-        width: 15vw;
-        height: 15vw;
+    #next, #prev {
+        width: 10vw;
+    }
+    #page {
+        font-size: 2.5em;
     }
 }

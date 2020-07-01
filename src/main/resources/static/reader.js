@@ -97,7 +97,7 @@ function previousPage() {
         var bookId = getMeta("bookId")
         var prevSection = getMeta("prevSection")
         if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
-            window.location = "book?id=" + bookId + "&path=" + prevSection
+            window.location = "book?id=" + bookId + "&path=" + prevSection + "#" + Number.MAX_SAFE_INTEGER
         }
     }
 }
