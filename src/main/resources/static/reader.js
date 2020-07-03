@@ -4,6 +4,8 @@ function setup() {
     addPage()
     addButtons()
     addLoadingScreen()
+    showLoadingScreen()
+    document.testlog = false
 
     window.setTimeout(function() {
         computeStartPositionsOfElements(document.getElementById("content"))
@@ -51,6 +53,7 @@ function addButtons() {
 function addPage() {
     var pageContainer = document.createElement("div")
     pageContainer.id="pageContainer"
+    pageContainer.style.visibility = "hidden"
     var page = document.createElement("div")
     page.id = "page"
     pageContainer.appendChild(page)
@@ -61,18 +64,23 @@ function addPage() {
 function addLoadingScreen() {
     var loadingScreen = document.createElement("div")
     loadingScreen.id = "loading"
+    loadingScreen.style.visibility = "hidden"
     loadingScreen.innerHTML = "Loading..."
     document.body.appendChild(loadingScreen)
 }
 
 function showLoadingScreen() {
     var loadingScreen = document.getElementById("loading")
-    loadingScreen.style.display = "block"
+    loadingScreen.style.visibility = "visible"
+    var pageContainer = document.getElementById("pageContainer")
+    pageContainer.style.visibility = "hidden"
 }
 
 function hideLoadingScreen() {
     var loadingScreen = document.getElementById("loading")
-    loadingScreen.style.display = "none"
+    loadingScreen.style.visibility = "hidden"
+    var pageContainer = document.getElementById("pageContainer")
+    pageContainer.style.visibility = "visible"
 }
 
 function wrapContents() {
@@ -207,24 +215,28 @@ function getMaxPosition() {
 }
 
 function findPage(startPosition, initialJump) {
+    var previousEndPosition = null
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
     copyTextToPage(getPositions(), startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
+        previousEndPosition = endPosition
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
     }
-    while (scrollNecessary()) {
+    while (scrollNecessary() && (endPosition > startPosition)) {
+        previousEndPosition = endPosition
         endPosition = findPreviousSpaceForPosition(endPosition - 1)
         copyTextToPage(getPositions(), startPosition, endPosition)
     }
+    if (endPosition == startPosition) return previousEndPosition
     return endPosition
 }
 
 function findPages() {
     var pages = []
     pages.push(0)
+    var jump = 100
     while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
-        var jump = 100
         if (pages.length > 2) jump = pages[pages.length - 1] - pages[pages.length - 2]
         var endPosition = findPage(pages[pages.length - 1], jump)
         pages.push(endPosition)
@@ -277,6 +289,7 @@ function findPreviousSpaceForPosition(position) {
 
     var el = positions[i][1]
     var p = position - positions[i][0]
+    if (p == el.nodeValue.length) return positions[i][0] + p
     while (p > 0 && el.nodeValue.charAt(p) != ' ') p = p - 1
 
     return positions[i][0] + p
