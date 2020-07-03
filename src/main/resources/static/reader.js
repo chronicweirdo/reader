@@ -19,6 +19,28 @@ function setup() {
         hideLoadingScreen()
         console.log("setup complete")
     }, 100)
+
+    var resizeThreshold = 1000
+    window.onresize = function() {
+        document.resizeTime = new Date()
+        window.setTimeout(function() {
+            var now = new Date()
+            if (now - document.resizeTime >= resizeThreshold) {
+                resize()
+            }
+        }, resizeThreshold)
+    }
+}
+
+function resize() {
+    // save current position
+    var location = document.pages[document.currentPage]
+    showLoadingScreen()
+    window.setTimeout(function() {
+        findPages()
+        displayPage(getPageForPosition(location))
+        hideLoadingScreen()
+    }, 100)
 }
 
 function jumpToLocation() {
