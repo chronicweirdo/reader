@@ -1,7 +1,6 @@
 package com.cacoveanu.reader.entity
 
-import com.cacoveanu.reader.service.ComicPage
-import javax.persistence.{Column, Entity, Id, Transient}
+import javax.persistence.{Column, Entity, Id}
 
 @Entity
 class DbBook {
@@ -22,7 +21,9 @@ class DbBook {
 
   var cover: Array[Byte] = _
 
-  def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte]) = {
+  var size: Int = _
+
+  def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
     this()
     this.id = id
     this.path = path
@@ -31,5 +32,6 @@ class DbBook {
     this.collection = collection
     this.mediaType = mediaType
     this.cover = cover
+    this.size = size
   }
 }

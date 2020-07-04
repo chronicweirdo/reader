@@ -149,7 +149,7 @@ class EbookService {
 
   import EbookService.log
 
-  @Value("${books.location}")
+  @Value("${library.location}")
   @BeanProperty
   var booksLocation: String = _
 
@@ -388,7 +388,8 @@ class EbookService {
         ) match {
           case (Some(title), Some(author), Some(collection), Some((cover, contentType))) =>
             // id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte]
-            Some(new DbBook(checksum, path, title, author, collection, contentType, cover))
+            val size = 0
+            Some(new DbBook(checksum, path, title, author, collection, contentType, cover, size))
           case (None, _, _, _) =>
             println(s"missing title for $path")
             None

@@ -5,8 +5,8 @@ import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.{ZipEntry, ZipFile}
 
-import com.cacoveanu.reader.entity.{ComicProgress, DbComic, DbUser}
-import com.cacoveanu.reader.repository.{ComicProgressRepository, ComicRepository}
+import com.cacoveanu.reader.entity.{BookProgress, DbBook, DbUser}
+import com.cacoveanu.reader.repository.{BookProgressRepository, BookRepository}
 import com.cacoveanu.reader.util.FileUtil
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
@@ -49,7 +49,7 @@ class ComicService {
 
   private val scanningCollection = new AtomicBoolean(false)
 
-  @Value("${comics.location}")
+  @Value("${library.location}")
   @BeanProperty
   var comicsLocation: String = _
 
@@ -58,9 +58,9 @@ class ComicService {
 
   @BeanProperty
   @Autowired
-  var comicRepository: ComicRepository = _
+  var comicRepository: BookRepository = _
 
-  @BeanProperty @Autowired var comicProgressRepository: ComicProgressRepository = _
+  @BeanProperty @Autowired var comicProgressRepository: BookProgressRepository = _
 
   private implicit val executionContext = ExecutionContext.global
 
@@ -87,20 +87,20 @@ class ComicService {
     result
   }
 
-  def searchComics(term: String, page: Int): Seq[DbComic] = {
+  def searchComics(term: String, page: Int): Seq[DbBook] = {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
   }
 
-  def getCollectionPage(page: Int): Seq[DbComic] = {
+  def getCollectionPage(page: Int): Seq[DbBook] = {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.findAll(pageRequest).asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comic: DbComic): Option[ComicProgress] = {
-    val progress = comicProgressRepository.findByUserAndComic(user, comic)
+  def loadComicProgress(user: DbUser, comic: DbBook): Option[BookProgress] = {
+    val progress = comicProgressRepository.findByUserAndBook(user, comic)
     Option(progress)
   }
 
@@ -108,26 +108,26 @@ class ComicService {
     comicRepository.findAllCollections().asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comicId: String): Option[ComicProgress] = {
-    comicProgressRepository.findByUserAndComicId(user, comicId).asScala
+  def loadComicProgress(user: DbUser, comicId: String): Option[BookProgress] = {
+    comicProgressRepository.findByUserAndBookId(user, comicId).asScala
   }
 
-  def loadTopComicProgress(user: DbUser, limit: Int): Seq[ComicProgress] = {
+  def loadTopComicProgress(user: DbUser, limit: Int): Seq[BookProgress] = {
     val sort = Sort.by(Direction.DESC, "last_update")
     val pageRequest = PageRequest.of(0, limit, sort)
     comicProgressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comics: Seq[DbComic]): Seq[ComicProgress] = {
-    comicProgressRepository.findByUserAndComicIn(user, comics.asJava).asScala.toSeq
+  def loadComicProgress(user: DbUser, comics: Seq[DbBook]): Seq[BookProgress] = {
+    comicProgressRepository.findByUserAndBookIn(user, comics.asJava).asScala.toSeq
   }
 
-  def deleteComicProgress(progress: ComicProgress) = {
+  def deleteComicProgress(progress: BookProgress) = {
     comicProgressRepository.delete(progress)
   }
 
-  def saveComicProgress(progress: ComicProgress) = {
-    val existingProgress = comicProgressRepository.findByUserAndComic(progress.user, progress.comic)
+  def saveComicProgress(progress: BookProgress) = {
+    val existingProgress = comicProgressRepository.findByUserAndBook(progress.user, progress.book)
     if (existingProgress != null) progress.id = existingProgress.id
     comicProgressRepository.save(progress)
   }
@@ -142,20 +142,18 @@ class ComicService {
     (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
   }
 
-  def loadComic(id: String): Option[DbComic] = {
+  def loadComic(id: String): Option[DbBook] = {
     comicRepository.findById(id).asScala
   }
 
   @Cacheable(Array("parts"))
-  def loadComicPart(id: String, part: Int): Option[DbComic] = {
+  def loadComicPart(id: String, part: Int): Seq[ComicPage] = {
     comicRepository.findById(id).asScala match {
       case Some(dbComic) => readPagesFromDisk(dbComic.path, Some(computePagesForPart(part))) match {
-        case Some(pages) =>
-          dbComic.pages = pages
-          Some(dbComic)
-        case None => None
+        case Some(pages) => pages
+        case None => Seq()
       }
-      case None => None
+      case None => Seq()
     }
   }
 
@@ -300,17 +298,18 @@ class ComicService {
     Some(collectionPath.toString)
   }
 
-  def loadComicFromDatabase(id: String): Option[DbComic] = {
+  def loadComicFromDatabase(id: String): Option[DbBook] = {
     comicRepository.findById(id).asScala
   }
 
-  def loadFullComicMetadataFromDisk(file: String): Option[DbComic] =
+  def loadFullComicMetadataFromDisk(file: String): Option[DbBook] =
     (getComicId(file), getComicTitle(file), getComicCollection(file), readCover(file), countPagesFromDisk(file)) match {
       case (Some(id), Some(title), Some(collection), Some(cover), Some(totalPages)) =>
         imageService.getFormatName(cover.mediaType) match {
           case Some(formatName) =>
             val smallerCoverData = imageService.resizeImageByMinimalSide(cover.data, formatName, COVER_RESIZE_MINIMAL_SIDE)
-            Some(new DbComic(id, file, title, collection, cover.mediaType, smallerCoverData, totalPages))
+            val author = ""
+            Some(new DbBook(id, file, title, author, collection, cover.mediaType, smallerCoverData, totalPages))
           case None => None
         }
       case _ =>
@@ -340,11 +339,12 @@ class ComicService {
     })
     log.info(s"finished scanning new files, saved ${newFilesIds.size} comics")
 
-    log.info(s"deleting ${deletedComics.size} comics")
+    // todo: do not delete comics for now, need to unify with books scan
+    /*log.info(s"deleting ${deletedComics.size} comics")
     deletedComics.toSeq.toBatches(DB_UPDATE_BATCH_SIZE).foreach(batch => {
       comicRepository.deleteAll(batch.asJava)
     })
-    log.info("finished deleting comics")
+    log.info("finished deleting comics")*/
 
     val deepScan = forceUpdate
     log.info(s"updating ${filesAlreadyInDatabase.size} files")

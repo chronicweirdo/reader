@@ -3,8 +3,6 @@ package com.cacoveanu.reader.controller
 import java.net.URLDecoder
 import java.security.Principal
 import java.util.Date
-
-import com.cacoveanu.reader.entity.ComicProgress
 import com.cacoveanu.reader.service.EbookService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}

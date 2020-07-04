@@ -316,7 +316,7 @@ Next problems to solve:
     - added a loading screen
 - different font sizes for mobile and desktop
 - scan table of contents and compute the order of files
-- [x] redirect to latest section+position when loading a book
+- [x] redirect to latest section+posaition when loading a book
 - find a better solution for mime types
 
 - unify books and comics

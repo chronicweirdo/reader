@@ -28,12 +28,15 @@ class BookProgress {
 
   var lastUpdate: Date = _
 
-  def this(user: DbUser, book: DbBook, section: String, position: Int, lastUpdate: Date) = {
+  var finished: Boolean = _
+
+  def this(user: DbUser, book: DbBook, section: String, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
     this.book = book
     this.section = section
     this.position = position
     this.lastUpdate = lastUpdate
+    this.finished = finished
   }
 }

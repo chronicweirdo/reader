@@ -4,7 +4,7 @@ import java.security.Principal
 import java.{lang, util}
 import java.util.{Base64, Date}
 
-import com.cacoveanu.reader.entity.{ComicProgress, DbComic}
+import com.cacoveanu.reader.entity.{BookProgress, DbBook}
 
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
@@ -98,10 +98,10 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @ResponseBody
   def getComicsForPage(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model) = {
     val user = userService.loadUser(principal.getName)
-    val comics: Seq[DbComic] = if (term.isEmpty) comicService.getCollectionPage(page)
+    val comics: Seq[DbBook] = if (term.isEmpty) comicService.getCollectionPage(page)
       else comicService.searchComics(term, page)
-    val progress: Seq[ComicProgress] = comicService.loadComicProgress(user.get, comics)
-    val progressByComic: Map[String, ComicProgress] = progress.map(p => (p.comic.id, p)).toMap
+    val progress: Seq[BookProgress] = comicService.loadComicProgress(user.get, comics)
+    val progressByComic: Map[String, BookProgress] = progress.map(p => (p.book.id, p)).toMap
 
     val collections = comics.map(c => c.collection).toSet.toSeq.sorted
     val uiComics = comics
@@ -110,8 +110,8 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         comic.collection,
         comic.title,
         base64Image(comic.mediaType, comic.cover),
-        progressByComic.get(comic.id).map(p => p.page).getOrElse(-1),
-        progressByComic.get(comic.id).map(p => p.totalPages).getOrElse(-1)
+        progressByComic.get(comic.id).map(p => p.position).getOrElse(-1),
+        progressByComic.get(comic.id).map(p => p.book.size).getOrElse(-1)
       ))
     CollectionPage(collections.asJava, uiComics.asJava)
   }
@@ -119,16 +119,16 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @RequestMapping(Array("/"))
   def getComicCollection(principal: Principal, model: Model): String = {
     val user = userService.loadUser(principal.getName)
-    val progress: Seq[ComicProgress] = comicService.loadTopComicProgress(user.get, 6)
+    val progress: Seq[BookProgress] = comicService.loadTopComicProgress(user.get, 6)
 
     val latestRead = progress
       .map(p => UiComic(
-        p.comic.id,
-        p.comic.collection,
-        p.comic.title,
-        base64Image(p.comic.mediaType, p.comic.cover),
-        p.page,
-        p.totalPages
+        p.book.id,
+        p.book.collection,
+        p.book.title,
+        base64Image(p.book.mediaType, p.book.cover),
+        p.position,
+        p.book.size
       )).asJava
 
     model.addAttribute("user", principal.getName)
@@ -142,10 +142,10 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
       case (Some(user), Some(comic)) =>
         val progress = comicService.loadComicProgress(user, comic)
         model.addAttribute("id", id)
-        model.addAttribute("pages", comic.totalPages)
+        model.addAttribute("pages", comic.size)
         model.addAttribute("title", comic.title)
         model.addAttribute("collection", comic.collection)
-        model.addAttribute("startPage", progress.map(p => p.page).getOrElse(0))
+        model.addAttribute("startPage", progress.map(p => p.position).getOrElse(0))
         "comic"
       case _ => ""
     }
@@ -173,8 +173,8 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @ResponseBody
   def getImageData(@RequestParam("id") id: String, @RequestParam("page") page: Int, principal: Principal): String = {
     (userService.loadUser(principal.getName), comicService.loadComicPart(id, comicService.computePartNumberForPage(page))) match {
-      case (Some(user), Some(comic)) =>
-        comic.pages.find(p => p.num == page) match {
+      case (Some(user), comicPages) =>
+        comicPages.find(p => p.num == page) match {
           case Some(p) => base64Image(p.mediaType, p.data)
           case None => ""
         }
@@ -188,8 +188,11 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   )
   def markProgress(@RequestParam("id") id: String, @RequestParam("page") page: Int, principal: Principal): ResponseEntity[String] = {
     (userService.loadUser(principal.getName), comicService.loadComic(id)) match {
-      case (Some(user), Some(comic)) if page < comic.totalPages =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.totalPages, new Date()))
+      case (Some(user), Some(comic)) if page < comic.size =>
+        // user: DbUser, book: DbBook, section: String, position: Int, lastUpdate: Date, finished: Boolean
+        val section = ""
+        val finished = page == comic.size - 1
+        comicService.saveComicProgress(new BookProgress(user, comic, section, page, new Date(), finished))
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }
