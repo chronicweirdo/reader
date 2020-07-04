@@ -3,7 +3,7 @@ package com.cacoveanu.reader.entity
 import javax.persistence.{Column, Entity, Id}
 
 @Entity
-class DbBook {
+class Book {
 
   @Id
   var id: String = _

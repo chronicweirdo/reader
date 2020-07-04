@@ -7,7 +7,7 @@ import org.hibernate.annotations.{OnDelete, OnDeleteAction}
 
 @Entity
 @Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "bookId"))))
-class BookProgress {
+class Progress {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -15,12 +15,12 @@ class BookProgress {
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name="userId")
-  var user: DbUser = _
+  var user: Account = _
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name="bookId")
   @OnDelete(action = OnDeleteAction.CASCADE)
-  var book: DbBook = _
+  var book: Book = _
 
   var section: String = _
 
@@ -30,7 +30,7 @@ class BookProgress {
 
   var finished: Boolean = _
 
-  def this(user: DbUser, book: DbBook, section: String, position: Int, lastUpdate: Date, finished: Boolean) = {
+  def this(user: Account, book: Book, section: String, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
     this.book = book

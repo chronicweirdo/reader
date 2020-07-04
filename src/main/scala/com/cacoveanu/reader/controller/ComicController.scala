@@ -4,7 +4,7 @@ import java.security.Principal
 import java.{lang, util}
 import java.util.{Base64, Date}
 
-import com.cacoveanu.reader.entity.{BookProgress, DbBook}
+import com.cacoveanu.reader.entity.{Progress, Book}
 
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.service.{ComicService, UserService}
@@ -98,10 +98,10 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @ResponseBody
   def getComicsForPage(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model) = {
     val user = userService.loadUser(principal.getName)
-    val comics: Seq[DbBook] = if (term.isEmpty) comicService.getCollectionPage(page)
+    val comics: Seq[Book] = if (term.isEmpty) comicService.getCollectionPage(page)
       else comicService.searchComics(term, page)
-    val progress: Seq[BookProgress] = comicService.loadComicProgress(user.get, comics)
-    val progressByComic: Map[String, BookProgress] = progress.map(p => (p.book.id, p)).toMap
+    val progress: Seq[Progress] = comicService.loadComicProgress(user.get, comics)
+    val progressByComic: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
 
     val collections = comics.map(c => c.collection).toSet.toSeq.sorted
     val uiComics = comics
@@ -119,7 +119,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @RequestMapping(Array("/"))
   def getComicCollection(principal: Principal, model: Model): String = {
     val user = userService.loadUser(principal.getName)
-    val progress: Seq[BookProgress] = comicService.loadTopComicProgress(user.get, 6)
+    val progress: Seq[Progress] = comicService.loadTopComicProgress(user.get, 6)
 
     val latestRead = progress
       .map(p => UiComic(
@@ -192,7 +192,7 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
         // user: DbUser, book: DbBook, section: String, position: Int, lastUpdate: Date, finished: Boolean
         val section = ""
         val finished = page == comic.size - 1
-        comicService.saveComicProgress(new BookProgress(user, comic, section, page, new Date(), finished))
+        comicService.saveComicProgress(new Progress(user, comic, section, page, new Date(), finished))
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }

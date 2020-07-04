@@ -5,8 +5,8 @@ import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.{ZipEntry, ZipFile}
 
-import com.cacoveanu.reader.entity.{BookProgress, DbBook, DbUser}
-import com.cacoveanu.reader.repository.{BookProgressRepository, BookRepository}
+import com.cacoveanu.reader.entity.{Progress, Book, Account}
+import com.cacoveanu.reader.repository.{ProgressRepository, BookRepository}
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, FileTypes, FileUtil}
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
@@ -60,7 +60,7 @@ class ComicService {
   @Autowired
   var comicRepository: BookRepository = _
 
-  @BeanProperty @Autowired var comicProgressRepository: BookProgressRepository = _
+  @BeanProperty @Autowired var comicProgressRepository: ProgressRepository = _
 
   private implicit val executionContext = ExecutionContext.global
 
@@ -87,19 +87,19 @@ class ComicService {
     result
   }
 
-  def searchComics(term: String, page: Int): Seq[DbBook] = {
+  def searchComics(term: String, page: Int): Seq[Book] = {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
   }
 
-  def getCollectionPage(page: Int): Seq[DbBook] = {
+  def getCollectionPage(page: Int): Seq[Book] = {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.findAll(pageRequest).asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comic: DbBook): Option[BookProgress] = {
+  def loadComicProgress(user: Account, comic: Book): Option[Progress] = {
     val progress = comicProgressRepository.findByUserAndBook(user, comic)
     Option(progress)
   }
@@ -108,25 +108,25 @@ class ComicService {
     comicRepository.findAllCollections().asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comicId: String): Option[BookProgress] = {
+  def loadComicProgress(user: Account, comicId: String): Option[Progress] = {
     comicProgressRepository.findByUserAndBookId(user, comicId).asScala
   }
 
-  def loadTopComicProgress(user: DbUser, limit: Int): Seq[BookProgress] = {
+  def loadTopComicProgress(user: Account, limit: Int): Seq[Progress] = {
     val sort = Sort.by(Direction.DESC, "last_update")
     val pageRequest = PageRequest.of(0, limit, sort)
     comicProgressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
   }
 
-  def loadComicProgress(user: DbUser, comics: Seq[DbBook]): Seq[BookProgress] = {
+  def loadComicProgress(user: Account, comics: Seq[Book]): Seq[Progress] = {
     comicProgressRepository.findByUserAndBookIn(user, comics.asJava).asScala.toSeq
   }
 
-  def deleteComicProgress(progress: BookProgress) = {
+  def deleteComicProgress(progress: Progress) = {
     comicProgressRepository.delete(progress)
   }
 
-  def saveComicProgress(progress: BookProgress) = {
+  def saveComicProgress(progress: Progress) = {
     val existingProgress = comicProgressRepository.findByUserAndBook(progress.user, progress.book)
     if (existingProgress != null) progress.id = existingProgress.id
     comicProgressRepository.save(progress)
@@ -142,7 +142,7 @@ class ComicService {
     (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
   }
 
-  def loadComic(id: String): Option[DbBook] = {
+  def loadComic(id: String): Option[Book] = {
     comicRepository.findById(id).asScala
   }
 
@@ -300,7 +300,7 @@ class ComicService {
     Some(collectionPath.toString)
   }*/
 
-  def loadComicFromDatabase(id: String): Option[DbBook] = {
+  def loadComicFromDatabase(id: String): Option[Book] = {
     comicRepository.findById(id).asScala
   }
 

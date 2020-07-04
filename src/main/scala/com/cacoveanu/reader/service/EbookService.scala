@@ -5,7 +5,7 @@ import java.net.{URI, URL, URLEncoder}
 import java.nio.file.{LinkOption, Paths}
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.entity.DbBook
+import com.cacoveanu.reader.entity.Book
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.{EpubUtil, FileUtil}
 import javax.annotation.PostConstruct

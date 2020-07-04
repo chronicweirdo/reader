@@ -2,8 +2,8 @@ package com.cacoveanu.reader.service
 
 import java.util
 
-import com.cacoveanu.reader.entity.DbUser
-import com.cacoveanu.reader.repository.UserRepository
+import com.cacoveanu.reader.entity.Account
+import com.cacoveanu.reader.repository.AccountRepository
 import javax.annotation.PostConstruct
 import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id}
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,7 +20,7 @@ class ReaderAuthority(name: String) extends GrantedAuthority {
   override def getAuthority: String = name
 }
 
-class UserPrincipal(val user: DbUser) extends UserDetails {
+class UserPrincipal(val user: Account) extends UserDetails {
   override def getAuthorities: util.Collection[_ <: GrantedAuthority] = {
     Seq(new ReaderAuthority("USER")).asJava
   }
@@ -41,7 +41,7 @@ class UserPrincipal(val user: DbUser) extends UserDetails {
 @Service
 class UserService extends UserDetailsService {
 
-  @BeanProperty @Autowired var userRepository: UserRepository = _
+  @BeanProperty @Autowired var userRepository: AccountRepository = _
 
   @BeanProperty @Autowired var passwordEncoder: PasswordEncoder = _
 
@@ -49,19 +49,19 @@ class UserService extends UserDetailsService {
   def defaultUser(): Unit = {
     val defaultUserName = "test"
     val existingUser = userRepository.findByUsername(defaultUserName)
-    val user = new DbUser()
+    val user = new Account()
     if (existingUser != null) user.id = existingUser.id
     user.username = defaultUserName
     user.password = passwordEncoder.encode("test")
     userRepository.save(user)
   }
 
-  def loadUser(username: String): Option[DbUser] = {
+  def loadUser(username: String): Option[Account] = {
     val dbUser = userRepository.findByUsername(username)
     Option(dbUser)
   }
 
-  def changePassword(user: DbUser, oldPassword: String, newPassword: String): Boolean = {
+  def changePassword(user: Account, oldPassword: String, newPassword: String): Boolean = {
     if (passwordEncoder.matches(oldPassword, user.password)) {
       user.password = passwordEncoder.encode(newPassword)
       userRepository.save(user)

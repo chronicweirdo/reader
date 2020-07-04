@@ -2,7 +2,7 @@ package com.cacoveanu.reader.service
 
 import java.nio.file.Paths
 
-import com.cacoveanu.reader.entity.DbBook
+import com.cacoveanu.reader.entity.Book
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileTypes, FileUtil}
 import javax.annotation.PostConstruct
@@ -40,7 +40,7 @@ class ScannerService {
     bookRepository.saveAll(books.asJava)
   }
 
-  private def scanFile(checksum: String, path: String): Option[DbBook] = {
+  private def scanFile(checksum: String, path: String): Option[Book] = {
     FileUtil.getExtension(path) match {
       case FileTypes.CBR => scanCbr(checksum, path)
       case FileTypes.CBZ => scanCbz(checksum, path)
@@ -55,7 +55,7 @@ class ScannerService {
     collectionPath.toString
   }
 
-  private def scanCbr(checksum: String, path: String): Option[DbBook] = {
+  private def scanCbr(checksum: String, path: String): Option[Book] = {
     val id = checksum
     val title = FileUtil.getFileName(path)
     val author = ""
@@ -65,14 +65,14 @@ class ScannerService {
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new DbBook(id, path, title, author, collection, c.mediaType, smallerCover, s))
+        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, s))
       case _ =>
         log.warn(s"failed to scan $path")
         None
     }
   }
 
-  private def scanCbz(checksum: String, path: String): Option[DbBook] = {
+  private def scanCbz(checksum: String, path: String): Option[Book] = {
     val id = checksum
     val title = FileUtil.getFileName(path)
     val author = ""
@@ -82,14 +82,14 @@ class ScannerService {
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new DbBook(id, path, title, author, collection, c.mediaType, smallerCover, s))
+        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, s))
       case _ =>
         log.warn(s"failed to scan $path")
         None
     }
   }
 
-  private def scanEpub(checksum: String, path: String): Option[DbBook] = {
+  private def scanEpub(checksum: String, path: String): Option[Book] = {
     val id = checksum
     val title = EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path))
     val author = EpubUtil.getAuthor(path).getOrElse("")
@@ -99,7 +99,7 @@ class ScannerService {
     cover match {
       case Some(c) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new DbBook(id, path, title, author, collection, c.mediaType, smallerCover, size))
+        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, size))
       case _ =>
         log.warn(s"failed to scan $path")
         None

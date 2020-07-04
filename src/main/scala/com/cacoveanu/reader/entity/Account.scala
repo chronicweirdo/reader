@@ -5,7 +5,7 @@ import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id}
 import scala.beans.BeanProperty
 
 @Entity
-class DbUser {
+class Account {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
