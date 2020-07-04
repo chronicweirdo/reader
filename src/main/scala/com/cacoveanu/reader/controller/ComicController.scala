@@ -48,12 +48,12 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   private def base64Image(mediaType: String, image: Array[Byte]) =
     "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
 
-  @RequestMapping(Array("/rescan"))
+  /*@RequestMapping(Array("/rescan"))
   @ResponseBody
   def rescan(@RequestParam(name="force", required = false) force: Boolean = false): RedirectView = {
     comicService.scan(force)
     new RedirectView("/")
-  }
+  }*/
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {

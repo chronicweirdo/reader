@@ -6,8 +6,25 @@ import java.security.{DigestInputStream, MessageDigest}
 import java.util.Base64
 
 import org.apache.commons.codec.binary.Base32
+import org.springframework.http.MediaType
+import org.springframework.web.accept.MediaTypeFileExtensionResolver
 
 import scala.collection.mutable
+
+object FileMediaTypes {
+
+  val IMAGE_JPEG_VALUE = MediaType.IMAGE_JPEG_VALUE
+  val IMAGE_PNG_VALUE = MediaType.IMAGE_PNG_VALUE
+  val IMAGE_GIF_VALUE = MediaType.IMAGE_GIF_VALUE
+  val IMAGE_BMP_VALUE = "image/bmp"
+
+}
+
+object FileTypes {
+  val CBR = "cbr"
+  val CBZ = "cbz"
+  val EPUB = "epub"
+}
 
 object FileUtil {
 
@@ -15,6 +32,27 @@ object FileUtil {
     val lastDotIndex = path.lastIndexOf('.')
     if (lastDotIndex >= 0) path.toLowerCase().substring(lastDotIndex).substring(1)
     else ""
+  }
+
+  def isImageType(fileName: String) =
+    Seq("jpg", "jpeg", "png", "gif", "bmp") contains getExtension(fileName)
+
+  def getMediaType(fileName: String): Option[String] =
+    FileUtil.getExtension(fileName) match {
+      case "jpg" => Some(FileMediaTypes.IMAGE_JPEG_VALUE)
+      case "jpeg" => Some(FileMediaTypes.IMAGE_JPEG_VALUE)
+      case "png" => Some(FileMediaTypes.IMAGE_PNG_VALUE)
+      case "gif" => Some(FileMediaTypes.IMAGE_GIF_VALUE)
+      case "bmp" => Some(FileMediaTypes.IMAGE_BMP_VALUE)
+      case _ => None
+    }
+
+  def getExtensionForMediaType(mediaType: String): Option[String] = mediaType match {
+    case FileMediaTypes.IMAGE_BMP_VALUE => Some("bmp")
+    case FileMediaTypes.IMAGE_GIF_VALUE => Some("gif")
+    case FileMediaTypes.IMAGE_JPEG_VALUE => Some("jpg")
+    case FileMediaTypes.IMAGE_PNG_VALUE => Some("png")
+    case _ => None
   }
 
   def getFileName(path: String): String = {

@@ -7,7 +7,7 @@ import java.util.zip.ZipFile
 
 import com.cacoveanu.reader.entity.DbBook
 import com.cacoveanu.reader.repository.BookRepository
-import com.cacoveanu.reader.util.FileUtil
+import com.cacoveanu.reader.util.{EpubUtil, FileUtil}
 import javax.annotation.PostConstruct
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
@@ -28,7 +28,7 @@ object EbookService {
   def main(args: Array[String]): Unit = {
     val service = new EbookService
     //service.booksLocation = "c:\\ws\\reader"
-    service.booksLocation = "d:\\books"
+    //service.booksLocation = "d:\\books"
 
     /*val path = "text/part0004.html"
     val data = service.readFromEpub("Algorithms.epub", path)
@@ -149,20 +149,20 @@ class EbookService {
 
   import EbookService.log
 
-  @Value("${library.location}")
+ /* @Value("${library.location}")
   @BeanProperty
-  var booksLocation: String = _
+  var booksLocation: String = _*/
 
-  @BeanProperty
+  /*@BeanProperty
   @Autowired
-  var bookRepository: BookRepository = _
+  var bookRepository: BookRepository = _*/
 
-  @PostConstruct
-  def updateLibrary() = scan()
+  /*@PostConstruct
+  def updateLibrary() = scan()*/
 
-  private val BOOK_TYPE_EPUB = "epub"
+  /*private val BOOK_TYPE_EPUB = "epub"
   private val BOOK_FILE_REGEX = ".+\\.(" + BOOK_TYPE_EPUB + ")$"
-  private val CONTENT_REGEX = ".+\\.opf$"
+  private val CONTENT_REGEX = ".+\\.opf$"*/
 
   private def readEpub(path: String) = {
     var zipFile: ZipFile = null
@@ -219,7 +219,7 @@ class EbookService {
     xml4.head.toString()
   }
 
-  private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
+  /*private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
     var zipFile: ZipFile = null
 
     try {
@@ -237,9 +237,9 @@ class EbookService {
     } finally {
       zipFile.close()
     }
-  }
+  }*/
 
-  private def findInEpub(epubPath: String, resourceRegex: String): Option[(String, Array[Byte])] = {
+  /*private def findInEpub(epubPath: String, resourceRegex: String): Option[(String, Array[Byte])] = {
     var zipFile: ZipFile = null
     val pattern = resourceRegex.r
 
@@ -258,7 +258,7 @@ class EbookService {
     } finally {
       zipFile.close()
     }
-  }
+  }*/
 
   private def getFiletype(path: String) = {
     val dot = path.lastIndexOf(".")
@@ -283,7 +283,7 @@ class EbookService {
   }
 
   def loadToc(bookId: String) = {
-    readFromEpub("Algorithms.epub", "toc.ncx") match {
+    EpubUtil.readResource("Algorithms.epub", "toc.ncx") match {
       case Some(bytes) => parseToc(new String(bytes, "UTF-8"))
       case None => Seq()
     }
@@ -314,7 +314,7 @@ class EbookService {
   }
 
   def loadResource(bookId: String, resourcePath: String): Option[(String, Array[Byte])] = {
-    readFromEpub("Algorithms.epub", resourcePath) match {
+    EpubUtil.readResource("Algorithms.epub", resourcePath) match {
       case Some(bytes) =>
         getFiletype(resourcePath) match {
           case "text/html" =>
@@ -331,19 +331,19 @@ class EbookService {
     }
   }
 
-  private def getTitle(contentOpf: Elem): Option[String] =
+  /*private def getTitle(contentOpf: Elem): Option[String] =
     (contentOpf \ "metadata" \ "title").headOption.map(_.text)
 
   private def getAuthor(contentOpf: Elem): Option[String] =
-    (contentOpf \ "metadata" \ "creator").headOption.map(_.text)
+    (contentOpf \ "metadata" \ "creator").headOption.map(_.text)*/
 
-  private def getCollection(path: String): Option[String] = {
+  /*private def getCollection(path: String): Option[String] = {
     val pathObject = Paths.get(path);
     val collectionPath = Paths.get(booksLocation).relativize(pathObject.getParent)
     Some(collectionPath.toString)
-  }
+  }*/
 
-  private def getCoverResource(contentOpf: Elem): Option[(String, String)] = {
+  /*private def getCoverResource(contentOpf: Elem): Option[(String, String)] = {
     (contentOpf \ "metadata" \ "meta")
       .find(n => (n \ "@name").text == "cover")
       .map(n => (n \ "@content").text)
@@ -360,7 +360,7 @@ class EbookService {
     } catch {
       case _: Throwable => None
     }
-  }
+  }*/
 
   private def computeRelativePath(pov: String, resource: String) = {
     if (resource.startsWith("/") || pov.lastIndexOf("/") < 0) {
@@ -371,8 +371,8 @@ class EbookService {
     }
   }
 
-  private def scanFile(path: String, checksum: String): Option[DbBook] = {
-    findInEpub(path, CONTENT_REGEX).flatMap(e => getXml(e._2).map(xml => (e._1, xml))) match {
+  /*private def scanFile(path: String, checksum: String): Option[DbBook] = {
+    EpubUfindInEpub(path, CONTENT_REGEX).flatMap(e => getXml(e._2).map(xml => (e._1, xml))) match {
       case Some((opfPath, contentOpf)) =>
         //val contentOpf: Elem = XML.loadString(new String(contentBytes, "UTF-8"))
 
@@ -406,12 +406,7 @@ class EbookService {
         }
       case None => None
     }
-  }
+  }*/
 
-  def scan() = {
-    val books = FileUtil.scanFilesRegexWithChecksum(booksLocation, BOOK_FILE_REGEX)
-      .flatMap { case (checksum, path) => scanFile(path, checksum) }
-    // then save all them books
-    bookRepository.saveAll(books.asJava)
-  }
+
 }

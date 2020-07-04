@@ -7,7 +7,7 @@ import java.util.zip.{ZipEntry, ZipFile}
 
 import com.cacoveanu.reader.entity.{BookProgress, DbBook, DbUser}
 import com.cacoveanu.reader.repository.{BookProgressRepository, BookRepository}
-import com.cacoveanu.reader.util.FileUtil
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, FileTypes, FileUtil}
 import com.github.junrar.Archive
 import javax.annotation.PostConstruct
 import org.apache.tomcat.util.http.fileupload.IOUtils
@@ -39,19 +39,19 @@ class ComicService {
 
   import ComicService.log
 
-  private val COMIC_TYPE_CBR = "cbr"
+  /*private val COMIC_TYPE_CBR = "cbr"
   private val COMIC_TYPE_CBZ = "cbz"
-  private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"
-  private val COVER_RESIZE_MINIMAL_SIDE = 500
+  private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"*/
+//  private val COVER_RESIZE_MINIMAL_SIDE = 500
   private val PAGE_SIZE = 20
   private val COMIC_PART_SIZE = 20
   private val DB_UPDATE_BATCH_SIZE = 40
 
   private val scanningCollection = new AtomicBoolean(false)
 
-  @Value("${library.location}")
+  /*@Value("${library.location}")
   @BeanProperty
-  var comicsLocation: String = _
+  var comicsLocation: String = _*/
 
   @BeanProperty
   @Autowired var imageService: ImageService = _
@@ -64,20 +64,20 @@ class ComicService {
 
   private implicit val executionContext = ExecutionContext.global
 
-  @PostConstruct
-  def updateLibrary() = scan(false)
+  /*@PostConstruct
+  def updateLibrary() = scan(false)*/
 
-  @Scheduled(cron = "0 0 */3 * * *")
-  def scheduledRescan() = scan(false)
+  //@Scheduled(cron = "0 0 */3 * * *")
+  //def scheduledRescan() = scan(false)
 
-  def scan(force: Boolean = false) = Future {
+  /*def scan(force: Boolean = false) = Future {
     if (scanningCollection.compareAndSet(false, true)) {
       scanLibrary(comicsLocation, forceUpdate = force)
       scanningCollection.set(false)
     } else {
       log.info("failed to " + (if (force) "force " else "") + "update the library, scan already in progress")
     }
-  }
+  }*/
 
   private def prepareSearchTerm(original: String): String = {
     val lowercase = original.toLowerCase()
@@ -132,7 +132,7 @@ class ComicService {
     comicProgressRepository.save(progress)
   }
 
-  def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+  //def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
 
   def computePartNumberForPage(page: Int) = {
     page / COMIC_PART_SIZE
@@ -149,15 +149,17 @@ class ComicService {
   @Cacheable(Array("parts"))
   def loadComicPart(id: String, part: Int): Seq[ComicPage] = {
     comicRepository.findById(id).asScala match {
-      case Some(dbComic) => readPagesFromDisk(dbComic.path, Some(computePagesForPart(part))) match {
-        case Some(pages) => pages
-        case None => Seq()
-      }
+      case Some(dbComic) =>
+        FileUtil.getExtension(dbComic.path) match {
+          case FileTypes.CBR => CbrUtil.readPages(dbComic.path, Some(computePagesForPart(part))).getOrElse(Seq())
+          case FileTypes.CBZ => CbzUtil.readPages(dbComic.path, Some(computePagesForPart(part))).getOrElse(Seq())
+          case _ => Seq()
+        }
       case None => Seq()
+      }
     }
-  }
 
-  private def readPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+  /*private def readPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     FileUtil.getExtension(path) match {
       case COMIC_TYPE_CBR => readCbrPagesFromDisk(path, pages)
       case COMIC_TYPE_CBZ => readCbzPagesFromDisk(path, pages)
@@ -170,16 +172,16 @@ class ComicService {
       case COMIC_TYPE_CBR => countCbrPagesFromDisk(path)
       case COMIC_TYPE_CBZ => countCbzPagesFromDisk(path)
       case _ => None
-    }
+    }*/
 
-  private def getValidCbrPages(archive: Archive) = {
+  /*private def getValidCbrPages(archive: Archive) = {
     archive.getFileHeaders.asScala.toSeq
       .filter(f => !f.isDirectory)
       .filter(f => imageService.isImageType(f.getFileNameString))
       .sortBy(f => f.getFileNameString)
-  }
+  }*/
 
-  private def countCbrPagesFromDisk(path: String): Option[Int] = {
+  /*private def countCbrPagesFromDisk(path: String): Option[Int] = {
     var archive: Archive = null
     try {
       archive = new Archive(new FileInputStream(path))
@@ -191,9 +193,9 @@ class ComicService {
     } finally {
       archive.close()
     }
-  }
+  }*/
 
-  private def readCbrPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+  /*private def readCbrPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     var archive: Archive = null
 
     try {
@@ -225,17 +227,17 @@ class ComicService {
     } finally {
       archive.close()
     }
-  }
+  }*/
 
-  private def getValidCbzPages(zipFile: ZipFile) = {
+  /*private def getValidCbzPages(zipFile: ZipFile) = {
     zipFile.entries().asScala
       .filter(f => !f.isDirectory)
       .filter(f => imageService.isImageType(f.getName))
       .toSeq
       .sortBy(f => f.getName)
-  }
+  }*/
 
-  private def countCbzPagesFromDisk(path: String): Option[Int] = {
+  /*private def countCbzPagesFromDisk(path: String): Option[Int] = {
     var zipFile: ZipFile = null
     try {
       zipFile = new ZipFile(path)
@@ -247,9 +249,9 @@ class ComicService {
     } finally {
       zipFile.close()
     }
-  }
+  }*/
 
-  private def readCbzPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+  /*private def readCbzPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     var zipFile: ZipFile = null
 
     try {
@@ -282,7 +284,7 @@ class ComicService {
     } finally {
       zipFile.close()
     }
-  }
+  }*/
 
   private[service] def getComicTitle(path: String): Option[String] = {
     Option(FileUtil.getFileName(path))
@@ -292,17 +294,17 @@ class ComicService {
     Option(FileUtil.getFileChecksum(path))
   }
 
-  private[service] def getComicCollection(path: String): Option[String] = {
+  /*private[service] def getComicCollection(path: String): Option[String] = {
     val pathObject = Paths.get(path);
     val collectionPath = Paths.get(comicsLocation).relativize(pathObject.getParent)
     Some(collectionPath.toString)
-  }
+  }*/
 
   def loadComicFromDatabase(id: String): Option[DbBook] = {
     comicRepository.findById(id).asScala
   }
 
-  def loadFullComicMetadataFromDisk(file: String): Option[DbBook] =
+  /*def loadFullComicMetadataFromDisk(file: String): Option[DbBook] =
     (getComicId(file), getComicTitle(file), getComicCollection(file), readCover(file), countPagesFromDisk(file)) match {
       case (Some(id), Some(title), Some(collection), Some(cover), Some(totalPages)) =>
         imageService.getFormatName(cover.mediaType) match {
@@ -315,9 +317,9 @@ class ComicService {
       case _ =>
         log.info(s" failed to load metadata for $file")
         None
-    }
+    }*/
 
-  private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
+  /*private def scanLibrary(libraryPath: String, forceUpdate: Boolean = false): Unit = {
     log.info(s"scanning library path $libraryPath")
     log.info(s"loading comics from database")
     val comicsInDatabase = comicRepository.findAll().asScala
@@ -369,5 +371,5 @@ class ComicService {
       }
     })
     log.info(s"finished updating ${updatedFilesIds.size} files")
-  }
+  }*/
 }
