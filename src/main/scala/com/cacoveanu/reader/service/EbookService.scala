@@ -6,10 +6,12 @@ import java.nio.file.{LinkOption, Paths}
 import java.util.zip.ZipFile
 
 import com.cacoveanu.reader.entity.DbBook
+import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.FileUtil
+import javax.annotation.PostConstruct
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
@@ -47,7 +49,7 @@ object EbookService {
       case None => println("scan did not work")
     }*/
 
-    service.scan().foreach(b => println(b.author + " -> " + b.title))
+    //service.scan().foreach(b => println(b.author + " -> " + b.title))
   }
 }
 
@@ -150,6 +152,13 @@ class EbookService {
   @Value("${books.location}")
   @BeanProperty
   var booksLocation: String = _
+
+  @BeanProperty
+  @Autowired
+  var bookRepository: BookRepository = _
+
+  @PostConstruct
+  def updateLibrary() = scan()
 
   private val BOOK_TYPE_EPUB = "epub"
   private val BOOK_FILE_REGEX = ".+\\.(" + BOOK_TYPE_EPUB + ")$"
@@ -402,6 +411,6 @@ class EbookService {
     val books = FileUtil.scanFilesRegexWithChecksum(booksLocation, BOOK_FILE_REGEX)
       .flatMap { case (checksum, path) => scanFile(path, checksum) }
     // then save all them books
-    books
+    bookRepository.saveAll(books.asJava)
   }
 }
