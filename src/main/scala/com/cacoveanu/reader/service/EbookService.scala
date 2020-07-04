@@ -5,11 +5,15 @@ import java.net.{URI, URL, URLEncoder}
 import java.nio.file.{LinkOption, Paths}
 import java.util.zip.ZipFile
 
+import com.cacoveanu.reader.entity.DbBook
+import com.cacoveanu.reader.util.FileUtil
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
+import scala.beans.BeanProperty
 import scala.collection.immutable
 import scala.jdk.CollectionConverters._
 import scala.xml._
@@ -21,16 +25,29 @@ object EbookService {
 
   def main(args: Array[String]): Unit = {
     val service = new EbookService
+    //service.booksLocation = "c:\\ws\\reader"
+    service.booksLocation = "d:\\books"
 
-    val path = "text/part0004.html"
+    /*val path = "text/part0004.html"
     val data = service.readFromEpub("Algorithms.epub", path)
     data.foreach(b => {
       val html = new String(b)
       val newHtml = service.processHtml(html, path, "1")
       println(newHtml)
-    })
+    })*/
 
     //service.loadToc("1").foreach(println)
+    /*service.scanFile("D:\\books\\2020.06 books\\German\\How to Learn German Fast, Including Grammar.epub", "x") match {
+      case Some(b) =>
+        println(b.title)
+        println(b.author)
+        println(b.collection)
+        println(b.mediaType)
+        println(b.cover.length)
+      case None => println("scan did not work")
+    }*/
+
+    service.scan().foreach(b => println(b.author + " -> " + b.title))
   }
 }
 
@@ -130,6 +147,14 @@ class EbookService {
 
   import EbookService.log
 
+  @Value("${books.location}")
+  @BeanProperty
+  var booksLocation: String = _
+
+  private val BOOK_TYPE_EPUB = "epub"
+  private val BOOK_FILE_REGEX = ".+\\.(" + BOOK_TYPE_EPUB + ")$"
+  private val CONTENT_REGEX = ".+\\.opf$"
+
   private def readEpub(path: String) = {
     var zipFile: ZipFile = null
 
@@ -205,6 +230,27 @@ class EbookService {
     }
   }
 
+  private def findInEpub(epubPath: String, resourceRegex: String): Option[(String, Array[Byte])] = {
+    var zipFile: ZipFile = null
+    val pattern = resourceRegex.r
+
+    try {
+      zipFile = new ZipFile(epubPath)
+      zipFile.entries().asScala.find(e => pattern.pattern.matcher(e.getName.toLowerCase).matches).map(f => {
+        val fileContents = zipFile.getInputStream(f)
+        val bos = new ByteArrayOutputStream()
+        IOUtils.copy(fileContents, bos)
+        (f.getName, bos.toByteArray)
+      })
+    } catch {
+      case e: Throwable =>
+        log.error(s"failed to read epub $epubPath", e)
+        None
+    } finally {
+      zipFile.close()
+    }
+  }
+
   private def getFiletype(path: String) = {
     val dot = path.lastIndexOf(".")
     val extension = path.substring(dot + 1).toLowerCase()
@@ -218,14 +264,6 @@ class EbookService {
     }
   }
 
-  /*
-  <navPoint class="chapter" id="num_1" playOrder="0">
-      <navLabel>
-        <text>Title Page</text>
-      </navLabel>
-      <content src="text/part0000.html#0-2c29a077dda942b280918b0a86e88a42"/>
-    </navPoint>
-   */
   private def parseToc(xmlString: String) = {
     val xml: Elem = XML.loadString(xmlString)
     (xml \\ "navPoint").map(n => TocEntry(
@@ -282,5 +320,88 @@ class EbookService {
         }
       case None => None
     }
+  }
+
+  private def getTitle(contentOpf: Elem): Option[String] =
+    (contentOpf \ "metadata" \ "title").headOption.map(_.text)
+
+  private def getAuthor(contentOpf: Elem): Option[String] =
+    (contentOpf \ "metadata" \ "creator").headOption.map(_.text)
+
+  private def getCollection(path: String): Option[String] = {
+    val pathObject = Paths.get(path);
+    val collectionPath = Paths.get(booksLocation).relativize(pathObject.getParent)
+    Some(collectionPath.toString)
+  }
+
+  private def getCoverResource(contentOpf: Elem): Option[(String, String)] = {
+    (contentOpf \ "metadata" \ "meta")
+      .find(n => (n \ "@name").text == "cover")
+      .map(n => (n \ "@content").text)
+      .flatMap(id => {
+        (contentOpf \\ "manifest" \ "item")
+          .find(node => (node \ "@id").text == id )
+          .map(node => ((node \ "@href").text, (node \ "@media-type").text))
+      })
+  }
+
+  private def getXml(data: Array[Byte]) = {
+    try {
+      Some(XML.loadString(new String(data, "UTF-8")))
+    } catch {
+      case _: Throwable => None
+    }
+  }
+
+  private def computeRelativePath(pov: String, resource: String) = {
+    if (resource.startsWith("/") || pov.lastIndexOf("/") < 0) {
+      resource
+    } else {
+      val root = pov.substring(0, pov.lastIndexOf("/"))
+      root + "/" + resource
+    }
+  }
+
+  private def scanFile(path: String, checksum: String): Option[DbBook] = {
+    findInEpub(path, CONTENT_REGEX).flatMap(e => getXml(e._2).map(xml => (e._1, xml))) match {
+      case Some((opfPath, contentOpf)) =>
+        //val contentOpf: Elem = XML.loadString(new String(contentBytes, "UTF-8"))
+
+        val cover: Option[(Array[Byte], String)] = getCoverResource(contentOpf).flatMap { case (resource, contentType) => readFromEpub(path, computeRelativePath(opfPath, resource)) match {
+          case Some(bytes) => Some((bytes, contentType))
+          case None => None
+        }}
+        (
+          getTitle(contentOpf),
+          getAuthor(contentOpf),
+          getCollection(path),
+          cover
+        ) match {
+          case (Some(title), Some(author), Some(collection), Some((cover, contentType))) =>
+            // id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte]
+            Some(new DbBook(checksum, path, title, author, collection, contentType, cover))
+          case (None, _, _, _) =>
+            println(s"missing title for $path")
+            None
+          case (_, None, _, _) =>
+            println(s"missing author for $path")
+            None
+          case (_, _, None, _) =>
+            println(s"missing collection for $path")
+            None
+          case (_, _, _, None) =>
+            println(s"missing cover for $path")
+            None
+          case _ => None
+        }
+      case None => None
+    }
+  }
+
+  def scan() = {
+    val books = FileUtil.scanFilesRegexWithChecksum(booksLocation, BOOK_FILE_REGEX)
+      .flatMap { case (checksum, path) => scanFile(path, checksum) }
+    // then save all them books
+    books
   }
 }
