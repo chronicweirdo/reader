@@ -312,10 +312,13 @@ Next problems to solve:
 - [x] optimize the pagination algorithm
     - find pages duration: 11473
     - optimized from 11507 -> 2836 (miliseconds)
-- add spinner when computing pages, hide everything else
+- [x] add spinner when computing pages, hide everything else
+    - added a loading screen
 - different font sizes for mobile and desktop
 - scan table of contents and compute the order of files
-- redirect to latest section+position when loading a book
-
-    
+- [x] redirect to latest section+position when loading a book
 - find a better solution for mime types
+
+- unify books and comics
+    - a single data structure
+    - a single set of services and controllers
