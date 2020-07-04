@@ -60,8 +60,8 @@ class ScannerService {
     val title = FileUtil.getFileName(path)
     val author = ""
     val collection = getCollection(path)
-    val cover: Option[ComicPage] = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
-    val size: Option[Int] = CbrUtil.countPages(path)
+    val cover = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+    val size = CbrUtil.countPages(path)
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)

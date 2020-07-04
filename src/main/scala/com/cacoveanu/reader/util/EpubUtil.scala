@@ -3,7 +3,7 @@ package com.cacoveanu.reader.util
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.service.ComicPage
+import com.cacoveanu.reader.entity.Content
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -97,12 +97,12 @@ object EpubUtil {
       })
   }
 
-  def getCover(epubPath: String): Option[ComicPage] =
+  def getCover(epubPath: String): Option[Content] =
     getOpf(epubPath).flatMap(getCoverResource)
     .flatMap { case (href, contentType) =>
       findResource(epubPath, href)
         .flatMap(readResource(epubPath, _))
-        .map(bytes => ComicPage(0, contentType, bytes))
+        .map(bytes => Content(None, contentType, bytes))
     }
 
   private def getXml(data: Array[Byte]) = {

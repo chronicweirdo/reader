@@ -2,7 +2,7 @@ package com.cacoveanu.reader.util
 
 import java.io.{ByteArrayOutputStream, FileInputStream}
 
-import com.cacoveanu.reader.service.{ComicPage, ComicService}
+import com.cacoveanu.reader.entity.Content
 import com.github.junrar.Archive
 import com.github.junrar.rarfile.FileHeader
 import org.slf4j.{Logger, LoggerFactory}
@@ -34,7 +34,7 @@ object CbrUtil {
     }
   }
 
-  def readPages(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+  def readPages(path: String, pages: Option[Seq[Int]] = None): Option[Seq[Content]] = {
     var archive: Archive = null
 
     try {
@@ -49,12 +49,12 @@ object CbrUtil {
           sortedImageFiles
       }
 
-      val selectedImageData: Seq[ComicPage] = selectedImageFiles
+      val selectedImageData: Seq[Content] = selectedImageFiles
         .flatMap{ case(archiveFile, index) => FileUtil.getMediaType(archiveFile.getFileNameString) match {
           case Some(mediaType) =>
             val fileContents = new ByteArrayOutputStream()
             archive.extractFile(archiveFile, fileContents)
-            Some(ComicPage(index, mediaType, fileContents.toByteArray))
+            Some(Content(Option(index), mediaType, fileContents.toByteArray))
           case None => None
         }}
 

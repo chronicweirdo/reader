@@ -3,7 +3,7 @@ package com.cacoveanu.reader.util
 import java.io.ByteArrayOutputStream
 import java.util.zip.{ZipEntry, ZipFile}
 
-import com.cacoveanu.reader.service.ComicPage
+import com.cacoveanu.reader.entity.Content
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -35,7 +35,7 @@ object CbzUtil {
     }
   }
 
-  def readPages(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
+  def readPages(path: String, pages: Option[Seq[Int]] = None): Option[Seq[Content]] = {
     var zipFile: ZipFile = null
 
     try {
@@ -50,13 +50,13 @@ object CbzUtil {
           sortedImageFiles
       }
 
-      val selectedImageData: Seq[ComicPage] = selectedImageFiles
+      val selectedImageData: Seq[Content] = selectedImageFiles
         .flatMap{ case (file, index) => FileUtil.getMediaType(file.getName) match {
           case Some(mediaType) =>
             val fileContents = zipFile.getInputStream(file)
             val bos = new ByteArrayOutputStream()
             IOUtils.copy(fileContents, bos)
-            Some(ComicPage(index, mediaType, bos.toByteArray))
+            Some(Content(Option(index), mediaType, bos.toByteArray))
           case None => None
         }}
 

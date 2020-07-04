@@ -4,10 +4,10 @@ import java.security.Principal
 import java.{lang, util}
 import java.util.{Base64, Date}
 
-import com.cacoveanu.reader.entity.{Progress, Book}
+import com.cacoveanu.reader.entity.{Book, Progress}
 
 import scala.jdk.CollectionConverters._
-import com.cacoveanu.reader.service.{ComicService, UserService}
+import com.cacoveanu.reader.service.{ComicService, ContentService, UserService}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -43,7 +43,9 @@ case class CollectionPage(
                          )
 
 @Controller
-class ComicController @Autowired() (private val comicService: ComicService, private val userService: UserService) {
+class ComicController @Autowired() (private val comicService: ComicService,
+                                    private val userService: UserService,
+                                    private val contentService: ContentService) {
 
   private def base64Image(mediaType: String, image: Array[Byte]) =
     "data:" + mediaType + ";base64," + new String(Base64.getEncoder().encode(image))
@@ -172,13 +174,10 @@ class ComicController @Autowired() (private val comicService: ComicService, priv
   @RequestMapping(Array("/imageData"))
   @ResponseBody
   def getImageData(@RequestParam("id") id: String, @RequestParam("page") page: Int, principal: Principal): String = {
-    (userService.loadUser(principal.getName), comicService.loadComicPart(id, comicService.computePartNumberForPage(page))) match {
-      case (Some(user), comicPages) =>
-        comicPages.find(p => p.num == page) match {
-          case Some(p) => base64Image(p.mediaType, p.data)
-          case None => ""
-        }
-      case _ => ""
+    val part = contentService.computePartNumberForPage(page)
+    contentService.loadComicPart(id, part).find(p => p.index.isDefined && p.index.get == page) match {
+      case Some(p) => base64Image(p.mediaType, p.data)
+      case None => ""
     }
   }
 

@@ -28,7 +28,7 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 
-case class ComicPage(num: Int, mediaType: String, data: Array[Byte])
+//case class ComicPage(num: Int, mediaType: String, data: Array[Byte])
 
 object ComicService {
   val log: Logger = LoggerFactory.getLogger(classOf[ComicService])
@@ -44,7 +44,7 @@ class ComicService {
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"*/
 //  private val COVER_RESIZE_MINIMAL_SIDE = 500
   private val PAGE_SIZE = 20
-  private val COMIC_PART_SIZE = 20
+  //private val COMIC_PART_SIZE = 20
   private val DB_UPDATE_BATCH_SIZE = 40
 
   private val scanningCollection = new AtomicBoolean(false)
@@ -134,19 +134,19 @@ class ComicService {
 
   //def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
 
-  def computePartNumberForPage(page: Int) = {
+  /*def computePartNumberForPage(page: Int) = {
     page / COMIC_PART_SIZE
-  }
+  }*/
 
-  private def computePagesForPart(part: Int) = {
+  /*private def computePagesForPart(part: Int) = {
     (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
-  }
+  }*/
 
   def loadComic(id: String): Option[Book] = {
     comicRepository.findById(id).asScala
   }
 
-  @Cacheable(Array("parts"))
+  /*@Cacheable(Array("parts"))
   def loadComicPart(id: String, part: Int): Seq[ComicPage] = {
     comicRepository.findById(id).asScala match {
       case Some(dbComic) =>
@@ -157,7 +157,7 @@ class ComicService {
         }
       case None => Seq()
       }
-    }
+    }*/
 
   /*private def readPagesFromDisk(path: String, pages: Option[Seq[Int]] = None): Option[Seq[ComicPage]] = {
     FileUtil.getExtension(path) match {
