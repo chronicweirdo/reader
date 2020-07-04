@@ -100,8 +100,7 @@ class ComicService {
   }
 
   def loadComicProgress(user: Account, comic: Book): Option[Progress] = {
-    val progress = comicProgressRepository.findByUserAndBook(user, comic)
-    Option(progress)
+    comicProgressRepository.findByUserAndBook(user, comic).asScala
   }
 
   def loadCollections(): Seq[String] = {
@@ -127,8 +126,7 @@ class ComicService {
   }
 
   def saveComicProgress(progress: Progress) = {
-    val existingProgress = comicProgressRepository.findByUserAndBook(progress.user, progress.book)
-    if (existingProgress != null) progress.id = existingProgress.id
+    comicProgressRepository.findByUserAndBook(progress.user, progress.book).asScala.foreach(p => progress.id = p.id)
     comicProgressRepository.save(progress)
   }
 

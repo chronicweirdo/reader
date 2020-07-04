@@ -3,7 +3,10 @@ package com.cacoveanu.reader.controller
 import java.net.URLDecoder
 import java.security.Principal
 import java.util.Date
-import com.cacoveanu.reader.service.EbookService
+
+import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.service.{BookService, ContentService, EbookService, UserService}
+import com.cacoveanu.reader.util.FileMediaTypes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -11,31 +14,43 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, R
 import org.springframework.web.servlet.view.RedirectView
 
 @Controller
-class EbookController @Autowired() (private val ebookService: EbookService) {
+class EbookController @Autowired() (
+                                     private val ebookService: EbookService,
+                                     private val contentService: ContentService,
+                                     private val bookService: BookService,
+                                     private val accountService: UserService) {
 
   @RequestMapping(Array("/book"))
   @ResponseBody
   def getBookResource(@RequestParam("id") bookId: String, @RequestParam("path") path: String) = {
-    ebookService.loadResource(bookId, path) match {
-      case Some((contentType, bytes)) =>
-        contentType match {
-          case "text/html" => ResponseEntity.ok().body(new String(bytes, "UTF-8"))
-          case "text/css" => ResponseEntity.ok().body(new String(bytes, "UTF-8"))
-          case "image/jpeg" => ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytes)
-          case _ => ResponseEntity.notFound().build()
-        }
-      case None => ResponseEntity.notFound().build()
+    contentService.loadResource(bookId, path) match {
+      case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) =>
+        ResponseEntity.ok().body(new String(bytes, "UTF-8"))
+
+      case Some(Content(_, FileMediaTypes.TEXT_CSS_VALUE, bytes)) =>
+        ResponseEntity.ok().body(new String(bytes, "UTF-8"))
+
+      case Some(Content(_, FileMediaTypes.IMAGE_JPEG_VALUE, bytes)) =>
+        ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytes)
+
+      case Some(Content(_, FileMediaTypes.IMAGE_PNG_VALUE, bytes)) =>
+        ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(bytes)
+
+      case Some(Content(_, FileMediaTypes.IMAGE_GIF_VALUE, bytes)) =>
+        ResponseEntity.ok().contentType(MediaType.IMAGE_GIF).body(bytes)
+
+      case _ => ResponseEntity.notFound().build()
     }
   }
 
-  @RequestMapping(Array("/loadBook"))
+  @RequestMapping(Array("/openBook"))
   @ResponseBody
-  def loadBook(@RequestParam("id") bookId: String) = {
-    // load book progress
-    val resource = "text/part0004.html"
-    val position = 2000
-    // redirect to book resource based on progess
-    new RedirectView(s"/book?id=$bookId&path=$resource#$position" )
+  def loadBook(@RequestParam("id") bookId: String, principal: Principal) = {
+    accountService.loadUser(principal.getName)
+      .flatMap(account => bookService.loadBookWithProgress(account, bookId)) match {
+      case Some((book, resource, position)) => new RedirectView(s"/book?id=$bookId&path=$resource#$position" )
+      case None => ResponseEntity.notFound().build()
+    }
   }
 
   @RequestMapping(

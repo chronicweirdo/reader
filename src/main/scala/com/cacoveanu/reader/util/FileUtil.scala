@@ -17,6 +17,8 @@ object FileMediaTypes {
   val IMAGE_PNG_VALUE = MediaType.IMAGE_PNG_VALUE
   val IMAGE_GIF_VALUE = MediaType.IMAGE_GIF_VALUE
   val IMAGE_BMP_VALUE = "image/bmp"
+  val TEXT_HTML_VALUE = MediaType.TEXT_HTML_VALUE
+  val TEXT_CSS_VALUE = "text/css"
 
 }
 
@@ -44,6 +46,8 @@ object FileUtil {
       case "png" => Some(FileMediaTypes.IMAGE_PNG_VALUE)
       case "gif" => Some(FileMediaTypes.IMAGE_GIF_VALUE)
       case "bmp" => Some(FileMediaTypes.IMAGE_BMP_VALUE)
+      case "html" => Some(FileMediaTypes.TEXT_HTML_VALUE)
+      case "css" => Some(FileMediaTypes.TEXT_CSS_VALUE)
       case _ => None
     }
 

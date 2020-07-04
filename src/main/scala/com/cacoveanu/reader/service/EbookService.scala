@@ -55,7 +55,7 @@ object EbookService {
 
 // add <script src="reader.js"></script> to every html header
 // <link href="book?id=1&amp;path=stylesheet.css" type="text/css" rel="stylesheet">
-class ResourcesAppendRule(resources: Map[String, String]) extends RewriteRule {
+/*class ResourcesAppendRule(resources: Map[String, String]) extends RewriteRule {
   private def getJavascriptNode(link: String) = <script src={link}></script>
   private def getCssNode(link: String) = <link href={link} type="text/css" rel="stylesheet"></link>
   override def transform(n: Node) = n match {
@@ -69,10 +69,10 @@ class ResourcesAppendRule(resources: Map[String, String]) extends RewriteRule {
       Elem(prefix, label, attr, scope, true, nodes ++ resourceNodes: _*)
     case _ => n
   }
-}
+}*/
 
 // <meta name="comicId" content="1">
-class MetaAppendRule(metas: Map[String, String]) extends RewriteRule {
+/*class MetaAppendRule(metas: Map[String, String]) extends RewriteRule {
   override def transform(n: Node) = n match {
     case elem@Elem(prefix, label, attr, scope, nodes@_*) if label == "head" =>
       val metaNodes: immutable.Iterable[Elem] = metas.map(e => <meta name={e._1} content={e._2}></meta>)
@@ -82,13 +82,13 @@ class MetaAppendRule(metas: Map[String, String]) extends RewriteRule {
       Elem(prefix, label, attr, scope, true, newHeaderNodes : _*)
     case _ => n
   }
-}
+}*/
 
-case class TocEntry(index: Int, title: String, link: String)
 
-case class Resource(mimeType: String, content: Array[Byte], prev: Option[String], next: Option[String])
 
-class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
+//case class Resource(mimeType: String, content: Array[Byte], prev: Option[String], next: Option[String])
+
+/*class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
   private def getFolder(path: String) = {
     val lio = path.lastIndexOf("/")
@@ -142,7 +142,7 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
     case e @ <img>{_*}</img> => transformElementWithSrc(e)
     case _ => n
   }
-}
+}*/
 
 @Service
 class EbookService {
@@ -164,7 +164,7 @@ class EbookService {
   private val BOOK_FILE_REGEX = ".+\\.(" + BOOK_TYPE_EPUB + ")$"
   private val CONTENT_REGEX = ".+\\.opf$"*/
 
-  private def readEpub(path: String) = {
+/*  private def readEpub(path: String) = {
     var zipFile: ZipFile = null
 
     try {
@@ -188,7 +188,7 @@ class EbookService {
     } finally {
       zipFile.close()
     }
-  }
+  }*/
 
   /*private val hrefRule = new RewriteRule {
     override def transform(n: Node) = n match {
@@ -199,7 +199,7 @@ class EbookService {
     }
   }*/
 
-  private def processHtml(html: String, path: String, bookId: String): String = {
+  /*private def processHtml(html: String, path: String, bookId: String): String = {
     // make XML
     val xml: Elem = XML.loadString(html)
     // adjust all links
@@ -217,7 +217,7 @@ class EbookService {
 
     //println(xml3.size)
     xml4.head.toString()
-  }
+  }*/
 
   /*private def readFromEpub(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
     var zipFile: ZipFile = null
@@ -260,7 +260,7 @@ class EbookService {
     }
   }*/
 
-  private def getFiletype(path: String) = {
+  /*private def getFiletype(path: String) = {
     val dot = path.lastIndexOf(".")
     val extension = path.substring(dot + 1).toLowerCase()
     extension match {
@@ -271,25 +271,25 @@ class EbookService {
       case "png" => MediaType.IMAGE_PNG_VALUE
       case "css" => "text/css"
     }
-  }
+  }*/
 
-  private def parseToc(xmlString: String) = {
+  /*private def parseToc(xmlString: String) = {
     val xml: Elem = XML.loadString(xmlString)
     (xml \\ "navPoint").map(n => TocEntry(
       (n \\ "@playOrder").text.toInt,
       (n \\ "text").text,
       (n \\ "@src").text
     ))
-  }
+  }*/
 
-  def loadToc(bookId: String) = {
+  /*def loadToc(bookId: String) = {
     EpubUtil.readResource("Algorithms.epub", "toc.ncx") match {
       case Some(bytes) => parseToc(new String(bytes, "UTF-8"))
       case None => Seq()
     }
-  }
+  }*/
 
-  private def getBaseResourcePath(resourcePath: String) = {
+  /*private def getBaseResourcePath(resourcePath: String) = {
     val r = if (resourcePath.indexOf('#') > 0) resourcePath.substring(0, resourcePath.indexOf('#'))
     else resourcePath
     r
@@ -311,9 +311,9 @@ class EbookService {
       case Some(index) => toc.zipWithIndex.find(e => e._2 == index + 1).map(_._1)
       case None => None
     }
-  }
+  }*/
 
-  def loadResource(bookId: String, resourcePath: String): Option[(String, Array[Byte])] = {
+  /*def loadResource(bookId: String, resourcePath: String): Option[(String, Array[Byte])] = {
     EpubUtil.readResource("Algorithms.epub", resourcePath) match {
       case Some(bytes) =>
         getFiletype(resourcePath) match {
@@ -329,7 +329,7 @@ class EbookService {
         }
       case None => None
     }
-  }
+  }*/
 
   /*private def getTitle(contentOpf: Elem): Option[String] =
     (contentOpf \ "metadata" \ "title").headOption.map(_.text)
@@ -362,14 +362,14 @@ class EbookService {
     }
   }*/
 
-  private def computeRelativePath(pov: String, resource: String) = {
+  /*private def computeRelativePath(pov: String, resource: String) = {
     if (resource.startsWith("/") || pov.lastIndexOf("/") < 0) {
       resource
     } else {
       val root = pov.substring(0, pov.lastIndexOf("/"))
       root + "/" + resource
     }
-  }
+  }*/
 
   /*private def scanFile(path: String, checksum: String): Option[DbBook] = {
     EpubUfindInEpub(path, CONTENT_REGEX).flatMap(e => getXml(e._2).map(xml => (e._1, xml))) match {

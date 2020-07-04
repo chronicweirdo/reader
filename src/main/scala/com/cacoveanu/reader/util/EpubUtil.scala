@@ -3,7 +3,7 @@ package com.cacoveanu.reader.util
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.entity.{Content, TocEntry}
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -53,35 +53,24 @@ object EpubUtil {
     }
   }
 
-  /*def readMetadata(epubPath: String) = {
-    findResource(epubPath, CONTENT_REGEX)
-      .flatMap(readResource(epubPath, _))
-      .flatMap(getXml) match {
-      case Some(xml) =>
-        val coverResource = getCoverResource(xml)
-        Map(
-          "title" -> getTitle(xml),
-          "author" -> getAuthor(xml),
-          "coverResource" -> coverResource.map(_._1),
-          "coverContentType" -> coverResource.map(_._2)
-        )
-      case None => Map()
-    }
-  }*/
-
   private def getOpf(epubPath: String) =
     findResource(epubPath, CONTENT_REGEX)
     .flatMap(readResource(epubPath, _))
     .flatMap(getXml)
 
-  /*private def getTitle(contentOpf: Elem): Option[String] =
-    (contentOpf \ "metadata" \ "title").headOption.map(_.text)*/
+  def getToc(epubPath: String) = {
+    getOpf(epubPath).map(opf =>
+      (opf \\ "navPoint")
+        .map(n => TocEntry(
+          (n \\ "@playOrder").text.toInt,
+          (n \\ "text").text,
+          (n \\ "@src").text
+        ))
+    ).getOrElse(Seq())
+  }
 
   def getTitle(epubPath: String): Option[String] =
     getOpf(epubPath).flatMap(opf => (opf \ "metadata" \ "title").headOption.map(_.text))
-
-  /*private def getAuthor(contentOpf: Elem): Option[String] =
-    (contentOpf \ "metadata" \ "creator").headOption.map(_.text)*/
 
   def getAuthor(epubPath: String): Option[String] =
     getOpf(epubPath).flatMap(opf => (opf \ "metadata" \ "creator").headOption.map(_.text))

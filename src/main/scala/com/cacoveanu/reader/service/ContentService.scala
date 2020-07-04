@@ -1,8 +1,9 @@
 package com.cacoveanu.reader.service
 
-import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
-import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, FileTypes, FileUtil}
+import com.cacoveanu.reader.service.xml.{LinkRewriteRule, MetaAppendRule, ResourceAppendRule}
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
@@ -10,6 +11,10 @@ import org.springframework.stereotype.Service
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
+
+import scala.collection.immutable
+import scala.xml.{Elem, Node, XML}
+import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 @Service
 class ContentService {
@@ -33,6 +38,36 @@ class ContentService {
     }
   }
 
+  def loadResource(bookId: String, resourcePath: String): Option[Content] = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) =>
+        EpubUtil.readResource(book.path, resourcePath) match {
+          case Some(bytes) => processResource(book, resourcePath, bytes)
+          case None => None
+        }
+      case None => None
+    }
+  }
+
+  private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
+    FileUtil.getMediaType(resourcePath) match {
+
+      case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
+        val toc = EpubUtil.getToc(book.path).zipWithIndex
+        val currentIndex: Option[Int] = toc.find(_._1.link == resourcePath).map(_._2)
+        val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link)
+        val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link)
+
+        val data: Array[Byte] = processHtml(book.id, resourcePath, new String(bytes, "UTF-8"), prev, next)
+          .getBytes("UTF-8")
+        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, data))
+
+      case Some(contentType) => Some(Content(None, contentType, bytes))
+
+      case _ => None
+    }
+  }
+
   def computePartNumberForPage(page: Int) = {
     page / COMIC_PART_SIZE
   }
@@ -40,4 +75,31 @@ class ContentService {
   private def computePagesForPart(part: Int) = {
     (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
   }
+
+  private def processHtml(
+                           bookId: String,
+                           path: String,
+                           htmlContent: String,
+                           previousSection: Option[String],
+                           nextSection: Option[String]
+                         ): String = {
+
+    val linkRewriteRule = new LinkRewriteRule(bookId, path)
+    val resourceAppendRule = new ResourceAppendRule(Map("js" -> "/reader.js", "css" -> "/reader.css"))
+    val metaAppendRule = new MetaAppendRule(Map(
+      "nextSection" -> nextSection.getOrElse(""),
+      "prevSection" -> previousSection.getOrElse(""),
+      "bookId" -> bookId
+    ))
+
+    new RuleTransformer(
+      linkRewriteRule,
+      resourceAppendRule,
+      metaAppendRule
+    )
+      .transform(XML.loadString(htmlContent))
+      .head
+      .toString()
+  }
 }
+

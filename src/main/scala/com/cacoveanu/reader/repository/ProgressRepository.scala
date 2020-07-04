@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param
 
 trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
 
-  def findByUserAndBook(user: Account, book: Book): Progress
+  def findByUserAndBook(user: Account, book: Book): Optional[Progress]
 
   def findByUser(user: Account): java.util.List[Progress]
 
