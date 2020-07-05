@@ -1,8 +1,8 @@
 package com.cacoveanu.reader.service
 
-import com.cacoveanu.reader.entity.Account
+import com.cacoveanu.reader.entity.{Account, Book}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
-import com.cacoveanu.reader.util.EpubUtil
+import com.cacoveanu.reader.util.{EpubUtil, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -21,6 +21,14 @@ class BookService {
   @BeanProperty
   @Autowired
   var progressRepository: ProgressRepository = _
+
+  def loadBook(id: String) = {
+    bookRepository.findById(id).asScala
+  }
+
+  def bookType(book: Book) = {
+    FileUtil.getExtension(book.path)
+  }
 
   def loadBookWithProgress(account: Account, id: String) = {
     bookRepository.findById(id).asScala match {

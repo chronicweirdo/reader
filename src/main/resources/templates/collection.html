@@ -269,7 +269,7 @@
         function getComicHtml(comic) {
             var a = document.createElement("a")
             a.classList.add("imgdiv")
-            a.href = "comic?id=" + comic.id
+            a.href = "openBook?id=" + comic.id
             a.setAttribute("comicid", comic.id)
             var img = document.createElement("img")
             img.onload = function() {
@@ -453,7 +453,7 @@
 <body>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
-    <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'comic?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
+    <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'openBook?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
         <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
     </a></p>
 </div>
