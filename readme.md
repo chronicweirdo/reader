@@ -328,6 +328,10 @@ Next problems to solve:
 Now, the heavy lifting has been done. I have implemented all the vital functionality for the app, now I just have to put it all together, clean up, refine and refactor the code. A lot of refactoring remains:
 
 - add epub progress handling: on collections page and when opening a book
+    - need a method to compute start position and length (in positions) for each section (use same algorithm as the js)
+    - once we have the start positions for each section, when reporting progress to the backend we report the section_start_position + current_position_in_section
+    - when saving the book, we have computed the total number of positions (size of the book), and we have the current position, so it is easy to display progress
+    - have a method to compute the section of a book, based on position 
 - add tools for epub (including a TOC listing)
 - see if further optimizations
 - refactor, clean up, rename, remove unused
