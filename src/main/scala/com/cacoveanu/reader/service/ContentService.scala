@@ -2,7 +2,7 @@ package com.cacoveanu.reader.service
 
 import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
-import com.cacoveanu.reader.service.xml.{LinkRewriteRule, MetaAppendRule, ResourceAppendRule}
+import com.cacoveanu.reader.service.xml.{LinkRewriteRule, MetaAppendRule, ResilientXmlLoader, ResourceAppendRule}
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -98,12 +98,13 @@ class ContentService {
       resourceAppendRule,
       metaAppendRule
     )
-      .transform(MyXML.loadString(htmlContent))
+      .transform(ResilientXmlLoader.loadString(htmlContent))
       .head
       .toString()
   }
 }
 
+/*
 object MyXML extends XMLLoader[Elem] {
   override def parser: SAXParser = {
     val f = javax.xml.parsers.SAXParserFactory.newInstance()
@@ -114,4 +115,4 @@ object MyXML extends XMLLoader[Elem] {
     f.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false)
     f.newSAXParser()
   }
-}
+}*/
