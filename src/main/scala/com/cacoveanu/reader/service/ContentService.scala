@@ -50,8 +50,6 @@ class ContentService {
     }
   }
 
-
-
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     FileUtil.getMediaType(resourcePath) match {
 
