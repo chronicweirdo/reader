@@ -43,7 +43,7 @@ class ComicService {
   private val COMIC_TYPE_CBZ = "cbz"
   private val COMIC_FILE_REGEX = ".+\\.(" + COMIC_TYPE_CBR + "|" + COMIC_TYPE_CBZ + ")$"*/
 //  private val COVER_RESIZE_MINIMAL_SIDE = 500
-  private val PAGE_SIZE = 20
+//  private val PAGE_SIZE = 20
   //private val COMIC_PART_SIZE = 20
   private val DB_UPDATE_BATCH_SIZE = 40
 
@@ -79,15 +79,15 @@ class ComicService {
     }
   }*/
 
-  private def prepareSearchTerm(original: String): String = {
+  /*private def prepareSearchTerm(original: String): String = {
     val lowercase = original.toLowerCase()
     val pattern = "[A-Za-z0-9]+".r
     val matches: Regex.MatchIterator = pattern.findAllIn(lowercase)
     val result = "%" + matches.mkString("%") + "%"
     result
-  }
+  }*/
 
-  def searchComics(term: String, page: Int): Seq[Book] = {
+  /*def searchComics(term: String, page: Int): Seq[Book] = {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
@@ -97,38 +97,38 @@ class ComicService {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     comicRepository.findAll(pageRequest).asScala.toSeq
-  }
+  }*/
 
-  def loadComicProgress(user: Account, comic: Book): Option[Progress] = {
+  /*def loadComicProgress(user: Account, comic: Book): Option[Progress] = {
     comicProgressRepository.findByUserAndBook(user, comic).asScala
-  }
+  }*/
 
-  def loadCollections(): Seq[String] = {
+  /*def loadCollections(): Seq[String] = {
     comicRepository.findAllCollections().asScala.toSeq
-  }
+  }*/
 
-  def loadComicProgress(user: Account, comicId: String): Option[Progress] = {
+  /*def loadComicProgress(user: Account, comicId: String): Option[Progress] = {
     comicProgressRepository.findByUserAndBookId(user, comicId).asScala
-  }
+  }*/
 
-  def loadTopComicProgress(user: Account, limit: Int): Seq[Progress] = {
+  /*def loadTopComicProgress(user: Account, limit: Int): Seq[Progress] = {
     val sort = Sort.by(Direction.DESC, "last_update")
     val pageRequest = PageRequest.of(0, limit, sort)
     comicProgressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
-  }
+  }*/
 
-  def loadComicProgress(user: Account, comics: Seq[Book]): Seq[Progress] = {
+  /*def loadComicProgress(user: Account, comics: Seq[Book]): Seq[Progress] = {
     comicProgressRepository.findByUserAndBookIn(user, comics.asJava).asScala.toSeq
-  }
+  }*/
 
-  def deleteComicProgress(progress: Progress) = {
+  /*def deleteComicProgress(progress: Progress) = {
     comicProgressRepository.delete(progress)
-  }
+  }*/
 
-  def saveComicProgress(progress: Progress) = {
+  /*def saveComicProgress(progress: Progress) = {
     comicProgressRepository.findByUserAndBook(progress.user, progress.book).asScala.foreach(p => progress.id = p.id)
     comicProgressRepository.save(progress)
-  }
+  }*/
 
   //def readCover(path: String): Option[ComicPage] = readPagesFromDisk(path, Some(Seq(0))).flatMap(pages => pages.headOption)
 

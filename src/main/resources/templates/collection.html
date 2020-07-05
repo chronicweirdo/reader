@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Chronic Comic Reader - Library</title>
+    <title>Chronic Reader - Library</title>
     <style>
         * {
             margin: 0;
@@ -266,27 +266,27 @@
                 }
             }
         }
-        function getComicHtml(comic) {
+        function getBookHtml(book) {
             var a = document.createElement("a")
             a.classList.add("imgdiv")
-            a.href = "openBook?id=" + comic.id
-            a.setAttribute("comicid", comic.id)
+            a.href = "openBook?id=" + book.id
+            a.setAttribute("bookid", book.id)
             var img = document.createElement("img")
             img.onload = function() {
-                scaleImage(img, comic.progress, comic.pages)
+                scaleImage(img, book.progress, book.pages)
             }
-            img.src = comic.cover
-            img.title = comic.title
+            img.src = book.cover
+            img.title = book.title
             a.appendChild(img)
             return a
         }
-        function addComics(comics) {
-            for (var i = 0; i < comics.length; i++) {
-                var comic = comics[i]
-                var collectionId = getCollectionId(comic.collection)
+        function addBooks(books) {
+            for (var i = 0; i < books.length; i++) {
+                var book = books[i]
+                var collectionId = getCollectionId(book.collection)
                 var collectionDiv = document.getElementById(collectionId)
                 if (collectionDiv != null) {
-                    collectionDiv.appendChild(getComicHtml(comic))
+                    collectionDiv.appendChild(getBookHtml(book))
                 }
             }
         }
@@ -312,7 +312,7 @@
         function getEndOfCollection() {
             return document.getElementById("fin") != null
         }
-        function removeExistingComics() {
+        function removeExistingBooks() {
             var collections = document.getElementsByClassName("collection-container")
             while (collections.length > 0) {
                 document.body.removeChild(collections.item(0))
@@ -339,7 +339,7 @@
             }
         }
         function searchForTerm() {
-            removeExistingComics()
+            removeExistingBooks()
             setCurrentPage(-1)
             loadNextPage(loadUntilPageFull)
         }
@@ -356,9 +356,9 @@
                         if (this.status == 200) {
                             setCurrentPage(pagenum)
                             var response = JSON.parse(this.responseText)
-                            if (response.comics.length > 0) {
+                            if (response.books.length > 0) {
                                 addCollections(response.collections)
-                                addComics(response.comics)
+                                addBooks(response.books)
                             } else {
                                 setEndOfCollection()
                             }
@@ -453,8 +453,8 @@
 <body>
 <div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
     <h1>Latest Read</h1>
-    <p><a class="imgdiv" th:each="comic: ${latestRead}" th:href="'openBook?id=' + ${comic.id}" th:attr="comicid=${comic.id}">
-        <img th:attr="onload='scaleImage(this,' + ${comic.progress} + ',' + ${comic.pages} + ')'" th:src="${comic.cover}" th:title="${comic.title}">
+    <p><a class="imgdiv" th:each="book: ${latestRead}" th:href="'openBook?id=' + ${book.id}" th:attr="bookid=${book.id}">
+        <img th:attr="onload='scaleImage(this,' + ${book.progress} + ',' + ${book.pages} + ')'" th:src="${book.cover}" th:title="${book.title}">
     </a></p>
 </div>
 <div class="tools">
