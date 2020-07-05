@@ -28,7 +28,7 @@ class BookService {
         progressRepository.findByUserAndBook(account, book).asScala match {
           case Some(progress) => Some((book, progress.section, progress.position))
           case None =>
-            val firstResource = EpubUtil.getToc(book.path).headOption.getOrElse("")
+            val firstResource = EpubUtil.getToc(book.path).headOption.map(t => t.link).getOrElse("")
             Some((book, firstResource, 0))
         }
       case None => None

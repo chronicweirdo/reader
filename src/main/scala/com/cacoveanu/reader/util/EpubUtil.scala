@@ -1,6 +1,7 @@
 package com.cacoveanu.reader.util
 
 import java.io.ByteArrayOutputStream
+import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 import com.cacoveanu.reader.entity.{Content, TocEntry}
@@ -13,7 +14,8 @@ import scala.xml.{Elem, XML}
 object EpubUtil {
 
   private val log: Logger = LoggerFactory.getLogger(EpubUtil.getClass)
-  private val CONTENT_REGEX = ".+\\.opf$"
+  private val OPF_REGEX = ".+\\.opf$"
+  private val NCX_REGEX = ".+\\.ncx$"
 
   def readResource(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
     var zipFile: ZipFile = null
@@ -31,7 +33,7 @@ object EpubUtil {
         log.error(s"failed to read epub $epubPath", e)
         None
     } finally {
-      zipFile.close()
+      if (zipFile != null) zipFile.close()
     }
   }
 
@@ -49,50 +51,92 @@ object EpubUtil {
         log.error(s"failed to read epub $epubPath", e)
         None
     } finally {
-      zipFile.close()
+      if (zipFile != null) zipFile.close()
     }
   }
 
-  private def getOpf(epubPath: String) =
-    findResource(epubPath, CONTENT_REGEX)
-    .flatMap(readResource(epubPath, _))
-    .flatMap(getXml)
+  private def getOpf(epubPath: String): Option[(String, Elem)] =
+    findResource(epubPath, OPF_REGEX) match {
+      case Some(opfPath) =>
+        readResource(epubPath, opfPath).flatMap(getXml) match {
+          case Some(xml) => Some((opfPath, xml))
+          case None => None
+        }
+      case None => None
+    }
+
+  private def getNcx(epubPath: String) =
+    findResource(epubPath, NCX_REGEX) match {
+      case Some(ncxPath) =>
+        readResource(epubPath, ncxPath).flatMap(getXml) match {
+          case Some(xml) => Some((ncxPath, xml))
+          case None => None
+        }
+      case None => None
+    }
 
   def getToc(epubPath: String) = {
-    getOpf(epubPath).map(opf =>
-      (opf \\ "navPoint")
+    val toc = getNcx(epubPath).map { case (opfPath, opf) =>
+      (opf \ "navMap" \ "navPoint")
         .map(n => TocEntry(
-          (n \\ "@playOrder").text.toInt,
-          (n \\ "text").text,
-          (n \\ "@src").text
+          (n \ "@playOrder").text.toInt,
+          (n \ "navLabel" \ "text").text,
+          getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
         ))
-    ).getOrElse(Seq())
+    }.getOrElse(Seq())
+    // remove parts of toc that are in the same file
+    val realToc = Seq(toc(0)) ++
+      toc.sliding(2)
+        .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
+        .map(p => p(1))
+    realToc
   }
+
+  def baseLink(link: String): String =
+    if (link.indexOf("#") >= 0) link.substring(0, link.indexOf("#"))
+    else link
 
   def getTitle(epubPath: String): Option[String] =
-    getOpf(epubPath).flatMap(opf => (opf \ "metadata" \ "title").headOption.map(_.text))
+    getOpf(epubPath).flatMap { case (_, opf) => (opf \ "metadata" \ "title").headOption.map(_.text) }
 
   def getAuthor(epubPath: String): Option[String] =
-    getOpf(epubPath).flatMap(opf => (opf \ "metadata" \ "creator").headOption.map(_.text))
+    getOpf(epubPath).flatMap { case (_, opf) => (opf \ "metadata" \ "creator").headOption.map(_.text) }
 
-  private def getCoverResource(contentOpf: Elem): Option[(String, String)] = {
-    (contentOpf \ "metadata" \ "meta")
+  private def getCoverResource(opfPath: String, contentOpf: Elem): Option[(String, String)] = {
+    val coverId = (contentOpf \ "metadata" \ "meta")
       .find(n => (n \ "@name").text == "cover")
       .map(n => (n \ "@content").text)
-      .flatMap(id => {
+
+    val coverResource = coverId.flatMap(id => {
         (contentOpf \\ "manifest" \ "item")
           .find(node => (node \ "@id").text == id )
-          .map(node => ((node \ "@href").text, (node \ "@media-type").text))
+          .map(node => (
+            getAbsoluteEpubPath(opfPath, (node \ "@href").text),
+            (node \ "@media-type").text)
+          )
       })
+    coverResource
   }
 
+  private def fileNameToSearchRegex(fileName: String) =
+    ".*" + fileName + "$"
+
   def getCover(epubPath: String): Option[Content] =
-    getOpf(epubPath).flatMap(getCoverResource)
+    getOpf(epubPath).flatMap { case (opfPath, opf) => getCoverResource(opfPath, opf)}
     .flatMap { case (href, contentType) =>
-      findResource(epubPath, href)
-        .flatMap(readResource(epubPath, _))
+      readResource(epubPath, href)
         .map(bytes => Content(None, contentType, bytes))
     }
+
+  def getAbsoluteEpubPath(povPath: String, currentPath: String): String = {
+    // check if current path is absolute
+    if (currentPath.startsWith("/")) return currentPath
+    // get the folder path of the povPath
+    val folderPath = if (povPath.lastIndexOf("/") >= 0) povPath.substring(0, povPath.lastIndexOf("/"))
+    val newPath = folderPath + "/" + currentPath
+    val normalizedPath = Paths.get(newPath).normalize().toString.replaceAll("\\\\", "/")
+    normalizedPath
+  }
 
   private def getXml(data: Array[Byte]) = {
     try {

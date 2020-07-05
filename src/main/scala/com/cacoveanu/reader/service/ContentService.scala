@@ -13,7 +13,8 @@ import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 
 import scala.collection.immutable
-import scala.xml.{Elem, Node, XML}
+import scala.xml.factory.XMLLoader
+import scala.xml.{Elem, Node, SAXParser, XML}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 @Service
@@ -49,12 +50,14 @@ class ContentService {
     }
   }
 
+
+
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     FileUtil.getMediaType(resourcePath) match {
 
       case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
         val toc = EpubUtil.getToc(book.path).zipWithIndex
-        val currentIndex: Option[Int] = toc.find(_._1.link == resourcePath).map(_._2)
+        val currentIndex: Option[Int] = toc.find(e => EpubUtil.baseLink(e._1.link) == EpubUtil.baseLink(resourcePath)).map(_._2)
         val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link)
         val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link)
 
@@ -97,9 +100,20 @@ class ContentService {
       resourceAppendRule,
       metaAppendRule
     )
-      .transform(XML.loadString(htmlContent))
+      .transform(MyXML.loadString(htmlContent))
       .head
       .toString()
   }
 }
 
+object MyXML extends XMLLoader[Elem] {
+  override def parser: SAXParser = {
+    val f = javax.xml.parsers.SAXParserFactory.newInstance()
+    //f.setNamespaceAware(false)
+    //f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    f.setValidating(false)
+    f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+    f.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false)
+    f.newSAXParser()
+  }
+}
