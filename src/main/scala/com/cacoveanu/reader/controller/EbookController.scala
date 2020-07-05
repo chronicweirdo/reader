@@ -6,7 +6,7 @@ import java.util.Date
 
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService, EbookService, UserService}
-import com.cacoveanu.reader.util.FileMediaTypes
+import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -48,8 +48,12 @@ class EbookController @Autowired() (
   def loadBook(@RequestParam("id") bookId: String, principal: Principal) = {
     accountService.loadUser(principal.getName)
       .flatMap(account => bookService.loadBookWithProgress(account, bookId)) match {
-      case Some((book, resource, position)) => new RedirectView(s"/book?id=$bookId&path=$resource#$position" )
-      case None => ResponseEntity.notFound().build()
+      case Some((book, resource, position)) => bookService.bookType(book) match {
+        case FileTypes.CBR => new RedirectView(s"/comic?id=$bookId")
+        case FileTypes.CBZ => new RedirectView(s"/comic?id=$bookId")
+        case FileTypes.EPUB => new RedirectView(s"/book?id=$bookId&path=$resource#$position" )
+      }
+      case None => new RedirectView("/")
     }
   }
 

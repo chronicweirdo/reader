@@ -322,3 +322,22 @@ Next problems to solve:
 - unify books and comics
     - a single data structure
     - a single set of services and controllers
+    
+## Chronic Reader App
+
+Now, the heavy lifting has been done. I have implemented all the vital functionality for the app, now I just have to put it all together, clean up, refine and refactor the code. A lot of refactoring remains:
+
+- add epub progress handling: on collections page and when opening a book
+- add tools for epub (including a TOC listing)
+- see if further optimizations
+- refactor, clean up, rename, remove unused
+- implement an epub search (?)
+
+Necessary before a release:
+
+- write tests
+- reset git history
+- add admin user and user management
+- have an embedded database
+- write guides to install the program as a service on windows, mac and linux
+- have a compiled binary jar folder in git
