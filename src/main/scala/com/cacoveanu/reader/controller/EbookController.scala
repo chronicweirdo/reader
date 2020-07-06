@@ -57,20 +57,15 @@ class EbookController @Autowired() (
     }
   }
 
-  @RequestMapping(
+/*  @RequestMapping(
     value=Array("/reportPosition"),
     method=Array(RequestMethod.PUT)
   )
   def reportPosition(@RequestParam("id") bookId: String, @RequestParam("link") link: String, @RequestParam("position") position: Int, principal: Principal) = {
-    /*(userService.loadUser(principal.getName), comicService.loadComic(id)) match {
-      case (Some(user), Some(comic)) if page < comic.totalPages =>
-        comicService.saveComicProgress(new ComicProgress(user, comic, page, comic.totalPages, new Date()))
-        new ResponseEntity[String](HttpStatus.OK)
-      case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
-    }*/
+
     val decodedLink = URLDecoder.decode(link, "UTF-8")
     println(s"registering position for book $bookId resource $decodedLink position $position")
 
-  }
+  }*/
 
 }

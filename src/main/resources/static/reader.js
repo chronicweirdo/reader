@@ -52,7 +52,9 @@ function jumpToLocation() {
             displayPage(getPageForId(id))
         } else {
             console.log("jumping to position " + id)
-            displayPage(getPageForPosition(+id))
+            var sectionStart = parseInt(getMeta("sectionStart"))
+            var positionInSection = +id - sectionStart
+            displayPage(getPageForPosition(positionInSection))
         }
     }
 }
@@ -143,8 +145,12 @@ function nextPage() {
         console.log("end of doc")
         var bookId = getMeta("bookId")
         var nextSection = getMeta("nextSection")
-        if (nextSection && nextSection.length > 0 && bookId && bookId.length > 0) {
-            window.location = "book?id=" + bookId + "&path=" + nextSection
+        if (bookId && bookId.length > 0) {
+            if (nextSection && nextSection.length > 0) {
+                window.location = "book?id=" + bookId + "&path=" + nextSection
+            } else {
+                reportPosition(getMaxPosition())
+            }
         }
     }
 }
@@ -351,8 +357,10 @@ function getPathname() {
 }
 
 function reportPosition(position) {
+    var sectionStart = parseInt(getMeta("sectionStart"))
+    var positionInBook = sectionStart + position
     var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "reportPosition?id=" + getMeta("bookId") + "&link=" + (encodeURIComponent(getPathname())) + "&position=" + position, true)
+    xhttp.open("PUT", "markProgress?id=" + getMeta("bookId") + "&position=" + positionInBook, true)
     xhttp.send()
 }
 

@@ -480,7 +480,7 @@
 
     function markComicProgress(page) {
         var xhttp = new XMLHttpRequest()
-        xhttp.open("PUT", "markProgress?id=" + getComicId() + "&page=" + (page-1), true)
+        xhttp.open("PUT", "markProgress?id=" + getComicId() + "&position=" + (page-1), true)
         xhttp.send()
     }
 

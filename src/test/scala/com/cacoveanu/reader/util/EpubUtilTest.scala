@@ -23,22 +23,12 @@ class EpubUtilTest {
     assert(cover.isDefined)
   }
 
-  private def readSectionAndComputeSize(epubPath: String, sectionPath: String) = {
-    val bytes: Array[Byte] = EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath)).get
-    val text = new String(bytes, "UTF-8")
-    val html = ResilientXmlLoader.loadString(text)
-    (html \ "body").text.length
-  }
+
 
   @Test
   def getSectionsWithPositionsAndSizes() = {
     val toc = EpubUtil.getToc(path)
-    val tocWithSizes = toc.map(e => {
-      val section = e.link
-      val size = readSectionAndComputeSize(path, section)
-      (section, size)
-    })
-    println(tocWithSizes)
-    // works and positions for this book are
+    toc.foreach(println)
+    // works and positions for this book are consistent with js
   }
 }
