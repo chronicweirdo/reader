@@ -1,7 +1,6 @@
 package com.cacoveanu.reader.controller
 
 import java.security.Principal
-import java.util
 import java.util.Date
 
 import com.cacoveanu.reader.entity.{Book, Progress}
@@ -112,11 +111,6 @@ case class CollectionPage(
                            @BeanProperty collections: java.util.List[String],
                            @BeanProperty books: java.util.List[UiBook]
                          )
-
-/*case class UiCollection(
-                         @BeanProperty name: String,
-                         @BeanProperty books: util.List[UiBook]
-                       )*/
 
 case class UiBook(
                     @BeanProperty id: String,

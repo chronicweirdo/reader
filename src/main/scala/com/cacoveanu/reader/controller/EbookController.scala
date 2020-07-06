@@ -1,11 +1,9 @@
 package com.cacoveanu.reader.controller
 
-import java.net.URLDecoder
 import java.security.Principal
-import java.util.Date
 
 import com.cacoveanu.reader.entity.Content
-import com.cacoveanu.reader.service.{BookService, ContentService, EbookService, UserService}
+import com.cacoveanu.reader.service.{BookService, ContentService, UserService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
@@ -14,9 +12,7 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, R
 import org.springframework.web.servlet.view.RedirectView
 
 @Controller
-class EbookController @Autowired() (
-                                     private val ebookService: EbookService,
-                                     private val contentService: ContentService,
+class EbookController @Autowired() (private val contentService: ContentService,
                                      private val bookService: BookService,
                                      private val accountService: UserService) {
 
@@ -56,16 +52,5 @@ class EbookController @Autowired() (
       case None => new RedirectView("/")
     }
   }
-
-/*  @RequestMapping(
-    value=Array("/reportPosition"),
-    method=Array(RequestMethod.PUT)
-  )
-  def reportPosition(@RequestParam("id") bookId: String, @RequestParam("link") link: String, @RequestParam("position") position: Int, principal: Principal) = {
-
-    val decodedLink = URLDecoder.decode(link, "UTF-8")
-    println(s"registering position for book $bookId resource $decodedLink position $position")
-
-  }*/
 
 }

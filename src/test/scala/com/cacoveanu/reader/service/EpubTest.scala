@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.ZipFile
 
 import scala.jdk.CollectionConverters._
-import com.cacoveanu.reader.service.ComicService.log
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import scala.xml._
 

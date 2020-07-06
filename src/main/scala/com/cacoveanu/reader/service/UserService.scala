@@ -5,7 +5,6 @@ import java.util
 import com.cacoveanu.reader.entity.Account
 import com.cacoveanu.reader.repository.AccountRepository
 import javax.annotation.PostConstruct
-import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.{UserDetails, UserDetailsService}
