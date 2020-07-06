@@ -132,9 +132,6 @@ object EpubUtil {
     coverResource
   }
 
-  private def fileNameToSearchRegex(fileName: String) =
-    ".*" + fileName + "$"
-
   def getCover(epubPath: String): Option[Content] =
     getOpf(epubPath).flatMap { case (opfPath, opf) => getCoverResource(opfPath, opf)}
     .flatMap { case (href, contentType) =>

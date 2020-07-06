@@ -2,16 +2,14 @@ package com.cacoveanu.reader.controller
 
 import java.security.Principal
 
-import com.cacoveanu.reader.service.{BookService, UserService}
+import com.cacoveanu.reader.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
 import scala.beans.BeanProperty
-import scala.jdk.CollectionConverters._
 
 @Controller
 class AccountController @Autowired()(private val accountService: UserService) {

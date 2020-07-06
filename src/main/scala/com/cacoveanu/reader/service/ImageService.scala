@@ -4,22 +4,11 @@ import java.awt.image.BufferedImage
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 import com.cacoveanu.reader.util.FileUtil
-import javax.activation.MimeType
 import javax.imageio.ImageIO
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 
 @Service
 class ImageService {
-
-  /*def getFormatName(mediaType: String): Option[String] =
-    mediaType match {
-      case MediaType.IMAGE_GIF_VALUE => Some("gif")
-      case MediaType.IMAGE_JPEG_VALUE => Some("jpeg")
-      case MediaType.IMAGE_PNG_VALUE => Some("png")
-      case IMAGE_BMP_VALUE => Some("bmp")
-      case _ => None
-    }*/
 
   private def resizeByFactor(factor: Double, originalWidth: Int, originalHeight: Int) =
     ((originalWidth * factor).floor.toInt, (originalHeight * factor).floor.toInt)

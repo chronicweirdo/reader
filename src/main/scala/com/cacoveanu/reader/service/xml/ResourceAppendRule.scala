@@ -13,7 +13,6 @@ class ResourceAppendRule(resources: Map[String, String]) extends RewriteRule {
         case "css" => Some(getCssNode(e._2))
         case _ => None
       })
-      //Elem(prefix, label, attr, scope, true, nodes ++ <script src="/reader.js"></script>: _*)
       Elem(prefix, label, attr, scope, true, nodes ++ resourceNodes: _*)
     case _ => n
   }

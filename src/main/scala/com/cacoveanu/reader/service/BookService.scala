@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 
 import scala.jdk.CollectionConverters._
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
-import org.apache.commons.vfs2.FileType
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.data.domain.Sort.Direction
 
