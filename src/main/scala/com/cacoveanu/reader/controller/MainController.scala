@@ -96,13 +96,13 @@ class MainController @Autowired()(
   )
   def markProgress(
                     @RequestParam("id") id: String,
-                    @RequestParam("section") section: String,
                     @RequestParam("position") position: Int,
                     principal: Principal): ResponseEntity[String] = {
+    println(s"marking progress for id $id and position $position")
     (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
-      case (Some(user), Some(book)) if position < book.size =>
+      case (Some(user), Some(book)) =>
         val finished = position >= book.size - 1
-        bookService.saveProgress(new Progress(user, book, section, position, new Date(), finished))
+        bookService.saveProgress(new Progress(user, book, position, new Date(), finished))
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }

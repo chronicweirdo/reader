@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 import com.cacoveanu.reader.entity.{Content, TocEntry}
+import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -75,13 +76,25 @@ object EpubUtil {
       case None => None
     }
 
+  private def getSectionSize(epubPath: String, sectionPath: String) = {
+    if (FileUtil.getExtension(EpubUtil.baseLink(sectionPath)) == "html") {
+      EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
+        .flatMap(getXml)
+        .map(html => (html \ "body").text.length)
+        .getOrElse(-1)
+    } else {
+      1
+    }
+  }
+
   def getToc(epubPath: String) = {
     val toc = getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
         .map(n => TocEntry(
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
-          getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
+          getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text),
+          -1
         ))
     }.getOrElse(Seq())
     // remove parts of toc that are in the same file
@@ -89,7 +102,8 @@ object EpubUtil {
       toc.sliding(2)
         .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
         .map(p => p(1))
-    realToc
+    val realTocWithSizes = realToc.map(e => TocEntry(e.index, e.title, e.link, getSectionSize(epubPath, e.link)))
+    realTocWithSizes
   }
 
   def baseLink(link: String): String =
@@ -140,7 +154,7 @@ object EpubUtil {
 
   private def getXml(data: Array[Byte]) = {
     try {
-      Some(XML.loadString(new String(data, "UTF-8")))
+      Some(ResilientXmlLoader.loadString(new String(data, "UTF-8")))
     } catch {
       case t: Throwable =>
         log.warn(s"failed to parse xml", t)

@@ -36,14 +36,28 @@ class BookService {
     FileUtil.getExtension(book.path)
   }
 
+  // todo: rethink this whole shit; a book id and a position should be enought to know what to load
   def loadBookWithProgress(account: Account, id: String) = {
     bookRepository.findById(id).asScala match {
       case Some(book) =>
         progressRepository.findByUserAndBook(account, book).asScala match {
-          case Some(progress) => Some((book, progress.section, progress.position))
+          case Some(progress) => Some((book, getSectionForPosition(book, progress.position).getOrElse(""), progress.position))
           case None => getNewProgressForBook(book)
         }
       case None => None
+    }
+  }
+
+  private def getSectionForPosition(book: Book, position: Int) = {
+    bookType(book) match {
+      case FileTypes.EPUB =>
+        val toc = EpubUtil.getToc(book.path)
+        var currentSize = 0
+        toc.map(e => {
+          currentSize = currentSize + e.size
+          (currentSize, e)
+        }).find(e => e._1 > position).map(e => EpubUtil.baseLink(e._2.link))
+      case _ => None
     }
   }
 

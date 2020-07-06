@@ -95,7 +95,7 @@ class ScannerService {
     val author = EpubUtil.getAuthor(path).getOrElse("")
     val collection = getCollection(path)
     val cover = EpubUtil.getCover(path)
-    val size = 0
+    val size = EpubUtil.getToc(path).map(_.size).sum
     cover match {
       case Some(c) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
