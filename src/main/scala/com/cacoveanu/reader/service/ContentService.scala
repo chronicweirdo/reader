@@ -61,8 +61,19 @@ class ContentService {
           toc.filter(e => e._2 < i).map(e => e._1.size).sum
         ).getOrElse(0)
 
-        val data: Array[Byte] = processHtml(book.id, resourcePath, new String(bytes, "UTF-8"), prev, next, size, sizeUntilNow)
-          .getBytes("UTF-8")
+        val data: Array[Byte] = processHtml(
+          book.id,
+          resourcePath,
+          new String(bytes, "UTF-8"),
+          prev,
+          next,
+          size,
+          sizeUntilNow,
+          book.title,
+          book.size,
+          book.collection
+        ).getBytes("UTF-8")
+
         Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, data))
 
       case Some(contentType) => Some(Content(None, contentType, bytes))
@@ -86,7 +97,10 @@ class ContentService {
                            previousSection: Option[String],
                            nextSection: Option[String],
                            sectionSize: Int,
-                           sectionStart: Int
+                           sectionStart: Int,
+                           bookTitle: String,
+                           bookSize: Int,
+                           collection: String
                          ): String = {
 
     val linkRewriteRule = new LinkRewriteRule(bookId, path)
@@ -96,7 +110,10 @@ class ContentService {
       "prevSection" -> previousSection.getOrElse(""),
       "bookId" -> bookId,
       "sectionSize" -> sectionSize.toString,
-      "sectionStart" -> sectionStart.toString
+      "sectionStart" -> sectionStart.toString,
+      "title" -> bookTitle,
+      "bookSize" -> bookSize.toString,
+      "collection" -> collection
     ))
 
     new RuleTransformer(

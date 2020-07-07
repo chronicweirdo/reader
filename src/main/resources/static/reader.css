@@ -58,6 +58,40 @@ body {
     color: black;
 }
 
+#tools {
+    display: block;
+    position: fixed;
+    bottom: 5vh;
+    width: 30vw;
+    left: 34vw;
+    background-color: black;
+    color: white;
+    border: 1px solid gold;
+    padding: 1vw;
+    text-align: center;
+    font-size: 1.3em;
+}
+#tools h1 {
+    margin-bottom: 2vh;
+    font-size: 1em;
+}
+#tools p {
+    margin-top: 2vh;
+}
+#tools input {
+    font-size: 1em;
+    background-color: gold;
+    padding: .1em;
+    width: 5vw;
+}
+#tools a {
+    color: gold;
+    text-decoration: underline;
+    margin-left: .5em;
+    margin-right: .5em;
+    display: inline-block;
+}
+
 img {
     max-height: 50vh;
     max-width: 50vw;
