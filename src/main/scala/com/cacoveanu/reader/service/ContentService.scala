@@ -104,7 +104,11 @@ class ContentService {
                          ): String = {
 
     val linkRewriteRule = new LinkRewriteRule(bookId, path)
-    val resourceAppendRule = new ResourceAppendRule(Map("js" -> "/reader.js", "css" -> "/reader.css"))
+    val resourceAppendRule = new ResourceAppendRule(Seq(
+      "js" -> "/reader.js",
+      "js" -> "/hammer.min.js",
+      "css" -> "/reader.css"
+    ))
     val metaAppendRule = new MetaAppendRule(Map(
       "nextSection" -> nextSection.getOrElse(""),
       "prevSection" -> previousSection.getOrElse(""),

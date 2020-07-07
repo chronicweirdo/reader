@@ -3,7 +3,7 @@ package com.cacoveanu.reader.service.xml
 import scala.xml.{Elem, Node}
 import scala.xml.transform.RewriteRule
 
-class ResourceAppendRule(resources: Map[String, String]) extends RewriteRule {
+class ResourceAppendRule(resources: Seq[(String, String)]) extends RewriteRule {
   private def getJavascriptNode(link: String) = <script src={link}></script>
   private def getCssNode(link: String) = <link href={link} type="text/css" rel="stylesheet"></link>
   override def transform(n: Node) = n match {
