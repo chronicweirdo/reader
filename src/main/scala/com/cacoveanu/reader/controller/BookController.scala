@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, R
 import org.springframework.web.servlet.view.RedirectView
 
 @Controller
-class EbookController @Autowired() (private val contentService: ContentService,
-                                     private val bookService: BookService,
-                                     private val accountService: UserService) {
+class BookController @Autowired()(private val contentService: ContentService,
+                                  private val bookService: BookService,
+                                  private val accountService: UserService) {
 
   @RequestMapping(Array("/book"))
   @ResponseBody
