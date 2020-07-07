@@ -46,6 +46,8 @@ function resize() {
 
 function jumpToLocation() {
     var url = window.location.href
+    var urlParams = new URLSearchParams(window.location.search)
+    var sectionStart = parseInt(getMeta("sectionStart"))
     if (url.lastIndexOf("#") > 0) {
         var id = url.substring(url.lastIndexOf("#") + 1, url.length)
         if (isNaN(id)) {
@@ -53,10 +55,14 @@ function jumpToLocation() {
             displayPage(getPageForId(id))
         } else {
             console.log("jumping to position " + id)
-            var sectionStart = parseInt(getMeta("sectionStart"))
+
             var positionInSection = +id - sectionStart
             displayPage(getPageForPosition(positionInSection))
         }
+    } else if (urlParams.get("position")) {
+        var pos = parseInt(urlParams.get("position"))
+        var positionInSection = pos - sectionStart
+        displayPage(getPageForPosition(positionInSection))
     }
 }
 
@@ -268,7 +274,7 @@ function previousPage() {
         var bookId = getMeta("bookId")
         var prevSection = getMeta("prevSection")
         if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
-            window.location = "book?id=" + bookId + "&path=" + prevSection + "#" + Number.MAX_SAFE_INTEGER
+            window.location = "bookResource?id=" + bookId + "&path=" + prevSection + "#" + Number.MAX_SAFE_INTEGER
         }
     }
 }
@@ -285,7 +291,7 @@ function nextPage() {
         var nextSection = getMeta("nextSection")
         if (bookId && bookId.length > 0) {
             if (nextSection && nextSection.length > 0) {
-                window.location = "book?id=" + bookId + "&path=" + nextSection
+                window.location = "bookResource?id=" + bookId + "&path=" + nextSection
             } else {
                 reportPosition(getMaxPosition())
             }
@@ -524,9 +530,12 @@ function reportPosition(position) {
     var currentPositionEl = document.getElementById("currentPosition")
     currentPositionEl.innerHTML = positionInBook
 
+    var bookId = getMeta("bookId")
     var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "markProgress?id=" + getMeta("bookId") + "&position=" + positionInBook, true)
+    xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + positionInBook, true)
     xhttp.send()
+
+    history.replaceState({}, document.title, "/book?id=" + bookId + "&position=" + positionInBook)
 }
 
 window.onload = function() {

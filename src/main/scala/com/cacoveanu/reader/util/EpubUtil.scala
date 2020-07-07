@@ -94,6 +94,7 @@ object EpubUtil {
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
           getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text),
+          -1,
           -1
         ))
     }.getOrElse(Seq())
@@ -102,7 +103,13 @@ object EpubUtil {
       toc.sliding(2)
         .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
         .map(p => p(1))
-    val realTocWithSizes = realToc.map(e => TocEntry(e.index, e.title, e.link, getSectionSize(epubPath, e.link)))
+    var totalSize = 0
+    val realTocWithSizes = realToc.map(e => {
+      val sectionSize = getSectionSize(epubPath, e.link)
+      val ne = TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
+      totalSize = totalSize + sectionSize
+      ne
+    })
     realTocWithSizes
   }
 
