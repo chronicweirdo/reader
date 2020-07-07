@@ -8,6 +8,8 @@ import scala.xml.transform.RewriteRule
 
 class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
 
+  private val BASE_LINK = "bookResource"
+
   private def getFolder(path: String) = {
     val lio = path.lastIndexOf("/")
     if (lio > 0) path.substring(0, lio)
@@ -30,7 +32,7 @@ class LinkRewriteRule(bookId: String, htmlPath: String) extends RewriteRule {
       val (externalPath, internalPath) = splitPath(remotePath)
       val remotePathWithFolder = if (folder.length > 0) folder + "/" + externalPath else externalPath
       val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString.replaceAll("\\\\", "/")
-      s"book?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}" + (if (internalPath != null) "#" + internalPath else "")
+      s"$BASE_LINK?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}" + (if (internalPath != null) "#" + internalPath else "")
     }
   }
 

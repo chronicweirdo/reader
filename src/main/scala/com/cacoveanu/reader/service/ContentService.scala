@@ -47,6 +47,24 @@ class ContentService {
     }
   }
 
+  def loadResource(bookId: String, position: Int): Option[Content] = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) =>
+        val toc = EpubUtil.getToc(book.path)
+        val e = toc.find(e => e.start + e.size >= position)
+          .map(tocEntry => {
+            val baseLink = EpubUtil.baseLink(tocEntry.link)
+            (baseLink, EpubUtil.readResource(book.path, baseLink))
+          })
+        e match {
+          case Some((link, Some(bytes))) => processResource(book, link, bytes)
+          case _ => None
+        }
+          //.flatMap { case (link, Some(bytes)) => processResource(book, link, bytes)}
+      case None => None
+    }
+  }
+
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     FileUtil.getMediaType(resourcePath) match {
 
@@ -57,9 +75,7 @@ class ContentService {
         val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link)
         val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link)
         val size = currentToc.map(e => e._1.size).getOrElse(1)
-        val sizeUntilNow = currentIndex.map(i =>
-          toc.filter(e => e._2 < i).map(e => e._1.size).sum
-        ).getOrElse(0)
+        val sizeUntilNow = currentToc.map(e => e._1.start).getOrElse(0)
 
         val data: Array[Byte] = processHtml(
           book.id,
