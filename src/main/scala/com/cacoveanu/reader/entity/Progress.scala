@@ -26,11 +26,14 @@ class Progress {
 
   var lastUpdate: Date = _
 
-  def this(user: Account, book: Book, position: Int, lastUpdate: Date) = {
+  var finished: Boolean = _
+
+  def this(user: Account, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
     this.book = book
     this.position = position
     this.lastUpdate = lastUpdate
+    this.finished = finished
   }
 }

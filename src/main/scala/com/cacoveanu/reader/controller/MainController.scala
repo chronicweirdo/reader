@@ -35,24 +35,28 @@ class MainController @Autowired()(
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def search(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model) = {
-    val user = accountService.loadUser(principal.getName)
-    val books: Seq[Book] = if (term.isEmpty) bookService.getCollectionPage(page)
-    else bookService.search(term, page)
-    val progress: Seq[Progress] = bookService.loadProgress(user.get, books) // todo: check if user really exists
-    val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
+  def search(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model): ResponseEntity[CollectionPage] = {
+    accountService.loadUser(principal.getName) match {
+      case Some(user) =>
+        val books: Seq[Book] = if (term.isEmpty) bookService.getCollectionPage(page)
+          else bookService.search(term, page)
+        val progress: Seq[Progress] = bookService.loadProgress(user, books)
+        val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
 
-    val collections = books.map(c => c.collection).distinct.sorted
-    val uiBooks = books
-      .map(book => UiBook(
-        book.id,
-        book.collection,
-        book.title,
-        WebUtil.toBase64Image(book.mediaType, book.cover),
-        progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
-        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
-      ))
-    CollectionPage(collections.asJava, uiBooks.asJava)
+        val collections = books.map(c => c.collection).distinct.sorted
+        val uiBooks = books
+          .map(book => UiBook(
+            book.id,
+            book.collection,
+            book.title,
+            WebUtil.toBase64Image(book.mediaType, book.cover),
+            progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
+            progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
+          ))
+        new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
+      case None => new ResponseEntity(HttpStatus.NOT_FOUND)
+    }
+
   }
 
   @RequestMapping(Array("/"))
@@ -80,7 +84,7 @@ class MainController @Autowired()(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)
   )
-  def removeProgressFromComic(@RequestParam("id") id: String, principal: Principal): ResponseEntity[String] = {
+  def removeProgress(@RequestParam("id") id: String, principal: Principal): ResponseEntity[String] = {
     (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
       case (Some(user), Some(book)) =>
         bookService.loadProgress(user, book).foreach(bookService.deleteProgress)
@@ -100,7 +104,8 @@ class MainController @Autowired()(
     println(s"marking progress for id $id and position $position")
     (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
       case (Some(user), Some(book)) =>
-        bookService.saveProgress(new Progress(user, book, position, new Date()))
+        val finished = position >= book.size - 1
+        bookService.saveProgress(new Progress(user, book, position, new Date(), finished))
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }
