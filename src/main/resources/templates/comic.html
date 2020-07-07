@@ -49,11 +49,11 @@
         height: 100vh;
     }
     #tools {
+        display: block;
         position: fixed;
         bottom: 5vh;
         width: 30vw;
         left: 34vw;
-        display: none;
         background-color: black;
         color: white;
         border: 1px solid gold;
@@ -650,10 +650,10 @@
 
     function toggleTools() {
         var tools = document.getElementById("tools")
-        if (tools.style.display == "none") {
-            tools.style.display = "block"
+        if (tools.style.visibility == "hidden") {
+            tools.style.visibility = "visible"
         } else {
-            tools.style.display = "none"
+            tools.style.visibility = "hidden"
         }
     }
 

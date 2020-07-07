@@ -3,6 +3,7 @@ function setup() {
     wrapContents()
     addPage()
     addButtons()
+    addTools()
     addLoadingScreen()
     showLoadingScreen()
     document.testlog = false
@@ -74,6 +75,7 @@ function addButtons() {
     })
     document.body.appendChild(next)
 }
+
 function addPage() {
     var pageContainer = document.createElement("div")
     pageContainer.id="pageContainer"
@@ -83,6 +85,53 @@ function addPage() {
     pageContainer.appendChild(page)
     document.body.appendChild(pageContainer)
     document.pageContainer = pageContainer
+
+    page.addEventListener("click", toggleTools)
+}
+
+/*
+<div id="tools" style="display: none">
+    <h1 th:text="${title}">Comic Title</h1>
+    <p><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+    <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
+    <p>
+        <a onclick="toggleFullScreen()">fullscreen</a>
+        <a onclick="goBack()">back</a>
+        <a onclick="removeProgress()">remove progress</a>
+    </p>
+</div>
+*/
+
+function addTools() {
+    var toolsContainer = document.createElement("div")
+    toolsContainer.id="tools"
+    toolsContainer.style.visibility = "hidden"
+
+    var title = document.createElement("h1")
+    title.innerHTML = getMeta("title")
+    toolsContainer.appendChild(title)
+
+    var collection = getMeta("collection")
+    var collectionParagraph = document.createElement("p")
+    var collectionLink = document.createElement("a")
+    collectionLink.href = "/search=" + collection
+    collectionLink.innerHTML = collection
+    collectionParagraph.appendChild(collectionLink)
+    toolsContainer.appendChild(collectionParagraph)
+
+    var actionsParagraph = document.createElement("p")
+    var goBack = document.createElement("a")
+    goBack.href = "/"
+    goBack.innerHTML = "back"
+    actionsParagraph.appendChild(goBack)
+    var removeProgressLink = document.createElement("a")
+    removeProgressLink.onclick = removeProgress
+    //removeProgressLink.addEventListener("click", removeProgress)
+    removeProgressLink.innerHTML = "remove progress"
+    actionsParagraph.appendChild(removeProgressLink)
+    toolsContainer.appendChild(actionsParagraph)
+
+    document.body.appendChild(toolsContainer)
 }
 
 function addLoadingScreen() {
@@ -354,6 +403,28 @@ function getPathname() {
             search: a.search
         };
     }*/
+}
+
+function removeProgress() {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                window.location = "/"
+            }
+        }
+    }
+    xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"), true)
+    xhttp.send()
+}
+
+function toggleTools() {
+    var tools = document.getElementById("tools")
+    if (tools.style.visibility == "hidden") {
+        tools.style.visibility = "visible"
+    } else {
+        tools.style.visibility = "hidden"
+    }
 }
 
 function reportPosition(position) {
