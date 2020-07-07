@@ -89,6 +89,87 @@ function addPage() {
     page.addEventListener("click", toggleTools)
 }
 
+function num(s, def) {
+    var patt = /[\-]?[0-9\.]+/
+    var match = patt.exec(s)
+    if (match != null && match.length > 0) {
+        var n = match[0]
+        if (n.indexOf('.') > -1) {
+            return parseFloat(n)
+        } else {
+            return parseInt(n)
+        }
+    }
+    return def
+}
+
+function increaseFontSize() {
+    //var currentFontSize = document.getElementById("page").style["font-size"]
+    var page = document.getElementById("page")
+    var currentFontSize = window.getComputedStyle(page, null).getPropertyValue('font-size')
+    console.log(currentFontSize)
+    currentFontSize = num(currentFontSize, 10) * 1.2
+    console.log(currentFontSize)
+    page.style['font-size'] = currentFontSize + 'px'
+    resize()
+}
+
+/*
+function enableGestures(element, click, pinch) {
+    disableEventHandlers(element)
+    var hammertime = new Hammer(element, {domEvents: true})
+    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+    hammertime.get('pinch').set({ enable: true });
+
+    var panPreviousDeltaX = 0
+    var panPreviousDeltaY = 0
+
+    var pinching = false
+    var originalZoom = null
+    var pinchCenterX = null
+    var pinchCenterY = null
+
+    hammertime.on('pinchstart', function(ev) {
+        ev.preventDefault();
+        pinching = true
+        originalZoom = 1
+        pinchCenterX = ev.center.x
+        pinchCenterY = ev.center.y
+    })
+    hammertime.on('pinch', function(ev) {
+        ev.preventDefault()
+        var currentDeltaX = ev.deltaX - panPreviousDeltaX
+        var currentDeltaY = ev.deltaY - panPreviousDeltaY
+        pinch(originalZoom * ev.scale, pinchCenterX, pinchCenterY, currentDeltaX, currentDeltaY)
+
+        panPreviousDeltaX = ev.deltaX
+        panPreviousDeltaY = ev.deltaY
+    });
+        hammertime.on('pinchend', function(ev) {
+            panPreviousDeltaX = 0
+            panPreviousDeltaY = 0
+        })
+
+        hammertime.on('pan', function(ev) {
+            if (! pinching) {
+                var currentDeltaX = ev.deltaX - panPreviousDeltaX
+                var currentDeltaY = ev.deltaY - panPreviousDeltaY
+                pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
+                panPreviousDeltaX = ev.deltaX
+                panPreviousDeltaY = ev.deltaY
+            }
+        })
+        hammertime.on('panend', function(ev) {
+            if (! pinching) {
+                panPreviousDeltaX = 0
+                panPreviousDeltaY = 0
+            }
+            // a pinch always ends with a pan
+            pinching = false
+        })
+    }
+    */
+
 /*
 <div id="tools" style="display: none">
     <h1 th:text="${title}">Comic Title</h1>
