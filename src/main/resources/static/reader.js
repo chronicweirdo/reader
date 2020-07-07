@@ -119,6 +119,15 @@ function addTools() {
     collectionParagraph.appendChild(collectionLink)
     toolsContainer.appendChild(collectionParagraph)
 
+    var positionParagraph = document.createElement("p")
+    var currentPositionSpan = document.createElement("span")
+    currentPositionSpan.id = "currentPosition"
+    currentPositionSpan.innerHTML = getMeta("sectionStart")
+    positionParagraph.appendChild(currentPositionSpan)
+    var outOf = document.createTextNode(" / " + getMeta("bookSize"))
+    positionParagraph.appendChild(outOf)
+    toolsContainer.appendChild(positionParagraph)
+
     var actionsParagraph = document.createElement("p")
     var goBack = document.createElement("a")
     goBack.href = "/"
@@ -126,7 +135,6 @@ function addTools() {
     actionsParagraph.appendChild(goBack)
     var removeProgressLink = document.createElement("a")
     removeProgressLink.onclick = removeProgress
-    //removeProgressLink.addEventListener("click", removeProgress)
     removeProgressLink.innerHTML = "remove progress"
     actionsParagraph.appendChild(removeProgressLink)
     toolsContainer.appendChild(actionsParagraph)
@@ -207,8 +215,9 @@ function nextPage() {
 function displayPage(page) {
     if (page >= 0 && page < document.pages.length - 1) {
         document.currentPage = page
-        copyTextToPage(getPositions(), document.pages[page], document.pages[page + 1])
-        reportPosition(document.pages[page])
+        var startPosition = document.pages[page]
+        copyTextToPage(getPositions(), startPosition, document.pages[page + 1])
+        reportPosition(startPosition)
     } else {
         console.log("page out of range")
     }
@@ -430,6 +439,10 @@ function toggleTools() {
 function reportPosition(position) {
     var sectionStart = parseInt(getMeta("sectionStart"))
     var positionInBook = sectionStart + position
+
+    var currentPositionEl = document.getElementById("currentPosition")
+    currentPositionEl.innerHTML = positionInBook
+
     var xhttp = new XMLHttpRequest()
     xhttp.open("PUT", "markProgress?id=" + getMeta("bookId") + "&position=" + positionInBook, true)
     xhttp.send()
