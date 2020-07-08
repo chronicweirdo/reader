@@ -1,11 +1,8 @@
 package com.cacoveanu.reader.controller
 
-import java.security.Principal
-import java.util.Date
-
 import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.service.{BookService, SettingService, UserService}
-import com.cacoveanu.reader.util.WebUtil
+import com.cacoveanu.reader.util.{SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -36,34 +33,29 @@ class MainController @Autowired()(
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def search(@RequestParam("term") term: String, @RequestParam("page") page: Int, principal: Principal, model: Model): ResponseEntity[CollectionPage] = {
-    accountService.loadUser(principal.getName) match {
-      case Some(user) =>
-        val books: Seq[Book] = if (term.isEmpty) bookService.getCollectionPage(page)
-          else bookService.search(term, page)
-        val progress: Seq[Progress] = bookService.loadProgress(user, books)
-        val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
+  def search(@RequestParam("term") term: String, @RequestParam("page") page: Int): ResponseEntity[CollectionPage] = {
+    val books: Seq[Book] = if (term.isEmpty) bookService.getCollectionPage(page)
+      else bookService.search(term, page)
 
-        val collections = books.map(c => c.collection).distinct.sorted
-        val uiBooks = books
-          .map(book => UiBook(
-            book.id,
-            book.collection,
-            book.title,
-            WebUtil.toBase64Image(book.mediaType, book.cover),
-            progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
-            progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
-          ))
-        new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
-      case None => new ResponseEntity(HttpStatus.NOT_FOUND)
-    }
+    val progress: Seq[Progress] = bookService.loadProgress(books)
+    val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
 
+    val collections = books.map(c => c.collection).distinct.sorted
+    val uiBooks = books
+      .map(book => UiBook(
+        book.id,
+        book.collection,
+        book.title,
+        WebUtil.toBase64Image(book.mediaType, book.cover),
+        progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
+        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
+      ))
+    new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
   }
 
   @RequestMapping(Array("/"))
-  def loadMainPage(principal: Principal, model: Model): String = {
-    val user = accountService.loadUser(principal.getName)
-    val progress: Seq[Progress] = bookService.loadTopProgress(user.get, 6) // todo: check if user really exists
+  def loadMainPage(model: Model): String = {
+    val progress: Seq[Progress] = bookService.loadTopProgress(6)
 
     val latestRead = progress
       .map(p => UiBook(
@@ -75,47 +67,34 @@ class MainController @Autowired()(
         p.book.size
       )).asJava
 
-    model.addAttribute("user", principal.getName)
+    model.addAttribute("user", SessionUtil.getUser().username)
     model.addAttribute("latestRead", latestRead)
     "collection"
   }
-
 
   @RequestMapping(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)
   )
-  def removeProgress(@RequestParam("id") id: String, principal: Principal): ResponseEntity[String] = {
-    (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
-      case (Some(user), Some(book)) =>
-        bookService.loadProgress(user, book).foreach(bookService.deleteProgress)
-        new ResponseEntity[String](HttpStatus.OK)
-      case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
-    }
+  def removeProgress(@RequestParam("id") id: String): ResponseEntity[String] = {
+    if (bookService.deleteProgress(id)) new ResponseEntity[String](HttpStatus.OK)
+    else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(
     value=Array("/markProgress"),
     method=Array(RequestMethod.PUT)
   )
-  def markProgress(
-                    @RequestParam("id") id: String,
-                    @RequestParam("position") position: Int,
-                    principal: Principal): ResponseEntity[String] = {
-    (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
-      case (Some(user), Some(book)) =>
-        val finished = position >= book.size - 1
-        bookService.saveProgress(new Progress(user, book, position, new Date(), finished))
-        new ResponseEntity[String](HttpStatus.OK)
-      case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
-    }
+  def markProgress(@RequestParam("id") id: String, @RequestParam("position") position: Int): ResponseEntity[String] = {
+    if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
+    else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(
     value=Array("/updateSetting"),
     method=Array(RequestMethod.PUT)
   )
-  def markProgress(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
+  def updateSetting(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
     settingService.saveSetting(name, value)
   }
 }
