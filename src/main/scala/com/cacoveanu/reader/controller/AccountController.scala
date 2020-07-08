@@ -1,8 +1,7 @@
 package com.cacoveanu.reader.controller
 
-import java.security.Principal
-
 import com.cacoveanu.reader.service.UserService
+import com.cacoveanu.reader.util.SessionUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -23,21 +22,15 @@ class AccountController @Autowired()(private val accountService: UserService) {
     consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   )
   @ResponseBody
-  def passwordResetAction(body: ChangePasswordForm, principal: Principal): RedirectView = {
+  def passwordResetAction(body: ChangePasswordForm): RedirectView = {
     if (body.newPassword != body.newPasswordConfirm) {
       new RedirectView("/password?error")
     } else {
-      accountService.loadUser(principal.getName) match {
-        case Some(user) =>
-          if (accountService.changePassword(user, body.oldPassword, body.newPassword)) {
-            new RedirectView("/")
-          } else {
-            new RedirectView("/password?error")
-          }
-        case None => new RedirectView("/password?error")
-      }
+      if (accountService.changePassword(SessionUtil.getUser(), body.oldPassword, body.newPassword))
+        new RedirectView("/")
+      else
+        new RedirectView("/password?error")
     }
-
   }
 }
 
