@@ -17,7 +17,7 @@ import scala.xml.transform.RuleTransformer
 @Service
 class ContentService {
 
-  private val COMIC_PART_SIZE = 20
+  private val BATCH_SIZE = 20
 
   @BeanProperty
   @Autowired
@@ -27,19 +27,8 @@ class ContentService {
   @Autowired
   var settingService: SettingService = _
 
-  @Cacheable(Array("comicParts"))
-  def loadComicPart(id: String, part: Int): Seq[Content] = {
-    bookRepository.findById(id).asScala match {
-      case Some(book) =>
-        FileUtil.getExtension(book.path) match {
-          case FileTypes.CBR => CbrUtil.readPages(book.path, Some(computePagesForPart(part))).getOrElse(Seq())
-          case FileTypes.CBZ => CbzUtil.readPages(book.path, Some(computePagesForPart(part))).getOrElse(Seq())
-          case _ => Seq()
-        }
-      case None => Seq()
-    }
-  }
-
+  // todo: the caches here interfere with settings load, settings should be loaded separately from the book metadata
+  @Cacheable(Array("resource"))
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
@@ -54,24 +43,40 @@ class ContentService {
         })
   }
 
-  def loadResource(bookId: String, position: Int): Option[Content] = {
-    bookRepository.findById(bookId).asScala
-      .flatMap(book => FileUtil.getExtension(book.path) match {
-        case FileTypes.EPUB =>
-          book.toc.asScala.find(e => e.start + e.size >= position)
-            .flatMap(tocEntry => {
-              val baseLink = EpubUtil.baseLink(tocEntry.link)
-              val r: Option[Content] = EpubUtil.readResource(book.path, baseLink)
-                .flatMap(bytes => processResource(book, baseLink, bytes))
-              r
-            })
-        case FileTypes.CBZ =>
-          CbzUtil.readPages(book.path, Some(Seq(position))).flatMap(c => c.headOption)
-        case FileTypes.CBR =>
-          CbrUtil.readPages(book.path, Some(Seq(position))).flatMap(c => c.headOption)
-      })
+  private def findResourceByPosition(book: Book, position: Int) = {
+    book.toc.asScala.find(e => e.start + e.size >= position)
+      .map(tocEntry => EpubUtil.baseLink(tocEntry.link))
   }
 
+  @Cacheable(Array("resources"))
+  def loadResources(bookId: String, positions: Seq[Int]): Seq[Content] = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) => FileUtil.getExtension(book.path) match {
+        case FileTypes.EPUB =>
+          positions
+            .flatMap(p => findResourceByPosition(book, p))
+            .distinct
+            .flatMap(baseLink =>
+              EpubUtil.readResource(book.path, baseLink)
+                .flatMap(bytes => processResource(book, baseLink, bytes))
+            )
+
+        case FileTypes.CBZ =>
+          CbzUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
+
+        case FileTypes.CBR =>
+          CbrUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
+
+        case _ =>
+          Seq()
+      }
+
+      case None =>
+        Seq()
+    }
+  }
+
+  // todo: refactor these methods, too large!
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     FileUtil.getMediaType(resourcePath) match {
 
@@ -108,12 +113,10 @@ class ContentService {
     }
   }
 
-  def computePartNumberForPage(page: Int) = {
-    page / COMIC_PART_SIZE
-  }
-
-  private def computePagesForPart(part: Int) = {
-    (part * COMIC_PART_SIZE) until (part * COMIC_PART_SIZE + COMIC_PART_SIZE)
+  def getBatchForPosition(position: Int): Seq[Int] = {
+    val part = position / BATCH_SIZE
+    val positions = (part * BATCH_SIZE) until (part * BATCH_SIZE + BATCH_SIZE)
+    positions
   }
 
   private def processHtml(

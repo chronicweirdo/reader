@@ -30,12 +30,12 @@ class ComicController @Autowired() (private val userService: UserService,
   @RequestMapping(Array("/imageData"))
   @ResponseBody
   def getImageData(@RequestParam("id") id: String, @RequestParam("page") page: Int): String = {
-    // todo: replace this to getting a list of positions for batch, then load them using an extended load book resource method (for multiple indexes)
-    val part = contentService.computePartNumberForPage(page)
-    contentService.loadComicPart(id, part).find(p => p.index.isDefined && p.index.get == page) match {
-      case Some(p) => WebUtil.toBase64Image(p.mediaType, p.data)
-      case None => ""
-    }
+    contentService
+      .loadResources(id, contentService.getBatchForPosition(page))
+      .find(p => p.index.isDefined && p.index.get == page)
+      .map(p => WebUtil.toBase64Image(p.mediaType, p.data))
+      .getOrElse("")
+    // todo: should throw a 404 if the right resource is not found!
   }
 
 }
