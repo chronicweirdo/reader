@@ -38,7 +38,7 @@ class ContentService {
 
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala match {
-      case Some(book) =>
+      case Some(book) => // todo: what if it's a comic?
         EpubUtil.readResource(book.path, resourcePath) match {
           case Some(bytes) => processResource(book, resourcePath, bytes)
           case None => None
@@ -49,9 +49,8 @@ class ContentService {
 
   def loadResource(bookId: String, position: Int): Option[Content] = {
     bookRepository.findById(bookId).asScala match {
-      case Some(book) =>
-        val toc = EpubUtil.getToc(book.path)
-        val e = toc.find(e => e.start + e.size >= position)
+      case Some(book) => // todo: what if it's a comic?
+        val e = book.toc.asScala.find(e => e.start + e.size >= position)
           .map(tocEntry => {
             val baseLink = EpubUtil.baseLink(tocEntry.link)
             (baseLink, EpubUtil.readResource(book.path, baseLink))
@@ -60,7 +59,6 @@ class ContentService {
           case Some((link, Some(bytes))) => processResource(book, link, bytes)
           case _ => None
         }
-          //.flatMap { case (link, Some(bytes)) => processResource(book, link, bytes)}
       case None => None
     }
   }
@@ -69,7 +67,7 @@ class ContentService {
     FileUtil.getMediaType(resourcePath) match {
 
       case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
-        val toc = EpubUtil.getToc(book.path).zipWithIndex
+        val toc = book.toc.asScala.zipWithIndex
         val currentToc = toc.find(e => EpubUtil.baseLink(e._1.link) == EpubUtil.baseLink(resourcePath))
         val currentIndex = currentToc.map(_._2)
         val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link)
