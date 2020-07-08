@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.entity
 
-import javax.persistence.{Column, Entity, Id}
+import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, OneToMany}
 
 @Entity
 class Book {
@@ -22,6 +22,9 @@ class Book {
   var cover: Array[Byte] = _
 
   var size: Int = _
+
+  @OneToMany(mappedBy = "book", fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
+  var toc: java.util.List[TocEntry] = _
 
   def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
     this()
