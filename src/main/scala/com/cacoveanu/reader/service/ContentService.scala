@@ -37,30 +37,35 @@ class ContentService {
   }
 
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
-    bookRepository.findById(bookId).asScala match {
-      case Some(book) => // todo: what if it's a comic?
-        EpubUtil.readResource(book.path, resourcePath) match {
-          case Some(bytes) => processResource(book, resourcePath, bytes)
-          case None => None
-        }
-      case None => None
-    }
+    bookRepository.findById(bookId).asScala
+        .flatMap(book => FileUtil.getExtension(book.path) match {
+          case FileTypes.EPUB =>
+            EpubUtil.readResource(book.path, resourcePath).flatMap(bytes => processResource(book, resourcePath, bytes))
+          case FileTypes.CBR =>
+            CbrUtil.readResource(book.path, resourcePath)
+          case FileTypes.CBZ =>
+            CbzUtil.readResource(book.path, resourcePath)
+          case _ =>
+            None
+        })
   }
 
   def loadResource(bookId: String, position: Int): Option[Content] = {
-    bookRepository.findById(bookId).asScala match {
-      case Some(book) => // todo: what if it's a comic?
-        val e = book.toc.asScala.find(e => e.start + e.size >= position)
-          .map(tocEntry => {
-            val baseLink = EpubUtil.baseLink(tocEntry.link)
-            (baseLink, EpubUtil.readResource(book.path, baseLink))
-          })
-        e match {
-          case Some((link, Some(bytes))) => processResource(book, link, bytes)
-          case _ => None
-        }
-      case None => None
-    }
+    bookRepository.findById(bookId).asScala
+      .flatMap(book => FileUtil.getExtension(book.path) match {
+        case FileTypes.EPUB =>
+          book.toc.asScala.find(e => e.start + e.size >= position)
+            .flatMap(tocEntry => {
+              val baseLink = EpubUtil.baseLink(tocEntry.link)
+              val r: Option[Content] = EpubUtil.readResource(book.path, baseLink)
+                .flatMap(bytes => processResource(book, baseLink, bytes))
+              r
+            })
+        case FileTypes.CBZ =>
+          CbzUtil.readPages(book.path, Some(Seq(position))).flatMap(c => c.headOption)
+        case FileTypes.CBR =>
+          CbrUtil.readPages(book.path, Some(Seq(position))).flatMap(c => c.headOption)
+      })
   }
 
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {

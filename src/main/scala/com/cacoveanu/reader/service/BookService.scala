@@ -2,7 +2,6 @@ package com.cacoveanu.reader.service
 
 import com.cacoveanu.reader.entity.{Account, Book, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
-import com.cacoveanu.reader.util.{EpubUtil, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -31,38 +30,10 @@ class BookService {
     bookRepository.findById(id).asScala
   }
 
-  def bookType(book: Book) = {
-    FileUtil.getExtension(book.path)
-  }
-
   def loadProgress(account: Account, id: String) = {
     progressRepository.findByUserAndBookId(account, id).asScala
   }
 
-  /*private def getSectionForPosition(book: Book, position: Int) = {
-    bookType(book) match {
-      case FileTypes.EPUB =>
-        val toc = EpubUtil.getToc(book.path)
-        var currentSize = 0
-        toc.map(e => {
-          currentSize = currentSize + e.size
-          (currentSize, e)
-        }).find(e => e._1 > position).map(e => EpubUtil.baseLink(e._2.link))
-      case _ => None
-    }
-  }*/
-
-  /*private def getNewProgressForBook(book: Book) = {
-    bookType(book) match {
-      case FileTypes.CBR => Some((book, "", 0))
-      case FileTypes.CBZ => Some((book, "", 0))
-      case FileTypes.EPUB =>
-        val firstResource = EpubUtil.getToc(book.path).headOption.map(t => t.link).getOrElse("")
-        Some((book, firstResource, 0))
-      case _ => None
-    }
-  }
-*/
   /* progress code */
 
   def loadProgress(user: Account, book: Book): Option[Progress] = {

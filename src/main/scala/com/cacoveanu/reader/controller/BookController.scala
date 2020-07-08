@@ -4,7 +4,7 @@ import java.security.Principal
 
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService, UserService}
-import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes}
+import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -53,12 +53,12 @@ class BookController @Autowired()(private val contentService: ContentService,
     (accountService.loadUser(principal.getName), bookService.loadBook(bookId)) match {
       case (Some(user), Some(book)) =>
         bookService.loadProgress(user, bookId) match {
-          case Some(progress) => bookService.bookType(progress.book) match {
+          case Some(progress) => FileUtil.getExtension(progress.book.path) match {
             case FileTypes.CBR => new RedirectView(s"/comic?id=$bookId")
             case FileTypes.CBZ => new RedirectView(s"/comic?id=$bookId")
             case FileTypes.EPUB => new RedirectView(s"/book?id=$bookId&position=${progress.position}")
           }
-          case None => bookService.bookType(book) match {
+          case None => FileUtil.getExtension(book.path) match {
             case FileTypes.CBR => new RedirectView(s"/comic?id=$bookId")
             case FileTypes.CBZ => new RedirectView(s"/comic?id=$bookId")
             case FileTypes.EPUB => new RedirectView(s"/book?id=$bookId&position=0")
@@ -66,16 +66,6 @@ class BookController @Autowired()(private val contentService: ContentService,
         }
       case _ => new RedirectView("/")
     }
-
-
-      /*.map(account => bookService.loadBookWithProgress(account, bookId)) match {
-      case (Some(book), Some(progress)) => bookService.bookType(progress.book) match {
-        case FileTypes.CBR => new RedirectView(s"/comic?id=$bookId")
-        case FileTypes.CBZ => new RedirectView(s"/comic?id=$bookId")
-        case FileTypes.EPUB => new RedirectView(s"/book?id=$bookId&position=${progress.position}")
-      }
-      case _ => new RedirectView("/")*/
-    //}
   }
 
 }
