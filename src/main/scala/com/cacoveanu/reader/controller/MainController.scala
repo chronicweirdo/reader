@@ -4,7 +4,7 @@ import java.security.Principal
 import java.util.Date
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, UserService}
+import com.cacoveanu.reader.service.{BookService, SettingService, UserService}
 import com.cacoveanu.reader.util.WebUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
@@ -18,7 +18,8 @@ import scala.jdk.CollectionConverters._
 @Controller
 class MainController @Autowired()(
                                    private val bookService: BookService,
-                                   private val accountService: UserService) {
+                                   private val accountService: UserService,
+                                   private val settingService: SettingService) {
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {
@@ -101,7 +102,6 @@ class MainController @Autowired()(
                     @RequestParam("id") id: String,
                     @RequestParam("position") position: Int,
                     principal: Principal): ResponseEntity[String] = {
-    println(s"marking progress for id $id and position $position")
     (accountService.loadUser(principal.getName), bookService.loadBook(id)) match {
       case (Some(user), Some(book)) =>
         val finished = position >= book.size - 1
@@ -109,6 +109,14 @@ class MainController @Autowired()(
         new ResponseEntity[String](HttpStatus.OK)
       case _ => new ResponseEntity[String](HttpStatus.NOT_FOUND)
     }
+  }
+
+  @RequestMapping(
+    value=Array("/updateSetting"),
+    method=Array(RequestMethod.PUT)
+  )
+  def markProgress(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
+    settingService.saveSetting(name, value)
   }
 }
 

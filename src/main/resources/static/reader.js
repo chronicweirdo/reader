@@ -92,6 +92,8 @@ function addPage() {
     document.body.appendChild(pageContainer)
     document.pageContainer = pageContainer
 
+    initializeZoom()
+
     page.addEventListener("click", toggleTools)
 }
 
@@ -118,6 +120,23 @@ function increaseFontSize() {
     console.log(currentFontSize)
     page.style['font-size'] = currentFontSize + 'px'
     resize()
+}
+
+function setZoom(zoomValue) {
+    document.bookZoom = zoomValue
+    page.style['font-size'] = zoomValue + 'em'
+
+    var xhttp = new XMLHttpRequest()
+    xhttp.open("PUT", "updateSetting?name=bookZoom&value=" + zoomValue, true)
+    xhttp.send()
+
+    resize()
+}
+
+function initializeZoom() {
+    var zoom = parseFloat(getMeta("bookZoom"))
+    document.bookZoom = zoom
+    page.style['font-size'] = zoom + 'em'
 }
 
 /*
