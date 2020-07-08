@@ -42,7 +42,7 @@ class BookController @Autowired()(private val contentService: ContentService,
   @RequestMapping(Array("/book"))
   @ResponseBody
   def getBookResource(@RequestParam("id") bookId: String, @RequestParam("position") position: Int) = {
-    toResponseEntity(contentService.loadResource(bookId, position))
+    toResponseEntity(contentService.loadResources(bookId, Seq(position)).headOption)
   }
 
   @RequestMapping(Array("/openBook"))
