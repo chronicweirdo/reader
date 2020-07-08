@@ -345,3 +345,13 @@ Necessary before a release:
 - have an embedded database
 - write guides to install the program as a service on windows, mac and linux
 - have a compiled binary jar folder in git
+
+## Switching database
+
+- use JDBC instead of JPA - more control: https://www.tutorialspoint.com/springjdbc/springjdbc_first_application.htm
+- use an embedded database: https://mkyong.com/spring/spring-embedded-database-examples/
+- save toc to database
+
+## Removing Files from Git History
+
+https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-data-from-a-repository
