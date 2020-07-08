@@ -99,7 +99,12 @@ class ScannerService {
     cover match {
       case Some(c) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, size))
+        val book = new Book(id, path, title, author, collection, c.mediaType, smallerCover, size)
+        book.toc = EpubUtil.getToc(path).map(t => {
+          t.book = book
+          t
+        }).asJava
+        Some(book)
       case _ =>
         log.warn(s"failed to scan $path")
         None

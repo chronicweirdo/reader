@@ -90,7 +90,7 @@ object EpubUtil {
   def getToc(epubPath: String) = {
     val toc = getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
-        .map(n => TocEntry(
+        .map(n => new TocEntry(
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
           getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text),
@@ -106,7 +106,7 @@ object EpubUtil {
     var totalSize = 0
     val realTocWithSizes = realToc.map(e => {
       val sectionSize = getSectionSize(epubPath, e.link)
-      val ne = TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
+      val ne = new TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
       totalSize = totalSize + sectionSize
       ne
     })
