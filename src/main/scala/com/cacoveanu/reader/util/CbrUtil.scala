@@ -34,6 +34,12 @@ object CbrUtil {
     }
   }
 
+  private def contentToByteArray(archive: Archive, file: FileHeader) = {
+    val fileContents = new ByteArrayOutputStream()
+    archive.extractFile(file, fileContents)
+    fileContents.toByteArray
+  }
+
   def readPages(path: String, pages: Option[Seq[Int]] = None): Option[Seq[Content]] = {
     var archive: Archive = null
 
@@ -52,13 +58,34 @@ object CbrUtil {
       val selectedImageData: Seq[Content] = selectedImageFiles
         .flatMap{ case(archiveFile, index) => FileUtil.getMediaType(archiveFile.getFileNameString) match {
           case Some(mediaType) =>
-            val fileContents = new ByteArrayOutputStream()
-            archive.extractFile(archiveFile, fileContents)
-            Some(Content(Option(index), mediaType, fileContents.toByteArray))
+            Some(Content(Option(index), mediaType, contentToByteArray(archive, archiveFile)))
           case None => None
         }}
 
       Some(selectedImageData)
+    } catch {
+      case e: Throwable =>
+        log.error("failed to read comic pages for " + path, e)
+        None
+    } finally {
+      archive.close()
+    }
+  }
+
+  def readResource(path: String, resourcePath: String): Option[Content] = {
+    var archive: Archive = null
+
+    try {
+      archive = new Archive(new FileInputStream(path))
+
+      archive.getFileHeaders.asScala.toSeq
+        .filter(f => !f.isDirectory)
+        .find(f => f.getFileNameString == resourcePath)
+        .flatMap(f => FileUtil.getMediaType(f.getFileNameString) match {
+          case Some(mediaType) =>
+            Some(Content(None, mediaType, contentToByteArray(archive, f)))
+          case None => None
+        })
     } catch {
       case e: Throwable =>
         log.error("failed to read comic pages for " + path, e)
