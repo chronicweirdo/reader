@@ -1,7 +1,7 @@
 package com.cacoveanu.reader.service
 
-import com.cacoveanu.reader.entity.{Book, Content}
-import com.cacoveanu.reader.repository.BookRepository
+import com.cacoveanu.reader.entity.{Book, Content, Setting}
+import com.cacoveanu.reader.repository.{BookRepository, SettingRepository}
 import com.cacoveanu.reader.service.xml.{LinkRewriteRule, MetaAppendRule, ResilientXmlLoader, ResourceAppendRule}
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +22,10 @@ class ContentService {
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
+
+  @BeanProperty
+  @Autowired
+  var settingService: SettingService = _
 
   @Cacheable(Array("comicParts"))
   def loadComicPart(id: String, part: Int): Seq[Content] = {
@@ -80,6 +84,8 @@ class ContentService {
         val size = currentToc.map(e => e._1.size).getOrElse(1)
         val sizeUntilNow = currentToc.map(e => e._1.start).getOrElse(0)
 
+        val bookZoom = settingService.getSetting(Setting.BOOK_ZOOM)
+
         val data: Array[Byte] = processHtml(
           book.id,
           resourcePath,
@@ -90,7 +96,8 @@ class ContentService {
           sizeUntilNow,
           book.title,
           book.size,
-          book.collection
+          book.collection,
+          bookZoom
         ).getBytes("UTF-8")
 
         Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, data))
@@ -119,7 +126,8 @@ class ContentService {
                            sectionStart: Int,
                            bookTitle: String,
                            bookSize: Int,
-                           collection: String
+                           collection: String,
+                           bookZoom: String
                          ): String = {
 
     val linkRewriteRule = new LinkRewriteRule(bookId, path)
@@ -136,7 +144,8 @@ class ContentService {
       "sectionStart" -> sectionStart.toString,
       "title" -> bookTitle,
       "bookSize" -> bookSize.toString,
-      "collection" -> collection
+      "collection" -> collection,
+      "bookZoom" -> bookZoom
     ))
 
     new RuleTransformer(
