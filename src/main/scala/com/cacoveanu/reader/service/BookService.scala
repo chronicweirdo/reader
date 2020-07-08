@@ -52,7 +52,7 @@ class BookService {
     }
   }*/
 
-  private def getNewProgressForBook(book: Book) = {
+  /*private def getNewProgressForBook(book: Book) = {
     bookType(book) match {
       case FileTypes.CBR => Some((book, "", 0))
       case FileTypes.CBZ => Some((book, "", 0))
@@ -62,7 +62,7 @@ class BookService {
       case _ => None
     }
   }
-
+*/
   /* progress code */
 
   def loadProgress(user: Account, book: Book): Option[Progress] = {
