@@ -99,18 +99,20 @@ object EpubUtil {
         ))
     }.getOrElse(Seq())
     // remove parts of toc that are in the same file
-    val realToc = Seq(toc(0)) ++
-      toc.sliding(2)
-        .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
-        .map(p => p(1))
-    var totalSize = 0
-    val realTocWithSizes = realToc.map(e => {
-      val sectionSize = getSectionSize(epubPath, e.link)
-      val ne = TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
-      totalSize = totalSize + sectionSize
-      ne
-    })
-    realTocWithSizes
+    if (toc.size > 1) {
+      val realToc = Seq(toc(0)) ++
+        toc.sliding(2)
+          .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
+          .map(p => p(1))
+      var totalSize = 0
+      val realTocWithSizes = realToc.map(e => {
+        val sectionSize = getSectionSize(epubPath, e.link)
+        val ne = TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
+        totalSize = totalSize + sectionSize
+        ne
+      })
+      realTocWithSizes
+    } else toc
   }
 
   def baseLink(link: String): String =

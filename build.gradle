@@ -26,6 +26,8 @@ dependencies {
 	implementation 'commons-codec:commons-codec:1.14'
 	implementation 'org.scala-lang.modules:scala-xml_2.13:1.3.0'
 
+	runtimeOnly 'org.hsqldb:hsqldb'
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}

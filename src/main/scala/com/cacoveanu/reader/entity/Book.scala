@@ -19,6 +19,7 @@ class Book {
 
   var mediaType: String = _
 
+  @Column(length = 500000)
   var cover: Array[Byte] = _
 
   var size: Int = _
