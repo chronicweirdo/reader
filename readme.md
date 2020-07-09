@@ -352,6 +352,12 @@ Necessary before a release:
 - use an embedded database: https://mkyong.com/spring/spring-embedded-database-examples/
 - save toc to database
 
+## Computing sizes
+
+Unfortunately, the number of characters in a book section will differ when calculated in a browser (even between browsers) or in a html library. There seems to be no reliable way to have accurate positions in a book, besides parsing and recreating the book when importing it, something I believe Google Play Books and other ebook applications are doing.
+
+I will have to revert back to progress containing a section along with a position, and have a simpler way of reporting completion for a book. There is also the possibility that if we open a book at a section and position in Firefox, we get a different page in Chrome.
+
 ## Removing Files from Git History
 
 https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-data-from-a-repository
