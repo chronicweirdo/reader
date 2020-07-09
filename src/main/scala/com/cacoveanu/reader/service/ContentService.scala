@@ -23,10 +23,6 @@ class ContentService {
   @Autowired
   var bookRepository: BookRepository = _
 
-  @BeanProperty
-  @Autowired
-  var settingService: SettingService = _
-
   // todo: the caches here interfere with settings load, settings should be loaded separately from the book metadata
   @Cacheable(Array("resource"))
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
@@ -89,8 +85,6 @@ class ContentService {
         val size = currentToc.map(e => e._1.size).getOrElse(1)
         val sizeUntilNow = currentToc.map(e => e._1.start).getOrElse(0)
 
-        val bookZoom = settingService.getSetting(Setting.BOOK_ZOOM)
-
         val data: Array[Byte] = processHtml(
           book.id,
           resourcePath,
@@ -101,8 +95,7 @@ class ContentService {
           sizeUntilNow,
           book.title,
           book.size,
-          book.collection,
-          bookZoom
+          book.collection
         ).getBytes("UTF-8")
 
         Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, data))
@@ -129,8 +122,7 @@ class ContentService {
                            sectionStart: Int,
                            bookTitle: String,
                            bookSize: Int,
-                           collection: String,
-                           bookZoom: String
+                           collection: String
                          ): String = {
 
     val linkRewriteRule = new LinkRewriteRule(bookId, path)
@@ -147,8 +139,7 @@ class ContentService {
       "sectionStart" -> sectionStart.toString,
       "title" -> bookTitle,
       "bookSize" -> bookSize.toString,
-      "collection" -> collection,
-      "bookZoom" -> bookZoom
+      "collection" -> collection
     ))
 
     new RuleTransformer(

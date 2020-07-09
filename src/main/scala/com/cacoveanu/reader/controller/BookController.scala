@@ -1,22 +1,30 @@
 package com.cacoveanu.reader.controller
 
-import com.cacoveanu.reader.entity.Content
-import com.cacoveanu.reader.service.{BookService, ContentService, UserService}
-import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil}
+import com.cacoveanu.reader.entity.{Content, Setting}
+import com.cacoveanu.reader.service.xml.{MetaAppendRule, ResilientXmlLoader}
+import com.cacoveanu.reader.service.{BookService, ContentService, SettingService, UserService}
+import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, HtmlUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
+import scala.xml.transform.RuleTransformer
+
 @Controller
 class BookController @Autowired()(private val contentService: ContentService,
                                   private val bookService: BookService,
-                                  private val accountService: UserService) {
+                                  private val settingService: SettingService) {
+
+  private def appendSettings(html: String): String = {
+    val settings = Map("bookZoom" -> settingService.getSetting(Setting.BOOK_ZOOM))
+    HtmlUtil.addMeta(html, settings)
+  }
 
   private def toResponseEntity(content: Option[Content]) = content match {
     case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) =>
-      ResponseEntity.ok().body(new String(bytes, "UTF-8"))
+      ResponseEntity.ok().body(appendSettings(new String(bytes, "UTF-8")))
 
     case Some(Content(_, FileMediaTypes.TEXT_CSS_VALUE, bytes)) =>
       ResponseEntity.ok().body(new String(bytes, "UTF-8"))
