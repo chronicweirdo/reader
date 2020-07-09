@@ -87,6 +87,8 @@ object EpubUtil {
     }
   }
 
+  // todo: rethink much of this and make book scanning more resilient to issues
+  // todo: TOC is different from resources list, multiple TOC entries may be in a single resource
   def getToc(epubPath: String) = {
     val toc = getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
@@ -99,18 +101,20 @@ object EpubUtil {
         ))
     }.getOrElse(Seq())
     // remove parts of toc that are in the same file
-    val realToc = Seq(toc(0)) ++
-      toc.sliding(2)
-        .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
-        .map(p => p(1))
-    var totalSize = 0
-    val realTocWithSizes = realToc.map(e => {
-      val sectionSize = getSectionSize(epubPath, e.link)
-      val ne = new TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
-      totalSize = totalSize + sectionSize
-      ne
-    })
-    realTocWithSizes
+    if (toc.size > 1) {
+      val realToc = Seq(toc(0)) ++
+        toc.sliding(2)
+          .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
+          .map(p => p(1))
+      var totalSize = 0
+      val realTocWithSizes = realToc.map(e => {
+        val sectionSize = getSectionSize(epubPath, e.link)
+        val ne = new TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
+        totalSize = totalSize + sectionSize
+        ne
+      })
+      realTocWithSizes
+    } else toc
   }
 
   def baseLink(link: String): String =
