@@ -4,7 +4,11 @@ import java.net.{URI, URLEncoder}
 import java.nio.file.Paths
 
 import org.jsoup.Jsoup
-import org.jsoup.nodes.{Document, Element}
+import org.jsoup.nodes.{Document, Element, Node, TextNode}
+import org.jsoup.select.Elements
+
+import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 object HtmlUtil {
 
@@ -17,6 +21,7 @@ object HtmlUtil {
     def addMeta(meta: Map[String, String]): Document = appendMeta(doc, meta)
     def transformLinks(contextPath: String, bookId: String): Document = transformLinksInternal(doc, contextPath, bookId)
     def asString: String = doc.toString
+    def bodyText: String = extractBodyText(doc)
   }
 
   private val BASE_LINK = "bookResource"
@@ -85,4 +90,43 @@ object HtmlUtil {
     if (di > 0) (path.substring(0, di), path.substring(di+1))
     else (path, null)
   }
+
+  private def extractBodyText(doc: Document) = {
+    val nodes: mutable.Seq[Element] = doc.select("body").select("*").asScala
+    val text = nodes.flatMap(n => n.textNodes().asScala).map(t => t.text()).mkString("")
+    //val text = doc.select("body").text()
+    //val text = doc.select("body").textNodes().asScala.map( t => t.text()).mkString("")
+    //val text = nodes.map(t => t.text()).mkString("")
+    text
+    /*for (var el <- ) {
+      for (var node <- el.textNodes()) {
+        node.text();
+      }
+    }*/
+  }
+
+
+  def computeStartPositions(doc: Document) = {
+    val body = doc.select("body").first()
+    var positionToElement = Seq.newBuilder[(Int, String)]
+    //var idPositions = mutable.Seq()
+
+    def computeStartPositionsRecursive(element: Node, currentPosition: Int): Int = {
+      if (element.isInstanceOf[TextNode]) {
+        positionToElement.addOne((currentPosition, element.asInstanceOf[TextNode].text()))
+        return currentPosition + element.asInstanceOf[TextNode].text().length
+      } else {
+        var newCurrentPosition = currentPosition
+        for (child <- element.childNodes().iterator().asScala) {
+          newCurrentPosition = computeStartPositionsRecursive(child, newCurrentPosition)
+        }
+        return newCurrentPosition
+      }
+    }
+
+    val size = computeStartPositionsRecursive(body, 0)
+    val r: Seq[(Int, String)] = positionToElement.result()
+    r
+  }
+
 }

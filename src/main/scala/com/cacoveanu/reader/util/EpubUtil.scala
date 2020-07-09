@@ -8,6 +8,8 @@ import com.cacoveanu.reader.entity.{Content, TocEntry}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
+import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
+import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 
 import scala.jdk.CollectionConverters._
 import scala.xml.{Elem, XML}
@@ -79,8 +81,10 @@ object EpubUtil {
   private def getSectionSize(epubPath: String, sectionPath: String) = {
     if (FileUtil.getExtension(EpubUtil.baseLink(sectionPath)) == "html") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
-        .flatMap(getXml)
-        .map(html => (html \ "body").text.length)
+        //.flatMap(getXml)
+        .map(bytes => new String(bytes, "UTF-8"))
+        .map(text => text.asHtml.bodyText.length)
+        //.map(html => (html \ "body").text.length)
         .getOrElse(-1)
     } else {
       1
@@ -160,7 +164,7 @@ object EpubUtil {
     normalizedPath
   }
 
-  private def getXml(data: Array[Byte]) = {
+  def getXml(data: Array[Byte]) = {
     try {
       Some(ResilientXmlLoader.loadString(new String(data, "UTF-8")))
     } catch {
