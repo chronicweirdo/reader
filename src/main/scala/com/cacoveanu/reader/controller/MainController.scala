@@ -97,6 +97,15 @@ class MainController @Autowired()(
   def updateSetting(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
     settingService.saveSetting(name, value)
   }
+
+  @RequestMapping(
+    value=Array("/loadSettings"),
+    method=Array(RequestMethod.GET)
+  )
+  @ResponseBody
+  def loadSettings(@RequestParam("name") name: Seq[String]) = {
+    name.map(n => (n, settingService.getSetting(n))).toMap.asJava
+  }
 }
 
 case class CollectionPage(
