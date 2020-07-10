@@ -161,6 +161,16 @@ object EpubUtil {
   def getAuthor(epubPath: String): Option[String] =
     getOpf(epubPath).flatMap { case (_, opf) => (opf \ "metadata" \ "creator").headOption.map(_.text) }
 
+  def getTocLink(epubPath: String): Option[String] =
+    getOpf(epubPath) match {
+      case Some((opfPath, opf)) =>
+        (opf \ "guide" \ "reference")
+          .find(n => (n \ "@type").text == "toc")
+          .map(n => (n \ "@href").text)
+          .map(link => getAbsoluteEpubPath(opfPath, link))
+      case None => None
+    }
+
   private def getCoverResource(opfPath: String, contentOpf: Elem): Option[(String, String)] = {
     val coverId = (contentOpf \ "metadata" \ "meta")
       .find(n => (n \ "@name").text == "cover")

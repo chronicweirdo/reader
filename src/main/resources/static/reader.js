@@ -134,6 +134,15 @@ function initializeZoom() {
     page.style['font-size'] = zoom + 'em'
 }
 
+function splitLink(link) {
+    var hashIndex = link.lastIndexOf("#")
+    if (hashIndex >= 0) {
+        return [link.substring(0, hashIndex), link.substring(hashIndex)]
+    } else {
+        return [link, ""]
+    }
+}
+
 function addTools() {
     var toolsContainer = document.createElement("div")
     toolsContainer.id="tools"
@@ -165,6 +174,13 @@ function addTools() {
     goBack.href = "/"
     goBack.innerHTML = "back"
     actionsParagraph.appendChild(goBack)
+    var tocLink = document.createElement("a")
+    tocLink.innerHTML = "toc"
+    var tocLinkValue = getMeta("tocLink")
+    var tocLinkValueSplit = splitLink(tocLinkValue)
+    var bookId = getMeta("bookId")
+    tocLink.href = "/book?id=" + bookId + "&path=" + encodeURIComponent(tocLinkValueSplit[0]) + tocLinkValueSplit[1]
+    actionsParagraph.appendChild(tocLink)
     var removeProgressLink = document.createElement("a")
     removeProgressLink.onclick = removeProgress
     removeProgressLink.innerHTML = "remove progress"
