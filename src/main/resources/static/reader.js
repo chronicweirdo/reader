@@ -45,24 +45,19 @@ function resize() {
 }
 
 function jumpToLocation() {
-    var url = window.location.href
-    var urlParams = new URLSearchParams(window.location.search)
-    var sectionStart = parseInt(getMeta("sectionStart"))
-    if (url.lastIndexOf("#") > 0) {
-        var id = url.substring(url.lastIndexOf("#") + 1, url.length)
-        if (isNaN(id)) {
-            console.log("jumping to id " + id)
-            displayPage(getPageForId(id))
-        } else {
-            console.log("jumping to position " + id)
-
-            var positionInSection = +id - sectionStart
-            displayPage(getPageForPosition(positionInSection))
-        }
-    } else if (urlParams.get("position")) {
-        var pos = parseInt(urlParams.get("position"))
-        var positionInSection = pos - sectionStart
-        displayPage(getPageForPosition(positionInSection))
+    console.log("jumping to location")
+    var url = new URL(window.location.href)
+    console.log(url)
+    //var urlParams = new URLSearchParams(window.location.search)
+    console.log(url.searchParams)
+    if (url.href.lastIndexOf("#") > 0) {
+        var id = url.href.substring(url.href.lastIndexOf("#") + 1, url.href.length)
+        displayPage(getPageForId(id))
+    } else if (url.searchParams.get("position")) {
+        console.log("found position")
+        var pos = parseInt(url.searchParams.get("position"))
+        console.log("jumping to position " + pos)
+        displayPage(getPageForPosition(pos))
     }
 }
 
@@ -139,75 +134,6 @@ function initializeZoom() {
     page.style['font-size'] = zoom + 'em'
 }
 
-/*
-function enableGestures(element, click, pinch) {
-    disableEventHandlers(element)
-    var hammertime = new Hammer(element, {domEvents: true})
-    hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
-    hammertime.get('pinch').set({ enable: true });
-
-    var panPreviousDeltaX = 0
-    var panPreviousDeltaY = 0
-
-    var pinching = false
-    var originalZoom = null
-    var pinchCenterX = null
-    var pinchCenterY = null
-
-    hammertime.on('pinchstart', function(ev) {
-        ev.preventDefault();
-        pinching = true
-        originalZoom = 1
-        pinchCenterX = ev.center.x
-        pinchCenterY = ev.center.y
-    })
-    hammertime.on('pinch', function(ev) {
-        ev.preventDefault()
-        var currentDeltaX = ev.deltaX - panPreviousDeltaX
-        var currentDeltaY = ev.deltaY - panPreviousDeltaY
-        pinch(originalZoom * ev.scale, pinchCenterX, pinchCenterY, currentDeltaX, currentDeltaY)
-
-        panPreviousDeltaX = ev.deltaX
-        panPreviousDeltaY = ev.deltaY
-    });
-        hammertime.on('pinchend', function(ev) {
-            panPreviousDeltaX = 0
-            panPreviousDeltaY = 0
-        })
-
-        hammertime.on('pan', function(ev) {
-            if (! pinching) {
-                var currentDeltaX = ev.deltaX - panPreviousDeltaX
-                var currentDeltaY = ev.deltaY - panPreviousDeltaY
-                pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
-                panPreviousDeltaX = ev.deltaX
-                panPreviousDeltaY = ev.deltaY
-            }
-        })
-        hammertime.on('panend', function(ev) {
-            if (! pinching) {
-                panPreviousDeltaX = 0
-                panPreviousDeltaY = 0
-            }
-            // a pinch always ends with a pan
-            pinching = false
-        })
-    }
-    */
-
-/*
-<div id="tools" style="display: none">
-    <h1 th:text="${title}">Comic Title</h1>
-    <p><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
-    <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
-    <p>
-        <a onclick="toggleFullScreen()">fullscreen</a>
-        <a onclick="goBack()">back</a>
-        <a onclick="removeProgress()">remove progress</a>
-    </p>
-</div>
-*/
-
 function addTools() {
     var toolsContainer = document.createElement("div")
     toolsContainer.id="tools"
@@ -273,7 +199,6 @@ function hideLoadingScreen() {
 function wrapContents() {
     var contentDiv = document.createElement("div")
     contentDiv.id = "content"
-    //contentDiv.style.display = "none"
     document.body.appendChild(contentDiv)
 
     var range = document.createRange()
@@ -293,7 +218,7 @@ function previousPage() {
         var bookId = getMeta("bookId")
         var prevSection = getMeta("prevSection")
         if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
-            window.location = "bookResource?id=" + bookId + "&path=" + prevSection + "#" + Number.MAX_SAFE_INTEGER
+            window.location = "book?id=" + bookId + "&path=" + encodeURIComponent(prevSection) + "&position=" + Number.MAX_SAFE_INTEGER
         }
     }
 }
@@ -310,7 +235,7 @@ function nextPage() {
         var nextSection = getMeta("nextSection")
         if (bookId && bookId.length > 0) {
             if (nextSection && nextSection.length > 0) {
-                window.location = "bookResource?id=" + bookId + "&path=" + nextSection
+                window.location = "book?id=" + bookId + "&path=" + encodeURIComponent(nextSection)
             } else {
                 reportPosition(getMaxPosition())
             }
@@ -507,17 +432,6 @@ function getPathname() {
     var a = document.createElement('a');
     a.href = window.location;
     return a.pathname + a.search
-    /*    return {
-            href: a.href,
-            host: a.host,
-            hostname: a.hostname,
-            port: a.port,
-            pathname: a.pathname,
-            protocol: a.protocol,
-            hash: a.hash,
-            search: a.search
-        };
-    }*/
 }
 
 function removeProgress() {
@@ -545,16 +459,17 @@ function toggleTools() {
 function reportPosition(position) {
     var sectionStart = parseInt(getMeta("sectionStart"))
     var positionInBook = sectionStart + position
+    var currentSection = getMeta("currentSection")
 
     var currentPositionEl = document.getElementById("currentPosition")
     currentPositionEl.innerHTML = positionInBook
 
     var bookId = getMeta("bookId")
     var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + positionInBook, true)
+    xhttp.open("PUT", "markProgress?id=" + bookId + "&path=" + encodeURIComponent(currentSection) + "&position=" + position, true)
     xhttp.send()
 
-    history.replaceState({}, document.title, "/book?id=" + bookId + "&position=" + positionInBook)
+    history.replaceState({}, document.title, "/book?id=" + bookId + "&path=" + encodeURIComponent(currentSection) +  "&position=" + position)
 }
 
 window.onload = function() {

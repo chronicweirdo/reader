@@ -24,7 +24,7 @@ object HtmlUtil {
     def bodyText: String = extractBodyText(doc)
   }
 
-  private val BASE_LINK = "bookResource"
+  private val BASE_LINK = "book"
 
   private def appendResources(doc: Document, resources: Seq[(String, String)]) = {
     val head = doc.select("head").first()
