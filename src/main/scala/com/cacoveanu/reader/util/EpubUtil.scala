@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.entity.{Content, TocEntry}
+import com.cacoveanu.reader.entity.{Content, Section, TocEntry}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
@@ -92,12 +92,41 @@ object EpubUtil {
     }
   }
 
-  // todo: rethink much of this and make book scanning more resilient to issues
-  // todo: TOC is different from resources list, multiple TOC entries may be in a single resource
   def getToc(epubPath: String) = {
-    val toc = getNcx(epubPath).map { case (opfPath, opf) =>
+    getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
         .map(n => new TocEntry(
+          (n \ "@playOrder").text.toInt,
+          (n \ "navLabel" \ "text").text,
+          getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
+        ))
+    }.getOrElse(Seq())
+  }
+
+  def getSections(epubPath: String, toc: Seq[TocEntry]) = {
+    val essentialToc = if (toc.size > 1) {
+      Seq(toc(0)) ++ toc.sliding(2)
+        .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
+        .map(p => p(1))
+    } else toc
+
+    var totalSize = 0
+    val sections = essentialToc.map(e => {
+      val basePath = baseLink(e.link)
+      val sectionSize = getSectionSize(epubPath, basePath)
+      val section = new Section(e.index, basePath, totalSize, sectionSize)
+      totalSize = totalSize + sectionSize
+      section
+    })
+    sections
+  }
+
+  // todo: rethink much of this and make book scanning more resilient to issues
+  // todo: TOC is different from resources list, multiple TOC entries may be in a single resource
+  /*def getToc(epubPath: String) = {
+    val toc = getNcx(epubPath).map { case (opfPath, opf) =>
+      (opf \ "navMap" \ "navPoint")
+        .map(n => new Section(
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
           getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text),
@@ -114,13 +143,13 @@ object EpubUtil {
       var totalSize = 0
       val realTocWithSizes = realToc.map(e => {
         val sectionSize = getSectionSize(epubPath, e.link)
-        val ne = new TocEntry(e.index, e.title, e.link, totalSize, sectionSize)
+        val ne = new Section(e.index, e.title, e.link, totalSize, sectionSize)
         totalSize = totalSize + sectionSize
         ne
       })
       realTocWithSizes
     } else toc
-  }
+  }*/
 
   def baseLink(link: String): String =
     if (link.indexOf("#") >= 0) link.substring(0, link.indexOf("#"))

@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.entity
 
-import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, OneToMany}
+import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, JoinColumn, OneToMany}
 
 @Entity
 class Book {
@@ -23,8 +23,9 @@ class Book {
 
   var size: Int = _
 
-  @OneToMany(mappedBy = "book", fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
-  var toc: java.util.List[TocEntry] = _
+  @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
+  @JoinColumn(name = "book_id")
+  var sections: java.util.List[Section] = _
 
   def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
     this()
