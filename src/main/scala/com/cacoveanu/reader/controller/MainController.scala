@@ -47,7 +47,7 @@ class MainController @Autowired()(
         book.collection,
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
-        progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
+        progressByBook.get(book.id).map(p => p.getPositionInBook()).getOrElse(-1),
         progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
       ))
     new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
@@ -63,7 +63,7 @@ class MainController @Autowired()(
         p.book.collection,
         p.book.title,
         WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-        p.position,
+        p.getPositionInBook(),
         p.book.size
       )).asJava
 
@@ -85,8 +85,10 @@ class MainController @Autowired()(
     value=Array("/markProgress"),
     method=Array(RequestMethod.PUT)
   )
-  def markProgress(@RequestParam("id") id: String, @RequestParam("position") position: Int): ResponseEntity[String] = {
-    if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
+  def markProgress(@RequestParam("id") id: String,
+                   @RequestParam(name = "path", required = false) section: String,
+                   @RequestParam("position") position: Int): ResponseEntity[String] = {
+    if (bookService.saveProgress(id, section, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 

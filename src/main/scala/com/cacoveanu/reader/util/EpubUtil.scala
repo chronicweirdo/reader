@@ -21,11 +21,12 @@ object EpubUtil {
   private val NCX_REGEX = ".+\\.ncx$"
 
   def readResource(epubPath: String, resourcePath: String): Option[Array[Byte]] = {
+    val basePath = baseLink(resourcePath)
     var zipFile: ZipFile = null
 
     try {
       zipFile = new ZipFile(epubPath)
-      zipFile.entries().asScala.find(e => e.getName == resourcePath).map(f => {
+      zipFile.entries().asScala.find(e => e.getName == basePath).map(f => {
         val fileContents = zipFile.getInputStream(f)
         val bos = new ByteArrayOutputStream()
         IOUtils.copy(fileContents, bos)

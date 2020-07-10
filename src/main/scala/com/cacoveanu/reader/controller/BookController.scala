@@ -41,16 +41,12 @@ class BookController @Autowired()(private val contentService: ContentService,
     case _ => ResponseEntity.notFound().build()
   }
 
-  @RequestMapping(Array("/bookResource"))
-  @ResponseBody
-  def getBookResource(@RequestParam("id") bookId: String, @RequestParam("path") path: String) = {
-    toResponseEntity(contentService.loadResource(bookId, path))
-  }
-
   @RequestMapping(Array("/book"))
   @ResponseBody
-  def getBookResource(@RequestParam("id") bookId: String, @RequestParam("position") position: Int) = {
-    toResponseEntity(contentService.loadResources(bookId, Seq(position)).headOption)
+  def getBookResource(@RequestParam("id") bookId: String,
+                      @RequestParam("path") path: String,
+                      @RequestParam(name = "position", required = false) position: java.lang.Long) = {
+    toResponseEntity(contentService.loadResource(bookId, path))
   }
 
   @RequestMapping(Array("/openBook"))
@@ -64,9 +60,10 @@ class BookController @Autowired()(private val contentService: ContentService,
         case FileTypes.CBZ =>
           new RedirectView(s"/comic?id=$bookId")
 
-        case FileTypes.EPUB =>
-          val position = bookService.loadProgress(book).map(_.position).getOrElse(0)
-          new RedirectView(s"/book?id=$bookId&position=${position}")
+        case FileTypes.EPUB => bookService.loadProgress(book) match {
+          case Some(progress) => new RedirectView(s"/book?id=$bookId&path=${progress.section}&position=${progress.position}")
+          case None => new RedirectView(s"/book?id=$bookId&path=${book.toc.get(0).link}")
+        }
       }
 
       case _ => new RedirectView("/") // todo: maybe better to throw a not found

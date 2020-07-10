@@ -22,12 +22,13 @@ class ContentService {
   @Autowired
   var bookRepository: BookRepository = _
 
-  @Cacheable(Array("resource"))
+  //@Cacheable(Array("resource"))
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
           case FileTypes.EPUB =>
-            EpubUtil.readResource(book.path, resourcePath).flatMap(bytes => processResource(book, resourcePath, bytes))
+            val basePath = EpubUtil.baseLink(resourcePath)
+            EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
           case FileTypes.CBR =>
             CbrUtil.readResource(book.path, resourcePath)
           case FileTypes.CBZ =>
@@ -46,14 +47,14 @@ class ContentService {
   def loadResources(bookId: String, positions: Seq[Int]): Seq[Content] = {
     bookRepository.findById(bookId).asScala match {
       case Some(book) => FileUtil.getExtension(book.path) match {
-        case FileTypes.EPUB =>
+        /*case FileTypes.EPUB =>
           positions
             .flatMap(p => findResourceByPosition(book, p))
             .distinct
             .flatMap(baseLink =>
               EpubUtil.readResource(book.path, baseLink)
                 .flatMap(bytes => processResource(book, baseLink, bytes))
-            )
+            )*/
 
         case FileTypes.CBZ =>
           CbzUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
@@ -90,10 +91,11 @@ class ContentService {
 
   private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     val toc = book.toc.asScala.zipWithIndex
-    val currentToc = toc.find(e => EpubUtil.baseLink(e._1.link) == EpubUtil.baseLink(resourcePath))
+    val currentPath = EpubUtil.baseLink(resourcePath)
+    val currentToc = toc.find(e => EpubUtil.baseLink(e._1.link) == currentPath)
     val currentIndex = currentToc.map(_._2)
-    val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link).getOrElse("")
-    val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link).getOrElse("")
+    val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link).map(EpubUtil.baseLink).getOrElse("")
+    val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link).map(EpubUtil.baseLink).getOrElse("")
     val size = currentToc.map(e => e._1.size).getOrElse(1)
     val start = currentToc.map(e => e._1.start).getOrElse(0)
 
@@ -110,6 +112,7 @@ class ContentService {
       .addMeta(Map(
         "nextSection" -> next,
         "prevSection" -> prev,
+        "currentSection" -> currentPath,
         "bookId" -> book.id,
         "sectionSize" -> size.toString,
         "sectionStart" -> start.toString,

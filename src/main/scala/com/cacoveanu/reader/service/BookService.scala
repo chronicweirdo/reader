@@ -51,11 +51,11 @@ class BookService {
     progressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
   }
 
-  def saveProgress(bookId: String, position: Int) = {
+  def saveProgress(bookId: String, section: String, position: Int) = {
     loadBook(bookId) match {
       case Some(book) =>
         val finished = position >= book.size - 1
-        val progress = new Progress(SessionUtil.getUser(), book, position, new Date(), finished)
+        val progress = new Progress(SessionUtil.getUser(), book, section, position, new Date(), finished)
         progressRepository.findByUserAndBookId(progress.user, bookId).asScala.foreach(p => progress.id = p.id)
         progressRepository.save(progress)
         true
