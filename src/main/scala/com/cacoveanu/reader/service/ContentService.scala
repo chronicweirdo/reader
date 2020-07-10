@@ -39,7 +39,7 @@ class ContentService {
   }
 
   private def findResourceByPosition(book: Book, position: Int) = {
-    book.toc.asScala.find(e => e.start + e.size >= position)
+    book.sections.asScala.find(e => e.start + e.size >= position)
       .map(tocEntry => EpubUtil.baseLink(tocEntry.link))
   }
 
@@ -90,14 +90,14 @@ class ContentService {
   }
 
   private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    val toc = book.toc.asScala.zipWithIndex
+    val sections = book.sections.asScala.zipWithIndex
     val currentPath = EpubUtil.baseLink(resourcePath)
-    val currentToc = toc.find(e => EpubUtil.baseLink(e._1.link) == currentPath)
-    val currentIndex = currentToc.map(_._2)
-    val prev = currentIndex.flatMap(i => toc.find(_._2 == i - 1)).map(_._1.link).map(EpubUtil.baseLink).getOrElse("")
-    val next = currentIndex.flatMap(i => toc.find(_._2 == i + 1)).map(_._1.link).map(EpubUtil.baseLink).getOrElse("")
-    val size = currentToc.map(e => e._1.size).getOrElse(1)
-    val start = currentToc.map(e => e._1.start).getOrElse(0)
+    val currentSection = sections.find(e => e._1.link == currentPath)
+    val currentIndex = currentSection.map(_._2)
+    val prev = currentIndex.flatMap(i => sections.find(_._2 == i - 1)).map(_._1.link).getOrElse("")
+    val next = currentIndex.flatMap(i => sections.find(_._2 == i + 1)).map(_._1.link).getOrElse("")
+    val size = currentSection.map(e => e._1.size).getOrElse(1)
+    val start = currentSection.map(e => e._1.start).getOrElse(0)
 
     val htmlContent = new String(bytes, "UTF-8")
 
