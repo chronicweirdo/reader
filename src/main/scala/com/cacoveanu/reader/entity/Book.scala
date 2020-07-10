@@ -23,6 +23,8 @@ class Book {
 
   var size: Int = _
 
+  var tocLink: String = _
+
   @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
   var sections: java.util.List[Section] = _

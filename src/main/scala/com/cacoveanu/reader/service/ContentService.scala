@@ -118,7 +118,8 @@ class ContentService {
         "sectionStart" -> start.toString,
         "title" -> book.title,
         "bookSize" -> book.size.toString,
-        "collection" -> book.collection
+        "collection" -> book.collection,
+        "tocLink" -> book.tocLink
       ))
       .asString
       .getBytes("UTF-8")
