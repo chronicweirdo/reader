@@ -128,6 +128,16 @@ function setZoom(zoomValue) {
     resize()
 }
 
+function getZoom() {
+    if (document.bookZoom) {
+        return document.bookZoom
+    } else {
+        var zoom = parseFloat(getMeta("bookZoom"))
+        document.bookZoom = zoom
+        return document.bookZoom
+    }
+}
+
 function initializeZoom() {
     var zoom = parseFloat(getMeta("bookZoom"))
     document.bookZoom = zoom
@@ -178,8 +188,7 @@ function addTools() {
     tocLink.innerHTML = "toc"
     var tocLinkValue = getMeta("tocLink")
     var tocLinkValueSplit = splitLink(tocLinkValue)
-    var bookId = getMeta("bookId")
-    tocLink.href = "/book?id=" + bookId + "&path=" + encodeURIComponent(tocLinkValueSplit[0]) + tocLinkValueSplit[1]
+    tocLink.href = "/book?id=" + getBookId() + "&path=" + encodeURIComponent(tocLinkValueSplit[0]) + tocLinkValueSplit[1]
     actionsParagraph.appendChild(tocLink)
     var removeProgressLink = document.createElement("a")
     removeProgressLink.onclick = removeProgress
@@ -231,7 +240,7 @@ function previousPage() {
         reportPosition(document.pages[document.currentPage])
     } else {
         console.log("beginning of doc")
-        var bookId = getMeta("bookId")
+        var bookId = getBookId()
         var prevSection = getMeta("prevSection")
         if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
             window.location = "book?id=" + bookId + "&path=" + encodeURIComponent(prevSection) + "&position=" + Number.MAX_SAFE_INTEGER
@@ -247,7 +256,7 @@ function nextPage() {
         reportPosition(document.pages[document.currentPage])
     } else {
         console.log("end of doc")
-        var bookId = getMeta("bookId")
+        var bookId = getBookId()
         var nextSection = getMeta("nextSection")
         if (bookId && bookId.length > 0) {
             if (nextSection && nextSection.length > 0) {
@@ -366,18 +375,41 @@ function findPage(startPosition, initialJump) {
 }
 
 function findPages() {
-    var pages = []
-    pages.push(0)
-    var jump = 100
-    while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
-        if (pages.length > 2) jump = pages[pages.length - 1] - pages[pages.length - 2]
-        var endPosition = findPage(pages[pages.length - 1], jump)
-        pages.push(endPosition)
+    var pagesKey = getBookId() + "_" + getCurrentSection() + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
+    var savedPages = window.localStorage.getItem(pagesKey)
+    if (savedPages) {
+        console.log("retrieving saved pages")
+        console.log(savedPages)
+        var stringPages = savedPages.split(",")
+        var parsedSavedPages = []
+        for (var i = 0; i < stringPages.length; i++) {
+            parsedSavedPages[i] = parseInt(stringPages[i])
+        }
+        console.log(parsedSavedPages)
+        document.pages = parsedSavedPages
+    } else {
+        var pages = []
+        pages.push(0)
+        var jump = 100
+        while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
+            if (pages.length > 2) jump = pages[pages.length - 1] - pages[pages.length - 2]
+            var endPosition = findPage(pages[pages.length - 1], jump)
+            pages.push(endPosition)
+        }
+        clearPage()
+        document.pages = pages
+        window.localStorage.setItem(pagesKey, pages)
     }
-    clearPage()
-    document.pages = pages
+
     document.currentPage = 0
     copyTextToPage(getPositions(), document.pages[0], document.pages[1])
+}
+
+function getViewportWidth() {
+    return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+}
+function getViewportHeight() {
+    return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 }
 
 function copyTextToPage(positions, from, to) {
@@ -459,8 +491,12 @@ function removeProgress() {
             }
         }
     }
-    xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"), true)
+    xhttp.open("DELETE", "removeProgress?id=" + getBookId(), true)
     xhttp.send()
+}
+
+function getBookId() {
+    return getMeta("bookId")
 }
 
 function toggleTools() {
@@ -472,15 +508,19 @@ function toggleTools() {
     }
 }
 
+function getCurrentSection() {
+    return getMeta("currentSection")
+}
+
 function reportPosition(position) {
     var sectionStart = parseInt(getMeta("sectionStart"))
     var positionInBook = sectionStart + position
-    var currentSection = getMeta("currentSection")
+    var currentSection = getCurrentSection()
 
     var currentPositionEl = document.getElementById("currentPosition")
     currentPositionEl.innerHTML = positionInBook
 
-    var bookId = getMeta("bookId")
+    var bookId = getBookId()
     var xhttp = new XMLHttpRequest()
     xhttp.open("PUT", "markProgress?id=" + bookId + "&path=" + encodeURIComponent(currentSection) + "&position=" + position, true)
     xhttp.send()
