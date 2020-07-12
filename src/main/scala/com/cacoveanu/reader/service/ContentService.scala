@@ -39,7 +39,7 @@ class ContentService {
   }
 
   private def findResourceByPosition(book: Book, position: Int) = {
-    book.sections.asScala.find(e => e.start + e.size >= position)
+    book.getSections().find(e => e.start + e.size >= position)
       .map(tocEntry => EpubUtil.baseLink(tocEntry.link))
   }
 
@@ -90,7 +90,7 @@ class ContentService {
   }
 
   private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    val sections = book.sections.asScala.zipWithIndex
+    val sections = book.getSections().zipWithIndex
     val currentPath = EpubUtil.baseLink(resourcePath)
     val currentSection = sections.find(e => e._1.link == currentPath)
     val currentIndex = currentSection.map(_._2)
