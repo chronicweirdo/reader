@@ -89,7 +89,7 @@ class ScannerService {
     }
   }
 
-  private def scanEpub(checksum: String, path: String): Option[Book] = {
+  private[service] def scanEpub(checksum: String, path: String): Option[Book] = {
     val id = checksum
     val title = EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path))
     val author = EpubUtil.getAuthor(path).getOrElse("")
