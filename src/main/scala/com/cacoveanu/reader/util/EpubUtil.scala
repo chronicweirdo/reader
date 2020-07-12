@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.util
 
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -206,7 +206,7 @@ object EpubUtil {
 
   def getXml(data: Array[Byte]) = {
     try {
-      Some(ResilientXmlLoader.loadString(new String(data, "UTF-8")))
+      Some(ResilientXmlLoader.load(new ByteArrayInputStream(data)))
     } catch {
       case t: Throwable =>
         log.warn(s"failed to parse xml", t)
