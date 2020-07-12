@@ -186,9 +186,9 @@ function addTools() {
     actionsParagraph.appendChild(goBack)
     var tocLink = document.createElement("a")
     tocLink.innerHTML = "toc"
-    var tocLinkValue = getMeta("tocLink")
-    var tocLinkValueSplit = splitLink(tocLinkValue)
-    tocLink.href = "/book?id=" + getBookId() + "&path=" + encodeURIComponent(tocLinkValueSplit[0]) + tocLinkValueSplit[1]
+    //var tocLinkValue = getMeta("tocLink")
+    //var tocLinkValueSplit = splitLink(tocLinkValue)
+    tocLink.href = "/book?id=" + getBookId() + "&path=toc"
     actionsParagraph.appendChild(tocLink)
     var removeProgressLink = document.createElement("a")
     removeProgressLink.onclick = removeProgress
