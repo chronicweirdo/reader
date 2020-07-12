@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.entity.{Content, Section, TocEntry}
+import com.cacoveanu.reader.entity.{Content, TocEntry}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
@@ -93,7 +93,7 @@ object EpubUtil {
   }
 
   def getToc(epubPath: String) = {
-    getNcx(epubPath).map { case (opfPath, opf) =>
+    val toc = getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
         .map(n => new TocEntry(
           (n \ "@playOrder").text.toInt,
@@ -101,9 +101,35 @@ object EpubUtil {
           getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
         ))
     }.getOrElse(Seq())
+
+    val sections = getSections(toc).map(s => s.resource)
+    var totalSize = 0
+    val sectionSizes: Seq[(String, Int, Int)] = sections.map(section => {
+      val sectionSize = getSectionSize(epubPath, section)
+      val result = (section, totalSize, sectionSize)
+      totalSize = totalSize + sectionSize
+      result
+    })
+
+    val tocWithSizes = toc.map(e => sectionSizes.find(_._1 == e.resource) match {
+      case Some((resource, start, size)) =>
+        e.start = start
+        e.size = size
+        e
+      case None => e
+    })
+    tocWithSizes
   }
 
-  def getSections(epubPath: String, toc: Seq[TocEntry]) = {
+  def getSections(toc: Seq[TocEntry]) = {
+    if (toc.size > 1) {
+      Seq(toc(0)) ++ toc.sliding(2)
+        .filter(p => p(0).resource != p(1).resource)
+        .map(p => p(1))
+    } else toc
+  }
+
+  /*def getSections(epubPath: String, toc: Seq[TocEntry]) = {
     val essentialToc = if (toc.size > 1) {
       Seq(toc(0)) ++ toc.sliding(2)
         .filter(p => EpubUtil.baseLink(p(0).link) != EpubUtil.baseLink(p(1).link))
@@ -119,7 +145,7 @@ object EpubUtil {
       section
     })
     sections
-  }
+  }*/
 
   // todo: rethink much of this and make book scanning more resilient to issues
   // todo: TOC is different from resources list, multiple TOC entries may be in a single resource

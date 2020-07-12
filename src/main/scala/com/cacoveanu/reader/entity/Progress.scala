@@ -36,7 +36,7 @@ class Progress {
   @Transient
   def getPositionInBook() = {
     if (section != null && section.length > 0) {
-      val start = book.sections.asScala.find(e => EpubUtil.baseLink(e.link) == section).map(e => e.start).getOrElse(0)
+      val start = book.getSections().find(e => EpubUtil.baseLink(e.link) == section).map(e => e.start).getOrElse(0)
 
       start + position
     } else {

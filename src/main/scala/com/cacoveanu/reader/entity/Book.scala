@@ -1,6 +1,9 @@
 package com.cacoveanu.reader.entity
 
-import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, JoinColumn, OneToMany}
+import com.cacoveanu.reader.util.EpubUtil
+
+import scala.jdk.CollectionConverters._
+import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, JoinColumn, OneToMany, Transient}
 
 @Entity
 class Book {
@@ -27,7 +30,10 @@ class Book {
 
   @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
-  var sections: java.util.List[Section] = _
+  var toc: java.util.List[TocEntry] = _
+
+  @Transient
+  def getSections(): Seq[TocEntry] = EpubUtil.getSections(toc.asScala.toSeq)
 
   def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
     this()
