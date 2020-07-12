@@ -358,6 +358,14 @@ Unfortunately, the number of characters in a book section will differ when calcu
 
 I will have to revert back to progress containing a section along with a position, and have a simpler way of reporting completion for a book. There is also the possibility that if we open a book at a section and position in Firefox, we get a different page in Chrome.
 
+## Refactoring the JS
+
+I need to unite common parts of the comic and book JS, starting with gestures. I need a Js file that can apply different functions for the supported gestures (click, double click, mouse wheel, pinch zoom, pan/mouse drag, left, right, up, down keys) and use that same js file for both the comic and book pages
+
+## Replace thymeleaf engine with something that can support filling out css
+
+Method to insert variables in css with thymeleaf: https://stackoverflow.com/questions/62610602/set-css-variables-from-model-object-in-thymeleaf
+
 ## Removing Files from Git History
 
 https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-data-from-a-repository
