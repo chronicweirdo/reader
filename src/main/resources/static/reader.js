@@ -376,7 +376,7 @@ function findPage(startPosition, initialJump) {
 
 function findPages() {
     var pagesKey = getBookId() + "_" + getCurrentSection() + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
-    var savedPages = window.localStorage.getItem(pagesKey)
+    var savedPages = window.sessionStorage.getItem(pagesKey)
     if (savedPages) {
         console.log("retrieving saved pages")
         console.log(savedPages)
@@ -398,7 +398,7 @@ function findPages() {
         }
         clearPage()
         document.pages = pages
-        window.localStorage.setItem(pagesKey, pages)
+        window.sessionStorage.setItem(pagesKey, pages)
     }
 
     document.currentPage = 0
