@@ -144,3 +144,24 @@ function enableGesturesOnElement(
     element.addEventListener("mouseout", mouseUp)
     element.addEventListener("mousemove", (event) => mouseMove(event, mouseMoveAction))
 }
+
+function enableKeyboardGestures(upAction, downAction, leftAction, rightAction) {
+    document.onkeydown = function(e) {
+        if (e.keyCode == '38' || e.keyCode == '87') {
+            // up arrow or w
+            if (upAction) upAction()
+        }
+        else if (e.keyCode == '40' || e.keyCode == '83') {
+            // down arrow or s
+            if (downAction) downAction()
+        }
+        else if (e.keyCode == '37' || e.keyCode == '65') {
+            // left arrow or a
+            if (leftAction) leftAction()
+        }
+        else if (e.keyCode == '39' || e.keyCode == '68') {
+            // right arrow or d
+            if (rightAction) rightAction()
+        }
+    }
+}
