@@ -22,11 +22,14 @@ class TocEntry {
 
   var size: Int = _
 
+  var fromToc: Boolean = _
+
   @Transient
   def resource: String = EpubUtil.baseLink(link)
 
-  def this(index: Int, title: String, link: String) = {
+  def this(fromToc: Boolean, index: Int, title: String, link: String) = {
     this()
+    this.fromToc = fromToc
     this.index = index
     this.title = title
     this.link = link

@@ -27,7 +27,7 @@ class ContentService {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
           case FileTypes.EPUB if resourcePath == "toc" =>
-            processResource(book, "toc.html", getBookTocHtml(book).getBytes)
+            processResource(book, "toc", getBookTocHtml(book).getBytes)
           case FileTypes.EPUB =>
             val basePath = EpubUtil.baseLink(resourcePath)
             EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
@@ -46,7 +46,7 @@ class ContentService {
         <title>{book.title}</title>
       </head>
       <body>
-        {book.toc.asScala.map(e => {
+        {book.toc.asScala.filter(_.fromToc).sortBy(_.index).map(e => {
         <p><a href={e.link}>{e.title}</a></p>
       })}
       </body>
@@ -93,6 +93,9 @@ class ContentService {
 
       case Some(contentType) =>
         Some(Content(None, contentType, bytes))
+
+      case None if resourcePath == "toc" =>
+        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))
 
       case _ => None
     }
