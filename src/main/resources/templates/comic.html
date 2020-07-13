@@ -50,6 +50,7 @@
     }
     #tools {
         display: block;
+        visibility: hidden;
         position: fixed;
         bottom: 5vh;
         width: 30vw;
@@ -644,27 +645,6 @@
         window.history.back();
     }
 
-    function enableKeyboardGestures() {
-        document.onkeydown = function(e) {
-            if (e.keyCode == '38' || e.keyCode == '87') {
-                // up arrow or w
-                pan(0, getViewportHeight() / 2)
-            }
-            else if (e.keyCode == '40' || e.keyCode == '83') {
-                // down arrow or s
-                pan(0, - (getViewportHeight() / 2))
-            }
-            else if (e.keyCode == '37' || e.keyCode == '65') {
-                // left arrow or a
-                goToPreviousView()
-            }
-            else if (e.keyCode == '39' || e.keyCode == '68') {
-                // right arrow or d
-                goToNextView()
-            }
-        }
-    }
-
 </script>
 </head>
 <body onresize="handleResize()">
@@ -712,7 +692,12 @@
             pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
         }
         window.onload = function() {
-            enableKeyboardGestures()
+            enableKeyboardGestures(
+                () => pan(0, getViewportHeight() / 2),
+                () => pan(0, - (getViewportHeight() / 2)),
+                goToPreviousView,
+                goToNextView
+            )
 
             // supported actions:
             // clickAction(mouseX, mouseY)
