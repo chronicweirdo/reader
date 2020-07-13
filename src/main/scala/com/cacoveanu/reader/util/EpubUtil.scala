@@ -80,7 +80,8 @@ object EpubUtil {
     }
 
   private def getSectionSize(epubPath: String, sectionPath: String) = {
-    if (FileUtil.getExtension(EpubUtil.baseLink(sectionPath)) == "html") {
+    val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
+    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
         //.flatMap(getXml)
         .map(bytes => new String(bytes, "UTF-8"))
@@ -92,15 +93,65 @@ object EpubUtil {
     }
   }
 
+  private def getTocFromOpf(epubPath: String) = {
+    getOpf(epubPath).map { case (opfPath, opf) =>
+      (opf \ "spine" \ "itemref")
+        .map(n => (n \ "@idref").text)
+        .flatMap(id =>
+          (opf \ "manifest" \ "item")
+            .find(n => (n \ "@id").text == id)
+            .map(n => (n \ "@href").text)
+        )
+        .zipWithIndex
+        .map(e => new TocEntry(
+          false,
+          e._2,
+          e._1,
+          getAbsoluteEpubPath(opfPath, e._1)
+        ))
+    }
+  }
+
+  private def getTocFromNcx(epubPath: String) = {
+    getNcx(epubPath).map { case (ncxPath, ncx) =>
+      (ncx \ "navMap" \ "navPoint")
+        .map(n => new TocEntry(
+          true,
+          (n \ "@playOrder").text.toInt,
+          (n \ "navLabel" \ "text").text,
+          getAbsoluteEpubPath(ncxPath, (n \ "content" \ "@src").text)
+        ))
+    }
+  }
+
+  // todo: need to get the toc from the opf file, ncs is not reliable enough, don't know what to do about titles
+  // todo: also, try to get the title from NCX, or otherwise from the linked documents themselves?
   def getToc(epubPath: String) = {
-    val toc = getNcx(epubPath).map { case (opfPath, opf) =>
+    /*val toc = getOpf(epubPath).map { case (opfPath, opf) =>
+      (opf \ "spine" \ "itemref")
+        .map(n => (n \ "@idref").text)
+        .flatMap(id =>
+          (opf \ "manifest" \ "item")
+            .find(n => (n \ "@id").text == id)
+            .map(n => (n \ "@href").text)
+        )
+        .zipWithIndex
+        .map(e => new TocEntry(
+          e._2,
+          e._1,
+          getAbsoluteEpubPath(opfPath, e._1)
+        ))
+    }.getOrElse(Seq())*/
+
+    /*val toc = getNcx(epubPath).map { case (opfPath, opf) =>
       (opf \ "navMap" \ "navPoint")
         .map(n => new TocEntry(
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
           getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
         ))
-    }.getOrElse(Seq())
+    }.getOrElse(Seq())*/
+    val toc = getTocFromOpf(epubPath).getOrElse(Seq()) ++ getTocFromNcx(epubPath).getOrElse(Seq())
 
     val sections = getSections(toc).map(s => s.resource)
     var totalSize = 0
@@ -111,22 +162,25 @@ object EpubUtil {
       result
     })
 
-    val tocWithSizes = toc.map(e => sectionSizes.find(_._1 == e.resource) match {
-      case Some((resource, start, size)) =>
-        e.start = start
-        e.size = size
-        e
-      case None => e
-    })
+    val tocWithSizes = toc.map(e => if (!e.fromToc) {
+      sectionSizes.find(_._1 == e.resource) match {
+        case Some((resource, start, size)) =>
+          e.start = start
+          e.size = size
+          e
+        case None => e
+      }
+    } else e)
     tocWithSizes
   }
 
   def getSections(toc: Seq[TocEntry]) = {
-    if (toc.size > 1) {
-      Seq(toc(0)) ++ toc.sliding(2)
+    val ncxToc = toc.filter(_.fromToc == false).sortBy(_.index)
+    if (ncxToc.size > 1) {
+      Seq(ncxToc(0)) ++ ncxToc.sliding(2)
         .filter(p => p(0).resource != p(1).resource)
         .map(p => p(1))
-    } else toc
+    } else ncxToc
   }
 
   /*def getSections(epubPath: String, toc: Seq[TocEntry]) = {
@@ -224,8 +278,8 @@ object EpubUtil {
     // check if current path is absolute
     if (currentPath.startsWith("/")) return currentPath
     // get the folder path of the povPath
-    val folderPath = if (povPath.lastIndexOf("/") >= 0) povPath.substring(0, povPath.lastIndexOf("/"))
-    val newPath = folderPath + "/" + currentPath
+    val folderPath = if (povPath.lastIndexOf("/") >= 0) povPath.substring(0, povPath.lastIndexOf("/")) else null
+    val newPath = if (folderPath != null) folderPath + "/" + currentPath else currentPath
     val normalizedPath = Paths.get(newPath).normalize().toString.replaceAll("\\\\", "/")
     normalizedPath
   }
