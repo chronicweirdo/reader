@@ -116,8 +116,9 @@
             width: 15vw;
         }
     }
-</style>
+    </style>
     <script src="hammer.min.js"></script>
+    <script src="gestures.js"></script>
     <script>
     function num(s, def) {
         var patt = /[\-]?[0-9\.]+/
@@ -223,62 +224,23 @@
     function getImage() {
         return document.getElementsByTagName("img")[0]
     }
-    var revertScrollZoom = true
-    var scrollSpeed = .5 * .1
-    function mouseWheelScroll(i) {
-        var zoomCenterX = i.clientX
-        var zoomCenterY = i.clientY
-        var zoomDelta = 1 + i.deltaY * scrollSpeed * (revertScrollZoom ? -1 : 1)
-        var newZoom = getZoom() * zoomDelta
-        zoom(newZoom, zoomCenterX, zoomCenterY)
+    function getRevertScrollZoom() {
+        return true
     }
-    var drag = false;
-    var mouseDownX = null;
-    var mouseDownY = null;
-    function mouseDown(e) {
-        e.preventDefault()
-        mouseDownX = e.clientX
-        mouseDownY = e.clientY
-        drag = true;
+    function getScrollSpeed() {
+        return .5 * .1
     }
-    function mouseUp(e, clickAction, doubleClickAction) {
-        drag = false;
-        if (mouseDownX == e.clientX && mouseDownY == e.clientY) {
-            // the mouse did not move, it's a click
-            click(e, clickAction, doubleClickAction)
-        }
-    }
+
     function getPanSpeed() {
         return 3
     }
-    function mouseMove(e) {
-        if (drag) {
-            pan(e.movementX * getPanSpeed(), e.movementY * getPanSpeed())
-        }
-    }
+
     function zoomJump(event) {
         if (isPageFitToScreen()) {
             zoom(getZoom() * 2.5, event.clientX, event.clientY)
         } else {
             fitPageToScreen()
         }
-    }
-    function click(event, clickAction, doubleClickAction) {
-        event.preventDefault()
-        var timestamp = + new Date()
-        document.clickTimestamp = timestamp
-        window.setTimeout(function() {
-            if (document.clickTimestamp && document.clickTimestamp != null) {
-                if (document.clickTimestamp > timestamp) {
-                    //there has been aother click in the meantime, double click
-                    if (doubleClickAction != null) doubleClickAction(event)
-                } else {
-                    // simple click
-                    if (clickAction != null) clickAction(event)
-                }
-                document.clickTimestamp = null
-            }
-        }, 300)
     }
 
     function fitPageToScreenWidth() {
@@ -302,72 +264,6 @@
     function fitPageToScreen() {
         setZoom(getZoomForFitToScreen())
         updateImage()
-    }
-
-    function disableEventHandlers(el) {
-        var events = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover',
-                      'onmouseup', 'ondblclick', 'onfocus', 'onblur'];
-
-        events.forEach(function (event) {
-          el[event] = function () {
-            return false;
-          };
-        });
-      };
-
-    function enableTouchGestures(element) {
-        disableEventHandlers(element)
-        var hammertime = new Hammer(element, {
-            domEvents: true
-            })
-        hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
-        hammertime.get('pinch').set({ enable: true });
-
-        var panPreviousDeltaX = 0
-        var panPreviousDeltaY = 0
-
-        var pinching = false
-        var originalZoom = null
-        var pinchCenterX = null
-        var pinchCenterY = null
-        hammertime.on('pinchstart', function(ev) {
-            ev.preventDefault();
-            pinching = true
-            originalZoom = getZoom()
-            pinchCenterX = ev.center.x
-            pinchCenterY = ev.center.y
-        })
-        hammertime.on('pinch', function(ev) {
-            ev.preventDefault()
-            zoom(originalZoom * ev.scale, pinchCenterX, pinchCenterY)
-            var currentDeltaX = ev.deltaX - panPreviousDeltaX
-            var currentDeltaY = ev.deltaY - panPreviousDeltaY
-            pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
-            panPreviousDeltaX = ev.deltaX
-            panPreviousDeltaY = ev.deltaY
-        });
-        hammertime.on('pinchend', function(ev) {
-            panPreviousDeltaX = 0
-            panPreviousDeltaY = 0
-        })
-
-        hammertime.on('pan', function(ev) {
-            if (! pinching) {
-                var currentDeltaX = ev.deltaX - panPreviousDeltaX
-                var currentDeltaY = ev.deltaY - panPreviousDeltaY
-                pan(currentDeltaX * getPanSpeed(), currentDeltaY * getPanSpeed())
-                panPreviousDeltaX = ev.deltaX
-                panPreviousDeltaY = ev.deltaY
-            }
-        })
-        hammertime.on('panend', function(ev) {
-            if (! pinching) {
-                panPreviousDeltaX = 0
-                panPreviousDeltaY = 0
-            }
-            // a pinch always ends with a pan
-            pinching = false
-        })
     }
 
     function setPage(page) {
@@ -648,7 +544,7 @@
         tools.style.visibility = "hidden"
     }
 
-    function toggleTools() {
+    function toggleTools(x, y) {
         var tools = document.getElementById("tools")
         if (tools.style.visibility == "hidden") {
             tools.style.visibility = "visible"
@@ -748,15 +644,6 @@
         window.history.back();
     }
 
-    function enableGesturesOnElement(element, clickAction, doubleClickAction) {
-        enableTouchGestures(element)
-        element.addEventListener("wheel", mouseWheelScroll)
-        element.addEventListener("mousedown", mouseDown)
-        element.addEventListener("mouseup", (event) => mouseUp(event, clickAction, doubleClickAction))
-        element.addEventListener("mouseout", mouseUp)
-        element.addEventListener("mousemove", mouseMove)
-    }
-
     function enableKeyboardGestures() {
         document.onkeydown = function(e) {
             if (e.keyCode == '38' || e.keyCode == '87') {
@@ -785,7 +672,7 @@
 <div id="prev"></div>
 <div id="next"></div>
 <div id="canv"></div>
-<div id="tools" style="display: none">
+<div id="tools">
     <h1 th:text="${title}">Comic Title</h1>
     <p><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
     <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
@@ -805,12 +692,69 @@
     </svg>
 </div>
 <script>
+        function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
+            if (mouseButtonPressed) {
+                pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
+            }
+        }
+        function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
+            var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? -1 : 1)
+            var newZoom = getZoom() * zoomDelta
+            zoom(newZoom, scrollCenterX, scrollCenterY)
+        }
+        function touchGesturePinchStart(pinchCenterX, pinchCenterY) {
+            document.originalZoom = getZoom()
+        }
+        function touchGesturePinchOngoing(currentZoom, pinchCenterX, pinchCenterY) {
+            zoom(document.originalZoom * currentZoom, pinchCenterX, pinchCenterY)
+        }
+        function touchGesturePan(deltaX, deltaY) {
+            pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
+        }
         window.onload = function() {
             enableKeyboardGestures()
 
-            enableGesturesOnElement(document.getElementById("canv"), toggleTools, zoomJump)
-            enableGesturesOnElement(document.getElementById("prev"), goToPreviousView, zoomJump)
-            enableGesturesOnElement(document.getElementById("next"), goToNextView, zoomJump)
+            // supported actions:
+            // clickAction(mouseX, mouseY)
+            // doubleClickAction(mouseX, mouseY)
+            // mouseMoveAction(mouseButtonPressed, deltaX, deltaY)
+            // scrollAction(scrollCenterX, scrollCenterY, scrollValue)
+            // pinchStartAction(pinchCenterX, pinchCenterY)
+            // pinchAction(currentZoom, pinchCenterX, pinchCenterY)
+            // panAction(deltaX, deltaY)
+            var originalZoom = null
+
+            enableGesturesOnElement(
+                document.getElementById("canv"),
+                toggleTools,
+                zoomJump,
+                mouseGestureDrag,
+                mouseGestureScroll,
+                touchGesturePinchStart,
+                touchGesturePinchOngoing,
+                touchGesturePan
+            )
+
+            enableGesturesOnElement(
+                document.getElementById("prev"),
+                (x, y) => goToPreviousView(),
+                zoomJump,
+                mouseGestureDrag,
+                mouseGestureScroll,
+                touchGesturePinchStart,
+                touchGesturePinchOngoing,
+                touchGesturePan
+            )
+            enableGesturesOnElement(
+                document.getElementById("next"),
+                (x, y) => goToNextView(),
+                zoomJump,
+                mouseGestureDrag,
+                mouseGestureScroll,
+                touchGesturePinchStart,
+                touchGesturePinchOngoing,
+                touchGesturePan
+            )
 
             addPagenumTriggerListener()
 
