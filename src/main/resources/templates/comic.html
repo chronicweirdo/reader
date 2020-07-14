@@ -120,6 +120,7 @@
     </style>
     <script src="hammer.min.js"></script>
     <script src="gestures.js"></script>
+    <script src="util.js"></script>
     <script>
     function num(s, def) {
         var patt = /[\-]?[0-9\.]+/
@@ -580,20 +581,6 @@
         }
 
         return '';
-    }
-
-    function onMobile() {
-        if (navigator.userAgent.match(/Android/i)
-            || navigator.userAgent.match(/webOS/i)
-            || navigator.userAgent.match(/iPhone/i)
-            || navigator.userAgent.match(/iPad/i)
-            || navigator.userAgent.match(/iPod/i)
-            || navigator.userAgent.match(/BlackBerry/i)
-            || navigator.userAgent.match(/Windows Phone/i)) {
-                return true
-            } else {
-                return false
-            }
     }
 
     function handleResize() {

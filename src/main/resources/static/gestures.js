@@ -1,3 +1,9 @@
+var gestures = {
+    mouseDownX: null,
+    mouseDownY: null,
+    mousePressed: false
+}
+
 function disableEventHandlers(el) {
     var events = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'ondblclick', 'onfocus', 'onblur']
 
@@ -8,11 +14,14 @@ function disableEventHandlers(el) {
     })
 }
 
-function enableTouchGestures(element, pinchStartAction, pinchAction, panAction) {
+function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAction, panAction, panEndAction) {
     disableEventHandlers(element)
     var hammertime = new Hammer(element, {domEvents: true})
     hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
     hammertime.get('pinch').set({ enable: true });
+
+    var panStartX = null
+    var panStartY = null
 
     var panPreviousDeltaX = 0
     var panPreviousDeltaY = 0
@@ -43,13 +52,20 @@ function enableTouchGestures(element, pinchStartAction, pinchAction, panAction) 
     hammertime.on('pinchend', function(ev) {
         panPreviousDeltaX = 0
         panPreviousDeltaY = 0
+        if (pinchEndAction) pinchEndAction(ev.scale, pinchCenterX, pinchCenterY)
     })
 
+    hammertime.on('panstart', function(ev) {
+        if (! pinching) {
+            panStartX = ev.center.x
+            panStartY = ev.center.y
+        }
+    })
     hammertime.on('pan', function(ev) {
         if (! pinching) {
             var currentDeltaX = ev.deltaX - panPreviousDeltaX
             var currentDeltaY = ev.deltaY - panPreviousDeltaY
-            panAction(currentDeltaX, currentDeltaY)
+            if (panAction) panAction(currentDeltaX, currentDeltaY)
             panPreviousDeltaX = ev.deltaX
             panPreviousDeltaY = ev.deltaY
         }
@@ -58,29 +74,36 @@ function enableTouchGestures(element, pinchStartAction, pinchAction, panAction) 
         if (! pinching) {
             panPreviousDeltaX = 0
             panPreviousDeltaY = 0
+
+            var dx = panStartX - ev.center.x
+            var dy = panStartY - ev.center.y
+            if (panEndAction) panEndAction(dx, dy)
         }
         // a pinch always ends with a pan
         pinching = false
+
+
     })
 }
 
-function mouseWheelScroll(event, callback) {
-    console.log("mouse scroll")
+function mouseWheelScroll(event, scrollAction, scrollEndAction) {
     var scrollCenterX = event.clientX
     var scrollCenterY = event.clientY
     var scrollValue = event.deltaY
 
-    if (callback) callback(scrollCenterX, scrollCenterY, scrollValue)
-}
+    if (scrollAction) scrollAction(scrollCenterX, scrollCenterY, scrollValue)
 
-var gestures = {
-    mouseDownX: null,
-    mouseDownY: null,
-    mousePressed: false
+    var timestamp = + new Date()
+    gestures.scrollTimestamp = timestamp
+    delayed(function() {
+        if (gestures.scrollTimestamp && gestures.scrollTimestamp != null && gestures.scrollTimestamp == timestamp) {
+            if (scrollEndAction) scrollEndAction(scrollCenterX, scrollCenterY, scrollValue)
+        }
+    })
 }
 
 function mouseDown(event, callback) {
-    event.preventDefault()
+    //event.preventDefault()
     gestures.mouseDownX = event.clientX
     gestures.mouseDownY = event.clientY
     gestures.mousePressed = true
@@ -99,19 +122,28 @@ function mouseUp(event, clickAction, doubleClickAction) {
 function click(event, clickAction, doubleClickAction) {
     event.preventDefault()
     var timestamp = + new Date()
-    document.clickTimestamp = timestamp
-    window.setTimeout(function() {
-        if (document.clickTimestamp && document.clickTimestamp != null) {
-            if (document.clickTimestamp > timestamp) {
+    gestures.clickTimestamp = timestamp
+    delayed(function() {
+        if (gestures.clickTimestamp && gestures.clickTimestamp != null) {
+            if (gestures.clickTimestamp > timestamp) {
                 //there has been aother click in the meantime, double click
                 if (doubleClickAction != null) doubleClickAction(event.clientX, event.clientY)
             } else {
                 // simple click
                 if (clickAction != null) clickAction(event.clientX, event.clientY)
             }
-            document.clickTimestamp = null
+            gestures.clickTimestamp = null
         }
-    }, 250)
+    })
+    // fixing click on links
+    var href = event.target.getAttribute("href")
+    if (href) {
+        window.location = href
+    }
+}
+
+function delayed(callback) {
+    window.setTimeout(callback, 250)
 }
 
 function mouseMove(event, callback) {
@@ -123,23 +155,23 @@ function mouseMove(event, callback) {
 // doubleClickAction(mouseX, mouseY)
 // mouseMoveAction(mouseButtonPressed, deltaX, deltaY)
 // scrollAction(scrollCenterX, scrollCenterY, scrollValue)
+// scrollEndAction(scrollCenterX, scrollCenterY, scrollValue)
 // pinchStartAction(pinchCenterX, pinchCenterY)
 // pinchAction(currentZoom, pinchCenterX, pinchCenterY)
+// pinchEndAction(currentZoom, pinchCenterX, pinchCenterY)
 // panAction(deltaX, deltaY)
+// panEndAction(deltaX, deltaY)
 
-function enableGesturesOnElement(
-    element,
-    actions
-    /*clickAction,
-    doubleClickAction,
-    mouseMoveAction,
-    scrollAction,
-    pinchStartAction,
-    pinchAction,
-    panAction*/
-    ) {
-    enableTouchGestures(element, actions.pinchStartAction, actions.pinchAction, actions.panAction)
-    element.addEventListener("wheel", (event) => mouseWheelScroll(event, actions.scrollAction))
+function enableGesturesOnElement(element, actions) {
+    enableTouchGestures(
+        element,
+        actions.pinchStartAction,
+        actions.pinchAction,
+        actions.pinchEndAction,
+        actions.panAction,
+        actions.panEndAction
+    )
+    element.addEventListener("wheel", (event) => mouseWheelScroll(event, actions.scrollAction, actions.scrollEndAction))
     element.addEventListener("mousedown", mouseDown)
     element.addEventListener("mouseup", (event) => mouseUp(event, actions.clickAction, actions.doubleClickAction))
     element.addEventListener("mouseout", mouseUp)
