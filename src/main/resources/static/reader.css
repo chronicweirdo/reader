@@ -15,7 +15,7 @@ body {
     left: 0;
     width: 5vw;
     height: 100vh;
-    /*background-color: red;*/
+    /*background-color: #00ff0077;*/
 }
 
 #next {
@@ -25,21 +25,24 @@ body {
     right: 0;
     width: 5vw;
     height: 100vh;
-    /*background-color: blue;*/
+    /*background-color: #0000ff77;*/
 }
 
 #pageContainer {
-    width: 100vw;
+    width: 90vw;
+    position: fixed;
+    left: 5vw;
     height: 100vh;
     overflow: hidden;
-    padding: 0
-    margin: 0
+    padding: 0;
+    margin: 0;
+    /*background-color: #ff000077;*/
 }
 
 #page {
     /*border: 1px solid #ff0000aa;*/
     padding: 1vw;
-    margin: 5vw;
+    margin: 2vw;
     font-size: 1.2em;
     color: black;
 }
@@ -103,6 +106,10 @@ only screen and (min-resolution: 120dpi)
 {
     #next, #prev {
         width: 10vw;
+    }
+    #pageContainer {
+        width: 80vw;
+        left: 10vw;
     }
     #page {
         font-size: 2.5em;
