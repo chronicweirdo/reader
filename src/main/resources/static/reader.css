@@ -92,9 +92,9 @@ body {
     display: inline-block;
 }
 
-img {
-    max-height: 50vh;
-    max-width: 50vw;
+img, svg {
+    max-height: 50vh !important;
+    max-width: 50vw !important;
 }
 
 @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),

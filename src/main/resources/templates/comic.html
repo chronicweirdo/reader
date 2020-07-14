@@ -692,12 +692,12 @@
             pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
         }
         window.onload = function() {
-            enableKeyboardGestures(
-                () => pan(0, getViewportHeight() / 2),
-                () => pan(0, - (getViewportHeight() / 2)),
-                goToPreviousView,
-                goToNextView
-            )
+            enableKeyboardGestures({
+                "upAction": () => pan(0, getViewportHeight() / 2),
+                "downAction": () => pan(0, - (getViewportHeight() / 2)),
+                "leftAction": goToPreviousView,
+                "rightAction": goToNextView
+            })
 
             // supported actions:
             // clickAction(mouseX, mouseY)
@@ -709,37 +709,34 @@
             // panAction(deltaX, deltaY)
             var originalZoom = null
 
-            enableGesturesOnElement(
-                document.getElementById("canv"),
-                toggleTools,
-                zoomJump,
-                mouseGestureDrag,
-                mouseGestureScroll,
-                touchGesturePinchStart,
-                touchGesturePinchOngoing,
-                touchGesturePan
-            )
+            enableGesturesOnElement(document.getElementById("canv"), {
+                "clickAction": toggleTools,
+                "doubleClickAction": zoomJump,
+                "mouseMoveAction": mouseGestureDrag,
+                "scrollAction": mouseGestureScroll,
+                "pinchStartAction": touchGesturePinchStart,
+                "pinchAction": touchGesturePinchOngoing,
+                "panAction": touchGesturePan
+            })
 
-            enableGesturesOnElement(
-                document.getElementById("prev"),
-                (x, y) => goToPreviousView(),
-                zoomJump,
-                mouseGestureDrag,
-                mouseGestureScroll,
-                touchGesturePinchStart,
-                touchGesturePinchOngoing,
-                touchGesturePan
-            )
-            enableGesturesOnElement(
-                document.getElementById("next"),
-                (x, y) => goToNextView(),
-                zoomJump,
-                mouseGestureDrag,
-                mouseGestureScroll,
-                touchGesturePinchStart,
-                touchGesturePinchOngoing,
-                touchGesturePan
-            )
+            enableGesturesOnElement(document.getElementById("prev"), {
+                "clickAction": (x, y) => goToPreviousView(),
+                "doubleClickAction": zoomJump,
+                "mouseMoveAction": mouseGestureDrag,
+                "scrollAction": mouseGestureScroll,
+                "pinchStartAction": touchGesturePinchStart,
+                "pinchAction": touchGesturePinchOngoing,
+                "panAction": touchGesturePan
+            })
+            enableGesturesOnElement(document.getElementById("next"), {
+                "clickAction": (x, y) => goToNextView(),
+                "doubleClickAction": zoomJump,
+                "mouseMoveAction": mouseGestureDrag,
+                "scrollAction": mouseGestureScroll,
+                "pinchStartAction": touchGesturePinchStart,
+                "pinchAction": touchGesturePinchOngoing,
+                "panAction": touchGesturePan
+            })
 
             addPagenumTriggerListener()
 
