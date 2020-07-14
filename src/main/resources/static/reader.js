@@ -7,10 +7,38 @@ function setup() {
     addLoadingScreen()
     showLoadingScreen()
     document.testlog = false
+    setFontSize(false)
 
     enableKeyboardGestures({
         "leftAction": previousPage,
         "rightAction": nextPage
+    })
+
+    enableGesturesOnElement(document.getElementById("pageContainer"), {
+        "scrollEndAction": (z, y, scroll) => {
+            if (scroll < 0) {
+                setZoom(getZoom() + .1)
+            } else {
+                setZoom(getZoom() - .1)
+            }
+        },
+        "pinchEndAction": (zoom, x, y) => {
+            if (zoom > 1) {
+                setZoom(getZoom() + .1)
+            } else {
+                setZoom(getZoom() - .1)
+            }
+        },
+        "panEndAction": (dx, dy) => {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) {
+                    previousPage()
+                } else {
+                    nextPage()
+                }
+            }
+        },
+        "doubleClickAction": toggleTools
     })
 
     window.setTimeout(function() {
@@ -94,7 +122,7 @@ function addPage() {
 
     initializeZoom()
 
-    page.addEventListener("click", toggleTools)
+    //page.addEventListener("click", toggleTools)
 }
 
 function num(s, def) {
@@ -111,7 +139,19 @@ function num(s, def) {
     return def
 }
 
-function increaseFontSize() {
+function setFontSize(withResize) {
+    var zoom = getZoom()
+    var baseFontSize = 1.2
+    if (onMobile()) {
+        baseFontSize = 2.4
+    }
+    var currentFontSize = zoom * baseFontSize
+    var page = document.getElementById("page")
+    page.style['font-size'] = currentFontSize + 'em'
+    if (withResize) resize()
+}
+
+/*function updateFontSize() {
     //var currentFontSize = document.getElementById("page").style["font-size"]
     var page = document.getElementById("page")
     var currentFontSize = window.getComputedStyle(page, null).getPropertyValue('font-size')
@@ -120,17 +160,16 @@ function increaseFontSize() {
     console.log(currentFontSize)
     page.style['font-size'] = currentFontSize + 'px'
     resize()
-}
+}*/
 
 function setZoom(zoomValue) {
     document.bookZoom = zoomValue
-    page.style['font-size'] = zoomValue + 'em'
 
     var xhttp = new XMLHttpRequest()
     xhttp.open("PUT", "updateSetting?name=bookZoom&value=" + zoomValue, true)
     xhttp.send()
 
-    resize()
+    setFontSize(true)
 }
 
 function getZoom() {
