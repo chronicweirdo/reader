@@ -123,6 +123,7 @@ class ContentService {
       .asHtml
       .transformLinks(resourcePath, book.id)
       .addResources(Seq(
+        "js" -> "/gestures.js",
         "js" -> "/reader.js",
         "js" -> "/hammer.min.js",
         "css" -> "/reader.css"

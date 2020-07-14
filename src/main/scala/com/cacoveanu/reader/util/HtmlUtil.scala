@@ -62,6 +62,7 @@ object HtmlUtil {
     doc.select("a").forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
     doc.select("link").forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
     doc.select("img").forEach(a => a.attr("src", transformLink(a.attr("src"), contextPath, bookId)))
+    doc.select("image").forEach(a => a.attr("xlink:href", transformLink(a.attr("xlink:href"), contextPath, bookId)))
 
     doc
   }

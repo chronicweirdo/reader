@@ -8,6 +8,11 @@ function setup() {
     showLoadingScreen()
     document.testlog = false
 
+    enableKeyboardGestures({
+        "leftAction": previousPage,
+        "rightAction": nextPage
+    })
+
     window.setTimeout(function() {
         computeStartPositionsOfElements(document.getElementById("content"))
         console.log("starting finding pages")
@@ -236,7 +241,7 @@ function wrapContents() {
 function previousPage() {
     if (document.currentPage > 0) {
         document.currentPage = document.currentPage - 1
-        copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
+        copyTextToPage(document.pages[document.currentPage], document.pages[document.currentPage + 1])
         reportPosition(document.pages[document.currentPage])
     } else {
         console.log("beginning of doc")
@@ -252,7 +257,7 @@ function nextPage() {
     // see if there is a next page
     if (document.currentPage < document.pages.length - 2) {
         document.currentPage = document.currentPage + 1
-        copyTextToPage(getPositions(), document.pages[document.currentPage], document.pages[document.currentPage + 1])
+        copyTextToPage(document.pages[document.currentPage], document.pages[document.currentPage + 1])
         reportPosition(document.pages[document.currentPage])
     } else {
         console.log("end of doc")
@@ -272,7 +277,7 @@ function displayPage(page) {
     if (page >= 0 && page < document.pages.length - 1) {
         document.currentPage = page
         var startPosition = document.pages[page]
-        copyTextToPage(getPositions(), startPosition, document.pages[page + 1])
+        copyTextToPage(startPosition, document.pages[page + 1])
         reportPosition(startPosition)
     } else {
         console.log("page out of range")
@@ -357,19 +362,22 @@ function getMaxPosition() {
 }
 
 function findPage(startPosition, initialJump) {
+    console.log("find page " + startPosition + " " + initialJump)
     var previousEndPosition = null
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
-    copyTextToPage(getPositions(), startPosition, endPosition)
+    copyTextToPage(startPosition, endPosition)
     while ((! scrollNecessary()) && (endPosition < getMaxPosition())) {
         previousEndPosition = endPosition
         endPosition = findNextSpaceForPosition(endPosition + 1)
-        copyTextToPage(getPositions(), startPosition, endPosition)
+        copyTextToPage(startPosition, endPosition)
     }
+    console.log("grew to position " + endPosition)
     while (scrollNecessary() && (endPosition > startPosition)) {
         previousEndPosition = endPosition
         endPosition = findPreviousSpaceForPosition(endPosition - 1)
-        copyTextToPage(getPositions(), startPosition, endPosition)
+        copyTextToPage(startPosition, endPosition)
     }
+    console.log("shrank to position " + endPosition)
     if (endPosition == startPosition) return previousEndPosition
     return endPosition
 }
@@ -402,7 +410,7 @@ function findPages() {
     }
 
     document.currentPage = 0
-    copyTextToPage(getPositions(), document.pages[0], document.pages[1])
+    copyTextToPage(document.pages[0], document.pages[1])
 }
 
 function getViewportWidth() {
@@ -412,7 +420,8 @@ function getViewportHeight() {
     return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 }
 
-function copyTextToPage(positions, from, to) {
+function copyTextToPage(from, to) {
+    var positions = getPositions()
     var range = document.createRange()
 
     var startEl = getElementForPosition(positions, from)

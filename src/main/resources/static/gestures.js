@@ -129,39 +129,46 @@ function mouseMove(event, callback) {
 
 function enableGesturesOnElement(
     element,
-    clickAction, 
+    actions
+    /*clickAction,
     doubleClickAction,
     mouseMoveAction,
     scrollAction,
     pinchStartAction,
     pinchAction,
-    panAction
+    panAction*/
     ) {
-    enableTouchGestures(element, pinchStartAction, pinchAction, panAction)
-    element.addEventListener("wheel", (event) => mouseWheelScroll(event, scrollAction))
+    enableTouchGestures(element, actions.pinchStartAction, actions.pinchAction, actions.panAction)
+    element.addEventListener("wheel", (event) => mouseWheelScroll(event, actions.scrollAction))
     element.addEventListener("mousedown", mouseDown)
-    element.addEventListener("mouseup", (event) => mouseUp(event, clickAction, doubleClickAction))
+    element.addEventListener("mouseup", (event) => mouseUp(event, actions.clickAction, actions.doubleClickAction))
     element.addEventListener("mouseout", mouseUp)
-    element.addEventListener("mousemove", (event) => mouseMove(event, mouseMoveAction))
+    element.addEventListener("mousemove", (event) => mouseMove(event, actions.mouseMoveAction))
 }
 
-function enableKeyboardGestures(upAction, downAction, leftAction, rightAction) {
+// supported actions:
+// upAction()
+// downAction()
+// leftAction()
+// rightAction()
+
+function enableKeyboardGestures(actions) {
     document.onkeydown = function(e) {
         if (e.keyCode == '38' || e.keyCode == '87') {
             // up arrow or w
-            if (upAction) upAction()
+            if (actions.upAction) actions.upAction()
         }
         else if (e.keyCode == '40' || e.keyCode == '83') {
             // down arrow or s
-            if (downAction) downAction()
+            if (actions.downAction) actions.downAction()
         }
         else if (e.keyCode == '37' || e.keyCode == '65') {
             // left arrow or a
-            if (leftAction) leftAction()
+            if (actions.leftAction) actions.leftAction()
         }
         else if (e.keyCode == '39' || e.keyCode == '68') {
             // right arrow or d
-            if (rightAction) rightAction()
+            if (actions.rightAction) actions.rightAction()
         }
     }
 }
