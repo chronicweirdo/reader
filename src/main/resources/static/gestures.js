@@ -28,14 +28,12 @@ function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAct
     var panPreviousDeltaY = 0
 
     var pinching = false
-    //var originalZoom = null
     var pinchCenterX = null
     var pinchCenterY = null
 
     hammertime.on('pinchstart', function(ev) {
         ev.preventDefault();
         pinching = true
-        //originalZoom = 1
         pinchCenterX = ev.center.x
         pinchCenterY = ev.center.y
         if (pinchStartAction) pinchStartAction(ev.center.x, ev.center.y)
@@ -82,8 +80,6 @@ function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAct
         }
         // a pinch always ends with a pan
         pinching = false
-
-
     })
 }
 
@@ -124,7 +120,6 @@ function click(event, clickAction, doubleClickAction, tripleClickAction) {
     event.preventDefault()
     var timestamp = + new Date()
     gestures.clickTimestamp.push(timestamp)
-    console.log(gestures.clickTimestamp)
     delayed(function() {
         if (gestures.clickTimestamp.length > 2) {
             gestures.clickTimestamp = []
