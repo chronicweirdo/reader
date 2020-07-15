@@ -186,7 +186,7 @@ function addTools() {
     var title = document.createElement("h1")
     var collection = getMeta("collection")
     if (collection && collection.length > 0) {
-        title.appendChild(createLink(collection, () => window.location = "/search=" + collection))
+        title.appendChild(createLink(collection, () => window.location = "/?search=" + encodeURIComponent(collection)))
         title.appendChild(createSpan("/"))
     }
     title.appendChild(createSpan(getMeta("title")))
