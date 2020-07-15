@@ -2,6 +2,8 @@ body {
     overflow: hidden;
     background-color: white;
     color: white;
+    padding: 0;
+    margin: 0;
 }
 
 #content {
@@ -15,7 +17,7 @@ body {
     left: 0;
     width: 5vw;
     height: 100vh;
-    /*background-color: #00ff0077;*/
+    background-color: #00ff0077;
 }
 
 #next {
@@ -25,7 +27,17 @@ body {
     right: 0;
     width: 5vw;
     height: 100vh;
-    /*background-color: #0000ff77;*/
+    background-color: #0000ff77;
+}
+
+#toolsButton {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 5vw;
+    width: 90vw;
+    height: 5vh;
+    background-color: #1a1a1a77;
 }
 
 #pageContainer {
@@ -41,8 +53,8 @@ body {
 
 #page {
     /*border: 1px solid #ff0000aa;*/
-    padding: 1vw;
-    margin: 2vw;
+    padding: 1vmax;
+    /*margin: 1vh 1vw;*/
     font-size: 1.2em;
     color: black;
 }
@@ -94,6 +106,18 @@ body {
     margin-right: .5em;
     display: inline-block;
 }
+#mainButtons {
+    font-size: 2em;
+}
+#mainButtons a {
+    text-decoration: none;
+    padding: .3em;
+    margin-left: .1em;
+    margin-right: .1em;
+    width: 1.5em;
+    background-color: gold;
+    color: black;
+}
 
 img, svg {
     max-height: 50vh !important;
@@ -105,13 +129,19 @@ only screen and (-o-min-device-pixel-ratio: 13/10),
 only screen and (min-resolution: 120dpi)
 {
     #next, #prev {
-        width: 10vw;
+        width: 5vw;
     }
-    #pageContainer {
-        width: 80vw;
-        left: 10vw;
+    #toolsButton {
+        width: 90vw;
+        left: 5vw;
     }
+    /*#pageContainer {
+        width: 90vw;
+        left: 5vw;
+    }*/
     #page {
+        /*padding: 2vh 2vw;
+        margin: 1vh 1vw;*/
         font-size: 2.4em;
     }
     #tools {

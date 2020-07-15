@@ -71,6 +71,13 @@ function addButtons() {
         nextPage()
     })
     document.body.appendChild(next)
+
+    var toolsButton = document.createElement("div")
+    toolsButton.id = "toolsButton"
+    toolsButton.addEventListener("click", function() {
+        toggleTools()
+    })
+    document.body.appendChild(toolsButton)
 }
 
 function addPage() {
@@ -153,6 +160,25 @@ function addTools() {
     var toolsContainer = document.createElement("div")
     toolsContainer.id="tools"
     toolsContainer.style.visibility = "hidden"
+
+    var mainButtons = document.createElement("p")
+    mainButtons.id = "mainButtons"
+    var increaseZoom = document.createElement("a")
+    increaseZoom.onclick = () => setZoom(getZoom() + .1)
+    increaseZoom.innerHTML = "+"
+    mainButtons.appendChild(increaseZoom)
+
+    var decreaseZoom = document.createElement("a")
+    decreaseZoom.onclick = () => setZoom(getZoom() - .1)
+    decreaseZoom.innerHTML = "-"
+    mainButtons.appendChild(decreaseZoom)
+
+    var closeTools = document.createElement("a")
+    closeTools.onclick = () => toggleTools()
+    closeTools.innerHTML = "x"
+    mainButtons.appendChild(closeTools)
+
+    toolsContainer.appendChild(mainButtons)
 
     var title = document.createElement("h1")
     title.innerHTML = getMeta("title")
