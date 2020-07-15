@@ -113,9 +113,9 @@ function getPanSpeed() {
     return 3
 }
 
-function zoomJump(event) {
+function zoomJump(x, y) {
     if (isPageFitToScreen()) {
-        zoom(getZoom() * 2.5, event.clientX, event.clientY)
+        zoom(getZoom() * 2.5, x, y)
     } else {
         fitPageToScreen()
     }
@@ -551,8 +551,8 @@ window.onload = function() {
     var originalZoom = null
 
     enableGesturesOnElement(document.getElementById("canv"), {
-        "clickAction": toggleTools,
-        "doubleClickAction": zoomJump,
+        "doubleClickAction": toggleTools,
+        "tripleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
@@ -562,7 +562,8 @@ window.onload = function() {
 
     enableGesturesOnElement(document.getElementById("prev"), {
         "clickAction": (x, y) => goToPreviousView(),
-        "doubleClickAction": zoomJump,
+        "doubleClickAction": toggleTools,
+        "tripleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
@@ -571,7 +572,8 @@ window.onload = function() {
     })
     enableGesturesOnElement(document.getElementById("next"), {
         "clickAction": (x, y) => goToNextView(),
-        "doubleClickAction": zoomJump,
+        "doubleClickAction": toggleTools,
+        "tripleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
