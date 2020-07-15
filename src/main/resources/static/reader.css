@@ -112,6 +112,11 @@ only screen and (min-resolution: 120dpi)
         left: 10vw;
     }
     #page {
-        font-size: 2.5em;
+        font-size: 2.4em;
+    }
+    #tools {
+        width: 90vw;
+        left: 4vw;
+        font-size: 3em;
     }
 }
