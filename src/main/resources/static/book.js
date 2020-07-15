@@ -158,10 +158,15 @@ function splitLink(link) {
 
 function createLink(text, action) {
     var link = document.createElement("a")
-    if (id) link.id = id
     link.innerHTML = text
     link.onclick = action
     return link
+}
+function createSpan(text, id = null) {
+    var span = document.createElement("span")
+    if (id) span.id = id
+    span.innerHTML = text
+    return span
 }
 
 function addTools() {
@@ -169,41 +174,55 @@ function addTools() {
     toolsContainer.id="tools"
     toolsContainer.style.visibility = "hidden"
 
-    var mainButtons = document.createElement("p")
+    /*var mainButtons = document.createElement("p")
     mainButtons.id = "mainButtons"
 
     mainButtons.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
     mainButtons.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
     mainButtons.appendChild(createLink("x", toggleTools))
 
-    toolsContainer.appendChild(mainButtons)
+    toolsContainer.appendChild(mainButtons)*/
 
     var title = document.createElement("h1")
-    title.innerHTML = getMeta("title")
+    var collection = getMeta("collection")
+    if (collection && collection.length > 0) {
+        title.appendChild(createLink(collection, () => window.location = "/search=" + collection))
+        title.appendChild(createSpan("/"))
+    }
+    title.appendChild(createSpan(getMeta("title")))
+    title.appendChild(createSpan("&nbsp;("))
+    title.appendChild(createSpan(getMeta("sectionStart"), "currentPosition"))
+    title.appendChild(createSpan("&nbsp;/&nbsp;"))
+    title.appendChild(createSpan(getMeta("bookSize")))
+    title.appendChild(createSpan(")"))
+    //title.innerHTML = getMeta("title")
     toolsContainer.appendChild(title)
 
-    var collection = getMeta("collection")
-    var collectionParagraph = document.createElement("p")
-    var collectionLink = document.createElement("a")
-    collectionLink.href = "/search=" + collection
-    collectionLink.innerHTML = collection
-    collectionParagraph.appendChild(collectionLink)
-    toolsContainer.appendChild(collectionParagraph)
+    //var collection = getMeta("collection")
+    //var collectionParagraph = document.createElement("p")
+    //var collectionLink = document.createElement("a")
+    //collectionLink.href = "/search=" + collection
+    //collectionLink.innerHTML = collection
+    //collectionParagraph.appendChild(collectionLink)
+    //toolsContainer.appendChild(collectionParagraph)
 
-    var positionParagraph = document.createElement("p")
+    /*var positionParagraph = document.createElement("p")
     var currentPositionSpan = document.createElement("span")
     currentPositionSpan.id = "currentPosition"
     currentPositionSpan.innerHTML = getMeta("sectionStart")
     positionParagraph.appendChild(currentPositionSpan)
     var outOf = document.createTextNode(" / " + getMeta("bookSize"))
     positionParagraph.appendChild(outOf)
-    toolsContainer.appendChild(positionParagraph)
+    toolsContainer.appendChild(positionParagraph)*/
 
     var actionsParagraph = document.createElement("p")
-
+    actionsParagraph.id = "actions"
     actionsParagraph.appendChild(createLink("back", () => window.location = "/"))
     actionsParagraph.appendChild(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc"))
     actionsParagraph.appendChild(createLink("remove progress", removeProgress))
+    actionsParagraph.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
+    actionsParagraph.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
+    actionsParagraph.appendChild(createLink("x", toggleTools))
     toolsContainer.appendChild(actionsParagraph)
 
     document.body.appendChild(toolsContainer)
