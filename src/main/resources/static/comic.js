@@ -551,8 +551,8 @@ window.onload = function() {
     var originalZoom = null
 
     enableGesturesOnElement(document.getElementById("canv"), {
-        "doubleClickAction": toggleTools,
-        "tripleClickAction": zoomJump,
+        "clickAction": toggleTools,
+        "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
@@ -562,8 +562,7 @@ window.onload = function() {
 
     enableGesturesOnElement(document.getElementById("prev"), {
         "clickAction": (x, y) => goToPreviousView(),
-        "doubleClickAction": toggleTools,
-        "tripleClickAction": zoomJump,
+        "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
@@ -572,8 +571,7 @@ window.onload = function() {
     })
     enableGesturesOnElement(document.getElementById("next"), {
         "clickAction": (x, y) => goToNextView(),
-        "doubleClickAction": toggleTools,
-        "tripleClickAction": zoomJump,
+        "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
