@@ -21,11 +21,10 @@
 <div id="prev"></div>
 <div id="next"></div>
 <div id="canv"></div>
-<div id="tools">
-    <h1 th:text="${title}">Comic Title</h1>
-    <p><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+<div id="tools" style="visibility: hidden;">
+    <h1><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a><span>/</span><span th:text="${title}">Comic Title</span></h1>
     <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
-    <p>
+    <p id="actions">
         <a onclick="toggleFullScreen()">fullscreen</a>
         <a onclick="goBack()">back</a>
         <a onclick="removeProgress()">remove progress</a>

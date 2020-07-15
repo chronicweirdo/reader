@@ -65,9 +65,20 @@ body {
 #tools a {
     color: gold;
     text-decoration: underline;
-    margin-left: .5em;
-    margin-right: .5em;
     display: inline-block;
+}
+#actions {
+    font-size: 1.4em;
+}
+#actions a {
+    text-decoration: none;
+    padding: .3em;
+    margin-left: .1em;
+    margin-right: .1em;
+    margin-bottom: .2em;
+    min-width: 1.5em;
+    background-color: gold;
+    color: black;
 }
 #spinner {
     position: fixed;
