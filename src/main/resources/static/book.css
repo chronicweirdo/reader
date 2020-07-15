@@ -73,6 +73,14 @@ body {
     color: black;
 }
 
+#toolsContainer {
+    display: block;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    /*background-color: #ff000077;*/
+}
+
 #tools {
     display: block;
     position: fixed;
@@ -93,6 +101,7 @@ body {
 }
 #tools p {
     margin-top: 2vh;
+    margin-bottom: 2vh;
 }
 #tools input {
     font-size: 1em;

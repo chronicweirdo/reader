@@ -159,7 +159,11 @@ function splitLink(link) {
 function createLink(text, action) {
     var link = document.createElement("a")
     link.innerHTML = text
-    link.onclick = action
+    link.onclick = (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        action()
+    }
     return link
 }
 function createSpan(text, id = null) {
@@ -170,9 +174,14 @@ function createSpan(text, id = null) {
 }
 
 function addTools() {
+    var toolsContainerContainer = document.createElement("div")
+    toolsContainerContainer.id = "toolsContainer"
+    toolsContainerContainer.style.visibility = "hidden"
+    toolsContainerContainer.onclick = toggleTools
+
     var toolsContainer = document.createElement("div")
     toolsContainer.id="tools"
-    toolsContainer.style.visibility = "hidden"
+    //toolsContainer.style.visibility = "hidden"
 
     /*var mainButtons = document.createElement("p")
     mainButtons.id = "mainButtons"
@@ -222,10 +231,12 @@ function addTools() {
     actionsParagraph.appendChild(createLink("remove progress", removeProgress))
     actionsParagraph.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
     actionsParagraph.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
-    actionsParagraph.appendChild(createLink("x", toggleTools))
+    //actionsParagraph.appendChild(createLink("x", toggleTools))
     toolsContainer.appendChild(actionsParagraph)
 
-    document.body.appendChild(toolsContainer)
+    //document.body.appendChild(toolsContainer)
+    toolsContainerContainer.appendChild(toolsContainer)
+    document.body.appendChild(toolsContainerContainer)
 }
 
 function addLoadingScreen() {
@@ -520,8 +531,10 @@ function getBookId() {
     return getMeta("bookId")
 }
 
-function toggleTools() {
-    var tools = document.getElementById("tools")
+function toggleTools(e) {
+    console.log(e)
+    console.log("toggling tools")
+    var tools = document.getElementById("toolsContainer")
     if (tools.style.visibility == "hidden") {
         tools.style.visibility = "visible"
     } else {
