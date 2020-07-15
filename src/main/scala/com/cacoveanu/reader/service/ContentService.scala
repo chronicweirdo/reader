@@ -6,7 +6,7 @@ import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util._
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
@@ -21,6 +21,10 @@ class ContentService {
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
+
+  @Value("${keepEbookStyles}")
+  @BeanProperty
+  var keepEbookStyles: Boolean = _
 
   //@Cacheable(Array("resource"))
   def loadResource(bookId: String, resourcePath: String): Option[Content] = {
@@ -121,7 +125,7 @@ class ContentService {
 
     htmlContent
       .asHtml
-      .transformLinks(resourcePath, book.id)
+      .transformLinks(resourcePath, book.id, keepEbookStyles)
       .addResources(Seq(
         "js" -> "/hammer.min.js",
         "js" -> "/gestures.js",

@@ -19,7 +19,7 @@ object HtmlUtil {
   implicit class AugmentedJsoupDocument(doc: Document) {
     def addResources(resources: Seq[(String, String)]): Document = appendResources(doc, resources)
     def addMeta(meta: Map[String, String]): Document = appendMeta(doc, meta)
-    def transformLinks(contextPath: String, bookId: String): Document = transformLinksInternal(doc, contextPath, bookId)
+    def transformLinks(contextPath: String, bookId: String, keepStyles: Boolean): Document = transformLinksInternal(doc, contextPath, bookId, keepStyles)
     def asString: String = doc.toString
     def bodyText: String = extractBodyText(doc)
   }
@@ -58,9 +58,13 @@ object HtmlUtil {
     doc
   }
 
-  private def transformLinksInternal(doc: Document, contextPath: String, bookId: String) = {
+  private def transformLinksInternal(doc: Document, contextPath: String, bookId: String, keepStyles: Boolean) = {
     doc.select("a").forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
-    doc.select("link").forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
+    doc.select("link")
+      .forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
+    if (! keepStyles) {
+      doc.select("link[rel=stylesheet]").remove()
+    }
     doc.select("img").forEach(a => a.attr("src", transformLink(a.attr("src"), contextPath, bookId)))
     doc.select("image").forEach(a => a.attr("xlink:href", transformLink(a.attr("xlink:href"), contextPath, bookId)))
 
