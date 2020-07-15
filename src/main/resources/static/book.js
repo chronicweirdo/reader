@@ -156,6 +156,14 @@ function splitLink(link) {
     }
 }
 
+function createLink(text, action) {
+    var link = document.createElement("a")
+    if (id) link.id = id
+    link.innerHTML = text
+    link.onclick = action
+    return link
+}
+
 function addTools() {
     var toolsContainer = document.createElement("div")
     toolsContainer.id="tools"
@@ -163,20 +171,10 @@ function addTools() {
 
     var mainButtons = document.createElement("p")
     mainButtons.id = "mainButtons"
-    var increaseZoom = document.createElement("a")
-    increaseZoom.onclick = () => setZoom(getZoom() + .1)
-    increaseZoom.innerHTML = "+"
-    mainButtons.appendChild(increaseZoom)
 
-    var decreaseZoom = document.createElement("a")
-    decreaseZoom.onclick = () => setZoom(getZoom() - .1)
-    decreaseZoom.innerHTML = "-"
-    mainButtons.appendChild(decreaseZoom)
-
-    var closeTools = document.createElement("a")
-    closeTools.onclick = () => toggleTools()
-    closeTools.innerHTML = "x"
-    mainButtons.appendChild(closeTools)
+    mainButtons.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
+    mainButtons.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
+    mainButtons.appendChild(createLink("x", toggleTools))
 
     toolsContainer.appendChild(mainButtons)
 
@@ -202,18 +200,10 @@ function addTools() {
     toolsContainer.appendChild(positionParagraph)
 
     var actionsParagraph = document.createElement("p")
-    var goBack = document.createElement("a")
-    goBack.href = "/"
-    goBack.innerHTML = "back"
-    actionsParagraph.appendChild(goBack)
-    var tocLink = document.createElement("a")
-    tocLink.innerHTML = "toc"
-    tocLink.href = "/book?id=" + getBookId() + "&path=toc"
-    actionsParagraph.appendChild(tocLink)
-    var removeProgressLink = document.createElement("a")
-    removeProgressLink.onclick = removeProgress
-    removeProgressLink.innerHTML = "remove progress"
-    actionsParagraph.appendChild(removeProgressLink)
+
+    actionsParagraph.appendChild(createLink("back", () => window.location = "/"))
+    actionsParagraph.appendChild(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc"))
+    actionsParagraph.appendChild(createLink("remove progress", removeProgress))
     toolsContainer.appendChild(actionsParagraph)
 
     document.body.appendChild(toolsContainer)
