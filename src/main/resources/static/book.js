@@ -1,5 +1,4 @@
 function setup() {
-    console.log("setting up pagination")
     wrapContents()
     addPage()
     addButtons()
@@ -43,15 +42,12 @@ function setup() {
 
     window.setTimeout(function() {
         computeStartPositionsOfElements(document.getElementById("content"))
-        console.log("starting finding pages")
         var st = new Date()
         findPages()
         var end = new Date()
         var dur = end - st
-        console.log("find pages duration: " + dur)
         jumpToLocation()
         hideLoadingScreen()
-        console.log("setup complete")
     }, 100)
 
     var resizeThreshold = 1000
@@ -78,18 +74,12 @@ function resize() {
 }
 
 function jumpToLocation() {
-    console.log("jumping to location")
     var url = new URL(window.location.href)
-    console.log(url)
-    //var urlParams = new URLSearchParams(window.location.search)
-    console.log(url.searchParams)
     if (url.href.lastIndexOf("#") > 0) {
         var id = url.href.substring(url.href.lastIndexOf("#") + 1, url.href.length)
         displayPage(getPageForId(id))
     } else if (url.searchParams.get("position")) {
-        console.log("found position")
         var pos = parseInt(url.searchParams.get("position"))
-        console.log("jumping to position " + pos)
         displayPage(getPageForPosition(pos))
     }
 }
@@ -121,8 +111,6 @@ function addPage() {
     document.pageContainer = pageContainer
 
     initializeZoom()
-
-    //page.addEventListener("click", toggleTools)
 }
 
 function num(s, def) {
@@ -141,26 +129,17 @@ function num(s, def) {
 
 function setFontSize(withResize) {
     var zoom = getZoom()
+    console.log("zoom: " + zoom)
     var baseFontSize = 1.2
     if (onMobile()) {
         baseFontSize = 2.4
     }
     var currentFontSize = zoom * baseFontSize
+    console.log("font size: " + currentFontSize)
     var page = document.getElementById("page")
-    page.style['font-size'] = currentFontSize + 'em'
+    page.style.setProperty('font-size', currentFontSize + 'em', 'important' )
     if (withResize) resize()
 }
-
-/*function updateFontSize() {
-    //var currentFontSize = document.getElementById("page").style["font-size"]
-    var page = document.getElementById("page")
-    var currentFontSize = window.getComputedStyle(page, null).getPropertyValue('font-size')
-    console.log(currentFontSize)
-    currentFontSize = num(currentFontSize, 10) * 1.2
-    console.log(currentFontSize)
-    page.style['font-size'] = currentFontSize + 'px'
-    resize()
-}*/
 
 function setZoom(zoomValue) {
     document.bookZoom = zoomValue
@@ -230,8 +209,6 @@ function addTools() {
     actionsParagraph.appendChild(goBack)
     var tocLink = document.createElement("a")
     tocLink.innerHTML = "toc"
-    //var tocLinkValue = getMeta("tocLink")
-    //var tocLinkValueSplit = splitLink(tocLinkValue)
     tocLink.href = "/book?id=" + getBookId() + "&path=toc"
     actionsParagraph.appendChild(tocLink)
     var removeProgressLink = document.createElement("a")
@@ -283,7 +260,6 @@ function previousPage() {
         copyTextToPage(document.pages[document.currentPage], document.pages[document.currentPage + 1])
         reportPosition(document.pages[document.currentPage])
     } else {
-        console.log("beginning of doc")
         var bookId = getBookId()
         var prevSection = getMeta("prevSection")
         if (prevSection && prevSection.length > 0 && bookId && bookId.length > 0) {
@@ -299,7 +275,6 @@ function nextPage() {
         copyTextToPage(document.pages[document.currentPage], document.pages[document.currentPage + 1])
         reportPosition(document.pages[document.currentPage])
     } else {
-        console.log("end of doc")
         var bookId = getBookId()
         var nextSection = getMeta("nextSection")
         if (bookId && bookId.length > 0) {
@@ -318,8 +293,6 @@ function displayPage(page) {
         var startPosition = document.pages[page]
         copyTextToPage(startPosition, document.pages[page + 1])
         reportPosition(startPosition)
-    } else {
-        console.log("page out of range")
     }
 }
 
@@ -328,7 +301,6 @@ function clearPage() {
 }
 
 function computeStartPositionsOfElements(root) {
-    console.log("computing start positions of elements")
     var positionToElement = []
     var idPositions = []
     var recursive = function(element, currentPosition) {
@@ -350,7 +322,6 @@ function computeStartPositionsOfElements(root) {
     recursive(root, 0)
     setPositions(positionToElement)
     setIdPositions(idPositions)
-    console.log("computed start positions")
     return positionToElement
 }
 
@@ -401,7 +372,6 @@ function getMaxPosition() {
 }
 
 function findPage(startPosition, initialJump) {
-    console.log("find page " + startPosition + " " + initialJump)
     var previousEndPosition = null
     var endPosition = findNextSpaceForPosition(startPosition + initialJump)
     copyTextToPage(startPosition, endPosition)
@@ -410,13 +380,11 @@ function findPage(startPosition, initialJump) {
         endPosition = findNextSpaceForPosition(endPosition + 1)
         copyTextToPage(startPosition, endPosition)
     }
-    console.log("grew to position " + endPosition)
     while (scrollNecessary() && (endPosition > startPosition)) {
         previousEndPosition = endPosition
         endPosition = findPreviousSpaceForPosition(endPosition - 1)
         copyTextToPage(startPosition, endPosition)
     }
-    console.log("shrank to position " + endPosition)
     if (endPosition == startPosition) return previousEndPosition
     return endPosition
 }
@@ -425,14 +393,11 @@ function findPages() {
     var pagesKey = getBookId() + "_" + getCurrentSection() + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
     var savedPages = window.sessionStorage.getItem(pagesKey)
     if (savedPages) {
-        console.log("retrieving saved pages")
-        console.log(savedPages)
         var stringPages = savedPages.split(",")
         var parsedSavedPages = []
         for (var i = 0; i < stringPages.length; i++) {
             parsedSavedPages[i] = parseInt(stringPages[i])
         }
-        console.log(parsedSavedPages)
         document.pages = parsedSavedPages
     } else {
         var pages = []

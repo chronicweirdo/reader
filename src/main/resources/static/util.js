@@ -6,8 +6,8 @@ function onMobile() {
         || navigator.userAgent.match(/iPod/i)
         || navigator.userAgent.match(/BlackBerry/i)
         || navigator.userAgent.match(/Windows Phone/i)) {
-            return true
-        } else {
-            return false
-        }
+        return true
+    } else {
+        return false
+    }
 }
