@@ -100,23 +100,38 @@ function mouseWheelScroll(event, scrollAction, scrollEndAction) {
 }
 
 function mouseDown(event, callback) {
-    //event.preventDefault()
-    gestures.mouseDownX = event.clientX
-    gestures.mouseDownY = event.clientY
-    gestures.mousePressed = true
+    if (event.button == 0) {
+        //event.preventDefault()
+        gestures.mouseDownX = event.clientX
+        gestures.mouseDownY = event.clientY
+        gestures.mousePressed = true
 
-    if (callback) callback(event.clientX, event.clientY)
+        if (callback) callback(event.clientX, event.clientY)
+    }
 }
 
 function mouseUp(event, clickAction, doubleClickAction, tripleClickAction) {
-    gestures.mousePressed = false
-    if (gestures.mouseDownX == event.clientX && gestures.mouseDownY == event.clientY) {
-        // the mouse did not move, it's a click
-        click(event, clickAction, doubleClickAction, tripleClickAction)
+    if (event.button == 0) {
+        gestures.mousePressed = false
+        if (gestures.mouseDownX == event.clientX && gestures.mouseDownY == event.clientY) {
+            // the mouse did not move, it's a click
+            click(event, clickAction, doubleClickAction, tripleClickAction)
+        }
     }
 }
 
 function click(event, clickAction, doubleClickAction, tripleClickAction) {
+    // fixing click on links - this is the correct fix for click on links, go up the parent hierarchy
+    // but it will be removed because it will no longer be necessary
+    /*var current = event.target
+    while (current != null) {
+        var href = current.getAttribute("href")
+        if (href) {
+            window.location = href
+        }
+        current = current.parentElement
+    }*/
+
     event.preventDefault()
     var timestamp = + new Date()
     gestures.clickTimestamp.push(timestamp)
@@ -133,11 +148,7 @@ function click(event, clickAction, doubleClickAction, tripleClickAction) {
         }
         gestures.clickTimestamp.shift()
     })
-    // fixing click on links
-    var href = event.target.getAttribute("href")
-    if (href) {
-        window.location = href
-    }
+
 }
 
 function delayed(callback) {

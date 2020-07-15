@@ -13,33 +13,6 @@ function setup() {
         "rightAction": nextPage
     })
 
-    enableGesturesOnElement(document.getElementById("pageContainer"), {
-        "scrollEndAction": (z, y, scroll) => {
-            if (scroll < 0) {
-                setZoom(getZoom() + .1)
-            } else {
-                setZoom(getZoom() - .1)
-            }
-        },
-        "pinchEndAction": (zoom, x, y) => {
-            if (zoom > 1) {
-                setZoom(getZoom() + .1)
-            } else {
-                setZoom(getZoom() - .1)
-            }
-        },
-        "panEndAction": (dx, dy) => {
-            if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) {
-                    previousPage()
-                } else {
-                    nextPage()
-                }
-            }
-        },
-        "doubleClickAction": toggleTools
-    })
-
     window.setTimeout(function() {
         computeStartPositionsOfElements(document.getElementById("content"))
         var st = new Date()
