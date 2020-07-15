@@ -112,8 +112,6 @@ body {
 #tools a {
     color: gold;
     text-decoration: underline;
-    /*margin-left: .5em;
-    margin-right: .5em;*/
     display: inline-block;
 }
 #actions {

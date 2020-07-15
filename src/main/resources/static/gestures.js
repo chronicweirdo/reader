@@ -152,7 +152,7 @@ function click(event, clickAction, doubleClickAction, tripleClickAction) {
 }
 
 function delayed(callback) {
-    window.setTimeout(callback, 400)
+    window.setTimeout(callback, 250)
 }
 
 function mouseMove(event, callback) {
