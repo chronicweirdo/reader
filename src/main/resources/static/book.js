@@ -109,13 +109,11 @@ function num(s, def) {
 
 function setFontSize(withResize) {
     var zoom = getZoom()
-    console.log("zoom: " + zoom)
     var baseFontSize = 1.2
     if (onMobile()) {
         baseFontSize = 2.4
     }
     var currentFontSize = zoom * baseFontSize
-    console.log("font size: " + currentFontSize)
     var page = document.getElementById("page")
     page.style.setProperty('font-size', currentFontSize + 'em', 'important' )
     if (withResize) resize()
@@ -532,8 +530,6 @@ function getBookId() {
 }
 
 function toggleTools(e) {
-    console.log(e)
-    console.log("toggling tools")
     var tools = document.getElementById("toolsContainer")
     if (tools.style.visibility == "hidden") {
         tools.style.visibility = "visible"
