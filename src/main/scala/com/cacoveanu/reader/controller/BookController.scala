@@ -1,5 +1,8 @@
 package com.cacoveanu.reader.controller
 
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
 import com.cacoveanu.reader.entity.{Content, Setting}
 import com.cacoveanu.reader.service.{BookService, ContentService, SettingService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, HtmlUtil}
@@ -46,7 +49,7 @@ class BookController @Autowired()(private val contentService: ContentService,
   def getBookResource(@RequestParam("id") bookId: String,
                       @RequestParam("path") path: String,
                       @RequestParam(name = "position", required = false) position: java.lang.Long) = {
-    toResponseEntity(contentService.loadResource(bookId, path))
+    toResponseEntity(contentService.loadResource(bookId, URLDecoder.decode(path, StandardCharsets.UTF_8.name())))
   }
 
   @RequestMapping(Array("/openBook"))
