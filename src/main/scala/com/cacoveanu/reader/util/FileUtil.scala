@@ -49,6 +49,7 @@ object FileUtil {
       case "html" => Some(FileMediaTypes.TEXT_HTML_VALUE)
       case "htm" => Some(FileMediaTypes.TEXT_HTML_VALUE)
       case "xhtml" => Some(FileMediaTypes.TEXT_HTML_VALUE)
+      case "xml" => Some(FileMediaTypes.TEXT_HTML_VALUE)
       case "css" => Some(FileMediaTypes.TEXT_CSS_VALUE)
       case _ => None
     }
