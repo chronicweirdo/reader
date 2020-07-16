@@ -54,6 +54,8 @@ function jumpToLocation() {
     } else if (url.searchParams.get("position")) {
         var pos = parseInt(url.searchParams.get("position"))
         displayPage(getPageForPosition(pos))
+    } else {
+        displayPage(0)
     }
 }
 
@@ -432,7 +434,7 @@ function findPages() {
     }
 
     document.currentPage = 0
-    copyTextToPage(document.pages[0], document.pages[1])
+    /*copyTextToPage(document.pages[0], document.pages[1])*/
 }
 
 function getViewportWidth() {
