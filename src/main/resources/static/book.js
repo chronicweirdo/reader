@@ -420,7 +420,8 @@ function findPages() {
         var pages = []
         pages.push(0)
         var jump = 100
-        while (pages[pages.length - 1] < getMaxPosition() && pages.length < 100) {
+        // todo: some sections can have over 100 pages, analyze the algorithm better and see if further optimization is possible
+        while (pages[pages.length - 1] < getMaxPosition() && pages.length < 1000) {
             if (pages.length > 2) jump = pages[pages.length - 1] - pages[pages.length - 2]
             var endPosition = findPage(pages[pages.length - 1], jump)
             pages.push(endPosition)
