@@ -52,11 +52,9 @@ body {
 }
 
 #page {
-    /*border: 1px solid #ff0000aa;*/
     padding: 1vmax;
-    /*margin: 1vh 1vw;*/
-    font-size: 1.2em;
     color: black;
+    font-family: Georgia, serif;
 }
 
 #loading {
