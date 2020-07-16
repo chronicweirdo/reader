@@ -1,5 +1,8 @@
 package com.cacoveanu.reader.service
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
@@ -51,7 +54,7 @@ class ContentService {
       </head>
       <body>
         {book.toc.asScala.filter(_.fromToc).sortBy(_.index).map(e => {
-        <p><a href={e.link}>{e.title}</a></p>
+        <p><a href={URLEncoder.encode(e.link, StandardCharsets.UTF_8.name())}>{if (e.title != null && e.title.length > 0) e.title else e.index}</a></p>
       })}
       </body>
     </html>).toString()

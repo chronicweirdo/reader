@@ -1,6 +1,8 @@
 package com.cacoveanu.reader.util
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -100,7 +102,7 @@ object EpubUtil {
         .flatMap(id =>
           (opf \ "manifest" \ "item")
             .find(n => (n \ "@id").text == id)
-            .map(n => (n \ "@href").text)
+            .map(n => URLDecoder.decode((n \ "@href").text, StandardCharsets.UTF_8.name()))
         )
         .zipWithIndex
         .map(e => new TocEntry(
@@ -119,7 +121,7 @@ object EpubUtil {
           true,
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
-          getAbsoluteEpubPath(ncxPath, (n \ "content" \ "@src").text)
+          getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name()))
         ))
     }
   }
