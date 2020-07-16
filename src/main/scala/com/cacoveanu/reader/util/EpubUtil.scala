@@ -234,7 +234,7 @@ object EpubUtil {
 
     val coverResource = coverId.flatMap(id => {
         (contentOpf \\ "manifest" \ "item")
-          .find(node => (node \ "@id").text == id )
+          .find(node => (node \ "@id").text == id || (node \ "@properties").text == id)
           .map(node => (
             getAbsoluteEpubPath(opfPath, (node \ "@href").text),
             (node \ "@media-type").text)
