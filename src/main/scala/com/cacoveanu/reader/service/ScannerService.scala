@@ -15,6 +15,8 @@ import scala.beans.BeanProperty
 import com.cacoveanu.reader.util.SeqUtil.AugmentedSeq
 import org.springframework.scheduling.annotation.Scheduled
 
+import scala.concurrent.{ExecutionContext, Future}
+
 @Service
 class ScannerService {
 
@@ -40,16 +42,28 @@ class ScannerService {
   @Scheduled(cron = "0 0 */3 * * *")
   def scheduledRescan() = scan()
 
-  private def scan() = {
-    val foundIds = FileUtil.scanFilesRegexWithChecksum(libraryLocation, SUPPORTED_FILES_REGEX)
+  private implicit val executionContext = ExecutionContext.global
+
+  private def scan() = Future {
+    log.info("scanning library")
+    val t1 = System.currentTimeMillis()
+    val filesOnDisk = FileUtil.scanFilesRegexWithChecksum(libraryLocation, SUPPORTED_FILES_REGEX)
+    val t2 = System.currentTimeMillis()
+    log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
+    val foundIds = filesOnDisk
       .toSeq
       .toBatches(DB_BATCH_SIZE)
       .flatMap(batch => {
         val books = batch.flatMap { case (checksum, path) => scanFile(checksum, path) }
         bookRepository.saveAll(books.asJava).asScala.map(_.id)
       })
+    val t3 = System.currentTimeMillis()
+    log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
     val toDelete = bookRepository.findByIdNotIn(foundIds.asJava).asScala
     bookRepository.deleteAll(toDelete.asJava)
+    val t4 = System.currentTimeMillis()
+    log.info(s"deleting missing files took ${t4 - t3} milliseconds")
+    log.info(s"full scan done, took ${t4 - t1} milliseconds")
   }
 
   private def scanFile(checksum: String, path: String): Option[Book] = {
