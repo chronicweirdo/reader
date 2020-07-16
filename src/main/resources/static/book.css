@@ -17,7 +17,7 @@ body {
     left: 0;
     width: 5vw;
     height: 100vh;
-    background-color: #00ff0077;
+    /*background-color: #00ff0077;*/
 }
 
 #next {
@@ -27,7 +27,7 @@ body {
     right: 0;
     width: 5vw;
     height: 100vh;
-    background-color: #0000ff77;
+    /*background-color: #0000ff77;*/
 }
 
 #toolsButton {
@@ -37,7 +37,7 @@ body {
     left: 5vw;
     width: 90vw;
     height: 5vh;
-    background-color: #1a1a1a77;
+    /*background-color: #1a1a1a77;*/
 }
 
 #pageContainer {
@@ -97,6 +97,8 @@ body {
 }
 #tools h1 {
     margin-bottom: 2vh;
+    margin-left: .1em;
+    margin-right: .1em;
     font-size: 1em;
 }
 #tools p {
