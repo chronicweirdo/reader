@@ -19,4 +19,6 @@ trait BookRepository extends JpaRepository[Book, String] {
     nativeQuery = true
   )
   def findAllCollections(): java.util.List[String]
+
+  def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
 }
