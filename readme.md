@@ -369,3 +369,26 @@ Method to insert variables in css with thymeleaf: https://stackoverflow.com/ques
 ## Removing Files from Git History
 
 https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-data-from-a-repository
+
+## Finalizing functionality
+
+- remove checksum as book id
+    - while this approach is great in theory, in practice, when working with a huge book library, scanning that library for updates can take a very long time
+    - the disadvantage is that we may lose progress when moving files around and reorganizing the library
+    - the solution is to not reorganize the library so much; and maybe improve the search and book metadata (including comics)
+    - the advantage is that we can optimize library scanning
+    - discovering files on disk with checksum took over 7 minutes
+    - scanning the files and extracting metadata took almost 11 minutes
+    - whole scan operation took over 18 minutes, and with a lot of disk activity!
+    
+```
+2020-07-16 18:38:43 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - scanning library
+2020-07-16 18:46:38 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - discovering files on disk took 475412 milliseconds
+2020-07-16 18:57:34 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - scanning and saving files took 656162 milliseconds
+2020-07-16 18:57:34 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - deleting missing files took 185 milliseconds
+2020-07-16 18:57:34 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - full scan done, took 1131759 milliseconds
+```
+    
+- create admin account, add functionality for creating and deleting users only for that account
+    - add admin username and initial password to the properties file, user to be created if it does not exist
+- create functionality for import/export of user and progress data (to/from csv, done from browser, independent of the db behind the application)
