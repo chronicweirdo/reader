@@ -83,7 +83,7 @@ object EpubUtil {
 
   private def getSectionSize(epubPath: String, sectionPath: String) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
-    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm") {
+    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
         //.flatMap(getXml)
         .map(bytes => new String(bytes, "UTF-8"))
@@ -126,33 +126,7 @@ object EpubUtil {
     }
   }
 
-  // todo: need to get the toc from the opf file, ncs is not reliable enough, don't know what to do about titles
-  // todo: also, try to get the title from NCX, or otherwise from the linked documents themselves?
   def getToc(epubPath: String) = {
-    /*val toc = getOpf(epubPath).map { case (opfPath, opf) =>
-      (opf \ "spine" \ "itemref")
-        .map(n => (n \ "@idref").text)
-        .flatMap(id =>
-          (opf \ "manifest" \ "item")
-            .find(n => (n \ "@id").text == id)
-            .map(n => (n \ "@href").text)
-        )
-        .zipWithIndex
-        .map(e => new TocEntry(
-          e._2,
-          e._1,
-          getAbsoluteEpubPath(opfPath, e._1)
-        ))
-    }.getOrElse(Seq())*/
-
-    /*val toc = getNcx(epubPath).map { case (opfPath, opf) =>
-      (opf \ "navMap" \ "navPoint")
-        .map(n => new TocEntry(
-          (n \ "@playOrder").text.toInt,
-          (n \ "navLabel" \ "text").text,
-          getAbsoluteEpubPath(opfPath, (n \ "content" \ "@src").text)
-        ))
-    }.getOrElse(Seq())*/
     val toc = getTocFromOpf(epubPath).getOrElse(Seq()) ++ getTocFromNcx(epubPath).getOrElse(Seq())
 
     val sections = getSections(toc).map(s => s.resource)
