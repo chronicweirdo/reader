@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service
 
 import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
+import com.cacoveanu.reader.util.SeqUtil.AugmentedSeq
+import org.springframework.scheduling.annotation.Scheduled
 
 @Service
 class ScannerService {
@@ -19,6 +21,7 @@ class ScannerService {
   private val log: Logger = LoggerFactory.getLogger(classOf[ScannerService])
   private val SUPPORTED_FILES_REGEX = s".+\\.(${FileTypes.CBR}|${FileTypes.CBZ}|${FileTypes.EPUB})$$"
   private val COVER_RESIZE_MINIMAL_SIDE = 500
+  private val DB_BATCH_SIZE = 20
 
   @Value("${library.location}")
   @BeanProperty
@@ -34,10 +37,19 @@ class ScannerService {
   @PostConstruct
   def updateLibrary() = scan()
 
-  def scan() = {
-    val books = FileUtil.scanFilesRegexWithChecksum(libraryLocation, SUPPORTED_FILES_REGEX)
-      .flatMap { case (checksum, path) => scanFile(checksum, path) }
-    bookRepository.saveAll(books.asJava)
+  @Scheduled(cron = "0 0 */3 * * *")
+  def scheduledRescan() = scan()
+
+  private def scan() = {
+    val foundIds = FileUtil.scanFilesRegexWithChecksum(libraryLocation, SUPPORTED_FILES_REGEX)
+      .toSeq
+      .toBatches(DB_BATCH_SIZE)
+      .flatMap(batch => {
+        val books = batch.flatMap { case (checksum, path) => scanFile(checksum, path) }
+        bookRepository.saveAll(books.asJava).asScala.map(_.id)
+      })
+    val toDelete = bookRepository.findByIdNotIn(foundIds.asJava).asScala
+    bookRepository.deleteAll(toDelete.asJava)
   }
 
   private def scanFile(checksum: String, path: String): Option[Book] = {
@@ -96,16 +108,12 @@ class ScannerService {
     val collection = getCollection(path)
     val cover = EpubUtil.getCover(path)
     val toc = EpubUtil.getToc(path)
-    //val tocLink = EpubUtil.getTocLink(path)
-    //val sections = EpubUtil.getSections(path, toc)
-    //val size = sections.lastOption.map(e => e.start + e.size).getOrElse(0)
     val size = EpubUtil.getSections(toc).lastOption.map(e => e.start + e.size).getOrElse(0)
     cover match {
       case Some(c) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
         val book = new Book(id, path, title, author, collection, c.mediaType, smallerCover, size)
         book.toc = toc.asJava
-        //tocLink.foreach(s => book.tocLink = s)
         Some(book)
       case _ =>
         log.warn(s"failed to scan $path")
