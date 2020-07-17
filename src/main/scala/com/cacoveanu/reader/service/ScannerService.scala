@@ -2,8 +2,8 @@ package com.cacoveanu.reader.service
 
 import java.nio.file.Paths
 
-import com.cacoveanu.reader.entity.Book
-import com.cacoveanu.reader.repository.BookRepository
+import com.cacoveanu.reader.entity.{Book, Progress}
+import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileTypes, FileUtil}
 import javax.annotation.PostConstruct
 import org.slf4j.{Logger, LoggerFactory}
@@ -34,18 +34,21 @@ class ScannerService {
   var bookRepository: BookRepository = _
 
   @BeanProperty
+  @Autowired
+  var progressRepository: ProgressRepository = _
+
+  @BeanProperty
   @Autowired var imageService: ImageService = _
 
   @PostConstruct
   def updateLibrary() = scan()
 
   @Scheduled(cron = "0 0 */3 * * *")
-  //@Scheduled(cron = "0 */5 * * * *")
   def scheduledRescan() = scan()
 
   private implicit val executionContext = ExecutionContext.global
 
-  private def scan() = Future {
+  def scan() = Future {
     log.info("scanning library")
     val t1 = System.currentTimeMillis()
 
@@ -57,20 +60,35 @@ class ScannerService {
 
     val t2 = System.currentTimeMillis()
     log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
-    val foundIds = newFiles
+    val newBooks: Seq[Book] = newFiles
       .toSeq
       .toBatches(DB_BATCH_SIZE)
       .flatMap(batch => {
         val books = batch.flatMap(path => scanFile(path))
-        bookRepository.saveAll(books.asJava).asScala.map(_.id)
+        bookRepository.saveAll(books.asJava).asScala
       })
     val t3 = System.currentTimeMillis()
     log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
     val toDelete = bookRepository.findByPathIn(deletedFiles.toSeq.asJava)
+    val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
+    val matchedProgress = toDeleteProgress.flatMap(p =>
+      findEquivalent(p.book, newBooks)
+        .map(newBook => new Progress(p.user, newBook, p.section, p.position, p.lastUpdate, p.finished))
+    )
+    progressRepository.saveAll(matchedProgress.asJava)
     bookRepository.deleteAll(toDelete)
     val t4 = System.currentTimeMillis()
     log.info(s"deleting missing files took ${t4 - t3} milliseconds")
     log.info(s"full scan done, took ${t4 - t1} milliseconds")
+  }
+
+  private def findEquivalent(oldBook: Book, newBooks: Seq[Book]) = {
+    val candidates = newBooks.filter(b => b.title == oldBook.title && b.author == oldBook.author)
+    if (candidates.size == 1) {
+      Some(candidates.head)
+    } else {
+      None
+    }
   }
 
   private def scanFile(path: String): Option[Book] = {
