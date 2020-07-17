@@ -16,4 +16,6 @@ class Account {
   var username: String = _
 
   var password: String = _
+
+  var admin: Boolean = _
 }

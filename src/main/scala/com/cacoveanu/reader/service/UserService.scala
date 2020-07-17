@@ -5,7 +5,7 @@ import java.util
 import com.cacoveanu.reader.entity.Account
 import com.cacoveanu.reader.repository.AccountRepository
 import javax.annotation.PostConstruct
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.{UserDetails, UserDetailsService}
 import org.springframework.stereotype.Service
@@ -21,7 +21,11 @@ class ReaderAuthority(name: String) extends GrantedAuthority {
 
 class UserPrincipal(val user: Account) extends UserDetails {
   override def getAuthorities: util.Collection[_ <: GrantedAuthority] = {
-    Seq(new ReaderAuthority("USER")).asJava
+    if (user.admin) {
+      Seq(new ReaderAuthority("ROLE_ADMIN")).asJava
+    } else {
+      Seq(new ReaderAuthority("ROLE_USER")).asJava
+    }
   }
 
   override def getPassword: String = user.password
@@ -44,14 +48,19 @@ class UserService extends UserDetailsService {
 
   @BeanProperty @Autowired var passwordEncoder: PasswordEncoder = _
 
+  @Value("${adminPass}")
+  @BeanProperty
+  var adminPass: String = _
+
   @PostConstruct
   def defaultUser(): Unit = {
-    val defaultUserName = "test"
-    val existingUser = userRepository.findByUsername(defaultUserName)
+    val adminUsername = "admin"
+    val existingUser = userRepository.findByUsername(adminUsername)
     val user = new Account()
     if (existingUser != null) user.id = existingUser.id
-    user.username = defaultUserName
-    user.password = passwordEncoder.encode("test")
+    user.username = adminUsername
+    user.password = passwordEncoder.encode(adminPass)
+    user.admin = true
     userRepository.save(user)
   }
 

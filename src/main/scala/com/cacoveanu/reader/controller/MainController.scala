@@ -118,6 +118,15 @@ class MainController @Autowired()(
     scannerService.scan()
     new RedirectView("/")
   }
+
+  @RequestMapping(
+    value=Array("/exportprogress"),
+    method=Array(RequestMethod.GET)
+  )
+  @ResponseBody
+  def exportProgress() = {
+    "you have access"
+  }
 }
 
 case class CollectionPage(
