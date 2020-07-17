@@ -1,13 +1,14 @@
 package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, SettingService, UserService}
+import com.cacoveanu.reader.service.{BookService, ScannerService, SettingService, UserService}
 import com.cacoveanu.reader.util.{SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
+import org.springframework.web.servlet.view.RedirectView
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -15,8 +16,8 @@ import scala.jdk.CollectionConverters._
 @Controller
 class MainController @Autowired()(
                                    private val bookService: BookService,
-                                   private val accountService: UserService,
-                                   private val settingService: SettingService) {
+                                   private val settingService: SettingService,
+                                   private val scannerService: ScannerService) {
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {
@@ -107,6 +108,15 @@ class MainController @Autowired()(
   @ResponseBody
   def loadSettings(@RequestParam("name") name: Seq[String]) = {
     name.map(n => (n, settingService.getSetting(n))).toMap.asJava
+  }
+
+  @RequestMapping(
+    value=Array("/scan"),
+    method=Array(RequestMethod.GET)
+  )
+  def scan() = {
+    scannerService.scan()
+    new RedirectView("/")
   }
 }
 
