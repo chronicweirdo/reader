@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.{UserDetails, UserDetailsSe
 import org.springframework.stereotype.Service
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
+import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -54,7 +55,7 @@ class UserService extends UserDetailsService {
 
   @PostConstruct
   def defaultUser(): Unit = {
-    val adminUsername = "admin"
+    val adminUsername = Account.ADMIN_USERNAME
     val existingUser = userRepository.findByUsername(adminUsername)
     val user = new Account()
     if (existingUser != null) user.id = existingUser.id
@@ -69,6 +70,10 @@ class UserService extends UserDetailsService {
     Option(dbUser)
   }
 
+  def loadAllUsers = {
+    userRepository.findAll().asScala.filter(u => u.username != Account.ADMIN_USERNAME).toSeq
+  }
+
   def changePassword(user: Account, oldPassword: String, newPassword: String): Boolean = {
     if (passwordEncoder.matches(oldPassword, user.password)) {
       user.password = passwordEncoder.encode(newPassword)
@@ -77,6 +82,29 @@ class UserService extends UserDetailsService {
     } else {
       false
     }
+  }
+
+  def addUser(username: String, password: String) = {
+    try {
+      val user = new Account()
+      user.username = username
+      user.password = passwordEncoder.encode(password)
+      userRepository.save(user).id != null
+    } catch {
+      case _: Throwable => false
+    }
+  }
+
+  def deleteUser(username: String) = {
+    if (username != Account.ADMIN_USERNAME) {
+      try {
+        val user = userRepository.findByUsername(username)
+        userRepository.delete(user)
+        true
+      } catch {
+        case _: Throwable => false
+      }
+    } else false
   }
 
   override def loadUserByUsername(username: String): UserDetails = {

@@ -30,7 +30,10 @@ class MainController @Autowired()(
   def loadHelp(): String = "help"
 
   @RequestMapping(Array("/settings"))
-  def loadSettings(): String = "settings"
+  def loadSettings(model: Model): String = {
+    model.addAttribute("admin", SessionUtil.getUser().admin)
+    "settings"
+  }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
@@ -117,15 +120,6 @@ class MainController @Autowired()(
   def scan() = {
     scannerService.scan()
     new RedirectView("/")
-  }
-
-  @RequestMapping(
-    value=Array("/exportprogress"),
-    method=Array(RequestMethod.GET)
-  )
-  @ResponseBody
-  def exportProgress() = {
-    "you have access"
   }
 }
 
