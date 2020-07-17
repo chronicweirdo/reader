@@ -19,7 +19,7 @@ object HtmlUtil {
   implicit class AugmentedJsoupDocument(doc: Document) {
     def addResources(resources: Seq[(String, String)]): Document = appendResources(doc, resources)
     def addMeta(meta: Map[String, String]): Document = appendMeta(doc, meta)
-    def transformLinks(contextPath: String, bookId: String, keepStyles: Boolean): Document = transformLinksInternal(doc, contextPath, bookId, keepStyles)
+    def transformLinks(contextPath: String, bookId: java.lang.Long, keepStyles: Boolean): Document = transformLinksInternal(doc, contextPath, bookId, keepStyles)
     def asString: String = doc.toString
     def bodyText: String = extractBodyText(doc)
   }
@@ -58,7 +58,7 @@ object HtmlUtil {
     doc
   }
 
-  private def transformLinksInternal(doc: Document, contextPath: String, bookId: String, keepStyles: Boolean) = {
+  private def transformLinksInternal(doc: Document, contextPath: String, bookId: java.lang.Long, keepStyles: Boolean) = {
     doc.select("a").forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
     doc.select("link")
       .forEach(a => a.attr("href", transformLink(a.attr("href"), contextPath, bookId)))
@@ -71,7 +71,7 @@ object HtmlUtil {
     doc
   }
 
-  private def transformLink(originalLink: String, contextPath: String, bookId: String): String = {
+  private def transformLink(originalLink: String, contextPath: String, bookId: java.lang.Long): String = {
     val remoteUri = new URI(originalLink)
     if (remoteUri.isAbsolute) {
       originalLink

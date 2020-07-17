@@ -38,7 +38,7 @@ class MainController @Autowired()(
       else bookService.search(term, page)
 
     val progress: Seq[Progress] = bookService.loadProgress(books)
-    val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
+    val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
 
     val collections = books.map(c => c.collection).distinct.sorted
     val uiBooks = books
@@ -76,7 +76,7 @@ class MainController @Autowired()(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)
   )
-  def removeProgress(@RequestParam("id") id: String): ResponseEntity[String] = {
+  def removeProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[String] = {
     if (bookService.deleteProgress(id)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
@@ -85,7 +85,7 @@ class MainController @Autowired()(
     value=Array("/markProgress"),
     method=Array(RequestMethod.PUT)
   )
-  def markProgress(@RequestParam("id") id: String,
+  def markProgress(@RequestParam("id") id: java.lang.Long,
                    @RequestParam(name = "path", required = false) section: String,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
     if (bookService.saveProgress(id, section, position)) new ResponseEntity[String](HttpStatus.OK)
@@ -116,7 +116,7 @@ case class CollectionPage(
                          )
 
 case class UiBook(
-                    @BeanProperty id: String,
+                    @BeanProperty id: java.lang.Long,
                     @BeanProperty collection: String,
                     @BeanProperty title: String,
                     @BeanProperty cover: String,

@@ -47,14 +47,14 @@ class ScannerService {
   private def scan() = Future {
     log.info("scanning library")
     val t1 = System.currentTimeMillis()
-    val filesOnDisk = FileUtil.scanFilesRegexWithChecksum(libraryLocation, SUPPORTED_FILES_REGEX)
+    val filesOnDisk = FileUtil.scanFilesRegex(libraryLocation, SUPPORTED_FILES_REGEX)
     val t2 = System.currentTimeMillis()
     log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
     val foundIds = filesOnDisk
       .toSeq
       .toBatches(DB_BATCH_SIZE)
       .flatMap(batch => {
-        val books = batch.flatMap { case (checksum, path) => scanFile(checksum, path) }
+        val books = batch.flatMap(path => scanFile(path))
         bookRepository.saveAll(books.asJava).asScala.map(_.id)
       })
     val t3 = System.currentTimeMillis()
@@ -66,11 +66,11 @@ class ScannerService {
     log.info(s"full scan done, took ${t4 - t1} milliseconds")
   }
 
-  private def scanFile(checksum: String, path: String): Option[Book] = {
+  private def scanFile(path: String): Option[Book] = {
     FileUtil.getExtension(path) match {
-      case FileTypes.CBR => scanCbr(checksum, path)
-      case FileTypes.CBZ => scanCbz(checksum, path)
-      case FileTypes.EPUB => scanEpub(checksum, path)
+      case FileTypes.CBR => scanCbr(path)
+      case FileTypes.CBZ => scanCbz(path)
+      case FileTypes.EPUB => scanEpub(path)
       case _ => None
     }
   }
@@ -81,8 +81,7 @@ class ScannerService {
     collectionPath.toString
   }
 
-  private def scanCbr(checksum: String, path: String): Option[Book] = {
-    val id = checksum
+  private def scanCbr(path: String): Option[Book] = {
     val title = FileUtil.getFileName(path)
     val author = ""
     val collection = getCollection(path)
@@ -91,15 +90,14 @@ class ScannerService {
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, s))
+        Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
       case _ =>
         log.warn(s"failed to scan $path")
         None
     }
   }
 
-  private def scanCbz(checksum: String, path: String): Option[Book] = {
-    val id = checksum
+  private def scanCbz(path: String): Option[Book] = {
     val title = FileUtil.getFileName(path)
     val author = ""
     val collection = getCollection(path)
@@ -108,15 +106,14 @@ class ScannerService {
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        Some(new Book(id, path, title, author, collection, c.mediaType, smallerCover, s))
+        Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
       case _ =>
         log.warn(s"failed to scan $path")
         None
     }
   }
 
-  private[service] def scanEpub(checksum: String, path: String): Option[Book] = {
-    val id = checksum
+  private[service] def scanEpub(path: String): Option[Book] = {
     val title = EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path))
     val author = EpubUtil.getAuthor(path).getOrElse("")
     val collection = getCollection(path)
@@ -126,7 +123,7 @@ class ScannerService {
     cover match {
       case Some(c) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-        val book = new Book(id, path, title, author, collection, c.mediaType, smallerCover, size)
+        val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size)
         book.toc = toc.asJava
         Some(book)
       case _ =>

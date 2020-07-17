@@ -3,13 +3,14 @@ package com.cacoveanu.reader.entity
 import com.cacoveanu.reader.util.EpubUtil
 
 import scala.jdk.CollectionConverters._
-import javax.persistence.{CascadeType, Column, Entity, FetchType, Id, JoinColumn, OneToMany, Transient}
+import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, OneToMany, Transient}
 
 @Entity
 class Book {
 
   @Id
-  var id: String = _
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  var id: java.lang.Long = _
 
   @Column(unique = true)
   var path: String = _
@@ -35,9 +36,8 @@ class Book {
   @Transient
   def getSections(): Seq[TocEntry] = EpubUtil.getSections(toc.asScala.toSeq)
 
-  def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
+  def this(path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
     this()
-    this.id = id
     this.path = path
     this.title = title
     this.author = author

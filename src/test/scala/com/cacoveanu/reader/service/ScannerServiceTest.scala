@@ -15,7 +15,7 @@ class ScannerServiceTest {
     //service.libraryLocation = "d:\\books"
     service.libraryLocation = Paths.get("src", "test", "resources").toString
     service.imageService = new ImageService
-    val book = service.scanEpub("x", path1)
+    val book = service.scanEpub(path1)
     println(book)
   }
 }

@@ -30,7 +30,7 @@ class ContentService {
   var keepEbookStyles: Boolean = _
 
   //@Cacheable(Array("resource"))
-  def loadResource(bookId: String, resourcePath: String): Option[Content] = {
+  def loadResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
           case FileTypes.EPUB if resourcePath == "toc" =>
@@ -66,7 +66,7 @@ class ContentService {
   }
 
   @Cacheable(Array("resources"))
-  def loadResources(bookId: String, positions: Seq[Int]): Seq[Content] = {
+  def loadResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
     bookRepository.findById(bookId).asScala match {
       case Some(book) => FileUtil.getExtension(book.path) match {
         /*case FileTypes.EPUB =>
@@ -140,7 +140,7 @@ class ContentService {
         "nextSection" -> next,
         "prevSection" -> prev,
         "currentSection" -> currentPath,
-        "bookId" -> book.id,
+        "bookId" -> book.id.toString,
         "sectionSize" -> size.toString,
         "sectionStart" -> start.toString,
         "title" -> book.title,
