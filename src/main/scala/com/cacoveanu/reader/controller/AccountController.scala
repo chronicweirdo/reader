@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.controller
 
-import com.cacoveanu.reader.service.UserService
+import com.cacoveanu.reader.service.{BookService, UserService}
 import com.cacoveanu.reader.util.SessionUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -13,7 +13,8 @@ import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
 
 @Controller
-class AccountController @Autowired()(private val accountService: UserService) {
+class AccountController @Autowired()(private val accountService: UserService,
+                                     private val bookService: BookService) {
 
   @RequestMapping(value=Array("/password"), method = Array(RequestMethod.GET))
   def passwordResetPage(): String = "passwordReset"
@@ -54,6 +55,46 @@ class AccountController @Autowired()(private val accountService: UserService) {
   }
 
   @RequestMapping(
+    value=Array("/exportProgress"),
+    method=Array(RequestMethod.GET),
+    produces=Array(MediaType.TEXT_PLAIN_VALUE)
+  )
+  @ResponseBody
+  def exportProgress() = {
+    bookService.loadAllProgress().map(p =>
+      p.user.username + ","
+        + p.book.author + ","
+        + p.book.title + ","
+        + p.section + ","
+        + p.position + ","
+        + p.finished
+    ).mkString("\n")
+  }
+
+  @RequestMapping(
+    value=Array("/importProgress"),
+    method=Array(RequestMethod.GET)
+  )
+  def importProgressPage() = "importProgress"
+
+  @RequestMapping(
+    value=Array("/importProgress"),
+    method=Array(RequestMethod.POST),
+    consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  )
+  @ResponseBody
+  def importProgress(body: ImportProgressForm) = {
+    val savedProgress = body.progress.split("\r?\n")
+      .flatMap(line => {
+        val tokens = line.split(",").toSeq
+        if (tokens.size == 6) {
+          bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
+        } else None
+      })
+    s"successfully added ${savedProgress.size} progress"
+  }
+
+  @RequestMapping(
     value=Array("/addUser"),
     method=Array(RequestMethod.POST),
     consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -76,4 +117,8 @@ class ChangePasswordForm {
 class AddUserForm {
   @BeanProperty var username: String = _
   @BeanProperty var password: String = _
+}
+
+class ImportProgressForm {
+  @BeanProperty var progress: String = _
 }
