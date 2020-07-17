@@ -20,5 +20,13 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   )
   def findAllCollections(): java.util.List[String]
 
+  @Query(
+    value="select path from book",
+    nativeQuery = true
+  )
+  def findAllPaths(): java.util.List[String]
+
   def findByIdNotIn(ids: java.util.List[java.lang.Long]): java.util.List[Book]
+
+  def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
 }
