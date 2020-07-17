@@ -83,12 +83,16 @@ class ScannerService {
   }
 
   private def findEquivalent(oldBook: Book, newBooks: Seq[Book]) = {
-    val candidates = newBooks.filter(b => b.title == oldBook.title && b.author == oldBook.author)
+    val candidates = newBooks.filter(b => stringsAlike(b.title, oldBook.title) && stringsAlike(b.author, oldBook.author))
     if (candidates.size == 1) {
       Some(candidates.head)
     } else {
       None
     }
+  }
+
+  private def stringsAlike(s1: String, s2: String) = {
+    s1 == s2
   }
 
   private def scanFile(path: String): Option[Book] = {
