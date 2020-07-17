@@ -4,6 +4,10 @@ import javax.persistence.{Column, Entity, GeneratedValue, GenerationType, Id}
 
 import scala.beans.BeanProperty
 
+object Account {
+  val ADMIN_USERNAME = "admin"
+}
+
 @Entity
 class Account {
 
