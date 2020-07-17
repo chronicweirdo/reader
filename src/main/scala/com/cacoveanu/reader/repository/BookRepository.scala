@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
 
-trait BookRepository extends JpaRepository[Book, String] {
+trait BookRepository extends JpaRepository[Book, java.lang.Long] {
 
   @Query(
     value="select * from book b where lower(b.title) like %:term% or lower(b.collection) like %:term% order by b.collection asc",
@@ -20,5 +20,5 @@ trait BookRepository extends JpaRepository[Book, String] {
   )
   def findAllCollections(): java.util.List[String]
 
-  def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
+  def findByIdNotIn(ids: java.util.List[java.lang.Long]): java.util.List[Book]
 }

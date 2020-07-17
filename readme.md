@@ -380,6 +380,10 @@ https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-da
     - discovering files on disk with checksum took over 7 minutes
     - scanning the files and extracting metadata took almost 11 minutes
     - whole scan operation took over 18 minutes, and with a lot of disk activity!
+    - maybe another thing that can be done is to try to transfer progress:
+        - when some books need to be deleted, get progress in db for those books
+        - for each book that has some progress, try to find an equivalent (by title or some other more complex matching process) in the new books (to be added)
+        - if there is only one equivalent found, create a new progress for that equivalent book and save it
     
 ```
 2020-07-16 18:38:43 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - scanning library

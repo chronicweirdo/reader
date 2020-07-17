@@ -46,7 +46,7 @@ class BookController @Autowired()(private val contentService: ContentService,
 
   @RequestMapping(Array("/book"))
   @ResponseBody
-  def getBookResource(@RequestParam("id") bookId: String,
+  def getBookResource(@RequestParam("id") bookId: java.lang.Long,
                       @RequestParam("path") path: String,
                       @RequestParam(name = "position", required = false) position: java.lang.Long) = {
     toResponseEntity(contentService.loadResource(bookId, URLDecoder.decode(path, StandardCharsets.UTF_8.name())))
@@ -54,7 +54,7 @@ class BookController @Autowired()(private val contentService: ContentService,
 
   @RequestMapping(Array("/openBook"))
   @ResponseBody
-  def loadBook(@RequestParam("id") bookId: String) = {
+  def loadBook(@RequestParam("id") bookId: java.lang.Long) = {
     bookService.loadBook(bookId) match {
       case Some(book) => FileUtil.getExtension(book.path) match {
         case FileTypes.CBR =>

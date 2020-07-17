@@ -13,7 +13,7 @@ class ComicController @Autowired() (private val userService: UserService,
                                     private val bookService: BookService) {
 
   @RequestMapping(Array("/comic"))
-  def getComic(@RequestParam(name="id") id: String, model: Model): String = {
+  def getComic(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(comic) =>
         val progress = bookService.loadProgress(comic)
@@ -29,7 +29,7 @@ class ComicController @Autowired() (private val userService: UserService,
 
   @RequestMapping(Array("/imageData"))
   @ResponseBody
-  def getImageData(@RequestParam("id") id: String, @RequestParam("page") page: Int): String = {
+  def getImageData(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int): String = {
     contentService
       .loadResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)

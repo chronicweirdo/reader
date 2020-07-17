@@ -93,7 +93,7 @@ object FileUtil {
       .map(f => f.getAbsolutePath)
   }
 
-  def scanFilesRegexWithChecksum(path: String, regex: String): Map[String, String] = {
+  /*def scanFilesRegexWithChecksum(path: String, regex: String): Map[String, String] = {
     val pattern = regex.r
     scan(path)
       .filter(f => f.isFile)
@@ -101,7 +101,7 @@ object FileUtil {
       .map(f => f.getAbsolutePath)
       .map(f => (getFileChecksum(f), f))
       .toMap
-  }
+  }*/
 
   /*
     SHA1
