@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Chronic Comic Reader - Import Progress</title>
+</head>
+<body>
+<div class="container">
+    <form th:action="@{/importProgress}" method="post" autocomplete="off">
+        <p><textarea id="progress" name="progress" placeholder="progress csv"></textarea></p>
+        <p class="submit"><input type="submit" value="Import progress"/></p>
+    </form>
+    <p><a href="/">Go back</a></p>
+</div>
+</body>
+</html>

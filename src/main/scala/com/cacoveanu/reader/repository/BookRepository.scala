@@ -20,6 +20,8 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   )
   def findAllCollections(): java.util.List[String]
 
+  def findByAuthorAndTitle(author: String, title: String): java.util.List[Book]
+
   @Query(
     value="select path from book",
     nativeQuery = true

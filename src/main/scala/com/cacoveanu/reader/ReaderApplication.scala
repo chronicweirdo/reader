@@ -46,7 +46,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .csrf().disable().cors().and()
       .authorizeRequests()
       .antMatchers("/tail.png", "/gold_logo.png", "/favicon.ico").permitAll()
-      .antMatchers("/exportprogress").hasRole("ADMIN")
+      .antMatchers("/users", "/addUser", "/deleteUser", "/exportProgress", "/importProgress").hasRole("ADMIN")
       .anyRequest().authenticated()
 
       .and()

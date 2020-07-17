@@ -3,7 +3,7 @@ package com.cacoveanu.reader.service
 import java.util.Date
 
 import com.cacoveanu.reader.entity.{Account, Book, Progress}
-import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
+import com.cacoveanu.reader.repository.{AccountRepository, BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util.SessionUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +26,10 @@ class BookService {
 
   @BeanProperty
   @Autowired
+  var accountRepository: AccountRepository = _
+
+  @BeanProperty
+  @Autowired
   var progressRepository: ProgressRepository = _
 
   def loadBook(id: java.lang.Long) = {
@@ -42,6 +46,29 @@ class BookService {
 
   def loadProgress(books: Seq[Book]): Seq[Progress] = {
     progressRepository.findByUserAndBookIn(SessionUtil.getUser(), books.asJava).asScala.toSeq
+  }
+
+  def loadAllProgress() = {
+    progressRepository.findAll().asScala.toSeq
+  }
+
+  def importProgress(username: String, author: String, title: String, section: String, position: String, finished: String) = {
+    try {
+      val user = Option(accountRepository.findByUsername(username))
+      val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
+      val matchingBook = if (matchingBooks.size == 1) matchingBooks.headOption else None
+      val positionParsed = position.toIntOption
+      val finishedParsed = finished.toBooleanOption
+      (user, matchingBook, positionParsed, finishedParsed) match {
+        case (Some(u), Some(b), Some(p), Some(f)) =>
+          Option(progressRepository.save(new Progress(u, b, section, p, new Date(), f)))
+
+        case _ =>
+          None
+      }
+    } catch {
+      case _: Throwable => None
+    }
   }
 
   def loadTopProgress(limit: Int): Seq[Progress] = {
