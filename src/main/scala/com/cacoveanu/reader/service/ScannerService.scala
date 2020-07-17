@@ -40,6 +40,7 @@ class ScannerService {
   def updateLibrary() = scan()
 
   @Scheduled(cron = "0 0 */3 * * *")
+  //@Scheduled(cron = "0 */5 * * * *")
   def scheduledRescan() = scan()
 
   private implicit val executionContext = ExecutionContext.global
@@ -47,10 +48,16 @@ class ScannerService {
   private def scan() = Future {
     log.info("scanning library")
     val t1 = System.currentTimeMillis()
-    val filesOnDisk = FileUtil.scanFilesRegex(libraryLocation, SUPPORTED_FILES_REGEX)
+
+    val filesOnDisk = FileUtil.scanFilesRegex(libraryLocation, SUPPORTED_FILES_REGEX).toSet
+    val filesInDatabase = bookRepository.findAllPaths().asScala.toSet
+
+    val newFiles = filesOnDisk.diff(filesInDatabase)
+    val deletedFiles = filesInDatabase.diff(filesOnDisk)
+
     val t2 = System.currentTimeMillis()
     log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
-    val foundIds = filesOnDisk
+    val foundIds = newFiles
       .toSeq
       .toBatches(DB_BATCH_SIZE)
       .flatMap(batch => {
@@ -59,8 +66,8 @@ class ScannerService {
       })
     val t3 = System.currentTimeMillis()
     log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
-    val toDelete = bookRepository.findByIdNotIn(foundIds.asJava).asScala
-    bookRepository.deleteAll(toDelete.asJava)
+    val toDelete = bookRepository.findByPathIn(deletedFiles.toSeq.asJava)
+    bookRepository.deleteAll(toDelete)
     val t4 = System.currentTimeMillis()
     log.info(s"deleting missing files took ${t4 - t3} milliseconds")
     log.info(s"full scan done, took ${t4 - t1} milliseconds")
