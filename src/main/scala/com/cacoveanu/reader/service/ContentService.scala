@@ -134,7 +134,8 @@ class ContentService {
         "js" -> "/gestures.js",
         "js" -> "/util.js",
         "js" -> "/book.js",
-        "css" -> "/book.css"
+        "css" -> "/book.css",
+        "css" -> "/tools.css"
       ))
       .addMeta(Map(
         "nextSection" -> next,
