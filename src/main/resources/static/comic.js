@@ -422,12 +422,18 @@ function hideTools() {
     tools.style.visibility = "hidden"
 }
 
-function toggleTools(x, y) {
+function toggleTools(left) {
     var tools = document.getElementById("tools")
-    if (tools.style.visibility == "hidden") {
-        tools.style.visibility = "visible"
+    if (left) {
+        tools.className = "left"
     } else {
-        tools.style.visibility = "hidden"
+        tools.className = "right"
+    }
+    var toolsContainer = document.getElementById("toolsContainer")
+    if (toolsContainer.style.visibility == "hidden") {
+        toolsContainer.style.visibility = "visible"
+    } else {
+        toolsContainer.style.visibility = "hidden"
     }
 }
 
@@ -474,6 +480,7 @@ function jumpToPage() {
 function addPagenumTriggerListener() {
     var pagenum = document.getElementById("pagenum")
     pagenum.addEventListener('keyup', function (e) {
+        e.preventDefault()
         if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
             window.clearTimeout(document.pageChangeTimeout)
             document.pageChangeTimeout = null
@@ -486,7 +493,11 @@ function addPagenumTriggerListener() {
             document.pageChangeTimeout = window.setTimeout(jumpToPage, 1000)
         }
     })
+    pagenum.addEventListener('click', function (e) {
+        e.stopPropagation()
+    })
     pagenum.addEventListener('mouseup', function (e) {
+        e.preventDefault()
         jumpToPage()
     })
 }
@@ -551,7 +562,6 @@ window.onload = function() {
     var originalZoom = null
 
     enableGesturesOnElement(document.getElementById("canv"), {
-        "clickAction": toggleTools,
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
@@ -578,6 +588,10 @@ window.onload = function() {
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
+
+    document.getElementById("toolsButtonLeft").addEventListener("click", (event) => toggleTools(true))
+    document.getElementById("toolsButtonRight").addEventListener("click", (event) => toggleTools(false))
+    document.getElementById("toolsContainer").addEventListener("click", (event) => toggleTools())
 
     addPagenumTriggerListener()
 

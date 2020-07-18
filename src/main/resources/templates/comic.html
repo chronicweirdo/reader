@@ -20,11 +20,18 @@
 <img src="" />
 <div id="prev"></div>
 <div id="next"></div>
+<div id="toolsButtonLeft"></div>
+<div id="toolsButtonRight"></div>
 <div id="canv"></div>
-<div id="tools" style="visibility: hidden;">
-    <h1><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a><span>/</span><span th:text="${title}">Comic Title</span></h1>
-    <p>Page <input id="pagenum" type="number"  min="1" th:max="${pages}"/> of <span th:text="${pages}">20</span></p>
-    <p id="actions"><a onclick="toggleFullScreen()">fullscreen</a><a onclick="goBack()">back</a><a onclick="removeProgress()">remove progress</a></p>
+<div id="toolsContainer" style="visibility: hidden;">
+    <div id="tools">
+        <p><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+        <p><span th:text="${title}">Comic Title</span></p>
+        <p><span>page</span><input id="pagenum" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
+        <p><a onclick="toggleFullScreen()">fullscreen</a>
+        <p><a onclick="goBack()">back</a></p>
+        <p><a onclick="removeProgress()">remove progress</a></p>
+    </div>
 </div>
 <div id="spinner">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
