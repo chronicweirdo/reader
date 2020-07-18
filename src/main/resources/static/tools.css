@@ -1,0 +1,65 @@
+#toolsContainer {
+    display: block;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1a1a1a77;
+    visibility: hidden;
+}
+#tools {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    font-size: 1.8em;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+#tools.left {
+    left: 10vw;
+    text-align: left;
+}
+#tools.right {
+    right: 10vw;
+    text-align: right;
+}
+#tools > p {
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0.2em;
+    max-width: 80vw;
+}
+#tools > p > * {
+    display: inline-block;
+    padding: .3em;
+    margin-left: 0.2em;
+}
+#tools > p > *:first-child {
+    margin-left: 0;
+}
+#tools > p > span {
+    color: white;
+    background-color: black;
+}
+#tools > p > input {
+    font-size: 1em;
+    background-color: gold;
+    width: 5em;
+    border: 2px solid white;
+    z-index: 1000;
+}
+#tools > p > a {
+    color: black;
+    background-color: gold;
+    border: 2px solid white;
+
+    text-align: center;
+    text-decoration: none;
+    min-width: 1.5em;
+}
+
+@media only screen and (max-width: 640px) {
+    #tools {
+        font-size: 1em;
+    }
+}

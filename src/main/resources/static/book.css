@@ -70,59 +70,6 @@ body {
     color: black;
 }
 
-/* toolbox styles */
-#toolsContainer {
-    display: block;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    background-color: #1a1a1a77;
-}
-#tools {
-    display: block;
-    position: fixed;
-    bottom: 0;
-    font-size: 1.8em;
-    font-family: Arial, Helvetica, sans-serif;
-    text-align: right;
-}
-#tools.left {
-    left: 10vw;
-    text-align: left;
-}
-#tools.right {
-    right: 10vw;
-    text-align: right;
-}
-#tools > p {
-    margin-top: 0;
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 0.2em;
-    max-width: 90vw;
-}
-#tools > p > * {
-    display: inline-block;
-    padding: .3em;
-    margin-left: 0.2em;
-}
-#tools > p > *:first-child {
-    margin-left: 0;
-}
-#tools > p > span {
-    color: white;
-    background-color: black;
-}
-#tools > p > a {
-    color: black;
-    background-color: gold;
-    border: 2px solid white;
-
-    text-align: center;
-    text-decoration: none;
-    min-width: 1.5em;
-}
-
 img, svg {
     max-height: 80vh !important;
     max-width: 80vw !important;
@@ -140,12 +87,6 @@ only screen and (min-resolution: 120dpi)
     }
     #loading {
         font-size: 4em;
-    }
-}
-
-@media only screen and (max-height: 1100px) {
-    #tools {
-        font-size: 1em;
     }
 }
 
