@@ -393,6 +393,9 @@ https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-da
 2020-07-16 18:57:34 [scala-execution-context-global-210] INFO  c.c.reader.service.ScannerService - full scan done, took 1131759 milliseconds
 ```
     
-- create admin account, add functionality for creating and deleting users only for that account
-    - add admin username and initial password to the properties file, user to be created if it does not exist
-- create functionality for import/export of user and progress data (to/from csv, done from browser, independent of the db behind the application)
+- [x] create admin account, add functionality for creating and deleting users only for that account
+    - [x] add admin username and initial password to the properties file, user to be created if it does not exist
+- [x] create functionality for import/export of user and progress data (to/from csv, done from browser, independent of the db behind the application)
+
+- redesign the UI with a mid-century modern look
+    - https://www.pinterest.com/rideout3615/mid-century-modern-1968/
