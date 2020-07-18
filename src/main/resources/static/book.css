@@ -19,38 +19,39 @@ body {
 #prev {
     top: 0;
     left: 0;
-    width: 5vw;
+    width: 10vw;
     height: 90vh;
 }
 #next {
     top: 0;
     right: 0;
-    width: 5vw;
+    width: 10vw;
     height: 90vh;
 }
 #toolsButtonLeft {
     bottom: 0;
     left: 0;
-    width: 5vw;
+    width: 10vw;
     height: 10vh;
 }
 #toolsButtonRight {
     bottom: 0;
     right: 0;
-    width: 5vw;
+    width: 10vw;
     height: 10vh;
 }
 #pageContainer {
-    width: 90vw;
-    left: 5vw;
+    width: 80vw;
+    left: 10vw;
     height: 100vh;
+    top: 0;
     overflow: hidden;
     padding: 0;
     margin: 0;
 }
 
 #page {
-    padding: 1vmax;
+    /*padding: 1vmax;*/
     color: black;
     font-family: Georgia, serif;
 }
@@ -86,11 +87,11 @@ body {
     text-align: right;
 }
 #tools.left {
-    left: 5vw;
+    left: 10vw;
     text-align: left;
 }
 #tools.right {
-    right: 5vw;
+    right: 10vw;
     text-align: right;
 }
 #tools > p {
@@ -139,5 +140,18 @@ only screen and (min-resolution: 120dpi)
     }
     #loading {
         font-size: 4em;
+    }
+}
+
+@media only screen and (max-height: 1100px) {
+    #tools {
+        font-size: 1em;
+    }
+}
+
+@supports (-webkit-touch-callout: none) {
+    /* CSS specific to iOS devices */
+    #pageContainer {
+        height: 90vh;
     }
 }
