@@ -74,12 +74,19 @@ function addButtons() {
     })
     document.body.appendChild(next)
 
-    var toolsButton = document.createElement("div")
-    toolsButton.id = "toolsButton"
-    toolsButton.addEventListener("click", function() {
-        toggleTools()
+    var toolsButtonLeft = document.createElement("div")
+    toolsButtonLeft.id = "toolsButtonLeft"
+    toolsButtonLeft.addEventListener("click", function() {
+        toggleTools(true)
     })
-    document.body.appendChild(toolsButton)
+    document.body.appendChild(toolsButtonLeft)
+
+    var toolsButtonRight = document.createElement("div")
+    toolsButtonRight.id = "toolsButtonRight"
+    toolsButtonRight.addEventListener("click", function() {
+        toggleTools(false)
+    })
+    document.body.appendChild(toolsButtonRight)
 }
 
 function addPage() {
@@ -172,71 +179,47 @@ function createSpan(text, id = null) {
     span.innerHTML = text
     return span
 }
+function createParagraph(content) {
+    var p = document.createElement("p")
+    p.appendChild(content)
+    return p
+}
 
 function addTools() {
-    var toolsContainerContainer = document.createElement("div")
-    toolsContainerContainer.id = "toolsContainer"
-    toolsContainerContainer.style.visibility = "hidden"
-    toolsContainerContainer.onclick = toggleTools
-
     var toolsContainer = document.createElement("div")
-    toolsContainer.id="tools"
-    //toolsContainer.style.visibility = "hidden"
+    toolsContainer.id = "toolsContainer"
+    toolsContainer.style.visibility = "hidden"
+    toolsContainer.onclick = toggleTools
 
-    /*var mainButtons = document.createElement("p")
-    mainButtons.id = "mainButtons"
+    var tools = document.createElement("div")
+    tools.id="tools"
 
-    mainButtons.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
-    mainButtons.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
-    mainButtons.appendChild(createLink("x", toggleTools))
+    var title = document.createElement("p")
+    title.appendChild(createSpan(getMeta("title")))
+    tools.appendChild(title)
 
-    toolsContainer.appendChild(mainButtons)*/
+    var position = document.createElement("p")
+    position.appendChild(createSpan(getMeta("sectionStart"), "currentPosition"))
+    position.appendChild(createSpan("&nbsp;/&nbsp;"))
+    position.appendChild(createSpan(getMeta("bookSize")))
+    tools.appendChild(position)
 
-    var title = document.createElement("h1")
     var collection = getMeta("collection")
     if (collection && collection.length > 0) {
-        title.appendChild(createLink(collection, () => window.location = "/?search=" + encodeURIComponent(collection)))
-        title.appendChild(createSpan("/"))
+        tools.appendChild(createParagraph(createLink("collection: " + collection, () => window.location = "/?search=" + encodeURIComponent(collection))))
     }
-    title.appendChild(createSpan(getMeta("title")))
-    title.appendChild(createSpan("&nbsp;("))
-    title.appendChild(createSpan(getMeta("sectionStart"), "currentPosition"))
-    title.appendChild(createSpan("&nbsp;/&nbsp;"))
-    title.appendChild(createSpan(getMeta("bookSize")))
-    title.appendChild(createSpan(")"))
-    //title.innerHTML = getMeta("title")
-    toolsContainer.appendChild(title)
 
-    //var collection = getMeta("collection")
-    //var collectionParagraph = document.createElement("p")
-    //var collectionLink = document.createElement("a")
-    //collectionLink.href = "/search=" + collection
-    //collectionLink.innerHTML = collection
-    //collectionParagraph.appendChild(collectionLink)
-    //toolsContainer.appendChild(collectionParagraph)
+    tools.appendChild(createParagraph(createLink("back", () => window.location = "/")))
+    tools.appendChild(createParagraph(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc")))
+    tools.appendChild(createParagraph(createLink("remove progress", removeProgress)))
 
-    /*var positionParagraph = document.createElement("p")
-    var currentPositionSpan = document.createElement("span")
-    currentPositionSpan.id = "currentPosition"
-    currentPositionSpan.innerHTML = getMeta("sectionStart")
-    positionParagraph.appendChild(currentPositionSpan)
-    var outOf = document.createTextNode(" / " + getMeta("bookSize"))
-    positionParagraph.appendChild(outOf)
-    toolsContainer.appendChild(positionParagraph)*/
+    var zoomControls = document.createElement("p")
+    zoomControls.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
+    zoomControls.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
+    tools.appendChild(zoomControls)
 
-    var actionsParagraph = document.createElement("p")
-    actionsParagraph.id = "actions"
-    actionsParagraph.appendChild(createLink("back", () => window.location = "/"))
-    actionsParagraph.appendChild(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc"))
-    actionsParagraph.appendChild(createLink("remove progress", removeProgress))
-    actionsParagraph.appendChild(createLink("+", () => setZoom(getZoom() + .1)))
-    actionsParagraph.appendChild(createLink("-", () => setZoom(getZoom() - .1)))
-    //actionsParagraph.appendChild(createLink("x", toggleTools))
-    toolsContainer.appendChild(actionsParagraph)
-
-    //document.body.appendChild(toolsContainer)
-    toolsContainerContainer.appendChild(toolsContainer)
-    document.body.appendChild(toolsContainerContainer)
+    toolsContainer.appendChild(tools)
+    document.body.appendChild(toolsContainer)
 }
 
 function addLoadingScreen() {
@@ -532,12 +515,22 @@ function getBookId() {
     return getMeta("bookId")
 }
 
-function toggleTools(e) {
-    var tools = document.getElementById("toolsContainer")
-    if (tools.style.visibility == "hidden") {
-        tools.style.visibility = "visible"
+function toggleTools(left) {
+    var tools = document.getElementById("tools")
+    if (left) {
+        tools.style.removeProperty('right')
+        tools.style.left = "5vw"
+        tools.style["text-align"] = "left"
     } else {
-        tools.style.visibility = "hidden"
+        tools.style.removeProperty('left')
+        tools.style.right = "5vw"
+        tools.style["text-align"] = "right"
+    }
+    var toolsContainer = document.getElementById("toolsContainer")
+    if (toolsContainer.style.visibility == "hidden") {
+        toolsContainer.style.visibility = "visible"
+    } else {
+        toolsContainer.style.visibility = "hidden"
     }
 }
 
