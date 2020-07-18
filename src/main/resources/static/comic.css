@@ -76,6 +76,7 @@ body {
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 0.2em;
+    max-width: 80vw;
 }
 #tools > p > * {
     display: inline-block;
