@@ -131,3 +131,9 @@ only screen and (min-resolution: 120dpi)
         height: 15vw;
     }
 }
+
+@media only screen and (max-height: 1100px) {
+    #tools {
+        font-size: 1em;
+    }
+}
