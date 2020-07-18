@@ -518,13 +518,9 @@ function getBookId() {
 function toggleTools(left) {
     var tools = document.getElementById("tools")
     if (left) {
-        tools.style.removeProperty('right')
-        tools.style.left = "5vw"
-        tools.style["text-align"] = "left"
+        tools.className = "left"
     } else {
-        tools.style.removeProperty('left')
-        tools.style.right = "5vw"
-        tools.style["text-align"] = "right"
+        tools.className = "right"
     }
     var toolsContainer = document.getElementById("toolsContainer")
     if (toolsContainer.style.visibility == "hidden") {

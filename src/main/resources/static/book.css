@@ -85,6 +85,14 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     text-align: right;
 }
+#tools.left {
+    left: 5vw;
+    text-align: left;
+}
+#tools.right {
+    right: 5vw;
+    text-align: right;
+}
 #tools > p {
     margin-top: 0;
     margin-left: 0;
