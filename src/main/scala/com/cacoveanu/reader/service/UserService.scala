@@ -70,7 +70,7 @@ class UserService extends UserDetailsService {
     Option(dbUser)
   }
 
-  def loadAllUsers = {
+  def loadAllUsers() = {
     userRepository.findAll().asScala.filter(u => u.username != Account.ADMIN_USERNAME).toSeq
   }
 

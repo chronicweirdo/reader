@@ -1,5 +1,8 @@
 package com.cacoveanu.reader.controller
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 import com.cacoveanu.reader.service.{BookService, UserService}
 import com.cacoveanu.reader.util.SessionUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -72,10 +75,23 @@ class AccountController @Autowired()(private val accountService: UserService,
   }
 
   @RequestMapping(
+    value=Array("/exportUsers"),
+    method=Array(RequestMethod.GET),
+    produces=Array(MediaType.TEXT_PLAIN_VALUE)
+  )
+  @ResponseBody
+  def exportUsers() = {
+    accountService.loadAllUsers().map(u => u.username + "," + u.password).mkString("\n")
+  }
+
+  @RequestMapping(
     value=Array("/importProgress"),
     method=Array(RequestMethod.GET)
   )
-  def importProgressPage() = "importProgress"
+  def importProgressPage(@RequestParam(name = "message", required = false) message: String, model: Model) = {
+    model.addAttribute("message", message)
+    "importProgress"
+  }
 
   @RequestMapping(
     value=Array("/importProgress"),
@@ -91,7 +107,8 @@ class AccountController @Autowired()(private val accountService: UserService,
           bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
         } else None
       })
-    s"successfully added ${savedProgress.size} progress"
+    val message = s"successfully added ${savedProgress.size} progress"
+    new RedirectView("/importProgress?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8.name()))
   }
 
   @RequestMapping(
