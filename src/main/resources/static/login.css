@@ -1,0 +1,43 @@
+* {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+html,body {
+    height:100%;
+    width:100%;
+    margin:0;
+}
+body {
+    display:flex;
+    font-size: 2em;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: black;
+}
+@media all and (max-width: 399px) {
+    body {
+        font-size: 1em;
+    }
+}
+.container {
+    margin: auto;
+    position: relative;
+    background-color: black;
+    color: gold;
+    padding: 1em;
+    position: relative;
+    text-align: center;
+}
+h1 {
+    font-size: 1.1em;
+    text-align: center;
+    margin: .2em;
+}
+p {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: .2em;
+}
+input[type="text"], input[type="password"], input[type="submit"] {
+    width: 100%;
+}

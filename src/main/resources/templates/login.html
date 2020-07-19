@@ -3,78 +3,13 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Chronic Reader - Login</title>
-    <style>
-        * {
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        -webkit-box-sizing: border-box;
-        }
-        html,body {
-            height:100%;
-            width:100%;
-            margin:0;
-        }
-        body {
-            display:flex;
-            font-size: 2em;
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: black;
-        }
-        @media all and (max-width: 399px) {
-            body {
-                font-size: 1em;
-            }
-        }
-        .container {
-            margin: auto;
-            position: relative;
-            background-color: black;
-            color: gold;
-            padding: 1em;
-            position: relative;
-            text-align: center;
-        }
-        h1 {
-            font-size: 1.1em;
-            text-align: center;
-            margin: .2em;
-        }
-        p {
-            margin-bottom: 0;
-            margin-top: 0;
-            padding: .2em;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            display: inline-block;
-            font-size: 1em;
-            height: 1.5em;
-            background-color: gold;
-            border: 2px solid white;
-            color: black;
-        }
-
-        input::placeholder {
-            color: white;
-            font-style: italic;
-            opacity: 1;
-        }
-        input[type="submit"] {
-            width: 100%;
-            display: inline-block;
-            font-size: 1em;
-            height: 1.5em;
-            background-color: gold;
-            border: 2px solid white;
-            color: black;
-        }
-    </style>
+    <title>Login - Chronic Reader</title>
+    <link rel="stylesheet" type="text/css" href="form.css">
+    <link rel="stylesheet" type="text/css" href="login.css">
 </head>
 <body>
 <div class="container">
     <h1><img src="gold_logo.png"></h1>
-    <!--h1>Chronic Reader</h1-->
     <p th:if="${param.error}">Invalid credentials.</p>
     <p th:if="${param.logout}">You have been logged out.</p>
     <form th:action="@{/login}" method="post" autocomplete="off">
@@ -83,7 +18,6 @@
         <input type="checkbox" name="remember-me" checked hidden>
         <p class="submit"><input type="submit" value="Sign In"/></p>
     </form>
-    <!--div class="tail"><img src="tail.png"></div-->
 </div>
 </body>
 </html>
