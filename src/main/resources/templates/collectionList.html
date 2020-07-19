@@ -11,21 +11,24 @@
             background-color: black;
             color: gold;
             font-family: Georgia, 'Times New Roman', Times, serif;
+            padding: 10px;
         }
         h1 {
-            margin-left: 30px;
             font-size: 1.2em;
             font-family: Arial, Helvetica, sans-serif;
         }
         a {
             color: gold;
         }
-        ol li {
-            margin-left: 30px;
+        ol {
+            margin: 0;
+            padding: 0;
+            max-width: 100%;
+            list-style-position:inside;
         }
-        #container {
-            width: 1000px;
-            margin: auto;
+        ol li {
+            margin-bottom: 15px;
+            max-width: 100%;
         }
         @media all and (max-width: 999px) {
             #container {
@@ -35,14 +38,12 @@
     </style>
 </head>
 <body>
-<div id="container">
-    <h1>A list of collections, so you know what to choose</h1>
-    <p>
-    <ol>
-        <li><a href="/">everything!</a></li>
-        <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
-    </ol>
-    </p>
-</div>
+<h1>A list of collections, so you know what to choose</h1>
+<p>
+<ol>
+    <li><a href="/">everything!</a></li>
+    <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
+</ol>
+</p>
 </body>
 </html>
