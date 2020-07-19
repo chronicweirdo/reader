@@ -194,6 +194,11 @@ function addTools() {
     var tools = document.createElement("div")
     tools.id="tools"
 
+    var collection = getMeta("collection")
+    if (collection && collection.length > 0) {
+        tools.appendChild(createParagraph(createLink(collection, () => window.location = "/?search=" + encodeURIComponent(collection))))
+    }
+
     var title = document.createElement("p")
     title.appendChild(createSpan(getMeta("title")))
     tools.appendChild(title)
@@ -204,13 +209,8 @@ function addTools() {
     position.appendChild(createSpan(getMeta("bookSize")))
     tools.appendChild(position)
 
-    var collection = getMeta("collection")
-    if (collection && collection.length > 0) {
-        tools.appendChild(createParagraph(createLink("collection: " + collection, () => window.location = "/?search=" + encodeURIComponent(collection))))
-    }
-
-    tools.appendChild(createParagraph(createLink("back", () => window.location = "/")))
     tools.appendChild(createParagraph(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc")))
+    tools.appendChild(createParagraph(createLink("back", () => window.location = "/")))
     tools.appendChild(createParagraph(createLink("remove progress", removeProgress)))
 
     var zoomControls = document.createElement("p")
@@ -393,7 +393,7 @@ function findPage(startPosition, initialJump) {
 
 function findPages() {
     var pagesKey = getBookId() + "_" + getCurrentSection() + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
-    var savedPages = window.sessionStorage.getItem(pagesKey)
+    var savedPages = window.localStorage.getItem(pagesKey)
     if (savedPages) {
         var stringPages = savedPages.split(",")
         var parsedSavedPages = []
@@ -413,7 +413,7 @@ function findPages() {
         }
         clearPage()
         document.pages = pages
-        window.sessionStorage.setItem(pagesKey, pages)
+        window.localStorage.setItem(pagesKey, pages)
     }
 
     document.currentPage = 0

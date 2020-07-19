@@ -399,3 +399,25 @@ https://docs.github.com/en/github/authenticating-to-github/removing-sensitive-da
 
 - redesign the UI with a mid-century modern look
     - https://www.pinterest.com/rideout3615/mid-century-modern-1968/
+
+## Exporting existing comic data
+
+Expected format:
+
+```
+username, author, title, section, position, finished
+```
+
+Export SQL:
+
+``` sql
+select u.username, '' as author, c.title, '' as section, p.page, p.total_pages = p.page+1 as finished from comic_progress p 
+join db_user u on p.user_id = u.id
+join db_comic c on p.comic_id = c.id
+```
+
+For the user table it is much simpler:
+
+``` sql
+select username, password from db_user
+```

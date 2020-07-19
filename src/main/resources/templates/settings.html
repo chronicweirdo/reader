@@ -17,6 +17,7 @@
         }
         a {
             color: gold;
+            text-decoration: underline;
         }
         #container {
             width: 1000px;
@@ -28,6 +29,12 @@
             }
         }
     </style>
+    <script>
+        function clearStorage(element) {
+            window.localStorage.clear()
+            element.innerHTML = element.innerHTML + " - done!"
+        }
+    </script>
 </head>
 <body>
 <div id="container">
@@ -36,6 +43,7 @@
     <p><a href="/help">Help</a></p>
     <p><a href="/password">Change password</a></p>
     <p th:if="${admin}"><a href="/import">Import data</a></p>
+    <p><a onclick="clearStorage(this)">Clear local cache</a></p>
     <p><a href="/">Go back</a></p>
     <p><a href="/logout">Logout</a></p>
 </div>
