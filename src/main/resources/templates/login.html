@@ -3,7 +3,7 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Chronic Comic Reader - Login</title>
+    <title>Chronic Reader - Login</title>
     <style>
         * {
         box-sizing: border-box;
@@ -27,14 +27,25 @@
         }
         .container {
             margin: auto;
-            background-color: black;
+            position: relative;
+            background-image: url("data:image/svg+xml;utf8,<svg  xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 70' preserveAspectRatio='none'><path d='M 7.5487717,5.1509944 C 18.785662,-6.050901 47.532172,2.4523082 53.920032,16.909924 62.050362,35.311249 45.089472,72.262014 24.921292,69.891147 2.4971117,67.255074 -8.3531283,21.003369 7.5487717,5.1509944 Z' style='fill:%23000000;fill-opacity:1;stroke:none;stroke-width:0.26308224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1'/></svg>");
+            background-repeat: no-repeat;
+            background-size: contain;
             color: gold;
             padding: 1em;
-            border-radius: 25px;
-            width: 20vw;
             position: relative;
+            /*width: 50vw;
+            height: 75vh;*/
+            text-align: center;
+            padding-top: 100px;
+            width: 480px;
+            height: 600px;
+            /*padding-top: 10vh;
+            padding-bottom: 10vh;
+            padding-left: 10vw;
+            padding-right: 10vw;*/
         }
-        .container .tail {
+        /*.container .tail {
             position: absolute;
             right: 10px;
             bottom: -50px;
@@ -43,8 +54,8 @@
         .container .tail img {
             width: 50px;
             height: 50px;
-        }
-        @media only screen and (max-width: 1199px) {
+        }*/
+        /*@media only screen and (max-width: 1199px) {
             .container {
                 width: 40vw;
             }
@@ -58,15 +69,15 @@
             .container {
                 width: 80vw;
             }
-        }
-        @media only screen and (-webkit-min-device-pixel-ratio: 1.3),
+        }*/
+        /*@media only screen and (-webkit-min-device-pixel-ratio: 1.3),
         only screen and (-o-min-device-pixel-ratio: 13/10),
         only screen and (min-resolution: 120dpi)
         {
             .container {
                 width: 80vw;
             }
-        }
+        }*/
         h1 {
             font-size: 1.1em;
             text-align: center;
@@ -78,7 +89,7 @@
             padding: .2em;
         }
         input[type="text"], input[type="password"] {
-            width: 100%;
+            width: 50%;
             display: inline-block;
             font-size: 1em;
             height: 1.5em;
@@ -105,7 +116,7 @@
 <body>
 <div class="container">
     <h1><img src="gold_logo.png"></h1>
-    <h1>Chronic Comic Reader</h1>
+    <!--h1>Chronic Reader</h1-->
     <p th:if="${param.error}">Invalid credentials.</p>
     <p th:if="${param.logout}">You have been logged out.</p>
     <form th:action="@{/login}" method="post" autocomplete="off">
@@ -114,7 +125,7 @@
         <input type="checkbox" name="remember-me" checked hidden>
         <p class="submit"><input type="submit" value="Sign In"/></p>
     </form>
-    <div class="tail"><img src="tail.png"></div>
+    <!--div class="tail"><img src="tail.png"></div-->
 </div>
 </body>
 </html>
