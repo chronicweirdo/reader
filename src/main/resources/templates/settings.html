@@ -35,10 +35,7 @@
     <p><a href="/collections">Collections</a></p>
     <p><a href="/help">Help</a></p>
     <p><a href="/password">Change password</a></p>
-    <p th:if="${admin}"><a href="/users">Manage users</a></p>
-    <p th:if="${admin}"><a href="/exportProgress" download="progress.csv">Export progress</a></p>
-    <p th:if="${admin}"><a href="/exportUsers" download="users.csv">Export users</a></p>
-    <p th:if="${admin}"><a href="/importProgress">Import progress</a></p>
+    <p th:if="${admin}"><a href="/import">Import data</a></p>
     <p><a href="/">Go back</a></p>
     <p><a href="/logout">Logout</a></p>
 </div>

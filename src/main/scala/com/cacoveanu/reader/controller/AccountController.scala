@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
+import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
 import scala.jdk.CollectionConverters._
@@ -36,24 +36,6 @@ class AccountController @Autowired()(private val accountService: UserService,
         new RedirectView("/")
       else
         new RedirectView("/password?error")
-    }
-  }
-
-  @RequestMapping(value=Array("/users"), method = Array(RequestMethod.GET))
-  def usersManagementPage(model: Model): String = {
-    model.addAttribute("users", accountService.loadAllUsers.map(_.username).asJava)
-    "users"
-  }
-
-  @RequestMapping(
-    value=Array("/deleteUser"),
-    method=Array(RequestMethod.GET)
-  )
-  def deleteUser(@RequestParam("name") name: String) = {
-    if (accountService.deleteUser(name)) {
-      new RedirectView("/users")
-    } else {
-      new RedirectView("/users?deleteError")
     }
   }
 
@@ -85,44 +67,70 @@ class AccountController @Autowired()(private val accountService: UserService,
   }
 
   @RequestMapping(
-    value=Array("/importProgress"),
+    value=Array("/import"),
     method=Array(RequestMethod.GET)
   )
-  def importProgressPage(@RequestParam(name = "message", required = false) message: String, model: Model) = {
+  def importPage(@RequestParam(name = "message", required = false) message: String, model: Model) = {
     model.addAttribute("message", message)
-    "importProgress"
+    "import"
   }
 
   @RequestMapping(
-    value=Array("/importProgress"),
+    value=Array("/import"),
     method=Array(RequestMethod.POST),
     consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   )
   @ResponseBody
-  def importProgress(body: ImportProgressForm) = {
-    val savedProgress = body.progress.split("\r?\n")
-      .flatMap(line => {
-        val tokens = line.split(",").toSeq
-        if (tokens.size == 6) {
-          bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
-        } else None
-      })
-    val message = s"successfully added ${savedProgress.size} progress"
-    new RedirectView("/importProgress?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8.name()))
+  def importData(body: ImportForm) = {
+    val message = if (body.action == "progress") {
+      val savedProgress = body.data.split("\r?\n")
+        .flatMap(line => {
+          val tokens = line.split(",").toSeq
+          if (tokens.size == 6) {
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
+          } else None
+        })
+      s"successfully added ${savedProgress.size} progress"
+    } else if (body.action == "addUsers") {
+      val savedUsers = body.data
+        .split("\r?\n")
+        .map(line => {
+          val tokens = line.split(",").toSeq
+          if (tokens.size == 2) {
+            accountService.addUser(tokens(0), tokens(1))
+          } else {
+            false
+          }
+        })
+        .count(_ == true)
+      s"successfully added $savedUsers users"
+    } else if (body.action == "importUsers") {
+      val savedUsers = body.data
+        .split("\r?\n")
+        .map(line => {
+          val tokens = line.split(",").toSeq
+          if (tokens.size == 2) {
+            accountService.importUser(tokens(0), tokens(1))
+          } else {
+            false
+          }
+        })
+        .count(_ == true)
+      s"successfully added $savedUsers users"
+    } else if (body.action == "deleteUsers") {
+      val deletedUsers = body.data
+        .split("\r?\n")
+        .map(line => {
+          accountService.deleteUser(line)
+        })
+        .count(_ == true)
+      s"successfully deleted $deletedUsers users"
+    } else {
+      "nothing done"
+    }
+    new RedirectView("/import?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8.name()))
   }
 
-  @RequestMapping(
-    value=Array("/addUser"),
-    method=Array(RequestMethod.POST),
-    consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-  )
-  def addUser(body: AddUserForm): RedirectView = {
-    if (accountService.addUser(body.username, body.password)) {
-      new RedirectView("/users")
-    } else {
-      new RedirectView("/users?addError")
-    }
-  }
 }
 
 class ChangePasswordForm {
@@ -131,11 +139,7 @@ class ChangePasswordForm {
   @BeanProperty var newPasswordConfirm: String = _
 }
 
-class AddUserForm {
-  @BeanProperty var username: String = _
-  @BeanProperty var password: String = _
-}
-
-class ImportProgressForm {
-  @BeanProperty var progress: String = _
+class ImportForm {
+  @BeanProperty var data: String = _
+  @BeanProperty var action: String = _
 }
