@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Chronic Reader - Library</title>
+    <title>Library - Chronic Reader</title>
+    <link rel="stylesheet" type="text/css" href="form.css">
     <style>
         * {
             margin: 0;
@@ -14,33 +15,12 @@
         body {
             font-family: Arial, Helvetica, sans-serif;
         }
-        #removeProgressButton {
-            display: block;
-            position: fixed;
-            z-index: 1000;
-            margin-top: .2em;
-            margin-right: .2em;
-            background-color: gold;
-            color: black;
-            padding: .2em;
-            display: inline-block;
-            top: 0;
-            right: 0;
-        }
-        #removeProgressButton img {
-            width: 3vw;
-        }
-        #removeProgressButton.disabled {
-            display: none;
-        }
         h1 {
             margin: .5vw;
         }
         .tools {
             display: block;
             width: 100vw;
-            /*background-color: #52B788;*/
-            /*background-color: #1BC475;*/
             background-color: black;
             color: gold;
             font-size: 2em;
@@ -73,24 +53,14 @@
         }
         #search {
             font-size: 1em;
-            background-color: gold;
             padding: .1em;
             padding-right: 5vw;
             width: 65vw;
-            color: black;
-            border-style: solid;
-            border-width: 2px;
-            border-color: white;
         }
         @media all and (max-width: 399px) {
             #search {
                 width: 40vw;
             }
-        }
-        #search::placeholder {
-            color: white;
-            font-style: italic;
-            opacity: 1;
         }
         #clearsearch {
             background: none;
@@ -98,6 +68,7 @@
             font-size: 1em;
             font-weight: bold;
             color: black;
+            border: none;
         }
         .tools a {
             margin-left: 2vw;
