@@ -95,6 +95,17 @@ class UserService extends UserDetailsService {
     }
   }
 
+  def importUser(username: String, encodedPassword: String) = {
+    try {
+      val user = new Account()
+      user.username = username
+      user.password = encodedPassword
+      userRepository.save(user).id != null
+    } catch {
+      case _: Throwable => false
+    }
+  }
+
   def deleteUser(username: String) = {
     if (username != Account.ADMIN_USERNAME) {
       try {

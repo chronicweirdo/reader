@@ -51,9 +51,8 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/addUser",
         "/deleteUser",
         "/exportProgress",
-        "/importProgress",
-        "/exportUsers",
-        "/importUsers"
+        "/import",
+        "/exportUsers"
       ).hasRole("ADMIN")
       .anyRequest().authenticated()
 
