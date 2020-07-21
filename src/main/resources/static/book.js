@@ -208,6 +208,9 @@ function addTools() {
     position.appendChild(createSpan("&nbsp;/&nbsp;"))
     position.appendChild(createSpan(getMeta("bookSize")))
     tools.appendChild(position)
+    /*var mx = document.createElement("p")
+    mx.appendChild(createSpan("0", "maxPosition"))
+    tools.appendChild(mx)*/
 
     tools.appendChild(createParagraph(createLink("toc", () => window.location = "/book?id=" + getBookId() + "&path=toc")))
     tools.appendChild(createParagraph(createLink("back", () => window.location = "/")))
@@ -324,6 +327,7 @@ function computeStartPositionsOfElements(root) {
     recursive(root, 0)
     setPositions(positionToElement)
     setIdPositions(idPositions)
+    //document.getElementById("maxPosition").innerHTML = getMaxPosition()
     return positionToElement
 }
 

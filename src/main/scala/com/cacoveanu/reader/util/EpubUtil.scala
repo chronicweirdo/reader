@@ -12,6 +12,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
+import org.jsoup.nodes.{Document, Element, Node, TextNode}
 
 import scala.jdk.CollectionConverters._
 import scala.xml.{Elem, XML}
@@ -81,13 +82,34 @@ object EpubUtil {
       case None => None
     }
 
+  /*private def computeStartPositionOfElements(doc: Document) = {
+    val body = doc.body()
+
+    def comp(el: Node): Int = {
+      if (el.isInstanceOf[TextNode]) {
+        val text = el.asInstanceOf[TextNode].text()
+        return text.length
+      } else {
+        var currentSize = 1
+        for (child <- el.childNodes().asScala) {
+          currentSize = currentSize + comp(child)
+        }
+        return currentSize
+      }
+    }
+    comp(body)
+  }*/
+
   private def getSectionSize(epubPath: String, sectionPath: String) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
         //.flatMap(getXml)
         .map(bytes => new String(bytes, "UTF-8"))
-        .map(text => text.asHtml.bodyText.length)
+        .map(text =>
+          text.asHtml.bodyText.length
+          /*computeStartPositionOfElements(text.asHtml)*/
+        )
         //.map(html => (html \ "body").text.length)
         .getOrElse(-1)
     } else {
