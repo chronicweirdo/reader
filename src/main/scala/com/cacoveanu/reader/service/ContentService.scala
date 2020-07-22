@@ -34,7 +34,7 @@ class ContentService {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
           case FileTypes.EPUB if resourcePath == "toc" =>
-            processResource(book, "toc", getBookTocHtml(book).getBytes)
+            processResource(book, "toc", getBookTocHtml(book).getBytes(StandardCharsets.UTF_8))
           case FileTypes.EPUB =>
             val basePath = EpubUtil.baseLink(resourcePath)
             EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
@@ -50,6 +50,7 @@ class ContentService {
   private def getBookTocHtml(book: Book) = {
     (<html>
       <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>{book.title}</title>
       </head>
       <body>
