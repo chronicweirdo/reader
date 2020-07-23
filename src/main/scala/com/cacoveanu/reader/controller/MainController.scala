@@ -92,7 +92,8 @@ class MainController @Autowired()(
   def markProgress(@RequestParam("id") id: java.lang.Long,
                    @RequestParam(name = "path", required = false) section: String,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
-    if (bookService.saveProgress(id, section, position)) new ResponseEntity[String](HttpStatus.OK)
+    if (section == "toc") new ResponseEntity[String](HttpStatus.OK)
+    else if (bookService.saveProgress(id, section, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
