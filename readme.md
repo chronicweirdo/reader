@@ -64,7 +64,7 @@ you configured in the properties file.
 On the main page, click the settings button. In the settings screen, click on "Import data". This is the administration
 functions screen. Only the admin user has access to this screen. You can create the users
 you need for your app in this screen by writing a username, a comma and a password for each user you want to create,
-on different lines. The users will have the option to change their password to what they prefer.
+on different lines. Then press "Add users". The users will have the option to change their password to what they prefer.
 
 ## Configuration properties
 
