@@ -36,20 +36,41 @@ java -version
 
 ## Installation instructions
 
-- download latest release from [releases](../../releases)
-- copy release to folder
-- create the `application.properties` file and using a text editor
-add the following:
+1. Download the latest release from [releases](../../releases).
+2. Copy the release JAR to a folder on disk. This is where the application will start in and will create the database
+files.
+3. Create an `application.properties` file and, using a text editor, configure your app as described in the code below.
+Set the `<library_folder>` to an address on disk where your ebook and comic book collection is. Set a strong
+`<administrator_password>`, you will use this for the first login and creating users for your application. Set
+a `<port>` that is unoccupied on your machine, a good option is `8080`.
 
 ```
-
+library.location=<library_folder>
+adminPass=<administrator_password>
+server.port=<port>
 ```
 
-- open a command line and run: `java -jar `
+4. Start the application by opening a command line and running: `java -jar reader-<version>.jar` (be sure to
+replace `version` with the version you downloaded).
 
 ## Creating users and other admin functions
 
+Once you have started the application, you can navigate in a browser to `localhost:<port>` address (use the port you
+configured). There you should see the login page. Log in with the `admin` username and the `<administrator_password>`
+you configured in the properties file.
+
+<video src="instruction_resources/create_first_users.mp4" controls></video>
+
+On the main page, click the settings button. In the settings screen, click on "Import data". This is the administration
+functions screen. Only the admin user has access to this screen. You can create the users
+you need for your app in this screen by writing a username, a comma and a password for each user you want to create,
+on different lines. The users will have the option to change their password to what they prefer.
+
 ## Configuration properties
+
+- `keepEbookStyles=false`
+    - It is recommended to set the `keepEbookStyles` setting to false, to get a more consistent experience with ebooks,
+    but you can experiment with this and change it to true.
 
 ## Resetting everything
 
