@@ -421,3 +421,7 @@ For the user table it is much simpler:
 ``` sql
 select username, password from db_user
 ```
+
+## Choose a license
+
+https://choosealicense.com/
