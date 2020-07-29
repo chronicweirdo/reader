@@ -55,4 +55,6 @@
     text-align: center;
     text-decoration: none;
     min-width: 1.5em;
+
+    cursor: pointer;
 }

@@ -20,4 +20,5 @@ input[type="submit"], input[type="button"] {
     background-color: gold;
     border: 2px solid white;
     color: black;
+    cursor: pointer;
 }
