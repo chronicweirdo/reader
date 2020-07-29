@@ -425,3 +425,9 @@ select username, password from db_user
 ## Choose a license
 
 https://choosealicense.com/
+
+## Convert video to gif for display on github
+
+```
+ffmpeg -i create_first_users.mp4 -ss 00:00:00.000 -pix_fmt rgb24 -r 10 -s 960x620 -t 00:00:22.000 create_first_users.gif
+```

@@ -59,7 +59,7 @@ Once you have started the application, you can navigate in a browser to `localho
 configured). There you should see the login page. Log in with the `admin` username and the `<administrator_password>`
 you configured in the properties file.
 
-<video src="instruction_resources/create_first_users.mp4" controls></video>
+![create first users](instruction_resources/create_first_users.gif)
 
 On the main page, click the settings button. In the settings screen, click on "Import data". This is the administration
 functions screen. Only the admin user has access to this screen. You can create the users
