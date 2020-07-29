@@ -49,6 +49,15 @@ add the following:
 
 ## Resetting everything
 
+## Updating the service
+
+- export users and progress
+- stop application (service, jar)
+- copy new version
+- start application with new version
+- same database files should be used, check to see that the users and progress have been maintained
+- if data was corrupted, import users and progress saved at first step
+
 ## Installing as a service on Windows
 
 ## Installing as a service on Linux
