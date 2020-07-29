@@ -27,12 +27,16 @@ are stored in on disk)
 
 ## Prerequisites
 
-- install java 8? todo: test with latest java
-- make sure java is installed in command line
+Download and install the latest java for your operating system. Once all is done, open a command line and verify that
+java is installed correctly with the following command:
 
-## Installation Instructions
+```
+java -version
+```
 
-- download latest release from
+## Installation instructions
+
+- download latest release from [releases](releases)
 - copy release to folder
 - create the `application.properties` file and using a text editor
 add the following:
