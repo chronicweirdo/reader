@@ -36,7 +36,7 @@ java -version
 
 ## Installation instructions
 
-- download latest release from [releases](./releases)
+- download latest release from [releases](../../releases)
 - copy release to folder
 - create the `application.properties` file and using a text editor
 add the following:
