@@ -52,6 +52,7 @@ server.port=<port>
 
 4. Start the application by opening a command line and running: `java -jar reader-<version>.jar` (be sure to
 replace `version` with the version you downloaded).
+5. When you want to stop the application you can press `ctrl-c` to send the kill signal to the process.
 
 ## Creating users and other admin functions
 
@@ -71,8 +72,18 @@ on different lines. Then press "Add users". The users will have the option to ch
 - `keepEbookStyles=false`
     - It is recommended to set the `keepEbookStyles` setting to false, to get a more consistent experience with ebooks,
     but you can experiment with this and change it to true.
+    
+## Backing up and restore data
+
+To back up your user data and progress data, you can log in with the admin user and click the settings button and then go to the "Import data" screen. On that screen you can click the "Export progress" and the "Export users" buttons to save this information as CSV files on your computer.
+
+To restore this data, on a new database, you need to use the admin user and navigate to the "Import data" screen. On this screen, you should first import users by opening the exported users CSV file with a text editor and copying the information there into the "csv data" text area. Then press the "Import users" button.
+
+Importing progress should be done after you have imported or created the users and the book collection has been imported. You can check the logs, the `reader.log` file in the folder where your application is installed, to see that collection scanning has been completed. A message saying "full scan done" should be on the last line in the file if the collection has been imported. Once the import process is done, you can now import progess to you database by going to the "Import data" screen, copying the text from the progress CSV file into the "csv data" text area, then pressing the "Import progress" button.
 
 ## Resetting everything
+
+
 
 ## Updating the service
 
