@@ -94,7 +94,7 @@ The following steps are recommended when you want to update the Chronic Reader s
 
 ## Troubleshooting - Resetting everything
 
-If there are issues with the application, the application throws an error and can't start, possible after an upgrade to a new version, one way to try and fix it is to recreate the database. For this, you should have the exported users and progress CSV files, obtained by following instructions in the [backing up and restoring data section](#Backing up and restoring data).
+If there are issues with the application, the application throws an error and can't start, possible after an upgrade to a new version, one way to try and fix it is to recreate the database. For this, you should have the exported users and progress CSV files, obtained by following instructions in the [backing up and restoring data section](#backing-up-and-restoring-data).
 
 You will need to stop the application, then delete the following four files:
 
