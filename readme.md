@@ -8,7 +8,16 @@ This is a server application that you can use to access your
 collection of ebooks and comic books remotely, read them and
 keep read progress across multiple devices. The application
 is browser based and designed to work well with both desktop
-and mobile devices. 
+and mobile devices.
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation instructions](#installation-instructions)
+- [Creating users and other admin functions](#creating-users-and-other-admin-functions)
+- [Configuration properties](#configuration-properties)
+- [Backing up and restoring data](#backing-up-and-restoring-data)
+- [Updating the service](#updating-the-service)
+- [Troubleshooting - Resetting everything](#troubleshooting---resetting-everything)
 
 ## Features
 
