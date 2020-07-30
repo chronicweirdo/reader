@@ -81,18 +81,18 @@ To restore this data, on a new database, you need to use the admin user and navi
 
 Importing progress should be done after you have imported or created the users and the book collection has been imported. You can check the logs, the `reader.log` file in the folder where your application is installed, to see that collection scanning has been completed. A message saying "full scan done" should be on the last line in the file if the collection has been imported. Once the import process is done, you can now import progess to you database by going to the "Import data" screen, copying the text from the progress CSV file into the "csv data" text area, then pressing the "Import progress" button.
 
-## Resetting everything
-
-
-
 ## Updating the service
 
-- export users and progress
-- stop application (service, jar)
-- copy new version
-- start application with new version
-- same database files should be used, check to see that the users and progress have been maintained
-- if data was corrupted, import users and progress saved at first step
+The following steps are recommended when you want to update the Chronic Reader service to a new version:
+
+1. Export users and progress;
+2. Stop the Chronic Reader application;
+3. Copy the new version, downloaded from [releases](../../releases), to the installation folder;
+4. Start the application with new version using `java -jar reader-<version>.jar`
+5. The database files from the previous version should be available and compatible, but just in case, check to see that the users and progress have been maintained;
+6. If data was corrupted and the old users and progress information are no longer available in the application, you can import the users and progress that were saved in the first step.
+
+## Troubleshooting - Resetting everything
 
 ## Installing as a service on Windows
 
