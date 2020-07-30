@@ -73,7 +73,7 @@ on different lines. Then press "Add users". The users will have the option to ch
     - It is recommended to set the `keepEbookStyles` setting to false, to get a more consistent experience with ebooks,
     but you can experiment with this and change it to true.
     
-## Backing up and restore data
+## Backing up and restoring data
 
 To back up your user data and progress data, you can log in with the admin user and click the settings button and then go to the "Import data" screen. On that screen you can click the "Export progress" and the "Export users" buttons to save this information as CSV files on your computer.
 
@@ -93,6 +93,12 @@ The following steps are recommended when you want to update the Chronic Reader s
 6. If data was corrupted and the old users and progress information are no longer available in the application, you can import the users and progress that were saved in the first step.
 
 ## Troubleshooting - Resetting everything
+
+If there are issues with the application, the application throws an error and can't start, possible after an upgrade to a new version, one way to try and fix it is to recreate the database. For this, you should have the exported users and progress CSV files, obtained by following instructions in the [backing up and restoring data section](#Backing up and restoring data).
+
+You will need to stop the application, then delete the following four files:
+
+Afterwards, restart the application. The database will be recreated, your library folder will be rescanned. Once scanning is done, you can open the application with the admin account and navigate to the "Import data" screen, where you can reimport the old users and progress.
 
 ## Installing as a service on Windows
 
