@@ -69,7 +69,7 @@ Once you have started the application, you can navigate in a browser to `localho
 configured). There you should see the login page. Log in with the `admin` username and the `<administrator_password>`
 you configured in the properties file.
 
-![create first users](instruction_resources/create_first_users.gif)
+![create first users](create_first_users.png)
 
 On the main page, click the settings button. In the settings screen, click on "Import data". This is the administration
 functions screen. Only the admin user has access to this screen. You can create the users
@@ -106,6 +106,11 @@ The following steps are recommended when you want to update the Chronic Reader s
 If there are issues with the application, the application throws an error and can't start, possible after an upgrade to a new version, one way to try and fix it is to recreate the database. For this, you should have the exported users and progress CSV files, obtained by following instructions in the [backing up and restoring data section](#backing-up-and-restoring-data).
 
 You will need to stop the application, then delete the following four files:
+
+- `reader_db.lck`
+- `reader_db.log`
+- `reader_db.properties`
+- `reader_db.script`
 
 Afterwards, restart the application. The database will be recreated, your library folder will be rescanned. Once scanning is done, you can open the application with the admin account and navigate to the "Import data" screen, where you can reimport the old users and progress.
 
