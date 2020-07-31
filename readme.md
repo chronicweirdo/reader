@@ -116,11 +116,16 @@ Afterwards, restart the application. The database will be recreated, your librar
 
 ## Installing as a service on Windows
 
-## Installing as a service on Linux
-
-## Installing as a service on Mac OS
+This application is designed to run as a service on a server. You can easily run
+this application as a service on Windows using the [Non-Sucking Service Manager](https://nssm.cc/). 
 
 ## Other considerations
 
-- make it available on the web by updating your IP to a domain name
-- add https, do https offloading using a server like nginx
+If you want to make this service available on the internet, you should add SSL,
+which can be done using a reverse proxy server like [nginx](https://nginx.org/).
+
+All comic books used for testing and illustration purposes are from 
+the [Digital Comic Museum](https://digitalcomicmuseum.com)
+
+All ebooks used for testing and illustration purposes are from
+[Project Gutenberg](https://www.gutenberg.org)
