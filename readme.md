@@ -1,6 +1,6 @@
-# Chronic Reader
+# <img style="width: 30px" src="src/main/resources/static/gold_logo.png" /><span style="margin:25px">Chronic Reader</span>
 
-![chronic reader logo](src/main/resources/static/gold_logo.png)
+![chronic reader screenshot](screenshot.png)
 
 ## Description
 
