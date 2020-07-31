@@ -127,7 +127,7 @@ If you want to make this service available on the internet, you should add SSL,
 which can be done using a reverse proxy server like [nginx](https://nginx.org/).
 
 All comic books used for testing and illustration purposes are from 
-the [Digital Comic Museum](https://digitalcomicmuseum.com)
+the [Digital Comic Museum](https://digitalcomicmuseum.com).
 
 All ebooks used for testing and illustration purposes are from
-[Project Gutenberg](https://www.gutenberg.org)
+[Project Gutenberg](https://www.gutenberg.org).
