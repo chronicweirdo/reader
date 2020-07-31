@@ -18,6 +18,8 @@ and mobile devices.
 - [Backing up and restoring data](#backing-up-and-restoring-data)
 - [Updating the service](#updating-the-service)
 - [Troubleshooting - Resetting everything](#troubleshooting---resetting-everything)
+- [Installing as a service on Windows](#installing-as-a-service-on-windows)
+- [Other considerations](#other-considerations)
 
 ## Features
 
