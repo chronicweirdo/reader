@@ -1,4 +1,4 @@
-# <img style="width: 30px" src="src/main/resources/static/gold_logo.png" /><span style="margin:25px">Chronic Reader</span>
+# Chronic Reader
 
 ![chronic reader screenshot](screenshot.png)
 
