@@ -322,6 +322,8 @@ function computeStartPositionsOfElements(root) {
                 newCurrentPosition = recursive(children[i], newCurrentPosition)
             }
             return newCurrentPosition
+        } else {
+            return currentPosition;
         }
     }
     recursive(root, 0)
