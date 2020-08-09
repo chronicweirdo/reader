@@ -63,6 +63,9 @@ class BookController @Autowired()(private val contentService: ContentService,
         case FileTypes.CBZ =>
           new RedirectView(s"/comic?id=$bookId")
 
+        case FileTypes.PDF =>
+          new RedirectView(s"/comic?id=$bookId")
+
         case FileTypes.EPUB => bookService.loadProgress(book) match {
           case Some(progress) => new RedirectView(s"/book?id=$bookId&path=${progress.section}&position=${progress.position}")
           case None => new RedirectView(s"/book?id=$bookId&path=${book.getSections()(0).link}")

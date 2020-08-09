@@ -26,6 +26,7 @@ object FileTypes {
   val CBR = "cbr"
   val CBZ = "cbz"
   val EPUB = "epub"
+  val PDF = "pdf"
 }
 
 object FileUtil {

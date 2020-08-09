@@ -4,7 +4,7 @@ import java.nio.file.Paths
 
 import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
-import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileTypes, FileUtil}
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileTypes, FileUtil, PdfUtil}
 import javax.annotation.PostConstruct
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.{Autowired, Value}
@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ScannerService {
 
   private val log: Logger = LoggerFactory.getLogger(classOf[ScannerService])
-  private val SUPPORTED_FILES_REGEX = s".+\\.(${FileTypes.CBR}|${FileTypes.CBZ}|${FileTypes.EPUB})$$"
+  private val SUPPORTED_FILES_REGEX = s".+\\.(${FileTypes.CBR}|${FileTypes.CBZ}|${FileTypes.EPUB}|${FileTypes.PDF})$$"
   private val COVER_RESIZE_MINIMAL_SIDE = 500
   private val DB_BATCH_SIZE = 20
 
@@ -100,6 +100,7 @@ class ScannerService {
       case FileTypes.CBR => scanCbr(path)
       case FileTypes.CBZ => scanCbz(path)
       case FileTypes.EPUB => scanEpub(path)
+      case FileTypes.PDF => scanPdf(path)
       case _ => None
     }
   }
@@ -116,6 +117,22 @@ class ScannerService {
     val collection = getCollection(path)
     val cover = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
     val size = CbrUtil.countPages(path)
+    (cover, size) match {
+      case (Some(c), Some(s)) =>
+        val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
+        Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+      case _ =>
+        log.warn(s"failed to scan $path")
+        None
+    }
+  }
+
+  private def scanPdf(path: String): Option[Book] = {
+    val title = FileUtil.getFileName(path)
+    val author = ""
+    val collection = getCollection(path)
+    val cover = PdfUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+    val size = PdfUtil.countPages(path)
     (cover, size) match {
       case (Some(c), Some(s)) =>
         val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)

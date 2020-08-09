@@ -85,6 +85,9 @@ class ContentService {
         case FileTypes.CBR =>
           CbrUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
 
+        case FileTypes.PDF =>
+          PdfUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
+
         case _ =>
           Seq()
       }
