@@ -35,6 +35,7 @@ function zoom(zoom, centerX, centerY) {
     setImageTop(centerY - newSideTop)
 
     setZoom(zoom)
+    setZoomJumpValue(zoom / getZoomForFitToScreen())
     updateImage()
 }
 function toggleFullScreen() {
@@ -113,9 +114,22 @@ function getPanSpeed() {
     return 3
 }
 
+function getZoomJumpValue() {
+    var zoomJump = window.localStorage.getItem("zoomJump")
+    if (zoomJump) {
+        return parseFloat(zoomJump)
+    } else {
+        return 2.5
+    }
+}
+
+function setZoomJumpValue(value) {
+    window.localStorage.setItem("zoomJump", value)
+}
+
 function zoomJump(x, y) {
     if (isPageFitToScreen()) {
-        zoom(getZoom() * 2.5, x, y)
+        zoom(getZoom() * getZoomJumpValue(), x, y)
     } else {
         fitPageToScreen()
     }
