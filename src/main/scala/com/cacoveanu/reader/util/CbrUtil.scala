@@ -68,7 +68,7 @@ object CbrUtil {
         log.error("failed to read comic pages for " + path, e)
         None
     } finally {
-      archive.close()
+      if (archive != null) archive.close()
     }
   }
 

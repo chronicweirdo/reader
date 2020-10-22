@@ -70,7 +70,7 @@ object CbzUtil {
         log.error("failed to read comic pages for " + path, e)
         None
     } finally {
-      zipFile.close()
+      if (zipFile != null) zipFile.close()
     }
   }
 
