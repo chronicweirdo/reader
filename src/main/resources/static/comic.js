@@ -286,22 +286,10 @@ function downloadImageData(page, callback) {
     xhttp.send()
 }
 
-function downloadPage(page, callback) {
-    /*var xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-
-            if (callback != null) {
-                callback()
-            }
-        }
-    }
-    xhttp.open("GET", "downloadPage?id=" + getComicId() + "&page=" + (page-1), true)
-    xhttp.send()*/
-
+function updateDownloadUrl() {
     var url = "downloadPage?id=" + getComicId() + "&page=" + (getPage()-1)
-    //window.location.href = url
-    window.open(url, '_blank');
+    var downloadLink = document.getElementById("downloadPageButton")
+    downloadLink.href = url
 }
 
 function prefetch(page, callback) {
@@ -331,6 +319,7 @@ function displayPage(page, callback) {
                 setImageLeft(0)
                 setImageTop(0)
                 updateMinimumZoom()
+                updateDownloadUrl()
                 if (callback != null) {
                     callback()
                 }
