@@ -286,6 +286,24 @@ function downloadImageData(page, callback) {
     xhttp.send()
 }
 
+function downloadPage(page, callback) {
+    /*var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
+
+            if (callback != null) {
+                callback()
+            }
+        }
+    }
+    xhttp.open("GET", "downloadPage?id=" + getComicId() + "&page=" + (page-1), true)
+    xhttp.send()*/
+
+    var url = "downloadPage?id=" + getComicId() + "&page=" + (getPage()-1)
+    //window.location.href = url
+    window.open(url, '_blank');
+}
+
 function prefetch(page, callback) {
     if (! cacheContains(page)) {
         downloadImageData(page, callback)
