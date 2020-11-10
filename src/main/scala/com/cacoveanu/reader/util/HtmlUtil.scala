@@ -12,6 +12,14 @@ import scala.jdk.CollectionConverters._
 
 object HtmlUtil {
 
+  def positionsTestGet(bytes: Array[Byte]) = {
+    var text = new String(bytes, "UTF-8")
+    val doc = Jsoup.parse(text)
+    val r: String = doc.text()
+    var rws = r.replaceAll("\\s", "")
+    rws.length
+  }
+
   implicit class AugmentedHtmlString(text: String) {
     def asHtml: Document = Jsoup.parse(text)
   }
