@@ -14,6 +14,9 @@ import org.springframework.web.servlet.view.RedirectView
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 
+import scala.beans.BeanProperty
+import scala.util.Random
+
 @Controller
 class BookController @Autowired()(private val contentService: ContentService,
                                   private val bookService: BookService,
@@ -54,8 +57,19 @@ class BookController @Autowired()(private val contentService: ContentService,
   @ResponseBody
   def getPositionsTestData() = {
     // book?id=8891&path=text%2Fpart0005.html&position=0
-    toResponseEntity(contentService.loadResource(positionsTestBookId, URLDecoder.decode(positionsTestBookPath, StandardCharsets.UTF_8.name())))
+    val bks = bookService.loadBooks
+    val i = Random.nextInt(bks.size)
+    val b = bks(i)
+    val si = Random.nextInt(b.getSections().size)
+    val s = b.getSections()(si)
+
+    //toResponseEntity(contentService.loadResource(positionsTestBookId, URLDecoder.decode(positionsTestBookPath, StandardCharsets.UTF_8.name())))
+    val content = contentService.loadResource(b.id, URLDecoder.decode(s.link, StandardCharsets.UTF_8.name())).get
+    val sizeWithoutSpaces = HtmlUtil.positionsTestGet(content.data)
+    PositionsTestResponse(new String(content.data, "UTF-8"), sizeWithoutSpaces)
   }
+
+  case class PositionsTestResponse(@BeanProperty content: String, @BeanProperty sizeWithoutSpaces: Int)
 
   @RequestMapping(Array("/positions_test_computed_data"))
   @ResponseBody

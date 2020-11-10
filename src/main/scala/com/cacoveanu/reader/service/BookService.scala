@@ -127,4 +127,9 @@ class BookService {
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     bookRepository.findAll(pageRequest).asScala.toSeq
   }
+
+  def loadBooks = {
+    bookRepository.findAll().asScala.toSeq
+      .filter(b => b.path.endsWith(".epub"))
+  }
 }

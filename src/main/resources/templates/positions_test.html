@@ -4,15 +4,24 @@
     <meta charset="UTF-8">
     <title>Positions Test</title>
     <style>
+        * {
+            color: black;
+        }
     </style>
     <script>
         function loadData() {
             var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
-                    console.log(this)
+                    //console.log(this)
+                    data = JSON.parse(this.response)
+                    console.log(data)
                     var content = document.getElementById("content")
-                    content.innerHTML = this.response
+                    content.innerHTML = data.content
+                    var bes = document.getElementById("backendSize")
+                    bes.innerHTML = data.sizeWithoutSpaces
+                    var fes = document.getElementById("frontendSize")
+                    fes.innerHTML = computeLengthWithoutSpaces()
                 }
             }
             xhttp.open("GET", "positions_test_data", true)
@@ -48,10 +57,11 @@
 <body>
 <h1>Positions Test</h1>
 <div id="content"></div>
-<div id="computedData"></div>
+<div id="backendSize"></div>
+<div id="frontendSize"></div>
 <script>
     loadData()
-    loadComputedData()
+    //loadComputedData()
 </script>
 </body>
 </html>
