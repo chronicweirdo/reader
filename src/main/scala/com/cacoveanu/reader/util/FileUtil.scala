@@ -17,6 +17,7 @@ object FileMediaTypes {
   val IMAGE_PNG_VALUE = MediaType.IMAGE_PNG_VALUE
   val IMAGE_GIF_VALUE = MediaType.IMAGE_GIF_VALUE
   val IMAGE_BMP_VALUE = "image/bmp"
+  val IMAGE_WEBP_VALUE = "image/webp"
   val TEXT_HTML_VALUE = MediaType.TEXT_HTML_VALUE
   val TEXT_CSS_VALUE = "text/css"
 
@@ -38,7 +39,7 @@ object FileUtil {
   }
 
   def isImageType(fileName: String) =
-    Seq("jpg", "jpeg", "png", "gif", "bmp") contains getExtension(fileName)
+    Seq("jpg", "jpeg", "png", "gif", "bmp", "webp") contains getExtension(fileName)
 
   def getMediaType(fileName: String): Option[String] =
     FileUtil.getExtension(fileName) match {
@@ -47,6 +48,7 @@ object FileUtil {
       case "png" => Some(FileMediaTypes.IMAGE_PNG_VALUE)
       case "gif" => Some(FileMediaTypes.IMAGE_GIF_VALUE)
       case "bmp" => Some(FileMediaTypes.IMAGE_BMP_VALUE)
+      case "webp" => Some(FileMediaTypes.IMAGE_WEBP_VALUE)
       case "html" => Some(FileMediaTypes.TEXT_HTML_VALUE)
       case "htm" => Some(FileMediaTypes.TEXT_HTML_VALUE)
       case "xhtml" => Some(FileMediaTypes.TEXT_HTML_VALUE)
@@ -60,6 +62,7 @@ object FileUtil {
     case FileMediaTypes.IMAGE_GIF_VALUE => Some("gif")
     case FileMediaTypes.IMAGE_JPEG_VALUE => Some("jpg")
     case FileMediaTypes.IMAGE_PNG_VALUE => Some("png")
+    case FileMediaTypes.IMAGE_WEBP_VALUE => Some("webp")
     case _ => None
   }
 
