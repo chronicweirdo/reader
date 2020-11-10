@@ -56,7 +56,11 @@ class ComicController @Autowired() (private val userService: UserService,
   }
 
   private def getFileName(id: java.lang.Long, page: Int, mediaType: String) =
-    s"$id$page.${FileUtil.getExtensionForMediaType(mediaType)}"
+    FileUtil.getExtensionForMediaType(mediaType) match {
+      case Some(ext) => s"$id-$page.${ext}"
+      case None => s"$id-$page"
+    }
+
 
 
   private def toContentType(mediaType: String) =
