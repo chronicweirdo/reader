@@ -43,7 +43,7 @@ object TestParseHtml {
     } else None
   }
 
-  case class Node(start: Int, content: String, tagStack: Seq[(String, String)])
+  case class Node(start: Int, length: Int, content: String, typ: String, tagStack: Seq[(String, String)])
 
   def parseHtmlBody(body: String) = {
 
@@ -63,8 +63,8 @@ object TestParseHtml {
           parseTag(currentTag) match {
             case Some((true, "img")) =>
               println("found an image")
-              nodes = nodes :+ Node(startPosition, currentTag, tagStack.toSeq)
               position += 1
+              nodes = nodes :+ Node(startPosition, position - startPosition, currentTag, "img", tagStack.toSeq)
               startPosition = position
             case Some((true, name)) => tagStack.push((name, currentTag))
             case Some((false, name)) =>
@@ -82,7 +82,7 @@ object TestParseHtml {
           println("at position " + position)
           println("under tag stack" + tagStack.map(_._1))
           if (currentText.length > 0) {
-            nodes = nodes :+ Node(startPosition, currentText, tagStack.toSeq)
+            nodes = nodes :+ Node(startPosition, position - startPosition, currentText, "text", tagStack.toSeq)
             currentText = ""
           }
           currentTag += body(i)
@@ -93,6 +93,49 @@ object TestParseHtml {
       }
     }
     nodes
+  }
+
+  // collecting from nodes this way if pretty hard
+  // this is buggy
+  // and still needs to handle the tag stack
+  def getFromNodes(nodes: Seq[Node], from: Int, to: Int): String = {
+    var collecting = false
+    var text = ""
+    for (i <- nodes.indices) {
+      if (!collecting && from >= nodes(i).start && from < nodes(i).start + nodes(i).length) {
+        if (to > nodes(i).start + nodes(i).length) {
+          collecting = true
+          if (nodes(i).typ == "text") {
+            text += nodes(i).content.substring(from - nodes(i).start)
+          } else {
+            text += nodes(i).content
+          }
+        } else {
+          // collecting only from this node
+          if (nodes(i).typ == "text") {
+            text += nodes(i).content.substring(from - nodes(i).start, to - nodes(i).start)
+          } else {
+            text += nodes(i).content
+          }
+          return text
+        }
+      }
+      if (collecting) {
+        if (to > nodes(i).start + nodes(i).length) {
+          // collect this node and continue
+          text += nodes(i).content
+        } else {
+          // stop collecting at this node
+          if (nodes(i).typ == "text") {
+            text += nodes(i).content.substring(0, to - nodes(i).start)
+          } else {
+            text += nodes(i).content
+          }
+          return text
+        }
+      }
+    }
+    text
   }
 
   def main(args: Array[String]): Unit = {
@@ -109,6 +152,9 @@ object TestParseHtml {
     if (body.isDefined) {
       val nodes = parseHtmlBody(body.get)
       nodes.foreach(println)
+      println()
+      val part = getFromNodes(nodes, 100, 1100)
+      println(part)
     }
 
   }
