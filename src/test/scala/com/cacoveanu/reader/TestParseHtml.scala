@@ -42,6 +42,84 @@ class BookNode {
       case tagName => this.content + this.children.map(_.getContent()).mkString("") + "</" + tagName + ">"
     }
   }
+
+  /*def inorder(from: Int, to: Int) = {
+    if (from <= this.start && this.end <= to) {
+      // gets printed fully
+      println(this.getContent())
+    } else {
+    }
+  }*/
+  def copy(from: Int, to: Int): BookNode = {
+    this.typ match {
+      case "img" =>
+        if (from <= this.start && this.end <= to) {
+          // include image in selection
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.start = this.start
+          nn.end = this.end
+          nn
+        } else {
+          null
+        }
+      case "text" =>
+        if (from <= this.start && this.end <= to) {
+          // this node is copied whole
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.start = this.start
+          nn.end = this.end
+          nn
+        } else if (from <= this.start && this.start <= to && to <= this.end) {
+          // copy ends at this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(0, to - this.start + 1)
+          nn.start = this.start
+          nn.end = to
+          nn
+        } else if (this.start <= from && from <= this.end && this.end <= to) {
+          // copy starts at this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(from - this.start)
+          nn.start = from
+          nn.end = this.end
+          nn
+        } else if (this.start <= from && to <= this.end) {
+          // we only copy part of this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(from - this.start, to - this.start + 1)
+          nn.start = from
+          nn.end = to
+          nn
+        } else {
+          null
+        }
+      case _ =>
+        // this is not a leaf
+        if (this.end < from || this.start > to) {
+          // this node is outside the range and should not be copied
+          null
+        } else {
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.children = this.children
+            .map(_.copy(from, to))
+            .filter(_ != null)
+          nn.children.foreach(_.parent = nn)
+          nn.start = nn.children.head.start
+          nn.end = nn.children.last.end
+          nn
+        }
+
+    }
+  }
 }
 
 object TestParseHtml {
@@ -261,6 +339,17 @@ object TestParseHtml {
       println(bodyText.length)
       println(backToContent.length)
       //println(backToContent)
+
+      val subtree = bodyNode.copy(0, 99)
+      subtree.prettyPrint()
+      println(subtree.getContent())
+      println()
+      val subtree2 = bodyNode.copy(100, 199)
+      subtree2.prettyPrint()
+      println(subtree2.getContent())
+      val subtree3 = bodyNode.copy(200, 299)
+      subtree3.prettyPrint()
+      println(subtree3.getContent())
     }
 
   }
