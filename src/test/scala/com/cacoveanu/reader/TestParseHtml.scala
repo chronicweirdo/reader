@@ -25,13 +25,22 @@ class BookNode {
     "(" + this.typ + "," + this.children.map(_.toString).mkString(",") + ")"
 
   def prettyPrint(level: Int = 0): Unit = {
-    printAtLevel(level, this.typ + " >>> " + this.content)
+    printAtLevel(level, this.typ + "[" + this.start + "," + this.end + "]: " + this.content)
     this.children.foreach(c => c.prettyPrint(level+1))
   }
 
   def printAtLevel(level: Int, text: String) = {
     for (i <- 0 until level) print("\t")
     println(text)
+  }
+
+  def getContent(): String = {
+    this.typ match {
+      case "text" => this.content
+      case "img" => this.content
+      case "body" => this.children.map(_.getContent()).mkString("")
+      case tagName => this.content + this.children.map(_.getContent()).mkString("") + "</" + tagName + ">"
+    }
   }
 }
 
@@ -80,30 +89,43 @@ object TestParseHtml {
     var currentNode: BookNode = bodyNode
 
     var currentContent = ""
+    var position = 0
 
     for (i <- 0 until body.length) {
-      if (body(i) == '<' || body(i) == '>') {
-        if (body(i) == '>') currentContent += body(i)
+      if (body(i) == '<' || body(i) == '>' || i == body.length - 1) {
+        if (body(i) == '>' || i == body.length - 1) currentContent += body(i)
         // starting a new tag, need to save current content to a node
         parseTag(currentContent) match {
           case Some((true, "img")) =>
             val newImageNode = new BookNode("img", currentNode)
             newImageNode.content = currentContent
+            newImageNode.start = position
+            newImageNode.end = position + 1
+            position = newImageNode.end
             currentNode.children = currentNode.children :+ newImageNode
           case Some((true, tagName)) =>
             // opening a new tag
             val newTagNode = new BookNode(tagName, currentNode)
             newTagNode.content = currentContent
+            newTagNode.start = position
             currentNode.children = currentNode.children :+ newTagNode
             currentNode = newTagNode
           case Some((false, tagName)) =>
             // closing the current tag
             if (tagName != currentNode.typ) throw new Throwable("incompatible closing tag")
+            if (currentNode.children.nonEmpty) {
+              currentNode.end = currentNode.children.last.end
+            } else {
+              currentNode.end = currentNode.start
+            }
             currentNode = currentNode.parent
           case None if currentContent.length > 0 =>
             // a text node ended
             val newTextNode = new BookNode("text", currentNode)
             newTextNode.content = currentContent
+            newTextNode.start = position
+            newTextNode.end = position + currentContent.length
+            position = newTextNode.end
             currentNode.children = currentNode.children :+ newTextNode
           case None =>
             // some empty, probably a tag ended and a new one begins
@@ -112,7 +134,11 @@ object TestParseHtml {
       }
       if (body(i) != '>') currentContent += body(i)
     }
-
+    if (bodyNode.children.nonEmpty) {
+      bodyNode.end = bodyNode.children.last.end
+    } else {
+      bodyNode.end = bodyNode.start
+    }
     bodyNode
   }
 
@@ -226,9 +252,15 @@ object TestParseHtml {
       println()
       val part = getFromNodes(nodes, 100, 1100)
       println(part)*/
-      val bodyNode = parseHtmlBodyToTree(body.get)
+      val bodyText = body.get
+      val bodyNode = parseHtmlBodyToTree(bodyText)
       //println(bodyNode)
       bodyNode.prettyPrint()
+      val backToContent = bodyNode.getContent()
+      println(bodyText == backToContent)
+      println(bodyText.length)
+      println(backToContent.length)
+      //println(backToContent)
     }
 
   }
