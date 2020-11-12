@@ -113,8 +113,16 @@ class BookNode {
             .map(_.copy(from, to))
             .filter(_ != null)
           nn.children.foreach(_.parent = nn)
-          nn.start = nn.children.head.start
-          nn.end = nn.children.last.end
+          if (nn.children.isEmpty) {
+            // weird case with empty tags
+            // todo: consider removing these
+            // todo: or consider giving empty tags a size of 1
+            nn.start = this.start
+            nn.end = this.end
+          } else {
+            nn.start = nn.children.head.start
+            nn.end = nn.children.last.end
+          }
           nn
         }
 
@@ -194,7 +202,10 @@ object TestParseHtml {
             if (currentNode.children.nonEmpty) {
               currentNode.end = currentNode.children.last.end
             } else {
-              currentNode.end = currentNode.start
+              // an empty tag is usually used to include text separation
+              // so it should have a length of at least one to allow us to execut pagination before or after it
+              currentNode.end = currentNode.start + 1
+              position = currentNode.end
             }
             currentNode = currentNode.parent
           case None if currentContent.length > 0 =>
@@ -350,6 +361,13 @@ object TestParseHtml {
       val subtree3 = bodyNode.copy(200, 299)
       subtree3.prettyPrint()
       println(subtree3.getContent())
+      println()
+      val subtree4 = bodyNode.copy(bodyNode.end - 100, bodyNode.end)
+      subtree4.prettyPrint()
+      println(subtree4.getContent())
+      println()
+      val treecopy = bodyNode.copy(0, bodyNode.end)
+      println(treecopy.getContent() == bodyNode.getContent())
     }
 
   }
