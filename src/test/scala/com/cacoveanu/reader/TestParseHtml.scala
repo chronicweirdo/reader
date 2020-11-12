@@ -7,6 +7,34 @@ import com.cacoveanu.reader.util.EpubUtil
 import scala.collection.mutable
 import scala.util.matching.Regex
 
+class BookNode {
+  var typ: String = _
+  var parent: BookNode = _
+  var children: Seq[BookNode] = Seq()
+  var content: String = _
+  var start: Int = _
+  var end: Int = _
+
+  def this(typ: String, parent: BookNode) {
+    this()
+    this.typ = typ
+    this.parent = parent
+  }
+
+  override def toString: String =
+    "(" + this.typ + "," + this.children.map(_.toString).mkString(",") + ")"
+
+  def prettyPrint(level: Int = 0): Unit = {
+    printAtLevel(level, this.typ + " >>> " + this.content)
+    this.children.foreach(c => c.prettyPrint(level+1))
+  }
+
+  def printAtLevel(level: Int, text: String) = {
+    for (i <- 0 until level) print("\t")
+    println(text)
+  }
+}
+
 object TestParseHtml {
 
   def getHtmlBody(html: String) = {
@@ -30,20 +58,63 @@ object TestParseHtml {
   // the second entry in the tuple is the tag name
   def parseTag(tagString: String) = {
     val tagNamePattern = "[^>\\s]+".r
-    if (tagString(0) == '<' && tagString.takeRight(1) == ">") {
-      if (tagString(1) == '/') {
-        // and end tag
-        tagNamePattern.findFirstIn(tagString.substring(2))
-          .map(name => (false, name))
-      } else {
-        // a beginning tag
-        tagNamePattern.findFirstIn(tagString.substring(1))
-          .map(name => (true, name))
-      }
+    if (tagString.length > 2) {
+      if (tagString(0) == '<' && tagString.takeRight(1) == ">") {
+        if (tagString(1) == '/') {
+          // and end tag
+          tagNamePattern.findFirstIn(tagString.substring(2))
+            .map(name => (false, name))
+        } else {
+          // a beginning tag
+          tagNamePattern.findFirstIn(tagString.substring(1))
+            .map(name => (true, name))
+        }
+      } else None
     } else None
   }
 
   case class Node(start: Int, length: Int, content: String, typ: String, tagStack: Seq[(String, String)])
+
+  def parseHtmlBodyToTree(body: String) = {
+    val bodyNode = new BookNode("body", null)
+    var currentNode: BookNode = bodyNode
+
+    var currentContent = ""
+
+    for (i <- 0 until body.length) {
+      if (body(i) == '<' || body(i) == '>') {
+        if (body(i) == '>') currentContent += body(i)
+        // starting a new tag, need to save current content to a node
+        parseTag(currentContent) match {
+          case Some((true, "img")) =>
+            val newImageNode = new BookNode("img", currentNode)
+            newImageNode.content = currentContent
+            currentNode.children = currentNode.children :+ newImageNode
+          case Some((true, tagName)) =>
+            // opening a new tag
+            val newTagNode = new BookNode(tagName, currentNode)
+            newTagNode.content = currentContent
+            currentNode.children = currentNode.children :+ newTagNode
+            currentNode = newTagNode
+          case Some((false, tagName)) =>
+            // closing the current tag
+            if (tagName != currentNode.typ) throw new Throwable("incompatible closing tag")
+            currentNode = currentNode.parent
+          case None if currentContent.length > 0 =>
+            // a text node ended
+            val newTextNode = new BookNode("text", currentNode)
+            newTextNode.content = currentContent
+            currentNode.children = currentNode.children :+ newTextNode
+          case None =>
+            // some empty, probably a tag ended and a new one begins
+        }
+        currentContent = ""
+      }
+      if (body(i) != '>') currentContent += body(i)
+    }
+
+    bodyNode
+  }
 
   def parseHtmlBody(body: String) = {
 
@@ -150,11 +221,14 @@ object TestParseHtml {
     val body = getHtmlBody(html)
     println(body)
     if (body.isDefined) {
-      val nodes = parseHtmlBody(body.get)
+      /*val nodes = parseHtmlBody(body.get)
       nodes.foreach(println)
       println()
       val part = getFromNodes(nodes, 100, 1100)
-      println(part)
+      println(part)*/
+      val bodyNode = parseHtmlBodyToTree(body.get)
+      //println(bodyNode)
+      bodyNode.prettyPrint()
     }
 
   }
