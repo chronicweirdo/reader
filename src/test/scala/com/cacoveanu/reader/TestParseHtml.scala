@@ -125,9 +125,69 @@ class BookNode {
           }
           nn
         }
-
     }
   }
+
+  def leafAtPosition(position: Int): BookNode = {
+    if (position < this.start || this.end <= position) {
+      return null
+    } else {
+      var currentNode = this
+      while (currentNode != null && currentNode.children.nonEmpty) {
+        currentNode.children.find(c => c.start <= position && position < c.end) match {
+          case Some(nextNode) => currentNode = nextNode
+          case None => currentNode = null
+        }
+      }
+      currentNode
+    }
+  }
+
+  def nextLeaf(): BookNode = {
+    if (this.children.nonEmpty) {
+      // leaf is a child of this node
+      var current = this
+      while (current.children.nonEmpty) {
+        current = current.children.head
+      }
+      current
+    } else {
+      // go up the parent line until we find next siblings, and then find the leaf of a next sibling
+      var current = this
+      var parent = current.parent
+      while (parent != null && parent.children.indexOf(current) == parent.children.size - 1) {
+        current = parent
+        parent = current.parent
+      }
+      if (parent != null) {
+        val leafCandidate = parent.children(parent.children.indexOf(current) + 1)
+        if (leafCandidate.children.isEmpty) leafCandidate
+        else leafCandidate.nextLeaf()
+      } else null
+    }
+  }
+
+  def previousLeaf(): BookNode = {
+    var current = this
+    var parent = current.parent
+    while (parent != null && parent.children.indexOf(current) == 0) {
+      // keep going up
+      current = parent
+      parent = current.parent
+    }
+    if (parent != null) {
+      current = parent.children(parent.children.indexOf(current) - 1)
+      // go down on the last child track
+      while (current.children.nonEmpty) current = current.children.last
+      current
+    } else null
+  }
+
+  /*def findSpaceAfter(position: Int): Int = {
+    // first get leaf at position
+    val leaf = leafAtPosition(position)
+    // start looking for next space
+  }*/
 }
 
 object TestParseHtml {
@@ -351,7 +411,7 @@ object TestParseHtml {
       println(backToContent.length)
       //println(backToContent)
 
-      val subtree = bodyNode.copy(0, 99)
+      /*val subtree = bodyNode.copy(0, 99)
       subtree.prettyPrint()
       println(subtree.getContent())
       println()
@@ -367,7 +427,33 @@ object TestParseHtml {
       println(subtree4.getContent())
       println()
       val treecopy = bodyNode.copy(0, bodyNode.end)
-      println(treecopy.getContent() == bodyNode.getContent())
+      println(treecopy.getContent() == bodyNode.getContent())*/
+
+      val leaf = bodyNode.leafAtPosition(65139)
+      leaf.prettyPrint()
+
+      val otherLeaf = leaf.previousLeaf()
+      if (otherLeaf != null) otherLeaf.prettyPrint()
+      else println(null)
+
+      println(bodyNode.nextLeaf().getContent()) // should be first leaf
+      println(bodyNode.previousLeaf()) // should be null
+
+      // we should be able to go over the whole text from first leaf to the last
+      var currentLeaf = bodyNode.nextLeaf()
+      while (currentLeaf != null) {
+        currentLeaf.prettyPrint()
+        currentLeaf = currentLeaf.nextLeaf()
+      }
+
+      // and we should also be able to go over the whole text from the last leaf to the first
+      currentLeaf = bodyNode.leafAtPosition(bodyNode.end)
+      println(currentLeaf) // is null
+      currentLeaf = bodyNode.leafAtPosition(bodyNode.end - 1)
+      while (currentLeaf != null) {
+        currentLeaf.prettyPrint()
+        currentLeaf = currentLeaf.previousLeaf()
+      }
     }
 
   }
