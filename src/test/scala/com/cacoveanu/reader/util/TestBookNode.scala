@@ -47,4 +47,13 @@ class TestBookNode {
     //println(subtree.getContent())
     //assert(subtree.getContent() == expectedSubtree)
   }
+
+  @Test
+  def testSecondImplementation() = {
+    val treeOption = BookNode.getHtmlBody(html).flatMap(BookNode2.parse(_))
+    assert(treeOption.isDefined)
+    val tree = treeOption.get
+
+    tree.prettyPrint()
+  }
 }
