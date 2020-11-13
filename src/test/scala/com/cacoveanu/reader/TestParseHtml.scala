@@ -182,12 +182,38 @@ class BookNode {
       current
     } else null
   }
+  def root(): BookNode = {
+    var current = this
+    while (current.parent != null) current = current.parent
+    current
+  }
 
-  /*def findSpaceAfter(position: Int): Int = {
+  def documentStart(): Int = this.root.start
+  def documentEnd(): Int = this.root.end
+
+  def findSpaceAfter(position: Int): Int = {
+    val spacePattern = "\\s".r
     // first get leaf at position
     val leaf = leafAtPosition(position)
-    // start looking for next space
-  }*/
+    // for a text node, next space may be in the text node, next space character after position
+    // if other kind of node, next space is the start of next leaf
+    if (leaf != null) {
+      leaf.typ match {
+        case "text" =>
+          spacePattern.findFirstMatchIn(leaf.content.substring(position - leaf.start + 1)) match {
+            case Some(m) => m.start + position + 1
+            case None =>
+              val nextLeaf = leaf.nextLeaf()
+              if (nextLeaf != null) nextLeaf.start
+              else leaf.documentEnd()
+          }
+        case _ =>
+          val nextLeaf = leaf.nextLeaf()
+          if (nextLeaf != null) nextLeaf.start
+          else leaf.documentEnd()
+      }
+    } else this.documentEnd()
+  }
 }
 
 object TestParseHtml {
@@ -392,9 +418,9 @@ object TestParseHtml {
     println(section.link)
     val bytes = EpubUtil.readResource(path, section.link).get
     val html = new String(bytes, StandardCharsets.UTF_8)
-    println(html)
+    //println(html)
     val body = getHtmlBody(html)
-    println(body)
+    //println(body)
     if (body.isDefined) {
       /*val nodes = parseHtmlBody(body.get)
       nodes.foreach(println)
@@ -404,11 +430,11 @@ object TestParseHtml {
       val bodyText = body.get
       val bodyNode = parseHtmlBodyToTree(bodyText)
       //println(bodyNode)
-      bodyNode.prettyPrint()
-      val backToContent = bodyNode.getContent()
+      //bodyNode.prettyPrint()
+      /*val backToContent = bodyNode.getContent()
       println(bodyText == backToContent)
       println(bodyText.length)
-      println(backToContent.length)
+      println(backToContent.length)*/
       //println(backToContent)
 
       /*val subtree = bodyNode.copy(0, 99)
@@ -429,7 +455,7 @@ object TestParseHtml {
       val treecopy = bodyNode.copy(0, bodyNode.end)
       println(treecopy.getContent() == bodyNode.getContent())*/
 
-      val leaf = bodyNode.leafAtPosition(65139)
+      /*val leaf = bodyNode.leafAtPosition(65139)
       leaf.prettyPrint()
 
       val otherLeaf = leaf.previousLeaf()
@@ -453,6 +479,17 @@ object TestParseHtml {
       while (currentLeaf != null) {
         currentLeaf.prettyPrint()
         currentLeaf = currentLeaf.previousLeaf()
+      }*/
+
+      val testNode = bodyNode.copy(0, 51)
+      testNode.prettyPrint()
+
+      //println(testNode.findSpaceAfter(54))
+      // we should be able to navigate the document space after space
+      var p = 27
+      for (_ <- 0 until 10) {
+        p = testNode.findSpaceAfter(p)
+        println(p)
       }
     }
 
