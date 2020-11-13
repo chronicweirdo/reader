@@ -20,7 +20,7 @@ object BookNode2 {
   def isLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
   def parse(body: String): Option[BookNode2] = {
-    val bodyNode = new BookNode2("body", null)
+    val bodyNode = new BookNode2("body", "")
     var current: BookNode2 = bodyNode
 
     var content = ""
@@ -77,6 +77,17 @@ object BookNode2 {
         } else throw new Throwable("wild > encountered")
       }
     }
+    // add the last text node, if there is still such a thing remaining
+    if (content.nonEmpty) {
+      if (isTag(content)) throw new Throwable("this should not happen")
+      else {
+        // can only be a text node or nothing
+        if (content.length > 0) {
+          current.addChild(new BookNode2("text", content))
+          content = ""
+        }
+      }
+    }
 
     bodyNode.collapseLeafs()
     bodyNode.updatePositions()
@@ -117,6 +128,8 @@ class BookNode2 {
 
   def getContent(): String = {
     if (this.name == "text") this.content
+    else if (this.name == "body") this.children.map(_.getContent()).mkString("")
+    else if (isLeafElement(this.name) && this.children.isEmpty) this.content
     else this.content + this.children.map(_.getContent()).mkString("") + "</" + this.name + ">"
   }
 

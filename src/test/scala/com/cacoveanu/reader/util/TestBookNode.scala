@@ -17,7 +17,7 @@ class TestBookNode {
     val bodyStringOption = BookNode.getHtmlBody(html)
     assert(bodyStringOption.isDefined)
     val bodyString = bodyStringOption.get
-    val treeOption = BookNode.parseHtmlTree(html)
+    val treeOption = BookNode2.parse(bodyString)
     assert(treeOption.isDefined)
     val tree = treeOption.get
     assert(bodyString == tree.getContent())
