@@ -5,7 +5,7 @@ import com.cacoveanu.reader.util.BookNode2.isLeafElement
 object BookNode2 {
 
   private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source")
-  private val LEAF_ELEMENTS = Seq("img")
+  private val LEAF_ELEMENTS = Seq("img", "table")
 
   // if it starts and ends with angle brackets
   def isTag(str: String) = "^</?[^>]+>$".r matches str
@@ -78,6 +78,7 @@ object BookNode2 {
       }
     }
 
+    bodyNode.collapseLeafs()
     bodyNode.updatePositions()
     Some(bodyNode)
   }
@@ -112,6 +113,21 @@ class BookNode2 {
   def prettyPrint(level: Int = 0): Unit = {
     printAtLevel(level, this.name + "[" + this.start + "," + this.end + "]: " + this.content)
     this.children.foreach(c => c.prettyPrint(level+1))
+  }
+
+  def getContent(): String = {
+    if (this.name == "text") this.content
+    else this.content + this.children.map(_.getContent()).mkString("") + "</" + this.name + ">"
+  }
+
+  private def collapseLeafs(): Unit = {
+    if (isLeafElement(this.name) && this.children.nonEmpty) {
+      // extract content from children
+      this.content = this.getContent()
+      this.children = Seq()
+    } else {
+      this.children.foreach(_.collapseLeafs())
+    }
   }
 
   private def updatePositions(entrancePosition: Int = 0): Unit = {
