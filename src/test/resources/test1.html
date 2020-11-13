@@ -9,13 +9,15 @@
   <p class="chapter_title">Title of the chapter</p>
   <p class="simple_text">As all things go, this will be a test chapter. Written in the peaceful dusk of a late autumn afternoon, this text will be used to look into three main functionalities required for an ebook parsing algorithm. Three, the magic number, that is not mere two, and nowhere as far as four main functionalities, but a modest three.</p>
   <h2>Parsing to tree</h2>
-  <p class="simple_text">First of those fundamental functionalities we are testing here will be the parsing of a document, be it html or xml, that is contained in and represents part of an ebook, into a tree of content. There are several details we must focus on when doing said parsing. Our actual content will be stored in the leaves of the tree, with parent nodes representing the structure of the document from the body node downwards, through paragraphs, links, headers, emphasized and strongly emphasized stretches of text.</p>
-  <p class="simple_text">But our parsing algorithm must also treat some parts of the document as unified content blocks that should not be broken down into smaller nodes. These are the section of code that need to be fully included in a page, they can't be split into two pages. Images and tables are the prime candidates for this situation.</p>
-  <p class="simple_text">And let's not forget the last detail we must pay attention to, which is the size of the document we are parsing. To that effect, only the actual content should be accounted when computing the size: the text in the document, but no the text in the tags. Special elements, like images, should also have a size of one. And another very special case will be empty tags, which can be used for spacing in the document and should be part of the page computation algorithm. As you have already deduced, only elements with size will be part of the page computation algorithm.</p>
+  <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>
+  <img src="examples_of_leaves.png"/>
+  <p class="simple_text">Images, empty tags for spacing and maybe tables have a size of 1, meaning they can't be split in multiple pages.</p>
+  <p class="simple_text">Compute sizes to be used in the page computation algorithm and when computing book reading progress.</p>
   <div class="space_for_effect"></div>
   <h2>Splitting the tree into chunks</h2>
-  <p class="simple_text">splitting the tree into chunks that keep the tree structure</p>
+  <p class="simple_text">Functionality for copying parts of the tree, while keeping the structure of the tree.</p>
+  <p>Used when splitting the document into pages.</p>
   <h2>Computing pages</h2>
-  <p class="simple_text">Finding spaces and progressive computation of page sizes</p>
+  <p class="simple_text">Functionality for finding spaces. Getting the previous and next position of a space will allow us to compute pages without splitting mid-word.</p>
 </body>
 </html>
