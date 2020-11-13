@@ -214,6 +214,28 @@ class BookNode {
       }
     } else this.documentEnd()
   }
+
+  def findSpaceBefore(position: Int): Int = {
+    val spacePattern = "\\s[^\\s]*$".r
+    val leaf = leafAtPosition(position)
+    if (leaf != null) {
+      leaf.typ match {
+        case "text" =>
+          spacePattern.findFirstMatchIn(leaf.content.substring(0, position - leaf.start)) match {
+            case Some(m) => m.start + leaf.start
+            case None =>
+              val previousLeaf = leaf.previousLeaf()
+              if (previousLeaf != null) previousLeaf.start
+              else leaf.documentStart()
+          }
+        case _ =>
+          // beginning of previous leaf
+          val previousLeaf = leaf.previousLeaf()
+          if (previousLeaf != null) previousLeaf.start
+          else leaf.documentStart()
+      }
+    } else this.documentStart()
+  }
 }
 
 object TestParseHtml {
@@ -486,9 +508,9 @@ object TestParseHtml {
 
       //println(testNode.findSpaceAfter(54))
       // we should be able to navigate the document space after space
-      var p = 27
-      for (_ <- 0 until 10) {
-        p = testNode.findSpaceAfter(p)
+      var p = 49
+      for (_ <- 0 until 15) {
+        p = testNode.findSpaceBefore(p)
         println(p)
       }
     }
