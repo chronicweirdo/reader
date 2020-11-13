@@ -2,6 +2,8 @@ package com.cacoveanu.reader.util
 
 object BookNode2 {
 
+  private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source")
+
   // if it starts and ends with angle brackets
   def isTag(str: String) = "^</?[^>]+>$".r matches str
   def isEndTag(str: String) = "^</[^>]+>$".r matches str
@@ -11,6 +13,7 @@ object BookNode2 {
       m.group(1)
     case None => null
   }
+  def voidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
 
   def parse(body: String): Option[BookNode2] = {
     val bodyNode = new BookNode2("body", null)
@@ -40,18 +43,28 @@ object BookNode2 {
       if (c == '>') {
         // ending a tag
         if (isTag(content)) {
+          val name = tagName(content)
           // can only be a tag
           if (isEndTag(content)) {
             // we check that this tag closes the current node correctly
-            if (tagName(content) != current.name) throw new Throwable("incompatible end tag")
-            // move current node up
-            current = current.parent
-          } else if (isBothTag(content)) {
+            if (voidElement(name)) {
+              // the last child should have the correct name
+              if (name != current.children.last.name) throw new Throwable("incompatible end for void tag")
+              else {
+                current.children.last.content += content
+              }
+            } else {
+              // the current node should have the correct name, and it is getting closed
+              if (name != current.name) throw new Throwable("incompatible end tag")
+              // move current node up
+              current = current.parent
+            }
+          } else if (isBothTag(content) || voidElement(name)) {
             // just add this tag without content
-            current.addChild(new BookNode2(tagName(content), content))
+            current.addChild(new BookNode2(name, content))
           } else {
             // a start tag
-            val newNode = new BookNode2(tagName(content), content)
+            val newNode = new BookNode2(name, content)
             current.addChild(newNode)
             current = newNode
           }

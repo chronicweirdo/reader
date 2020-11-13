@@ -10,14 +10,33 @@
   <p class="simple_text">As all things go, this will be a test chapter. Written in the peaceful dusk of a late autumn afternoon, this text will be used to look into three main functionalities required for an ebook parsing algorithm. Three, the magic number, that is not mere two, and nowhere as far as four main functionalities, but a modest three.</p>
   <h2>Parsing to tree</h2>
   <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>
-  <img src="examples_of_leaves.png"/>
+  <img src="well_formatted_void_element.png"/>
   <p class="simple_text">Images, empty tags for spacing and maybe tables have a size of 1, meaning they can't be split in multiple pages.</p>
   <p class="simple_text">Compute sizes to be used in the page computation algorithm and when computing book reading progress.</p>
   <div class="space_for_effect"></div>
   <h2>Splitting the tree into chunks</h2>
   <p class="simple_text">Functionality for copying parts of the tree, while keeping the structure of the tree.</p>
   <p>Used when splitting the document into pages.</p>
+  <img src="void_element_with_separate_closing_tag.png"></img>
   <h2>Computing pages</h2>
+  <img src="void_element_without_closing_slash.png">
   <p class="simple_text">Functionality for finding spaces. Getting the previous and next position of a space will allow us to compute pages without splitting mid-word.</p>
+  <table style="width:100%">
+    <tr>
+      <th>A</th>
+      <th>S</th>
+      <th>L</th>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>-</td>
+      <td>Lat</td>
+    </tr>
+    <tr>
+      <td>56</td>
+      <td>T</td>
+      <td>Lon</td>
+    </tr>
+</table>
 </body>
 </html>
