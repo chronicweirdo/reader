@@ -49,8 +49,8 @@ object BookNode {
             val newImageNode = new BookNode("img", currentNode)
             newImageNode.content = currentContent
             newImageNode.start = position
-            newImageNode.end = position + 1
-            position = newImageNode.end
+            newImageNode.end = position// + 1
+            position = newImageNode.end + 1
             currentNode.children = currentNode.children :+ newImageNode
           case Some((true, tagName)) =>
             // opening a new tag
@@ -67,8 +67,8 @@ object BookNode {
             } else {
               // an empty tag is usually used to include text separation
               // so it should have a length of at least one to allow us to execut pagination before or after it
-              currentNode.end = currentNode.start + 1
-              position = currentNode.end
+              currentNode.end = currentNode.start
+              position = currentNode.end + 1
             }
             currentNode = currentNode.parent
           case None if currentContent.length > 0 =>
@@ -76,8 +76,8 @@ object BookNode {
             val newTextNode = new BookNode("text", currentNode)
             newTextNode.content = currentContent
             newTextNode.start = position
-            newTextNode.end = position + currentContent.length
-            position = newTextNode.end
+            newTextNode.end = position + currentContent.length - 1
+            position = newTextNode.end + 1
             currentNode.children = currentNode.children :+ newTextNode
           case None =>
           // some empty, probably a tag ended and a new one begins
@@ -158,7 +158,7 @@ class BookNode {
           null
         }
       case "text" =>
-        if (from <= this.start && this.end <= to) {
+        if (from <= this.start && this.end < to) {
           // this node is copied whole
           val nn = new BookNode()
           nn.typ = this.typ
@@ -166,7 +166,7 @@ class BookNode {
           nn.start = this.start
           nn.end = this.end
           nn
-        } else if (from <= this.start && this.start <= to && to <= this.end) {
+        } else if (from <= this.start && this.start < to && to < this.end) {
           // copy ends at this node
           val nn = new BookNode()
           nn.typ = this.typ
@@ -174,7 +174,7 @@ class BookNode {
           nn.start = this.start
           nn.end = to
           nn
-        } else if (this.start <= from && from <= this.end && this.end <= to) {
+        } else if (this.start <= from && from < this.end && this.end < to) {
           // copy starts at this node
           val nn = new BookNode()
           nn.typ = this.typ
@@ -182,7 +182,7 @@ class BookNode {
           nn.start = from
           nn.end = this.end
           nn
-        } else if (this.start <= from && to <= this.end) {
+        } else if (this.start <= from && to < this.end) {
           // we only copy part of this node
           val nn = new BookNode()
           nn.typ = this.typ
@@ -280,6 +280,7 @@ class BookNode {
 
   def documentStart(): Int = this.root.start
   def documentEnd(): Int = this.root.end
+  def length(): Int = this.end - this.start
 
   def findSpaceAfter(position: Int): Int = {
     val spacePattern = "\\s".r
