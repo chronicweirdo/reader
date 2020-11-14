@@ -19,6 +19,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testContentSize(tree)
     testNextLeaf(tree)
     testPreviousLeaf(tree)
+    testLeafAtPosition(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -75,4 +76,31 @@ function testPreviousLeaf(tree) {
       i = i - 1
     }
     console.assert(i == -1, "did not check all previous leaves")
+}
+
+function inorderLeavesWeighted(node) {
+    if (node.children.length == 0) {
+        var result = []
+        for (var i = 0; i < node.getLength(); i++) {
+            result.push(node)
+        }
+        return result
+    } else {
+        var result = []
+        for (var i = 0; i < node.children.length; i++) {
+            result = result.concat(inorderLeavesWeighted(node.children[i]))
+        }
+        return result
+    }
+  }
+
+function testLeafAtPosition(tree) {
+    var treeLength = tree.getLength()
+    var leavesAtPositions = inorderLeavesWeighted(tree)
+    console.assert(treeLength == leavesAtPositions.length, "tree and weighted leaves lengths do not match")
+
+    for (var i = 0; i < tree.getLength(); i++) {
+      var leaf = tree.leafAtPosition(i)
+      console.assert(leaf == leavesAtPositions[i], "leaf at position do not match expected")
+    }
 }
