@@ -19,6 +19,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getDocumentStart = getDocumentStart
   this.getDocumentEnd = getDocumentEnd
   this.findSpaceAfter = findSpaceAfter
+  this.findSpaceBefore = findSpaceBefore
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -325,6 +326,23 @@ function findSpaceAfter(position) {
   }
   if (leaf != null) return leaf.end
   else return this.getDocumentEnd()
+}
+
+function findSpaceBefore(position) {
+  var spacePattern = /\s[^\s]*$/
+  var leaf = this.leafAtPosition(position)
+  if (leaf != null && leaf.name == "text") {
+    var searchText = leaf.content.substring(0, position - leaf.start)
+    var m = spacePattern.exec(searchText)
+    if (m != null) {
+      return m.index + leaf.start
+    }
+  }
+  if (leaf != null) {
+    leaf = leaf.previousLeaf()
+  }
+  if (leaf != null) return leaf.end
+  else return this.getDocumentStart()
 }
 
 module.exports = {

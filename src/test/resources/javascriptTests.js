@@ -21,6 +21,8 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testPreviousLeaf(tree)
     testLeafAtPosition(tree)
     testFindSpaceAfter(tree)
+    testFindSpaceBefore(tree)
+    testFindSpacesBothWays(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -113,5 +115,41 @@ function testFindSpaceAfter(tree) {
       space = tree.findSpaceAfter(space)
     }
     // we should be able to go over the whole document through conseccutive spaces
-    console.assert(space == tree.getDocumentEnd())
+    console.assert(space == tree.getDocumentEnd(), "find space after did not finish")
+}
+
+function testFindSpaceBefore(tree) {
+    var space = tree.findSpaceBefore(tree.getDocumentEnd())
+
+    while (space != 0) {
+      console.log(space)
+      space = tree.findSpaceBefore(space)
+    }
+    // we should be able to go over the whole document through preceeding spaces
+    console.assert(space == tree.getDocumentStart(), "find space before did not finish")
+}
+
+function testFindSpacesBothWays(tree) {
+    var spacesAfter = []
+    var spacesBefore = []
+
+    var space = tree.findSpaceAfter(tree.getDocumentStart())
+    while (space != tree.getDocumentEnd()) {
+      spacesAfter.push(space)
+      space = tree.findSpaceAfter(space)
+    }
+
+    space = tree.findSpaceBefore(tree.getDocumentEnd())
+    while (space != tree.getDocumentStart()) {
+      spacesBefore.unshift(space) // prepending
+      space = tree.findSpaceBefore(space)
+    }
+
+    console.log(spacesAfter)
+    console.log(spacesBefore)
+
+    console.assert(spacesAfter.length == spacesBefore.length, "number of spaces found in document traversal do not match")
+    for (var i = 0; i < spacesAfter.length && i < spacesBefore.length; i++) {
+        console.assert(spacesAfter[i] == spacesBefore[i], "spaces at index " + i + " not a match")
+    }
 }
