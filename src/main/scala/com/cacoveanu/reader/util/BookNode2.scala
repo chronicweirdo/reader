@@ -259,19 +259,12 @@ class BookNode2 {
   def findSpaceBefore(position: Int): Int = {
     val spacePattern = "\\s[^\\s]*$".r
     var leaf = leafAtPosition(position)
-    /*if (leaf != null && /*leaf.name == "text" &&*/ leaf.start == position) {
-      // we must look in the previous leaf
-      leaf = leaf.previousLeaf()
-    }*/
     if (leaf != null && leaf.name == "text") {
-      val searchText = /*if (leaf.end < position) leaf.content // we are coming from the beginning of the next leaf
-      else*/ leaf.content.substring(0, position - leaf.start)
+      val searchText = leaf.content.substring(0, position - leaf.start)
       val m = spacePattern.findFirstMatchIn(searchText)
       if (m.isDefined) {
         return m.get.start + leaf.start
-      } /*else {
-        return leaf.start
-      }*/
+      }
     }
     if (leaf != null) {
       leaf = leaf.previousLeaf()
@@ -324,77 +317,5 @@ class BookNode2 {
         nn
       }
     }
-    /*this.typ match {
-      case "img" =>
-        if (from <= this.start && this.end <= to) {
-          // include image in selection
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content
-          nn.start = this.start
-          nn.end = this.end
-          nn
-        } else {
-          null
-        }
-      case "text" =>
-        if (from <= this.start && this.end < to) {
-          // this node is copied whole
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content
-          nn.start = this.start
-          nn.end = this.end
-          nn
-        } else if (from <= this.start && this.start < to && to < this.end) {
-          // copy ends at this node
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content.substring(0, to - this.start + 1)
-          nn.start = this.start
-          nn.end = to
-          nn
-        } else if (this.start <= from && from < this.end && this.end < to) {
-          // copy starts at this node
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content.substring(from - this.start)
-          nn.start = from
-          nn.end = this.end
-          nn
-        } else if (this.start <= from && to < this.end) {
-          // we only copy part of this node
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content.substring(from - this.start, to - this.start + 1)
-          nn.start = from
-          nn.end = to
-          nn
-        } else {
-          null
-        }
-      case _ =>
-        // this is not a leaf
-        if (this.end < from || this.start > to) {
-          // this node is outside the range and should not be copied
-          null
-        } else {
-          val nn = new BookNode()
-          nn.typ = this.typ
-          nn.content = this.content
-          nn.children = this.children
-            .map(_.copy(from, to))
-            .filter(_ != null)
-          nn.children.foreach(_.parent = nn)
-          if (nn.children.isEmpty) {
-            nn.start = this.start
-            nn.end = this.end
-          } else {
-            nn.start = nn.children.head.start
-            nn.end = nn.children.last.end
-          }
-          nn
-        }
-    }*/
   }
 }
