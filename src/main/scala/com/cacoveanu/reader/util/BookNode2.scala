@@ -246,6 +246,29 @@ class BookNode2 {
     }
     if (leaf != null) leaf.start
     else documentEnd()
+  }
 
+  def findSpaceBefore(position: Int): Int = {
+    val spacePattern = "\\s[^\\s]*$".r
+    var leaf = leafAtPosition(position)
+    /*if (leaf != null && /*leaf.name == "text" &&*/ leaf.start == position) {
+      // we must look in the previous leaf
+      leaf = leaf.previousLeaf()
+    }*/
+    if (leaf != null && leaf.name == "text") {
+      val searchText = /*if (leaf.end < position) leaf.content // we are coming from the beginning of the next leaf
+      else*/ leaf.content.substring(0, position - leaf.start)
+      val m = spacePattern.findFirstMatchIn(searchText)
+      if (m.isDefined) {
+        return m.get.start + leaf.start
+      } /*else {
+        return leaf.start
+      }*/
+    }
+    if (leaf != null) {
+      leaf = leaf.previousLeaf()
+    }
+    if (leaf != null) leaf.end
+    else documentStart()
   }
 }

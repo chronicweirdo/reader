@@ -145,6 +145,21 @@ class TestBookNode {
     }
     // we should be able to go over the whole document through conseccutive spaces
     assert(space == tree.documentEnd())
+  }
 
+  @Test
+  def testFindSpaceBefore() = {
+    val tree = parseTree()
+    tree.prettyPrint()
+    println()
+
+    var space = tree.findSpaceBefore(tree.documentEnd())
+
+    while (space != 0) {
+      println(space)
+      space = tree.findSpaceBefore(space)
+    }
+    // we should be able to go over the whole document through preceeding spaces
+    assert(space == tree.documentStart())
   }
 }
