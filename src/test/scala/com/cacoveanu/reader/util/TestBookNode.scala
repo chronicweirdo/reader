@@ -13,7 +13,7 @@ class TestBookNode {
   val html = new String(Files.readAllBytes(Paths.get(getClass.getResource("/test1.html").toURI)), StandardCharsets.UTF_8)
 
   private def parseTree() = {
-    val treeOption = BookNode.getHtmlBody(html).flatMap(BookNode2.parse(_))
+    val treeOption = BookNode2.parse(html)
     assert(treeOption.isDefined)
     val tree = treeOption.get
     tree
@@ -21,12 +21,10 @@ class TestBookNode {
 
   @Test
   def testTreeParsingDoesNotLoseInformation() = {
-    val bodyStringOption = BookNode.getHtmlBody(html)
+    val bodyStringOption = BookNode2.getHtmlBody(html)
     assert(bodyStringOption.isDefined)
     val bodyString = bodyStringOption.get
-    val treeOption = BookNode2.parse(bodyString)
-    assert(treeOption.isDefined)
-    val tree = treeOption.get
+    val tree = parseTree()
     assert(bodyString == tree.getContent())
   }
 
@@ -47,15 +45,6 @@ class TestBookNode {
 
     val part = tree.copy(355, 506)
     assert(part.getContent() == expectedSubtree)
-  }
-
-  @Test
-  def testSecondImplementation() = {
-    val treeOption = BookNode.getHtmlBody(html).flatMap(BookNode2.parse(_))
-    assert(treeOption.isDefined)
-    val tree = treeOption.get
-
-    tree.prettyPrint()
   }
 
   private def inorderLeaves(node: BookNode2): Seq[BookNode2] = {

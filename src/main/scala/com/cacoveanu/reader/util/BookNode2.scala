@@ -2,24 +2,26 @@ package com.cacoveanu.reader.util
 
 import com.cacoveanu.reader.util.BookNode2.shouldBeLeafElement
 
+import scala.util.matching.Regex
+
 object BookNode2 {
 
   private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source")
   private val LEAF_ELEMENTS = Seq("img", "table")
 
   // if it starts and ends with angle brackets
-  def isTag(str: String) = "^</?[^>]+>$".r matches str
-  def isEndTag(str: String) = "^</[^>]+>$".r matches str
-  def isBothTag(str: String) = "^<[^>/]+/>$".r matches str
-  def getTagName(str: String) = "</?([^>\\s]+)".r findFirstMatchIn str match {
+  private def isTag(str: String) = "^</?[^>]+>$".r matches str
+  private def isEndTag(str: String) = "^</[^>]+>$".r matches str
+  private def isBothTag(str: String) = "^<[^>/]+/>$".r matches str
+  private def getTagName(str: String) = "</?([^>\\s]+)".r findFirstMatchIn str match {
     case Some(m) =>
       m.group(1)
     case None => null
   }
-  def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
-  def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
+  private def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
+  private def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
-  def parse(body: String): Option[BookNode2] = {
+  private def parseBody(body: String): Option[BookNode2] = {
     val bodyNode = new BookNode2("body", "")
     var current: BookNode2 = bodyNode
 
@@ -92,6 +94,23 @@ object BookNode2 {
     bodyNode.collapseLeafs()
     bodyNode.updatePositions()
     Some(bodyNode)
+  }
+
+  def getHtmlBody(html: String): Option[String] = {
+    val bodyStartPattern = "<body[^>]*>".r
+    val bodyStartMatch: Option[Regex.Match] = bodyStartPattern findFirstMatchIn html
+
+    val bodyEndPattern = "</body\\s*>".r
+    val bodyEndMatch = bodyEndPattern findFirstMatchIn html
+
+    (bodyStartMatch, bodyEndMatch) match {
+      case (Some(sm), Some(em)) => Some(html.substring(sm.end, em.start))
+      case _ => None
+    }
+  }
+
+  def parse(html: String): Option[BookNode2] = {
+    getHtmlBody(html).flatMap(body => parseBody(body))
   }
 }
 
