@@ -11,7 +11,12 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     console.log(data)
     //testRegex(data)
     var body = bn.getHtmlBody(data)
-    console.log(body)
+    //console.log(body)
+    console.assert(bn.getTagName("<techno id=12>") == "techno", "getTagName not correct")
+
+    var tree = bn.parse(data)
+    //console.log(tree)
+    tree.prettyPrint()
 })
 
 function testRegex(html) {

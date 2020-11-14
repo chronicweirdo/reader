@@ -84,10 +84,7 @@ object BookNode {
       if (isTag(content)) throw new Throwable("this should not happen")
       else {
         // can only be a text node or nothing
-        if (content.length > 0) {
-          current.addChild(new BookNode("text", content))
-          content = ""
-        }
+        current.addChild(new BookNode("text", content))
       }
     }
 
