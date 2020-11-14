@@ -8,12 +8,21 @@ function BookNode(name, content, parent = null, children = [], start = null, end
 
   this.addChild = addChild
   this.prettyPrint = prettyPrint
+  this.collapseLeafs = collapseLeafs
+  this.getContent = getContent
+  this.updatePositions = updatePositions
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
 
 function isVoidElement(tagName) {
   return VOID_ELEMENTS.includes(tagName.toLowerCase())
+}
+
+var LEAF_ELEMENTS = ["img", "table"]
+
+function shouldBeLeafElement(tagName) {
+  return LEAF_ELEMENTS.includes(tagName.toLowerCase())
 }
 
 function addChild(node) {
@@ -142,9 +151,64 @@ function parseBody(body) {
     }
   }
 
-  //bodyNode.collapseLeafs()
-  //bodyNode.updatePositions()
+  bodyNode.collapseLeafs()
+  bodyNode.updatePositions()
   return bodyNode
+}
+
+function updatePositions(entrancePosition = 0) {
+  var position = entrancePosition
+  this.start = position
+  if (this.name == "text") {
+    this.end = this.start + this.content.length - 1
+  } else if (shouldBeLeafElement(this.name)) {
+    // occupies a single position
+    this.end = this.start
+  } else if (this.children.length == 0) {
+    // an element without children, maybe used for spacing, should occupy a single position
+    this.end = this.start
+  } else {
+    // compute for children and update
+    for (var i = 0; i < this.children.length; i++) {
+      var child = this.children[i]
+      child.updatePositions(position)
+      position = child.end + 1
+    }
+    this.end = this.children[this.children.length - 1].end
+  }
+}
+
+function getContent() {
+  if (this.name == "text") {
+    return this.content
+  } else if (this.name == "body") {
+    var result = ""
+    for (var i = 0; i < this.children.length; i++) {
+      result += this.children[i].getContent()
+    }
+    return result
+  } else if (shouldBeLeafElement(this.name) && this.children.length == 0) {
+    return this.content
+  } else {
+    var result = this.content
+    for (var i = 0; i < this.children.length; i++) {
+      result += this.children[i].getContent()
+    }
+    result += "</" + this.name + ">"
+    return result
+  }
+}
+
+function collapseLeafs() {
+  if (shouldBeLeafElement(this.name) && this.children.length > 0) {
+    // extract content from children
+    this.content = this.getContent()
+    this.children = []
+  } else {
+    for (var i = 0; i < this.children.length; i++) {
+      this.children[i].collapseLeafs()  
+    }
+  }
 }
 
 function parse(html) {

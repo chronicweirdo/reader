@@ -185,7 +185,6 @@ class BookNode {
       }
       this.end = this.children.last.end
     }
-
   }
 
   def nextLeaf(): BookNode = {
