@@ -106,6 +106,29 @@ class TestBookNode {
       leaf = leaf.previousLeaf()
       i = i - 1
     }
+  }
 
+  // each leaf is copied in the returned sequence * its length
+  private def inorderLeavesWeighted(node: BookNode2): Seq[BookNode2] = {
+    if (node.children.isEmpty) (0 until node.getLength()).map(_ => node)
+    else {
+      node.children.flatMap(c => inorderLeavesWeighted(c))
+    }
+  }
+
+  @Test
+  def testLeafAtPosition() = {
+    val tree = parseTree()
+    tree.prettyPrint()
+    println()
+
+    println(tree.getLength())
+    val leavesAtPositions = inorderLeavesWeighted(tree)
+    println(leavesAtPositions.size)
+
+    for (i <- 0 until tree.getLength()) {
+      val leaf = tree.leafAtPosition(i)
+      assert(leaf == leavesAtPositions(i))
+    }
   }
 }

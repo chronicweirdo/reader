@@ -206,4 +206,18 @@ class BookNode2 {
       current
     } else null
   }
+
+  def leafAtPosition(position: Int): BookNode2 = {
+    if (position < this.start || this.end < position) null
+    else {
+      var currentNode = this
+      while (currentNode != null && currentNode.children.nonEmpty) {
+        currentNode.children.find(c => c.start <= position && position <= c.end) match {
+          case Some(nextNode) => currentNode = nextNode
+          case None => currentNode = null
+        }
+      }
+      currentNode
+    }
+  }
 }
