@@ -110,6 +110,12 @@ class BookNode2 {
     this.content = content
   }
 
+  private def this(name: String, content: String, start: Int, end: Int) = {
+    this(name, content)
+    this.start = start
+    this.end = end
+  }
+
   def getLength() = this.end - this.start + 1
 
   def addChild(child: BookNode2) = {
@@ -272,5 +278,123 @@ class BookNode2 {
     }
     if (leaf != null) leaf.end
     else documentStart()
+  }
+
+  def copy(from: Int, to: Int): BookNode2 = {
+    if (this.name == "text") {
+      if (from <= this.start && this.end <= to) {
+        // this node is copied whole
+        new BookNode2("text", this.content, this.start, this.end)
+      } else if (from <= this.start && this.start <= to && to<= this.end) {
+        // copy ends at this node
+        new BookNode2(this.name, this.content.substring(0, to - this.start + 1), this.start, to)
+      } else if (this.start <= from && from <= this.end && this.end <= to) {
+        // copy starts at this node
+        new BookNode2(this.name, this.content.substring(from - this.start), from, this.end)
+      } else if (this.start <= from && to < this.end) {
+        // we only copy part of this node
+        new BookNode2(this.name, this.content.substring(from - this.start, to - this.start + 1), from, to)
+      } else {
+        null
+      }
+    } else if (shouldBeLeafElement(this.name)) {
+      if (from <= this.start && this.end <= to) {
+        // include element in selection
+        new BookNode2(this.name, this.content, this.start, this.end)
+      } else {
+        null
+      }
+    } else {
+      if (this.end < from || this.start > to) {
+        // this node is outside the range and should not be copied
+        null
+      } else {
+        val nn = new BookNode2(this.name, this.content)
+        nn.children = this.children
+          .map(_.copy(from, to))
+          .filter(_ != null)
+        nn.children.foreach(_.parent = nn)
+        if (nn.children.isEmpty) {
+          nn.start = this.start
+          nn.end = this.end
+        } else {
+          nn.start = nn.children.head.start
+          nn.end = nn.children.last.end
+        }
+        nn
+      }
+    }
+    /*this.typ match {
+      case "img" =>
+        if (from <= this.start && this.end <= to) {
+          // include image in selection
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.start = this.start
+          nn.end = this.end
+          nn
+        } else {
+          null
+        }
+      case "text" =>
+        if (from <= this.start && this.end < to) {
+          // this node is copied whole
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.start = this.start
+          nn.end = this.end
+          nn
+        } else if (from <= this.start && this.start < to && to < this.end) {
+          // copy ends at this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(0, to - this.start + 1)
+          nn.start = this.start
+          nn.end = to
+          nn
+        } else if (this.start <= from && from < this.end && this.end < to) {
+          // copy starts at this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(from - this.start)
+          nn.start = from
+          nn.end = this.end
+          nn
+        } else if (this.start <= from && to < this.end) {
+          // we only copy part of this node
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content.substring(from - this.start, to - this.start + 1)
+          nn.start = from
+          nn.end = to
+          nn
+        } else {
+          null
+        }
+      case _ =>
+        // this is not a leaf
+        if (this.end < from || this.start > to) {
+          // this node is outside the range and should not be copied
+          null
+        } else {
+          val nn = new BookNode()
+          nn.typ = this.typ
+          nn.content = this.content
+          nn.children = this.children
+            .map(_.copy(from, to))
+            .filter(_ != null)
+          nn.children.foreach(_.parent = nn)
+          if (nn.children.isEmpty) {
+            nn.start = this.start
+            nn.end = this.end
+          } else {
+            nn.start = nn.children.head.start
+            nn.end = nn.children.last.end
+          }
+          nn
+        }
+    }*/
   }
 }

@@ -196,4 +196,38 @@ class TestBookNode {
 
     assert(spacesAfter == spacesBefore)
   }
+
+  @Test
+  def testCopy() = {
+    val tree = parseTree()
+    tree.prettyPrint()
+    println()
+
+    //val copy = tree.copy(2, 40)
+    //copy.prettyPrint()
+
+    val middleChildIndex = tree.children.size / 2
+    val middleChildEnd = tree.children(middleChildIndex).end
+
+    val copy1 = tree.copy(tree.start, middleChildEnd)
+    copy1.prettyPrint()
+    val copy2 = tree.copy(middleChildEnd+1, tree.end)
+    copy2.prettyPrint()
+
+    assert(copy1.getContent() + copy2.getContent() == tree.getContent())
+  }
+
+  @Test
+  def testCopy2() = {
+    val tree = parseTree()
+    tree.prettyPrint()
+    println()
+
+    val splitAndMergedContent = tree.children
+      .map(c => tree.copy(c.start, c.end))
+      .map(c => c.getContent())
+      .mkString("")
+
+    assert(splitAndMergedContent == tree.getContent())
+  }
 }
