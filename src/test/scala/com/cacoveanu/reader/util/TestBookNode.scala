@@ -87,4 +87,25 @@ class TestBookNode {
       i = i + 1
     }
   }
+
+  private def getLastLeaf(node: BookNode2): BookNode2 = {
+    var current = node;
+    while (current.children.nonEmpty) current = current.children.last
+    current
+  }
+
+  @Test
+  def testPreviousLeaf() = {
+    val tree = parseTree()
+    val expectedLeaves = inorderLeaves(tree)
+    var leaf = getLastLeaf(tree)
+    var i = expectedLeaves.length - 1
+    while (leaf != null) {
+      leaf.prettyPrint()
+      assert(leaf == expectedLeaves(i))
+      leaf = leaf.previousLeaf()
+      i = i - 1
+    }
+
+  }
 }

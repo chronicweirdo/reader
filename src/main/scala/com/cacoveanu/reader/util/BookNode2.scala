@@ -190,4 +190,20 @@ class BookNode2 {
     }
     current
   }
+
+  def previousLeaf(): BookNode2 = {
+    var current = this
+    var parent = current.parent
+    while (parent != null && parent.children.indexOf(current) == 0) {
+      // keep going up
+      current = parent
+      parent = current.parent
+    }
+    if (parent != null) {
+      current = parent.children(parent.children.indexOf(current) - 1)
+      // go down on the last child track
+      while (current.children.nonEmpty) current = current.children.last
+      current
+    } else null
+  }
 }
