@@ -20,6 +20,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testNextLeaf(tree)
     testPreviousLeaf(tree)
     testLeafAtPosition(tree)
+    testFindSpaceAfter(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -103,4 +104,14 @@ function testLeafAtPosition(tree) {
       var leaf = tree.leafAtPosition(i)
       console.assert(leaf == leavesAtPositions[i], "leaf at position do not match expected")
     }
+}
+
+function testFindSpaceAfter(tree) {
+    var space = tree.findSpaceAfter(0)
+    while (space != tree.getDocumentEnd()) {
+      console.log(space)
+      space = tree.findSpaceAfter(space)
+    }
+    // we should be able to go over the whole document through conseccutive spaces
+    console.assert(space == tree.getDocumentEnd())
 }

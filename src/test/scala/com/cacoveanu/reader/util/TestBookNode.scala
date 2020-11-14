@@ -112,12 +112,12 @@ class TestBookNode {
     println()
 
     var space = tree.findSpaceAfter(0)
-    while (space != tree.documentEnd()) {
+    while (space != tree.getDocumentEnd()) {
       println(space)
       space = tree.findSpaceAfter(space)
     }
     // we should be able to go over the whole document through conseccutive spaces
-    assert(space == tree.documentEnd())
+    assert(space == tree.getDocumentEnd())
   }
 
   @Test
@@ -126,14 +126,14 @@ class TestBookNode {
     tree.prettyPrint()
     println()
 
-    var space = tree.findSpaceBefore(tree.documentEnd())
+    var space = tree.findSpaceBefore(tree.getDocumentEnd())
 
     while (space != 0) {
       println(space)
       space = tree.findSpaceBefore(space)
     }
     // we should be able to go over the whole document through preceeding spaces
-    assert(space == tree.documentStart())
+    assert(space == tree.getDocumentStart())
   }
 
   @Test
@@ -150,15 +150,15 @@ class TestBookNode {
     var spacesAfter = Seq[Int]()
     var spacesBefore = Seq[Int]()
 
-    var space = tree.findSpaceAfter(tree.documentStart())
-    while (space != tree.documentEnd()) {
+    var space = tree.findSpaceAfter(tree.getDocumentStart())
+    while (space != tree.getDocumentEnd()) {
       spacesAfter = spacesAfter :+ space
       space = tree.findSpaceAfter(space)
     }
     //spacesAfter = spacesAfter :+ tree.documentEnd()
 
-    space = tree.findSpaceBefore(tree.documentEnd())
-    while (space != tree.documentStart()) {
+    space = tree.findSpaceBefore(tree.getDocumentEnd())
+    while (space != tree.getDocumentStart()) {
       spacesBefore = space +: spacesBefore
       space = tree.findSpaceBefore(space)
     }

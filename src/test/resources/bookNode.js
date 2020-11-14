@@ -15,6 +15,10 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.nextLeaf = nextLeaf
   this.previousLeaf = previousLeaf
   this.leafAtPosition = leafAtPosition
+  this.getRoot = getRoot
+  this.getDocumentStart = getDocumentStart
+  this.getDocumentEnd = getDocumentEnd
+  this.findSpaceAfter = findSpaceAfter
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -252,6 +256,20 @@ function nextLeaf() {
   return current
 }
 
+function getRoot() {
+  var current = this
+  while (current.parent != null) current = current.parent
+  return current
+}
+
+function getDocumentStart() {
+  return this.getRoot().start
+}
+
+function getDocumentEnd() {
+  return this.getRoot().end
+}
+
 function previousLeaf() {
   var current = this
   var parent = current.parent
@@ -286,6 +304,27 @@ function leafAtPosition(position) {
     }
     return currentNode
   }
+}
+
+function findSpaceAfter(position) {
+  var spacePattern = /\s/
+  // first get leaf at position
+  var leaf = this.leafAtPosition(position)
+  // for a text node, next space may be in the text node, next space character after position
+  // if other kind of node, next space is the start of next leaf
+  if (leaf != null && leaf.end == position) {
+    // we need to look in the next node
+    leaf = leaf.nextLeaf()
+  }
+  if (leaf != null && leaf.name == "text") {
+    var searchStartPosition = (position - leaf.start + 1 > 0) ? position - leaf.start + 1 : 0
+    var m = spacePattern.exec(leaf.content.substring(searchStartPosition))
+    if (m != null) {
+      return m.index + position + 1
+    }
+  }
+  if (leaf != null) return leaf.end
+  else return this.getDocumentEnd()
 }
 
 module.exports = {

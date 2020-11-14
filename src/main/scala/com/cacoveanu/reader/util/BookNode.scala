@@ -242,13 +242,13 @@ class BookNode {
     }
   }
 
-  def root(): BookNode = {
+  def getRoot(): BookNode = {
     var current = this
     while (current.parent != null) current = current.parent
     current
   }
-  def documentStart(): Int = this.root.start
-  def documentEnd(): Int = this.root.end
+  def getDocumentStart(): Int = this.getRoot.start
+  def getDocumentEnd(): Int = this.getRoot.end
 
   def findSpaceAfter(position: Int): Int = {
     val spacePattern = "\\s".r
@@ -268,7 +268,7 @@ class BookNode {
       }
     }
     if (leaf != null) leaf.end
-    else documentEnd()
+    else getDocumentEnd()
   }
 
   def findSpaceBefore(position: Int): Int = {
@@ -285,7 +285,7 @@ class BookNode {
       leaf = leaf.previousLeaf()
     }
     if (leaf != null) leaf.end
-    else documentStart()
+    else getDocumentStart()
   }
 
   def copy(from: Int, to: Int): BookNode = {
