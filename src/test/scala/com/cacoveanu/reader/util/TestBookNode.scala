@@ -162,4 +162,38 @@ class TestBookNode {
     // we should be able to go over the whole document through preceeding spaces
     assert(space == tree.documentStart())
   }
+
+  @Test
+  def testFindSpacesBothWays() = {
+    // going over the document with spaces before and spaces after, we should see the same spaces
+    // a space, in our case, is a place where we can end a page
+    // when searching for pages, we increase or decrease the page to the next space and previous space respectively
+    // we do this until our page fits the view without going overt (triggering overflow)
+
+    val tree = parseTree()
+    tree.prettyPrint()
+    println()
+
+    var spacesAfter = Seq[Int]()
+    var spacesBefore = Seq[Int]()
+
+    var space = tree.findSpaceAfter(tree.documentStart())
+    while (space != tree.documentEnd()) {
+      spacesAfter = spacesAfter :+ space
+      space = tree.findSpaceAfter(space)
+    }
+    //spacesAfter = spacesAfter :+ tree.documentEnd()
+
+    space = tree.findSpaceBefore(tree.documentEnd())
+    while (space != tree.documentStart()) {
+      spacesBefore = space +: spacesBefore
+      space = tree.findSpaceBefore(space)
+    }
+    //spacesBefore = tree.documentStart() +: spacesBefore
+
+    println(spacesAfter)
+    println(spacesBefore)
+
+    assert(spacesAfter == spacesBefore)
+  }
 }

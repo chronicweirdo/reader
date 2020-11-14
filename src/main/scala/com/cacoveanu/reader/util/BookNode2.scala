@@ -235,16 +235,18 @@ class BookNode2 {
     var leaf = leafAtPosition(position)
     // for a text node, next space may be in the text node, next space character after position
     // if other kind of node, next space is the start of next leaf
+    if (leaf != null && leaf.end == position) {
+      // we need to look in the next node
+      leaf = leaf.nextLeaf()
+    }
     if (leaf != null && leaf.name == "text") {
-      val m = spacePattern.findFirstMatchIn(leaf.content.substring(position - leaf.start + 1))
+      val searchStartPosition = if (position - leaf.start + 1 > 0) position - leaf.start + 1 else 0
+      val m = spacePattern.findFirstMatchIn(leaf.content.substring(searchStartPosition))
       if (m.isDefined) {
         return m.get.start + position + 1
       }
     }
-    if (leaf != null) {
-      leaf = leaf.nextLeaf()
-    }
-    if (leaf != null) leaf.start
+    if (leaf != null) leaf.end
     else documentEnd()
   }
 
