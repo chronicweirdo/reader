@@ -220,4 +220,32 @@ class BookNode2 {
       currentNode
     }
   }
+
+  def root(): BookNode2 = {
+    var current = this
+    while (current.parent != null) current = current.parent
+    current
+  }
+  def documentStart(): Int = this.root.start
+  def documentEnd(): Int = this.root.end
+
+  def findSpaceAfter(position: Int): Int = {
+    val spacePattern = "\\s".r
+    // first get leaf at position
+    var leaf = leafAtPosition(position)
+    // for a text node, next space may be in the text node, next space character after position
+    // if other kind of node, next space is the start of next leaf
+    if (leaf != null && leaf.name == "text") {
+      val m = spacePattern.findFirstMatchIn(leaf.content.substring(position - leaf.start + 1))
+      if (m.isDefined) {
+        return m.get.start + position + 1
+      }
+    }
+    if (leaf != null) {
+      leaf = leaf.nextLeaf()
+    }
+    if (leaf != null) leaf.start
+    else documentEnd()
+
+  }
 }
