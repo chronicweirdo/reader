@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.util
 
-import com.cacoveanu.reader.util.BookNode2.isLeafElement
+import com.cacoveanu.reader.util.BookNode2.shouldBeLeafElement
 
 object BookNode2 {
 
@@ -17,7 +17,7 @@ object BookNode2 {
     case None => null
   }
   def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
-  def isLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
+  def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
   def parse(body: String): Option[BookNode2] = {
     val bodyNode = new BookNode2("body", "")
@@ -129,12 +129,12 @@ class BookNode2 {
   def getContent(): String = {
     if (this.name == "text") this.content
     else if (this.name == "body") this.children.map(_.getContent()).mkString("")
-    else if (isLeafElement(this.name) && this.children.isEmpty) this.content
+    else if (shouldBeLeafElement(this.name) && this.children.isEmpty) this.content
     else this.content + this.children.map(_.getContent()).mkString("") + "</" + this.name + ">"
   }
 
   private def collapseLeafs(): Unit = {
-    if (isLeafElement(this.name) && this.children.nonEmpty) {
+    if (shouldBeLeafElement(this.name) && this.children.nonEmpty) {
       // extract content from children
       this.content = this.getContent()
       this.children = Seq()
@@ -148,7 +148,7 @@ class BookNode2 {
     this.start = position
     if (this.name == "text") {
       this.end = this.start + this.content.length - 1
-    } else if (isLeafElement(this.name)) {
+    } else if (shouldBeLeafElement(this.name)) {
       // occupies a single position
       this.end = this.start
     } else if (this.children.isEmpty) {
@@ -164,5 +164,30 @@ class BookNode2 {
       this.end = this.children.last.end
     }
 
+  }
+
+  def nextLeaf(): BookNode2 = {
+    // is this a leaf?
+    var current = this
+    if (current.children.isEmpty) {
+      // go up the parent line until we find next sibling
+      var parent = current.parent
+      while (parent != null && parent.children.indexOf(current) == parent.children.size - 1) {
+        current = parent
+        parent = current.parent
+      }
+      if (parent != null) {
+        // we have the next sibling in current, must find first leaf
+        current = parent.children(parent.children.indexOf(current) + 1)
+      } else {
+        // we have reached root, this was the last leaf, there is no other
+        return null
+      }
+    }
+    // find first child of the current node
+    while (current.children.nonEmpty) {
+      current = current.children.head
+    }
+    current
   }
 }

@@ -12,6 +12,13 @@ class TestBookNode {
 
   val html = new String(Files.readAllBytes(Paths.get(getClass.getResource("/test1.html").toURI)), StandardCharsets.UTF_8)
 
+  private def parseTree() = {
+    val treeOption = BookNode.getHtmlBody(html).flatMap(BookNode2.parse(_))
+    assert(treeOption.isDefined)
+    val tree = treeOption.get
+    tree
+  }
+
   @Test
   def testTreeParsingDoesNotLoseInformation() = {
     val bodyStringOption = BookNode.getHtmlBody(html)
@@ -55,5 +62,29 @@ class TestBookNode {
     val tree = treeOption.get
 
     tree.prettyPrint()
+  }
+
+  private def inorderLeaves(node: BookNode2): Seq[BookNode2] = {
+    if (node.children.isEmpty) Seq(node)
+    else {
+      node.children.flatMap(c => inorderLeaves(c))
+    }
+  }
+
+  @Test
+  def testNextLeaf() = {
+    val tree = parseTree()
+    tree.prettyPrint()
+
+    val expectedLeaves = inorderLeaves(tree)
+
+    var leaf = tree.nextLeaf()
+    var i = 0
+    while (leaf != null) {
+      leaf.prettyPrint()
+      assert(leaf == expectedLeaves(i))
+      leaf = leaf.nextLeaf()
+      i = i + 1
+    }
   }
 }
