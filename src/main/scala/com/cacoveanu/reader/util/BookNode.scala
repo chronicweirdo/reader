@@ -1,10 +1,10 @@
 package com.cacoveanu.reader.util
 
-import com.cacoveanu.reader.util.BookNode2.shouldBeLeafElement
+import com.cacoveanu.reader.util.BookNode.shouldBeLeafElement
 
 import scala.util.matching.Regex
 
-object BookNode2 {
+object BookNode {
 
   private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source")
   private val LEAF_ELEMENTS = Seq("img", "table")
@@ -21,9 +21,9 @@ object BookNode2 {
   private def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
   private def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
-  private def parseBody(body: String): Option[BookNode2] = {
-    val bodyNode = new BookNode2("body", "")
-    var current: BookNode2 = bodyNode
+  private def parseBody(body: String): Option[BookNode] = {
+    val bodyNode = new BookNode("body", "")
+    var current: BookNode = bodyNode
 
     var content = ""
 
@@ -37,7 +37,7 @@ object BookNode2 {
         else {
           // can only be a text node or nothing
           if (content.length > 0) {
-            current.addChild(new BookNode2("text", content))
+            current.addChild(new BookNode("text", content))
             content = ""
           }
         }
@@ -67,10 +67,10 @@ object BookNode2 {
             }
           } else if (isBothTag(content) || isVoidElement(name)) {
             // just add this tag without content
-            current.addChild(new BookNode2(name, content))
+            current.addChild(new BookNode(name, content))
           } else {
             // a start tag
-            val newNode = new BookNode2(name, content)
+            val newNode = new BookNode(name, content)
             current.addChild(newNode)
             current = newNode
           }
@@ -85,7 +85,7 @@ object BookNode2 {
       else {
         // can only be a text node or nothing
         if (content.length > 0) {
-          current.addChild(new BookNode2("text", content))
+          current.addChild(new BookNode("text", content))
           content = ""
         }
       }
@@ -109,16 +109,16 @@ object BookNode2 {
     }
   }
 
-  def parse(html: String): Option[BookNode2] = {
+  def parse(html: String): Option[BookNode] = {
     getHtmlBody(html).flatMap(body => parseBody(body))
   }
 }
 
-class BookNode2 {
+class BookNode {
 
   var name: String = _
-  var parent: BookNode2 = _
-  var children: Seq[BookNode2] = Seq()
+  var parent: BookNode = _
+  var children: Seq[BookNode] = Seq()
   var content: String = _
   var start: Int = _
   var end: Int = _
@@ -137,7 +137,7 @@ class BookNode2 {
 
   def getLength() = this.end - this.start + 1
 
-  def addChild(child: BookNode2) = {
+  def addChild(child: BookNode) = {
     children = children :+ child
     child.parent = this
   }
@@ -191,7 +191,7 @@ class BookNode2 {
 
   }
 
-  def nextLeaf(): BookNode2 = {
+  def nextLeaf(): BookNode = {
     // is this a leaf?
     var current = this
     if (current.children.isEmpty) {
@@ -216,7 +216,7 @@ class BookNode2 {
     current
   }
 
-  def previousLeaf(): BookNode2 = {
+  def previousLeaf(): BookNode = {
     var current = this
     var parent = current.parent
     while (parent != null && parent.children.indexOf(current) == 0) {
@@ -232,7 +232,7 @@ class BookNode2 {
     } else null
   }
 
-  def leafAtPosition(position: Int): BookNode2 = {
+  def leafAtPosition(position: Int): BookNode = {
     if (position < this.start || this.end < position) null
     else {
       var currentNode = this
@@ -246,7 +246,7 @@ class BookNode2 {
     }
   }
 
-  def root(): BookNode2 = {
+  def root(): BookNode = {
     var current = this
     while (current.parent != null) current = current.parent
     current
@@ -292,27 +292,27 @@ class BookNode2 {
     else documentStart()
   }
 
-  def copy(from: Int, to: Int): BookNode2 = {
+  def copy(from: Int, to: Int): BookNode = {
     if (this.name == "text") {
       if (from <= this.start && this.end <= to) {
         // this node is copied whole
-        new BookNode2("text", this.content, this.start, this.end)
+        new BookNode("text", this.content, this.start, this.end)
       } else if (from <= this.start && this.start <= to && to<= this.end) {
         // copy ends at this node
-        new BookNode2(this.name, this.content.substring(0, to - this.start + 1), this.start, to)
+        new BookNode(this.name, this.content.substring(0, to - this.start + 1), this.start, to)
       } else if (this.start <= from && from <= this.end && this.end <= to) {
         // copy starts at this node
-        new BookNode2(this.name, this.content.substring(from - this.start), from, this.end)
+        new BookNode(this.name, this.content.substring(from - this.start), from, this.end)
       } else if (this.start <= from && to < this.end) {
         // we only copy part of this node
-        new BookNode2(this.name, this.content.substring(from - this.start, to - this.start + 1), from, to)
+        new BookNode(this.name, this.content.substring(from - this.start, to - this.start + 1), from, to)
       } else {
         null
       }
     } else if (shouldBeLeafElement(this.name)) {
       if (from <= this.start && this.end <= to) {
         // include element in selection
-        new BookNode2(this.name, this.content, this.start, this.end)
+        new BookNode(this.name, this.content, this.start, this.end)
       } else {
         null
       }
@@ -321,7 +321,7 @@ class BookNode2 {
         // this node is outside the range and should not be copied
         null
       } else {
-        val nn = new BookNode2(this.name, this.content)
+        val nn = new BookNode(this.name, this.content)
         nn.children = this.children
           .map(_.copy(from, to))
           .filter(_ != null)

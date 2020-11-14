@@ -13,7 +13,7 @@ class TestBookNode {
   val html = new String(Files.readAllBytes(Paths.get(getClass.getResource("/test1.html").toURI)), StandardCharsets.UTF_8)
 
   private def parseTree() = {
-    val treeOption = BookNode2.parse(html)
+    val treeOption = BookNode.parse(html)
     assert(treeOption.isDefined)
     val tree = treeOption.get
     tree
@@ -21,7 +21,7 @@ class TestBookNode {
 
   @Test
   def testTreeParsingDoesNotLoseInformation() = {
-    val bodyStringOption = BookNode2.getHtmlBody(html)
+    val bodyStringOption = BookNode.getHtmlBody(html)
     assert(bodyStringOption.isDefined)
     val bodyString = bodyStringOption.get
     val tree = parseTree()
@@ -47,7 +47,7 @@ class TestBookNode {
     assert(part.getContent() == expectedSubtree)
   }
 
-  private def inorderLeaves(node: BookNode2): Seq[BookNode2] = {
+  private def inorderLeaves(node: BookNode): Seq[BookNode] = {
     if (node.children.isEmpty) Seq(node)
     else {
       node.children.flatMap(c => inorderLeaves(c))
@@ -71,7 +71,7 @@ class TestBookNode {
     }
   }
 
-  private def getLastLeaf(node: BookNode2): BookNode2 = {
+  private def getLastLeaf(node: BookNode): BookNode = {
     var current = node;
     while (current.children.nonEmpty) current = current.children.last
     current
@@ -92,7 +92,7 @@ class TestBookNode {
   }
 
   // each leaf is copied in the returned sequence * its length
-  private def inorderLeavesWeighted(node: BookNode2): Seq[BookNode2] = {
+  private def inorderLeavesWeighted(node: BookNode): Seq[BookNode] = {
     if (node.children.isEmpty) (0 until node.getLength()).map(_ => node)
     else {
       node.children.flatMap(c => inorderLeavesWeighted(c))
