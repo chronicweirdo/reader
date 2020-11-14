@@ -11,6 +11,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.collapseLeafs = collapseLeafs
   this.getContent = getContent
   this.updatePositions = updatePositions
+  this.getLength = getLength
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -79,6 +80,10 @@ function getTagName(str) {
     return match[1]
   }
   return null
+}
+
+function getLength() {
+  return this.end - this.start + 1
 }
 
 function parseBody(body) {

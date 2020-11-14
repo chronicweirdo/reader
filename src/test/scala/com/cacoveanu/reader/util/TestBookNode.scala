@@ -35,17 +35,7 @@ class TestBookNode {
     assert(tree.getLength() == 1090)
   }
 
-  @Test
-  def testCopySection() = {
-    val expectedSubtree = """<h2>Parsing to tree</h2>
-                            |  <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>""".stripMargin
 
-    val tree = parseTree()
-    tree.prettyPrint()
-
-    val part = tree.copy(355, 506)
-    assert(part.getContent() == expectedSubtree)
-  }
 
   private def inorderLeaves(node: BookNode): Seq[BookNode] = {
     if (node.children.isEmpty) Seq(node)
@@ -178,6 +168,18 @@ class TestBookNode {
     println(spacesBefore)
 
     assert(spacesAfter == spacesBefore)
+  }
+
+  @Test
+  def testCopySection() = {
+    val expectedSubtree = """<h2>Parsing to tree</h2>
+                            |  <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>""".stripMargin
+
+    val tree = parseTree()
+    tree.prettyPrint()
+
+    val part = tree.copy(355, 506)
+    assert(part.getContent() == expectedSubtree)
   }
 
   @Test

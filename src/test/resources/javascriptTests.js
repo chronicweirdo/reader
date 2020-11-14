@@ -8,16 +8,24 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     if (err) {
         return console.log(err);
     }
-    console.log(data)
-    //testRegex(data)
     var body = bn.getHtmlBody(data)
-    //console.log(body)
-    console.assert(bn.getTagName("<techno id=12>") == "techno", "getTagName not correct")
+    console.assert(body != null && body.length > 0, "body is empty")
 
     var tree = bn.parse(data)
-    //console.log(tree)
+    console.assert(tree != null, "tree parse failed")
     tree.prettyPrint()
+
+    testTreeParsingDoesNotLoseInformation(body, tree)
+    testContentSize(tree)
 })
+
+function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
+    console.assert(bodyString == tree.getContent(), "tree parsing loses information")
+}
+
+function testContentSize(tree) {
+    console.assert(tree.getLength() == 1090, "content size not as expected")
+}
 
 function testRegex(html) {
     var bodyStartPattern = /<cody[^>]*>/
