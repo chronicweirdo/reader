@@ -32,11 +32,9 @@ class TestBookNode {
 
   @Test
   def testContentSize() = {
-    val treeOption = BookNode.parseHtmlTree(html)
-    assert(treeOption.isDefined)
-    val tree = treeOption.get
+    val tree = parseTree()
 
-    assert(tree.length() == 1075)
+    assert(tree.getLength() == 1090)
   }
 
   @Test
@@ -44,15 +42,11 @@ class TestBookNode {
     val expectedSubtree = """<h2>Parsing to tree</h2>
                             |  <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>""".stripMargin
 
-    val treeOption = BookNode.parseHtmlTree(html)
-    assert(treeOption.isDefined)
-    val tree = treeOption.get
-
+    val tree = parseTree()
     tree.prettyPrint()
-    //val subtree = tree.copy(355,507)
-    //subtree.prettyPrint()
-    //println(subtree.getContent())
-    //assert(subtree.getContent() == expectedSubtree)
+
+    val part = tree.copy(355, 506)
+    assert(part.getContent() == expectedSubtree)
   }
 
   @Test
