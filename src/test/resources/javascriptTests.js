@@ -23,6 +23,9 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testFindSpaceAfter(tree)
     testFindSpaceBefore(tree)
     testFindSpacesBothWays(tree)
+    testCopySection(tree)
+    testCopy(tree)
+    testCopy2(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -152,4 +155,37 @@ function testFindSpacesBothWays(tree) {
     for (var i = 0; i < spacesAfter.length && i < spacesBefore.length; i++) {
         console.assert(spacesAfter[i] == spacesBefore[i], "spaces at index " + i + " not a match")
     }
+}
+
+function testCopySection(tree) {
+    var expectedSubtree = "<h2>Parsing to tree</h2>\r\n" +
+        "  <p class=\"simple_text\">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>"
+
+    var part = tree.copy(355, 506)
+    part.prettyPrint()
+    console.log(part.getContent())
+    console.assert(part.getContent() == expectedSubtree, "copied subtree does not match expected")
+}
+
+function testCopy(tree) {
+    var middleChildIndex = Math.floor(tree.children.length / 2)
+    var middleChildEnd = tree.children[middleChildIndex].end
+
+    var copy1 = tree.copy(tree.start, middleChildEnd)
+    copy1.prettyPrint()
+    var copy2 = tree.copy(middleChildEnd + 1, tree.end)
+    copy2.prettyPrint()
+
+    console.assert(copy1.getContent() + copy2.getContent() == tree.getContent(), "two halves merged do not match original")
+}
+
+function testCopy2(tree) {
+    var mergedContent = ""
+    for (var i = 0; i < tree.children.length; i++) {
+        var copiedChild = tree.copy(tree.children[i].start, tree.children[i].end)
+        var copiedContent = copiedChild.getContent()
+        mergedContent += copiedContent
+    }
+
+    console.assert(mergedContent == tree.getContent(), "merged content does not match original content")
 }

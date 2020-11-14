@@ -20,6 +20,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getDocumentEnd = getDocumentEnd
   this.findSpaceAfter = findSpaceAfter
   this.findSpaceBefore = findSpaceBefore
+  this.copy = copy
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -343,6 +344,57 @@ function findSpaceBefore(position) {
   }
   if (leaf != null) return leaf.end
   else return this.getDocumentStart()
+}
+
+function copy(from, to) {
+  if (this.name == "text") {
+    if (from <= this.start && this.end <= to) {
+      // this node is copied whole
+      return new BookNode("text", this.content, null, [], this.start, this.end)
+    } else if (from <= this.start && this.start <= to && to<= this.end) {
+      // copy ends at this node
+      return new BookNode(this.name, this.content.substring(0, to - this.start + 1), null, [], this.start, to)
+    } else if (this.start <= from && from <= this.end && this.end <= to) {
+      // copy starts at this node
+      return new BookNode(this.name, this.content.substring(from - this.start), null, [], from, this.end)
+    } else if (this.start <= from && to < this.end) {
+      // we only copy part of this node
+      return new BookNode(this.name, this.content.substring(from - this.start, to - this.start + 1), null, [], from, to)
+    } else {
+      return null
+    }
+  } else if (shouldBeLeafElement(this.name)) {
+    if (from <= this.start && this.end <= to) {
+      // include element in selection
+      return new BookNode(this.name, this.content, null, [], this.start, this.end)
+    } else {
+      return null
+    }
+  } else {
+    if (this.end < from || this.start > to) {
+      // this node is outside the range and should not be copied
+      return null
+    } else {
+      var newNode = new BookNode(this.name, this.content)
+      var newChildren = []
+      for (var i = 0; i < this.children.length; i++) {
+        var copiedChild = this.children[i].copy(from, to)
+        if (copiedChild != null) {
+          copiedChild.parent = newNode
+          newChildren.push(copiedChild)
+        }
+      }
+      newNode.children = newChildren
+      if (newNode.children.length == 0) {
+        newNode.start = this.start
+        newNode.end = this.end
+      } else {
+        newNode.start = newNode.children[0].start
+        newNode.end = newNode.children[newNode.children.length - 1].end
+      }
+      return newNode
+    }
+  }
 }
 
 module.exports = {

@@ -317,19 +317,19 @@ class BookNode {
         // this node is outside the range and should not be copied
         null
       } else {
-        val nn = new BookNode(this.name, this.content)
-        nn.children = this.children
+        val newNode = new BookNode(this.name, this.content)
+        newNode.children = this.children
           .map(_.copy(from, to))
           .filter(_ != null)
-        nn.children.foreach(_.parent = nn)
-        if (nn.children.isEmpty) {
-          nn.start = this.start
-          nn.end = this.end
+        newNode.children.foreach(_.parent = newNode)
+        if (newNode.children.isEmpty) {
+          newNode.start = this.start
+          newNode.end = this.end
         } else {
-          nn.start = nn.children.head.start
-          nn.end = nn.children.last.end
+          newNode.start = newNode.children.head.start
+          newNode.end = newNode.children.last.end
         }
-        nn
+        newNode
       }
     }
   }
