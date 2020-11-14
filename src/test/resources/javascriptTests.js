@@ -17,6 +17,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
 
     testTreeParsingDoesNotLoseInformation(body, tree)
     testContentSize(tree)
+    testNextLeaf(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -25,6 +26,31 @@ function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
 
 function testContentSize(tree) {
     console.assert(tree.getLength() == 1090, "content size not as expected")
+}
+
+function inorderLeaves(node) {
+    if (node.children.length == 0) {
+        return [node]
+    } else {
+        var result = []
+        for (var i = 0; i < node.children.length; i++) {
+            result = result.concat(inorderLeaves(node.children[i]))
+        }
+        return result
+    }
+}
+
+function testNextLeaf(tree) {
+    var expectedLeaves = inorderLeaves(tree)
+
+    var leaf = tree.nextLeaf()
+    var i = 0
+    while (leaf != null) {
+      leaf.prettyPrint()
+      console.assert(leaf == expectedLeaves[i], "next leafs wrong result")
+      leaf = leaf.nextLeaf()
+      i = i + 1
+    }
 }
 
 function testRegex(html) {

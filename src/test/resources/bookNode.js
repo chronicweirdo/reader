@@ -12,6 +12,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getContent = getContent
   this.updatePositions = updatePositions
   this.getLength = getLength
+  this.nextLeaf = nextLeaf
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -222,6 +223,31 @@ function parse(html) {
     return parseBody(body)
   }
   return null
+}
+
+function nextLeaf() {
+  // is this a leaf?
+  var current = this
+  if (current.children.length == 0) {
+    // go up the parent line until we find next sibling
+    var parent = current.parent
+    while (parent != null && parent.children.indexOf(current) == parent.children.length - 1) {
+      current = parent
+      parent = current.parent
+    }
+    if (parent != null) {
+      // we have the next sibling in current, must find first leaf
+      current = parent.children[parent.children.indexOf(current) + 1]
+    } else {
+      // we have reached root, this was the last leaf, there is no other
+      return null
+    }
+  }
+  // find first child of the current node
+  while (current.children.length > 0) {
+    current = current.children[0]
+  }
+  current
 }
 
 module.exports = {
