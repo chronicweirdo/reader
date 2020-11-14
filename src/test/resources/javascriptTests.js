@@ -18,6 +18,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testTreeParsingDoesNotLoseInformation(body, tree)
     testContentSize(tree)
     testNextLeaf(tree)
+    testPreviousLeaf(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -41,6 +42,7 @@ function inorderLeaves(node) {
 }
 
 function testNextLeaf(tree) {
+    console.log("testing next leaf")
     var expectedLeaves = inorderLeaves(tree)
 
     var leaf = tree.nextLeaf()
@@ -51,12 +53,26 @@ function testNextLeaf(tree) {
       leaf = leaf.nextLeaf()
       i = i + 1
     }
+    console.assert(i == expectedLeaves.length, "did not check all next leaves")
 }
 
-function testRegex(html) {
-    var bodyStartPattern = /<cody[^>]*>/
-    var match = bodyStartPattern.exec(html)
-    console.log(match)
-    console.log(match.index + " " + (match.index  + match[0].length));
-    console.log(match[0])
+function getLastLeaf(node) {
+    var current = node
+    while (current.children.length > 0) {
+        current = current.children[current.children.length - 1]
+    }
+    return current
+}
+
+function testPreviousLeaf(tree) {
+    var expectedLeaves = inorderLeaves(tree)
+    var leaf = getLastLeaf(tree)
+    var i = expectedLeaves.length - 1
+    while (leaf != null) {
+      leaf.prettyPrint()
+      console.assert(leaf == expectedLeaves[i], "previous leafs wrong result")
+      leaf = leaf.previousLeaf()
+      i = i - 1
+    }
+    console.assert(i == -1, "did not check all previous leaves")
 }

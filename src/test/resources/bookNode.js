@@ -13,6 +13,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.updatePositions = updatePositions
   this.getLength = getLength
   this.nextLeaf = nextLeaf
+  this.previousLeaf = previousLeaf
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
@@ -247,7 +248,23 @@ function nextLeaf() {
   while (current.children.length > 0) {
     current = current.children[0]
   }
-  current
+  return current
+}
+
+function previousLeaf() {
+  var current = this
+  var parent = current.parent
+  while (parent != null && parent.children.indexOf(current) == 0) {
+    // keep going up
+    current = parent
+    parent = current.parent
+  }
+  if (parent != null) {
+    current = parent.children[parent.children.indexOf(current) - 1]
+    // go down on the last child track
+    while (current.children.length > 0) current = current.children[current.children.length - 1]
+    return current
+  } else return null
 }
 
 module.exports = {
