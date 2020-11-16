@@ -224,4 +224,20 @@ class TestBookNode {
 
     assert(splitAndMergedContent == tree.getContent())
   }
+
+  @Test
+  def testGetIds(): Unit = {
+    val tree = parseTree()
+    val ids = tree.getIds()
+    println(ids)
+
+    assert(ids.size == 8)
+    assert(ids("ch1") < ids("ch1s1"))
+    assert(ids("ch1s1") < ids("ch1im1"))
+    assert(ids("ch1im1") < ids("ch1s2"))
+    assert(ids("ch1s2") < ids("ch1im2"))
+    assert(ids("ch1im2") < ids("ch1s3"))
+    assert(ids("ch1s3") < ids("ch1im3"))
+    assert(ids("ch1im3") < ids("ch1tbl1"))
+  }
 }

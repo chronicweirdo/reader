@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.util
 
-import com.cacoveanu.reader.util.BookNode.shouldBeLeafElement
+import com.cacoveanu.reader.util.BookNode.{getId, shouldBeLeafElement}
 
 import scala.util.matching.Regex
 
@@ -17,6 +17,11 @@ object BookNode {
     case Some(m) =>
       m.group(1)
     case None => null
+  }
+  private def getId(str: String) = "<[^>\\s]+.*id=\"([^\"\\s]+)\".*>".r findFirstMatchIn str match {
+    case Some(m) =>
+      Some(m.group(1))
+    case None => None
   }
   private def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
   private def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
@@ -332,5 +337,9 @@ class BookNode {
         newNode
       }
     }
+  }
+
+  def getIds(): Map[String, Int] = {
+    getId(this.content).map(id => (id -> this.start)).toMap ++ this.children.flatMap(child => child.getIds())
   }
 }
