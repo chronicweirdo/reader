@@ -35,6 +35,15 @@ class TestBookNode {
     assert(tree.getLength() == 1090)
   }
 
+  @Test
+  def testStartWithPosition() = {
+    val treeOption = BookNode.parse(html, 10)
+    assert(treeOption.isDefined)
+    val tree = treeOption.get
+
+    assert(tree.start == 10)
+    assert(tree.end == 1099)
+  }
 
 
   private def inorderLeaves(node: BookNode): Seq[BookNode] = {

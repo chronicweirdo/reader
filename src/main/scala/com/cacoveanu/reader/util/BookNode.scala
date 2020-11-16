@@ -21,7 +21,7 @@ object BookNode {
   private def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
   private def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
-  private def parseBody(body: String): Option[BookNode] = {
+  private def parseBody(body: String, entrancePosition: Int): Option[BookNode] = {
     val bodyNode = new BookNode("body", "")
     var current: BookNode = bodyNode
 
@@ -89,7 +89,7 @@ object BookNode {
     }
 
     bodyNode.collapseLeafs()
-    bodyNode.updatePositions()
+    bodyNode.updatePositions(entrancePosition)
     Some(bodyNode)
   }
 
@@ -106,8 +106,8 @@ object BookNode {
     }
   }
 
-  def parse(html: String): Option[BookNode] = {
-    getHtmlBody(html).flatMap(body => parseBody(body))
+  def parse(html: String, entrancePosition: Int = 0): Option[BookNode] = {
+    getHtmlBody(html).flatMap(body => parseBody(body, entrancePosition))
   }
 }
 
@@ -165,7 +165,7 @@ class BookNode {
     }
   }
 
-  private def updatePositions(entrancePosition: Int = 0): Unit = {
+  private def updatePositions(entrancePosition: Int): Unit = {
     var position = entrancePosition
     this.start = position
     if (this.name == "text") {
