@@ -14,6 +14,7 @@ import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 import org.jsoup.nodes.{Document, Element, Node, TextNode}
 
+import scala.collection.IterableOnce.iterableOnceExtensionMethods
 import scala.jdk.CollectionConverters._
 import scala.xml.{Elem, XML}
 
@@ -145,6 +146,34 @@ object EpubUtil {
     }
   }
 
+  def getTocFromOpf2(epubPath: String) = {
+    getOpf(epubPath).map { case (opfPath, opf) =>
+      (opf \ "spine" \ "itemref")
+        .map(n => (n \ "@idref").text)
+        .flatMap(id =>
+          (opf \ "manifest" \ "item")
+            .find(n => (n \ "@id").text == id)
+            .map(n => URLDecoder.decode((n \ "@href").text, StandardCharsets.UTF_8.name()))
+        )
+        .zipWithIndex
+        .map(e => (
+          e._2,
+          getAbsoluteEpubPath(opfPath, e._1)
+        ))
+    }
+  }
+
+  private def getTocFromNcx2(epubPath: String) = {
+    getNcx(epubPath).map { case (ncxPath, ncx) =>
+      (ncx \ "navMap" \ "navPoint")
+        .map(n => (
+          (n \ "@playOrder").text.toInt,
+          (n \ "navLabel" \ "text").text,
+          getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name()))
+        ))
+    }
+  }
+
   private def getTocFromNcx(epubPath: String) = {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
       (ncx \ "navMap" \ "navPoint")
@@ -155,6 +184,47 @@ object EpubUtil {
           getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name()))
         ))
     }
+  }
+
+  // get TOC 2: the TOCening
+  def getToc2(epubPath: String) = {
+    val resources = getTocFromOpf2(epubPath).getOrElse(Seq())
+    //println(resources)
+    var parsedResources = Seq[(Int, String, BookNode)]()
+    for (index <- resources.indices) {
+      val startPosition = if (parsedResources.nonEmpty) parsedResources.last._3.end + 1 else 0
+      val ps = parseSection(epubPath, resources(index)._2, startPosition)
+      if (ps.isDefined) {
+        parsedResources = parsedResources :+ (resources(index)._1, resources(index)._2, ps.get)
+      }
+    }
+    //println(parsedResources)
+    val resourcesWithPosition = parsedResources.map { case (i, str, node) => (node.start, node.end, str)}
+    println("positions to resources:")
+    resourcesWithPosition.foreach(println)
+    println()
+    var linkToPosition = Map[String, Int]()
+    for (index <- parsedResources.indices) {
+      linkToPosition = linkToPosition + (parsedResources(index)._2 -> parsedResources(index)._3.start)
+      linkToPosition = linkToPosition ++ parsedResources(index)._3.getIds().map { case (id, pos) => (parsedResources(index)._2 + "#" + id, pos)}
+    }
+    println("links to positions:")
+    linkToPosition.foreach(println)
+    println()
+
+    val toc = getTocFromNcx2(epubPath).getOrElse(Seq())
+    //println(toc)
+    println()
+    val tocWithPositions = toc.map { case (index, title, link) =>
+      (index, title, link, linkToPosition.getOrElse(link, linkToPosition.getOrElse(getRootLink(link), -1))) }
+    println("table of contents to positions:")
+    tocWithPositions.foreach(println)
+    println()
+  }
+
+  def getRootLink(link: String) = {
+    if (link.indexOf("#") >= 0) link.substring(0, link.indexOf("#"))
+    else link
   }
 
   def getToc(epubPath: String) = {

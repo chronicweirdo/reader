@@ -1,5 +1,6 @@
 package com.cacoveanu.reader.service
 
+import com.cacoveanu.reader.util.EpubUtil
 import org.junit.jupiter.api.Test
 
 class ScannerServiceTest {
@@ -10,7 +11,9 @@ class ScannerServiceTest {
 
   @Test
   def testScanEpub(): Unit = {
-    val book = service.scanEpub(".\\book1.epub")
-    println(book)
+    val bookPath = ".\\book4.epub"
+    //val book = service.scanEpub(bookPath)
+    //println(book)
+    EpubUtil.getToc2(bookPath)
   }
 }
