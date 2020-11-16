@@ -117,6 +117,15 @@ object EpubUtil {
     }
   }
 
+  private def parseSection(epubPath: String, sectionPath: String, startPosition: Int = 0) = {
+    val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
+    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
+      EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
+        .map(bytes => new String(bytes, "UTF-8"))
+        .flatMap(text => BookNode.parse(text, startPosition))
+    } else None
+  }
+
   private def getTocFromOpf(epubPath: String) = {
     getOpf(epubPath).map { case (opfPath, opf) =>
       (opf \ "spine" \ "itemref")
@@ -128,7 +137,7 @@ object EpubUtil {
         )
         .zipWithIndex
         .map(e => new TocEntry(
-          false,
+          TocEntry.OPF,
           e._2,
           e._1,
           getAbsoluteEpubPath(opfPath, e._1)
@@ -140,7 +149,7 @@ object EpubUtil {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
       (ncx \ "navMap" \ "navPoint")
         .map(n => new TocEntry(
-          true,
+          TocEntry.NCX,
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
           getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name()))
@@ -149,31 +158,38 @@ object EpubUtil {
   }
 
   def getToc(epubPath: String) = {
-    val toc = getTocFromOpf(epubPath).getOrElse(Seq()) ++ getTocFromNcx(epubPath).getOrElse(Seq())
+    var toc = getTocFromOpf(epubPath).getOrElse(Seq()) ++ getTocFromNcx(epubPath).getOrElse(Seq())
 
-    val sections = getSections(toc).map(s => s.resource)
-    var totalSize = 0
-    val sectionSizes: Seq[(String, Int, Int)] = sections.map(section => {
-      val sectionSize = getSectionSize(epubPath, section)
-      val result = (section, totalSize, sectionSize)
-      totalSize = totalSize + sectionSize
-      result
-    })
-
-    val tocWithSizes = toc.map(e => if (!e.fromToc) {
-      sectionSizes.find(_._1 == e.resource) match {
-        case Some((resource, start, size)) =>
-          e.start = start
-          e.size = size
+    // compute sections sizes and find points of interest
+    val sections: Seq[String] = getSections(toc).map(s => s.resource)
+    var parsedSections = Seq[(String, BookNode)]()
+    var contentToc = Seq[TocEntry]()
+    for (i <- sections.indices) {
+      val ps = parseSection(epubPath, sections(i), if (parsedSections.nonEmpty) parsedSections.last._2.end + 1 else 0)
+      if (ps.isDefined) {
+        parsedSections = parsedSections :+ (sections(i), ps.get)
+        contentToc = contentToc :+ new TocEntry(TocEntry.CONTENT, ps.get.start, sections(i),
+          sections(i))
+        contentToc = contentToc ++ ps.get.getIds().map { case (id, position) => new TocEntry(TocEntry.CONTENT, position, id,
+          sections(i) + "#" + id)}
+      }
+    }
+    toc = toc.map(e => if (e.source == TocEntry.OPF) {
+      parsedSections.find(_._1 == e.resource) match {
+        case Some((resource, node)) =>
+          e.start = node.start
+          e.size = node.getLength()
           e
         case None => e
       }
     } else e)
-    tocWithSizes
+    toc = toc ++ contentToc
+
+    toc
   }
 
   def getSections(toc: Seq[TocEntry]) = {
-    val ncxToc = toc.filter(_.fromToc == false).sortBy(_.index)
+    val ncxToc = toc.filter(_.source == TocEntry.OPF).sortBy(_.index)
     if (ncxToc.size > 1) {
       Seq(ncxToc(0)) ++ ncxToc.sliding(2)
         .filter(p => p(0).resource != p(1).resource)

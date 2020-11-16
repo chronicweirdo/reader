@@ -5,6 +5,12 @@ import java.beans.Transient
 import com.cacoveanu.reader.util.EpubUtil
 import javax.persistence.{Entity, GeneratedValue, GenerationType, Id, Table, UniqueConstraint}
 
+object TocEntry {
+  val OPF = "opf"
+  val NCX = "ncx" // this is from toc.ncx
+  val CONTENT = "content"
+}
+
 @Entity
 class TocEntry {
 
@@ -22,14 +28,18 @@ class TocEntry {
 
   var size: Int = _
 
-  var fromToc: Boolean = _
+  var source: String = _
 
   @Transient
   def resource: String = EpubUtil.baseLink(link)
 
-  def this(fromToc: Boolean, index: Int, title: String, link: String) = {
+
+  override def toString: String =
+    s"$source\t$index\t$title\t$link"
+
+  def this(source: String, index: Int, title: String, link: String) = {
     this()
-    this.fromToc = fromToc
+    this.source = source
     this.index = index
     this.title = title
     this.link = link
