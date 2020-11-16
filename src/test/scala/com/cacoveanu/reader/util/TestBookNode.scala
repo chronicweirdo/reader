@@ -181,7 +181,7 @@ class TestBookNode {
 
   @Test
   def testCopySection() = {
-    val expectedSubtree = """<h2>Parsing to tree</h2>
+    val expectedSubtree = """<h2 id="ch1s1">Parsing to tree</h2>
                             |  <p class="simple_text">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>""".stripMargin
 
     val tree = parseTree()

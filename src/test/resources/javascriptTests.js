@@ -158,7 +158,7 @@ function testFindSpacesBothWays(tree) {
 }
 
 function testCopySection(tree) {
-    var expectedSubtree = "<h2>Parsing to tree</h2>\r\n" +
+    var expectedSubtree = "<h2 id=\"ch1s1\">Parsing to tree</h2>\r\n" +
         "  <p class=\"simple_text\">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>"
 
     var part = tree.copy(355, 506)
