@@ -37,15 +37,15 @@ class Book {
   /*@Transient
   def getSections(): Seq[TocEntry] = EpubUtil.getSections(toc.asScala.toSeq)*/
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
+  @OneToMany(fetch = FetchType.LAZY, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
   var links: java.util.List[BookLink] = _
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
+  @OneToMany(fetch = FetchType.LAZY, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
   var resources: java.util.List[BookResource] = _
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
+  @OneToMany(fetch = FetchType.LAZY, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
   var toc: java.util.List[BookTocEntry] = _
 

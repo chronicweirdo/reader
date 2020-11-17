@@ -3,7 +3,7 @@ package com.cacoveanu.reader.service
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-import com.cacoveanu.reader.entity.{Book, Content, TocEntry}
+import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util._
