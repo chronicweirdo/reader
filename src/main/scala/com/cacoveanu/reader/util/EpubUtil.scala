@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
-import com.cacoveanu.reader.entity.{Content, TocEntry}
+import com.cacoveanu.reader.entity.{BookLink, BookResource, BookTocEntry, Content, TocEntry}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
@@ -187,19 +187,33 @@ object EpubUtil {
   }
 
   // get TOC 2: the TOCening
-  def getToc2(epubPath: String) = {
+  def scanContentMetadata(epubPath: String) = {
+    // get book resources and links
     val resources = getTocFromOpf2(epubPath).getOrElse(Seq())
-    //println(resources)
-    var parsedResources = Seq[(Int, String, BookNode)]()
+
+    var lastEnd: Integer = null
+    var bookResources = Seq[BookResource]()
+    var bookLinks = Map[String, Int]()
     for (index <- resources.indices) {
-      val startPosition = if (parsedResources.nonEmpty) parsedResources.last._3.end + 1 else 0
-      val ps = parseSection(epubPath, resources(index)._2, startPosition)
-      if (ps.isDefined) {
-        parsedResources = parsedResources :+ (resources(index)._1, resources(index)._2, ps.get)
+      val resourcePath = resources(index)._2
+      val startPosition = if (lastEnd != null) lastEnd + 1 else 0
+      val parsedSectionOptional = parseSection(epubPath, resourcePath, startPosition)
+      if (parsedSectionOptional.isDefined) {
+        val parsedSection = parsedSectionOptional.get
+        lastEnd = parsedSection.end
+
+        val bookResource = new BookResource()
+        bookResource.start = parsedSection.start
+        bookResource.end = parsedSection.end
+        bookResource.path = resourcePath
+        bookResources = bookResources :+ bookResource
+
+        bookLinks = bookLinks + (resourcePath -> parsedSection.start)
+        bookLinks = bookLinks ++ parsedSection.getIds().map { case (id, pos) => (resourcePath + "#" + id, pos)}
       }
     }
     //println(parsedResources)
-    val resourcesWithPosition = parsedResources.map { case (i, str, node) => (node.start, node.end, str)}
+    /*val resourcesWithPosition = parsedResources.map { case (i, str, node) => (node.start, node.end, str)}
     println("positions to resources:")
     resourcesWithPosition.foreach(println)
     println()
@@ -210,16 +224,26 @@ object EpubUtil {
     }
     println("links to positions:")
     linkToPosition.foreach(println)
-    println()
+    println()*/
 
     val toc = getTocFromNcx2(epubPath).getOrElse(Seq())
-    //println(toc)
-    println()
-    val tocWithPositions = toc.map { case (index, title, link) =>
-      (index, title, link, linkToPosition.getOrElse(link, linkToPosition.getOrElse(getRootLink(link), -1))) }
-    println("table of contents to positions:")
-    tocWithPositions.foreach(println)
-    println()
+    val tocWithPositions = toc.map { case (index, title, link) => {
+      val bookTocEntry = new BookTocEntry
+      bookTocEntry.index = index
+      bookTocEntry.title = title
+      val position: Int = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
+      bookTocEntry.position = position
+      bookTocEntry
+    }}
+
+    val bookLinkObjects = bookLinks.map { case (link, position) => {
+      val bookLink = new BookLink
+      bookLink.link = link
+      bookLink.position = position
+      bookLink
+    }}
+
+    (bookResources, bookLinkObjects, tocWithPositions)
   }
 
   def getRootLink(link: String) = {
