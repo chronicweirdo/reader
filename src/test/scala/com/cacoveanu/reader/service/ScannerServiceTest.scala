@@ -22,4 +22,13 @@ class ScannerServiceTest {
     println("\n book toc:")
     toc.foreach(t => println(t.index + "," + t.title + "," + t.position))
   }
+
+  @Test
+  def testScanEpub2(): Unit = {
+    val bookPath = ".\\book4.epub"
+    val book = service.scanEpub(bookPath)
+    assert(book.isDefined)
+    assert(book.get.resources != null)
+    assert(book.get.resources.size() > 0)
+  }
 }

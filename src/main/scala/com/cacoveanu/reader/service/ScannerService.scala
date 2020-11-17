@@ -188,13 +188,17 @@ class ScannerService {
       val author = EpubUtil.getAuthor(path).getOrElse("")
       val collection = getCollection(path)
       val cover = EpubUtil.getCover(path)
-      val toc = EpubUtil.getToc(path)
-      val size = EpubUtil.getSections(toc).lastOption.map(e => e.start + e.size).getOrElse(0)
+      //val toc = EpubUtil.getToc(path)
+      val (resources, links, toc) = EpubUtil.scanContentMetadata(path)
+      val size = resources.map(_.end).maxOption.map(_.intValue()).getOrElse(0) - resources.map(_.start).minOption.map(_.intValue()).getOrElse(0)
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
           val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size)
+          //book.toc = toc.asJava
           book.toc = toc.asJava
+          book.resources = resources.asJava
+          book.links = links.asJava
           Some(book)
         case _ =>
           log.warn(s"failed to scan $path")

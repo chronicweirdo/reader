@@ -54,17 +54,17 @@ class ContentService {
         <title>{book.title}</title>
       </head>
       <body>
-        {book.toc.asScala.filter(_.source == TocEntry.NCX).sortBy(_.index).map(e => {
-        <p><a href={URLEncoder.encode(e.link, StandardCharsets.UTF_8.name())}>{if (e.title != null && e.title.length > 0) e.title else e.index}</a></p>
+        {book.toc.asScala.sortBy(_.index).map(e => {
+        <p><a href={URLEncoder.encode(e.position.toString, StandardCharsets.UTF_8.name())}>{if (e.title != null && e.title.length > 0) e.title else e.index}</a></p>
       })}
       </body>
     </html>).toString()
   }
 
-  private def findResourceByPosition(book: Book, position: Int) = {
-    book.getSections().find(e => e.start + e.size >= position)
-      .map(tocEntry => EpubUtil.baseLink(tocEntry.link))
-  }
+  /*private def findResourceByPosition(book: Book, position: Int) = {
+    book.resources.asScala.find(e => e.end >= position)
+      .map(tocEntry => EpubUtil.baseLink(tocEntry.path))
+  }*/
 
   @Cacheable(Array("resources"))
   def loadResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
@@ -119,13 +119,13 @@ class ContentService {
   }
 
   private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    val sections = book.getSections().zipWithIndex
+    val sections = book.resources.asScala.zipWithIndex
     val currentPath = EpubUtil.baseLink(resourcePath)
-    val currentSection = sections.find(e => e._1.link == currentPath)
+    val currentSection = sections.find(e => e._1.path == currentPath)
     val currentIndex = currentSection.map(_._2)
-    val prev = currentIndex.flatMap(i => sections.find(_._2 == i - 1)).map(_._1.link).getOrElse("")
-    val next = currentIndex.flatMap(i => sections.find(_._2 == i + 1)).map(_._1.link).getOrElse("")
-    val size = currentSection.map(e => e._1.size).getOrElse(1)
+    val prev = currentIndex.flatMap(i => sections.find(_._2 == i - 1)).map(_._1.path).getOrElse("")
+    val next = currentIndex.flatMap(i => sections.find(_._2 == i + 1)).map(_._1.path).getOrElse("")
+    val size = currentSection.map(e => e._1.end - e._1.start).getOrElse(1)
     val start = currentSection.map(e => e._1.start).getOrElse(0)
 
     val htmlContent = new String(bytes, "UTF-8")

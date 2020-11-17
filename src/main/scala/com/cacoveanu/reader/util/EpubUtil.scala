@@ -241,7 +241,7 @@ object EpubUtil {
       bookLink.link = link
       bookLink.position = position
       bookLink
-    }}
+    }}.toSeq
 
     (bookResources, bookLinkObjects, tocWithPositions)
   }

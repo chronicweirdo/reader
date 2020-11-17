@@ -53,7 +53,7 @@ class BookController @Autowired()(private val contentService: ContentService,
   val positionsTestBookId = 8891
   val positionsTestBookPath = "text%2Fpart0005.html"
 
-  @RequestMapping(Array("/positions_test_data"))
+  /*@RequestMapping(Array("/positions_test_data"))
   @ResponseBody
   def getPositionsTestData() = {
     // book?id=8891&path=text%2Fpart0005.html&position=0
@@ -67,7 +67,7 @@ class BookController @Autowired()(private val contentService: ContentService,
     val content = contentService.loadResource(b.id, URLDecoder.decode(s.link, StandardCharsets.UTF_8.name())).get
     val sizeWithoutSpaces = HtmlUtil.positionsTestGet(content.data)
     PositionsTestResponse(new String(content.data, "UTF-8"), sizeWithoutSpaces)
-  }
+  }*/
 
   case class PositionsTestResponse(@BeanProperty content: String, @BeanProperty sizeWithoutSpaces: Int)
 
@@ -102,7 +102,8 @@ class BookController @Autowired()(private val contentService: ContentService,
 
         case FileTypes.EPUB => bookService.loadProgress(book) match {
           case Some(progress) => new RedirectView(s"/book?id=$bookId&path=${progress.section}&position=${progress.position}")
-          case None => new RedirectView(s"/book?id=$bookId&path=${book.getSections()(0).link}")
+          //case None => new RedirectView(s"/book?id=$bookId&path=${book.getSections()(0).link}")
+          case None => new RedirectView(s"/book?id=$bookId&path=${book.resources.get(0).path}")
         }
       }
 
