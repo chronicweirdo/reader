@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta name="viewport"
+          content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="bookId" content="1" th:content="${id}">
+    <meta name="bookTitle" content="1" th:content="${title}">
+    <meta name="size" content="20" th:content=${size}>
+    <meta name="startPosition" content="0" th:content=${startPosition}>
+    <title th:text="${title}">Book Title</title>
+    <link rel="stylesheet" type="text/css" href="book.css">
+    <link rel="stylesheet" type="text/css" href="tools.css">
+    <script src="hammer.min.js"></script>
+    <script src="gestures.js"></script>
+    <script src="util.js"></script>
+    <script src="book2.js"></script>
+</head>
+<body onresize="handleResize()">
+<img src="" />
+<div id="prev"></div>
+<div id="next"></div>
+<div id="toolsButtonLeft"></div>
+<div id="toolsButtonRight"></div>
+<div id="content"></div>
+<div id="shadowContent"></div>
+<div id="toolsContainer" style="visibility: hidden;">
+    <div id="tools">
+        <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+        <p><span th:text="${title}">Book Title</span></p>
+        <p><a onclick="goBack()">back</a></p>
+        <p><a onclick="removeProgress()">remove progress</a></p>
+    </div>
+</div>
+<div id="spinner">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+        <rect x="20" y="20" width="60" height="60" stroke="#000000" stroke-width="10" fill="none"></rect>
+        <rect x="20" y="20" width="60" height="60" stroke="#ffd700" stroke-width="10" stroke-lincap="undefined" fill="none">
+            <animate attributeName="stroke-dasharray" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="24 216;120 120;24 216"></animate>
+            <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="1s" keyTimes="0;0.5;1" values="0;-120;-240"></animate>
+        </rect>
+    </svg>
+</div>
+</body>
+</html>

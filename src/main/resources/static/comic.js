@@ -1,16 +1,4 @@
-function num(s, def) {
-    var patt = /[\-]?[0-9\.]+/
-    var match = patt.exec(s)
-    if (match != null && match.length > 0) {
-        var n = match[0]
-        if (n.indexOf('.') > -1) {
-            return parseFloat(n)
-        } else {
-            return parseInt(n)
-        }
-    }
-    return def
-}
+
 
 function getViewportWidth() {
     return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
@@ -474,17 +462,7 @@ function goToPreviousView() {
 
 }
 
-function getMeta(metaName) {
-    const metas = document.getElementsByTagName('meta');
 
-    for (let i = 0; i < metas.length; i++) {
-        if (metas[i].getAttribute('name') === metaName) {
-        return metas[i].getAttribute('content');
-        }
-    }
-
-    return '';
-}
 
 function handleResize() {
     updateMinimumZoom()

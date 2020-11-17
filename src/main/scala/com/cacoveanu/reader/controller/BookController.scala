@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, Re
 import org.springframework.web.servlet.view.RedirectView
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
 import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
+import org.springframework.ui.Model
 
 import scala.beans.BeanProperty
 import scala.util.Random
@@ -78,12 +79,27 @@ class BookController @Autowired()(private val contentService: ContentService,
     HtmlUtil.positionsTestGet(content.data)
   }
 
-  @RequestMapping(Array("/book"))
+  /*@RequestMapping(Array("/book"))
   @ResponseBody
   def getBookResource(@RequestParam("id") bookId: java.lang.Long,
                       @RequestParam("path") path: String,
                       @RequestParam(name = "position", required = false) position: java.lang.Long) = {
     toResponseEntity(contentService.loadResource(bookId, URLDecoder.decode(path, StandardCharsets.UTF_8.name())))
+  }*/
+
+  @RequestMapping(Array("/book"))
+  def getComic(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
+    bookService.loadBook(id) match {
+      case Some(book) =>
+        val progress = bookService.loadProgress(book)
+        model.addAttribute("id", id)
+        model.addAttribute("size", book.size)
+        model.addAttribute("title", book.title)
+        model.addAttribute("collection", book.collection)
+        model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
+        "book"
+      case None => "" // todo: throw some error!
+    }
   }
 
   @RequestMapping(Array("/openBook"))
@@ -100,11 +116,13 @@ class BookController @Autowired()(private val contentService: ContentService,
         case FileTypes.PDF =>
           new RedirectView(s"/comic?id=$bookId")
 
-        case FileTypes.EPUB => bookService.loadProgress(book) match {
+        /*case FileTypes.EPUB => bookService.loadProgress(book) match {
           case Some(progress) => new RedirectView(s"/book?id=$bookId&path=${progress.section}&position=${progress.position}")
           //case None => new RedirectView(s"/book?id=$bookId&path=${book.getSections()(0).link}")
           case None => new RedirectView(s"/book?id=$bookId&path=${book.resources.get(0).path}")
-        }
+        }*/
+        case FileTypes.EPUB =>
+          new RedirectView(s"/book?id=$bookId")
       }
 
       case _ => new RedirectView("/") // todo: maybe better to throw a not found

@@ -1,14 +1,24 @@
 body {
     overflow: hidden;
     background-color: white;
-    color: white;
+    color: black;
     padding: 0;
     margin: 0;
+    font-size: 1.5em;
 }
 
 /* ui regions */
-#content {
-    display: none
+#content, #shadowContent {
+    width: 80vw;
+    height: 90vh;
+    left: 10vw;
+    top: 5vh;
+    display: block;
+    position: fixed;
+}
+
+#shadowContent {
+    visibility: hidden;
 }
 
 #prev, #next, #toolsButtonLeft, #toolsButtonRight, #pageContainer {
@@ -68,6 +78,11 @@ body {
     text-align: center;
     padding-top: 40vh;
     color: black;
+    visibility: hidden;
+}
+
+#spinner {
+    visibility: hidden;
 }
 
 img, svg {
