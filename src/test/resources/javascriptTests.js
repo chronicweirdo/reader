@@ -4,6 +4,379 @@ var fs = require('fs')
 var bn = require('./bookNode');
 var filePath = "test1.html"
 
+var parsedNodes = {
+                  	"name": "body",
+                  	"children": [
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 0,
+                  			"end": 3,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Title of the chapter",
+                  					"start": 4,
+                  					"end": 23,
+                  					"length": 20
+                  				}
+                  			],
+                  			"content": "<p class=\"chapter_title\" id=\"ch1\">",
+                  			"start": 4,
+                  			"end": 23,
+                  			"length": 20
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 24,
+                  			"end": 27,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "As all things go, this will be a test chapter. Written in the peaceful dusk of a late autumn afternoon, this text will be used to look into three main functionalities required for an ebook parsing algorithm. Three, the magic number, that is not mere two, and nowhere as far as four main functionalities, but a modest three.",
+                  					"start": 28,
+                  					"end": 350,
+                  					"length": 323
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 28,
+                  			"end": 350,
+                  			"length": 323
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 351,
+                  			"end": 354,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "h2",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Parsing to tree",
+                  					"start": 355,
+                  					"end": 369,
+                  					"length": 15
+                  				}
+                  			],
+                  			"content": "<h2 id=\"ch1s1\">",
+                  			"start": 355,
+                  			"end": 369,
+                  			"length": 15
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 370,
+                  			"end": 373,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.",
+                  					"start": 374,
+                  					"end": 506,
+                  					"length": 133
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 374,
+                  			"end": 506,
+                  			"length": 133
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 507,
+                  			"end": 510,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "img",
+                  			"children": [],
+                  			"content": "<img src=\"well_formatted_void_element.png\" id=\"ch1im1\"/>",
+                  			"start": 511,
+                  			"end": 511,
+                  			"length": 1
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 512,
+                  			"end": 515,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Images, empty tags for spacing and maybe tables have a size of 1, meaning they can't be split in multiple pages.",
+                  					"start": 516,
+                  					"end": 627,
+                  					"length": 112
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 516,
+                  			"end": 627,
+                  			"length": 112
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 628,
+                  			"end": 631,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Compute sizes to be used in the page computation algorithm and when computing book reading progress.",
+                  					"start": 632,
+                  					"end": 731,
+                  					"length": 100
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 632,
+                  			"end": 731,
+                  			"length": 100
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 732,
+                  			"end": 735,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "div",
+                  			"children": [],
+                  			"content": "<div class=\"space_for_effect\">",
+                  			"start": 736,
+                  			"end": 736,
+                  			"length": 1
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 737,
+                  			"end": 740,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "h2",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Splitting the tree into chunks",
+                  					"start": 741,
+                  					"end": 770,
+                  					"length": 30
+                  				}
+                  			],
+                  			"content": "<h2 id=\"ch1s2\">",
+                  			"start": 741,
+                  			"end": 770,
+                  			"length": 30
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 771,
+                  			"end": 774,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Functionality for copying parts of the tree, while keeping the structure of the tree.",
+                  					"start": 775,
+                  					"end": 859,
+                  					"length": 85
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 775,
+                  			"end": 859,
+                  			"length": 85
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 860,
+                  			"end": 863,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Used when splitting the document into pages.",
+                  					"start": 864,
+                  					"end": 907,
+                  					"length": 44
+                  				}
+                  			],
+                  			"content": "<p>",
+                  			"start": 864,
+                  			"end": 907,
+                  			"length": 44
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 908,
+                  			"end": 911,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "img",
+                  			"children": [],
+                  			"content": "<img src=\"void_element_with_separate_closing_tag.png\" id=\"ch1im2\"></img>",
+                  			"start": 912,
+                  			"end": 912,
+                  			"length": 1
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 913,
+                  			"end": 916,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "h2",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Computing pages",
+                  					"start": 917,
+                  					"end": 931,
+                  					"length": 15
+                  				}
+                  			],
+                  			"content": "<h2 id=\"ch1s3\">",
+                  			"start": 917,
+                  			"end": 931,
+                  			"length": 15
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 932,
+                  			"end": 935,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "img",
+                  			"children": [],
+                  			"content": "<img src=\"void_element_without_closing_slash.png\" id=\"ch1im3\">",
+                  			"start": 936,
+                  			"end": 936,
+                  			"length": 1
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 937,
+                  			"end": 940,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "p",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "Functionality for finding spaces. Getting the previous and next position of a space will allow us to compute pages without splitting mid-word.",
+                  					"start": 941,
+                  					"end": 1082,
+                  					"length": 142
+                  				}
+                  			],
+                  			"content": "<p class=\"simple_text\">",
+                  			"start": 941,
+                  			"end": 1082,
+                  			"length": 142
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n  ",
+                  			"start": 1083,
+                  			"end": 1086,
+                  			"length": 4
+                  		},
+                  		{
+                  			"name": "table",
+                  			"children": [],
+                  			"content": "<table style=\"width:100%\" id=\"ch1tbl1\">\r\n    <tr>\r\n      <th>A</th>\r\n      <th>S</th>\r\n      <th>L</th>\r\n    </tr>\r\n    <tr>\r\n      <td>22</td>\r\n      <td>-</td>\r\n      <td>Lat</td>\r\n    </tr>\r\n    <tr>\r\n      <td>56</td>\r\n      <td>T</td>\r\n      <td>Lon</td>\r\n    </tr>\r\n</table>",
+                  			"start": 1087,
+                  			"end": 1087,
+                  			"length": 1
+                  		},
+                  		{
+                  			"name": "text",
+                  			"children": [],
+                  			"content": "\r\n",
+                  			"start": 1088,
+                  			"end": 1089,
+                  			"length": 2
+                  		}
+                  	],
+                  	"content": "",
+                  	"start": 0,
+                  	"end": 1089,
+                  	"length": 1090
+                  }
+
 fs.readFile(filePath, 'utf8', function (err, data) {
     if (err) {
         return console.log(err);
@@ -26,6 +399,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testCopySection(tree)
     testCopy(tree)
     testCopy2(tree)
+    testConvert(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -188,4 +562,9 @@ function testCopy2(tree) {
     }
 
     console.assert(mergedContent == tree.getContent(), "merged content does not match original content")
+}
+
+function testConvert(tree) {
+    var tree2 = bn.convert(parsedNodes)
+    console.assert(tree2.getContent() == tree.getContent(), "converted content does not match")
 }

@@ -397,10 +397,23 @@ function copy(from, to) {
   }
 }
 
+function convert(object) {
+    var node = new BookNode(object.name, object.content)
+    node.start = object.start
+    node.end = object.end
+    for (var i = 0; i < object.children.length; i++) {
+        var childNode = convert(object.children[i])
+        childNode.parent = node
+        node.children.push(childNode)
+    }
+    return node
+}
+
 module.exports = {
   BookNode: BookNode,
   getHtmlBody: getHtmlBody,
   parse: parse,
   getTagName: getTagName,
-  parseBody: parseBody
+  parseBody: parseBody,
+  convert: convert
 };
