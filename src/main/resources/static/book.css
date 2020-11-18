@@ -8,7 +8,7 @@ body {
 }
 
 /* ui regions */
-#chronicContent, #chronicShadowContent {
+#ch_content, #ch_shadow_content {
     width: 80vw;
     height: 90vh;
     left: 10vw;
@@ -17,26 +17,28 @@ body {
     position: fixed;
 }
 
-#chronicShadowContent {
+#ch_shadow_content {
     visibility: hidden;
 }
 
-#prev, #next, #toolsButtonLeft, #toolsButtonRight, #pageContainer {
+#ch_prev, #ch_next, #toolsButtonLeft, #toolsButtonRight, #pageContainer {
     display: block;
     position: fixed;
 }
 
-#prev {
+#ch_prev {
     top: 0;
     left: 0;
     width: 10vw;
     height: 90vh;
+    background-color: #ff000099
 }
-#next {
+#ch_next {
     top: 0;
     right: 0;
     width: 10vw;
     height: 90vh;
+    background-color: #00ff0099
 }
 #toolsButtonLeft {
     bottom: 0;
@@ -82,7 +84,7 @@ img, svg {
 a {
     color: blue;
     text-decoration: underline;
-    cusor: pointer;
+    cursor: pointer;
 }
 
 @media	only screen and (-webkit-min-device-pixel-ratio: 1.3),

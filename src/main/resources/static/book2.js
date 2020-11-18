@@ -72,7 +72,7 @@ function displayPageFor(position, firstTry = true) {
     } else {
         console.log("found page for " + position)
         getContentFor(page.start, page.end, function(text) {
-            var content = document.getElementById("chronicContent")
+            var content = document.getElementById("ch_content")
             content.innerHTML = text
             document.currentPage = page
             hideSpinner()
@@ -99,7 +99,7 @@ function handleResize() {
     var position = document.currentPage.start
     document.savedPages = []
     document.currentPage = null
-    var content = document.getElementById("chronicContent")
+    var content = document.getElementById("ch_content")
     content.innerHTML = ""
     displayPageFor(position)
 }
@@ -140,7 +140,7 @@ function computePagesForSection(position) {
 
 function compute(section, start) {
     console.log("computing pages for section " + section.start + " position " + start)
-    var shadowContent = document.getElementById("chronicShadowContent")
+    var shadowContent = document.getElementById("ch_shadow_content")
     shadowContent.innerHTML = ""
 
     var previousEnd = start
@@ -180,6 +180,13 @@ function hideSpinner() {
 }
 
 window.onload = function() {
+    enableGesturesOnElement(document.getElementById("ch_prev"), {
+        "clickAction": (x, y) => previousPage()
+    })
+    enableGesturesOnElement(document.getElementById("ch_next"), {
+        "clickAction": (x, y) => nextPage()
+    })
+
     var startPosition = num(getMeta("startPosition"))
     console.log("start position: " + startPosition)
 
