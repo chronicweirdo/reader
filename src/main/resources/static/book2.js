@@ -69,7 +69,7 @@ function loadPageFor(position, callback) {
 
 function loadDataFor(start, end) {
     if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
-        return document.section.getContent().substring(start, end+1)
+        return document.section.copy(start, end).getContent()
     } else {
         return null
     }
@@ -121,18 +121,22 @@ function startComputation() {
         console.log("computing page for position " + position)
         var section = getSectionFor(position)
         if (section != null) {
-            var textContent = section.getContent()
             var shadowContent = document.getElementById("shadowContent")
             shadowContent.innerHTML = ""
 
+            var start = position
             var previousEnd = position + 1
-            var end = position + 1
-            while (scrollNecessary(shadowContent) == false && end < textContent.length) {
+            var end = section.findSpaceAfter(start)
+            shadowContent.innerHTML = section.copy(start, end).getContent()
+            while (scrollNecessary(shadowContent) == false && end < section.end) {
                 console.log("growing content")
                 previousEnd = end
-                end = end + 1
+                end = section.findSpaceAfter(end)
                 // grow content
-                shadowContent.innerHTML = textContent.substring(position, end)
+                shadowContent.innerHTML = section.copy(start, end).getContent()
+            }
+            if (end < section.end) {
+                end = previousEnd
             }
 
             // store page
@@ -141,13 +145,13 @@ function startComputation() {
             if (document.savedPages == null) {
                 document.savedPages = []
             }
-            document.savedPages.push({start: position, end: previousEnd})
+            document.savedPages.push({start: start, end: end})
             //window.localStorage.setItem(pagesKey, savedPages)
 
 
             // if we did not finish finding pages in section, request computation of next page
-            if (previousEnd < section.length - 1) {
-                computePagesFor(previousEnd + 1)
+            if (end < section.end) {
+                computePagesFor(end + 1)
             }
         } else {
             // try again later
@@ -164,5 +168,5 @@ window.onload = function() {
     document.computationQueue = []
     //displayPageFor(startPosition)
     //downloadSection(1000)
-    displayPageFor(1000)
+    displayPageFor(parseInt(getMeta("startPosition")))
 }
