@@ -35,15 +35,21 @@ function getPageFor(position) {
 
 function getContentFor(start, end, callback) {
     if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
+        console.log("we have the content")
         if (callback != null) {
             callback(document.section.copy(start, end).getContent())
         }
     } else {
+        console.log("we need to download the content")
         // download section
         downloadSection(start, function(section) {
+            console.log("we have now downloaded the content")
             document.section = section
+            console.log("we have saved the book section")
             if (document.section.start <= start && start <= end && end <= document.section.end) {
+                console.log("start stop check passed, invoking the callback")
                 if (callback != null) {
+                    console.log("callback is good, invoking now")
                     callback(document.section.copy(start, end).getContent())
                 }
             }
@@ -66,7 +72,7 @@ function displayPageFor(position, firstTry = true) {
     } else {
         console.log("found page for " + position)
         getContentFor(page.start, page.end, function(text) {
-            var content = document.getElementById("content")
+            var content = document.getElementById("chronicContent")
             content.innerHTML = text
             document.currentPage = page
             hideSpinner()
@@ -93,7 +99,7 @@ function handleResize() {
     var position = document.currentPage.start
     document.savedPages = []
     document.currentPage = null
-    var content = document.getElementById("content")
+    var content = document.getElementById("chronicContent")
     content.innerHTML = ""
     displayPageFor(position)
 }
@@ -134,7 +140,7 @@ function computePagesForSection(position) {
 
 function compute(section, start) {
     console.log("computing pages for section " + section.start + " position " + start)
-    var shadowContent = document.getElementById("shadowContent")
+    var shadowContent = document.getElementById("chronicShadowContent")
     shadowContent.innerHTML = ""
 
     var previousEnd = start
