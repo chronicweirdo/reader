@@ -1,7 +1,8 @@
 package com.cacoveanu.reader.service
 
-import java.net.URLEncoder
+import java.net.{URI, URLEncoder}
 import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
 
 import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
@@ -33,8 +34,8 @@ class ContentService {
   def loadResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
-          case FileTypes.EPUB if resourcePath == "toc" =>
-            processResource(book, "toc", getBookTocHtml(book).getBytes(StandardCharsets.UTF_8))
+          /*case FileTypes.EPUB if resourcePath == "toc" =>
+            processResource(book, "toc", getBookTocHtml(book).getBytes(StandardCharsets.UTF_8))*/
           case FileTypes.EPUB =>
             val basePath = EpubUtil.baseLink(resourcePath)
             EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
@@ -73,6 +74,26 @@ class ContentService {
           // find resource for position
           val resource = book.resources.asScala.find(r => r.start <= position && position <= r.end).get
           val node = EpubUtil.parseSection(book.path, resource.path, resource.start).get
+          // fix image links
+          def imageLinkTransform(oldSrc: String): String = {
+            val remoteUri = new URI(oldSrc)
+            if (remoteUri.isAbsolute) {
+              return oldSrc
+            } else {
+              val di = oldSrc.lastIndexOf("#")
+              val (externalPath, internalPath) = if (di > 0) (oldSrc.substring(0, di), oldSrc.substring(di+1))
+              else (oldSrc, null)
+              val contextPath = resource.path
+              val lio = contextPath.lastIndexOf("/")
+              val folder = if (lio > 0) contextPath.substring(0, lio)
+              else ""
+              val remotePathWithFolder = if (folder.length > 0) folder + "/" + externalPath else externalPath
+              val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString.replaceAll("\\\\", "/")
+              return s"bookResource?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}" + (if (internalPath != null) "#" + internalPath else "")
+            }
+          }
+          node.srcTransform(imageLinkTransform)
+
           return node
       }
     }
@@ -112,14 +133,14 @@ class ContentService {
 
   private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     FileUtil.getMediaType(resourcePath) match {
-      case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))
+      /*case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
+        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))*/
 
       case Some(contentType) =>
         Some(Content(None, contentType, bytes))
 
-      case None if resourcePath == "toc" =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))
+      /*case None if resourcePath == "toc" =>
+        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))*/
 
       case _ => None
     }

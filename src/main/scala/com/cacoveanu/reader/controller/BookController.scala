@@ -111,6 +111,11 @@ class BookController @Autowired()(private val contentService: ContentService,
     node
   }
 
+  @RequestMapping(Array("/bookResource"))
+  def loadBookResource(@RequestParam("id") id: java.lang.Long, @RequestParam("path") path: String) = {
+    toResponseEntity(contentService.loadResource(id, path))
+  }
+
   @RequestMapping(Array("/openBook"))
   @ResponseBody
   def open(@RequestParam("id") bookId: java.lang.Long) = {

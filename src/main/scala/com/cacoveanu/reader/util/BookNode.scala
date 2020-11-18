@@ -185,6 +185,20 @@ class BookNode {
     }
   }
 
+  def srcTransform(transformFunction: String => String): Unit = {
+    if (this.name == "img") {
+      val srcMatch = "src=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val oldSrc = srcMatch.get.group(1)
+        val newSrc = transformFunction(oldSrc)
+        val oldStart = srcMatch.get.start(1)
+        val oldEnd = oldStart + oldSrc.size
+        this.content = this.content.substring(0, oldStart) + newSrc + this.content.substring(oldEnd)
+      }
+    }
+    this.children.foreach(child => child.srcTransform(transformFunction))
+  }
+
   private def updatePositions(entrancePosition: Int): Unit = {
     var position = entrancePosition
     this.start = position
