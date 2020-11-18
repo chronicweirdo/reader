@@ -199,6 +199,21 @@ class BookNode {
     this.children.foreach(child => child.srcTransform(transformFunction))
   }
 
+  def hrefTransform(transformFunction: String => (String, String)): Unit = {
+    if (this.name == "a") {
+      val srcMatch = "(href)=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val oldHref = srcMatch.get.group(2)
+        val (newName, newHref) = transformFunction(oldHref)
+        val oldTagStart = srcMatch.get.start(1)
+        val oldStart = srcMatch.get.start(2)
+        val oldEnd = oldStart + oldHref.size
+        this.content = this.content.substring(0, oldTagStart) + newName + "=\"" + newHref + this.content.substring(oldEnd)
+      }
+    }
+    this.children.foreach(child => child.hrefTransform(transformFunction))
+  }
+
   private def updatePositions(entrancePosition: Int): Unit = {
     var position = entrancePosition
     this.start = position

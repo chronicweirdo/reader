@@ -66,23 +66,12 @@ body {
     font-family: Georgia, serif;
 }
 
-#loading {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: white;
-    z-index: 1000;
-    font-size: 2em;
-    text-align: center;
-    padding-top: 40vh;
-    color: black;
-    visibility: hidden;
-}
-
 #spinner {
     visibility: hidden;
+    bottom: 0;
+    right: 0;
+    width: 5vw;
+    height: 5vw;
 }
 
 img, svg {

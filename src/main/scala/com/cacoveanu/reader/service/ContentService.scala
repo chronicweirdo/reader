@@ -94,6 +94,24 @@ class ContentService {
           }
           node.srcTransform(imageLinkTransform)
 
+          val linksMap = book.links.asScala.map(l => (l.link -> l.position)).toMap
+          def hrefLinkTransform(oldHref: String): (String, String) = {
+            val contextPath = resource.path
+            val lio = contextPath.lastIndexOf("/")
+            val folder = if (lio > 0) contextPath.substring(0, lio)
+            else ""
+            if (linksMap.contains(oldHref)) {
+              val position: Integer = linksMap(oldHref)
+              return ("onclick", s"displayPageFor($position)")
+            } else if (linksMap.contains(folder + "/" + oldHref)) {
+              val position: Integer = linksMap(folder + "/" + oldHref)
+              return ("onclick", s"displayPageFor($position)")
+            } else {
+              ("href", oldHref)
+            }
+          }
+          node.hrefTransform(hrefLinkTransform)
+
           return node
       }
     }
