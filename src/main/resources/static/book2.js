@@ -78,6 +78,22 @@ function displayPageFor(position) {
     })
 }
 
+function downloadSection(position, callback) {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log(this.responseText)
+            var jsonObj = JSON.parse(this.responseText)
+            console.log(jsonObj)
+            if (callback != null) {
+                callback()
+            }
+        }
+    }
+    xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position, true)
+    xhttp.send()
+}
+
 function getSectionFor(position) {
     return data
 }
@@ -126,6 +142,6 @@ window.onload = function() {
     console.log("start position: " + startPosition)
 
     document.computationQueue = []
-    //startComputation()
-    displayPageFor(startPosition)
+    //displayPageFor(startPosition)
+    downloadSection(1000)
 }

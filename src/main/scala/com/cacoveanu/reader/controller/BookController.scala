@@ -88,7 +88,7 @@ class BookController @Autowired()(private val contentService: ContentService,
   }*/
 
   @RequestMapping(Array("/book"))
-  def getComic(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
+  def getBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(book) =>
         val progress = bookService.loadProgress(book)
@@ -102,9 +102,16 @@ class BookController @Autowired()(private val contentService: ContentService,
     }
   }
 
+  @RequestMapping(Array("/bookSection"))
+  @ResponseBody
+  def loadResource(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long) = {
+    val node = contentService.loadBookResource(id, position)
+    node
+  }
+
   @RequestMapping(Array("/openBook"))
   @ResponseBody
-  def loadBook(@RequestParam("id") bookId: java.lang.Long) = {
+  def open(@RequestParam("id") bookId: java.lang.Long) = {
     bookService.loadBook(bookId) match {
       case Some(book) => FileUtil.getExtension(book.path) match {
         case FileTypes.CBR =>

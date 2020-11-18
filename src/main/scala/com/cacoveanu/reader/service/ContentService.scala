@@ -66,6 +66,19 @@ class ContentService {
       .map(tocEntry => EpubUtil.baseLink(tocEntry.path))
   }*/
 
+  def loadBookResource(bookId: java.lang.Long, position: java.lang.Long): BookNode = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) => FileUtil.getExtension(book.path) match {
+        case FileTypes.EPUB =>
+          // find resource for position
+          val resource = book.resources.asScala.find(r => r.start <= position && position <= r.end).get
+          val node = EpubUtil.parseSection(book.path, resource.path, resource.start).get
+          return node
+      }
+    }
+    null
+  }
+
   @Cacheable(Array("resources"))
   def loadResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
     bookRepository.findById(bookId).asScala match {

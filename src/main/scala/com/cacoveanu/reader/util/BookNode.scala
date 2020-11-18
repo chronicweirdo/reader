@@ -1,7 +1,10 @@
 package com.cacoveanu.reader.util
 
 import com.cacoveanu.reader.util.BookNode.{getId, shouldBeLeafElement}
+import com.fasterxml.jackson.annotation.{JsonBackReference, JsonIgnore}
 
+import scala.beans.BeanProperty
+import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
 
 object BookNode {
@@ -118,12 +121,23 @@ object BookNode {
 
 class BookNode {
 
+  @BeanProperty
   var name: String = _
+  @JsonBackReference
+  @BeanProperty
   var parent: BookNode = _
+
   var children: Seq[BookNode] = Seq()
+  @BeanProperty
   var content: String = _
+  @BeanProperty
   var start: Int = _
+  @BeanProperty
   var end: Int = _
+
+  def getChildren() = {
+   this.children.asJava
+  }
 
   private def this(name: String, content: String) = {
     this()
@@ -153,17 +167,18 @@ class BookNode {
     this.children.foreach(c => c.prettyPrint(level+1))
   }
 
-  def getContent(): String = {
+  @JsonIgnore
+  def extractContent(): String = {
     if (this.name == "text") this.content
-    else if (this.name == "body") this.children.map(_.getContent()).mkString("")
+    else if (this.name == "body") this.children.map(_.extractContent()).mkString("")
     else if (shouldBeLeafElement(this.name) && this.children.isEmpty) this.content
-    else this.content + this.children.map(_.getContent()).mkString("") + "</" + this.name + ">"
+    else this.content + this.children.map(_.extractContent()).mkString("") + "</" + this.name + ">"
   }
 
   private def collapseLeafs(): Unit = {
     if (shouldBeLeafElement(this.name) && this.children.nonEmpty) {
       // extract content from children
-      this.content = this.getContent()
+      this.content = this.extractContent()
       this.children = Seq()
     } else {
       this.children.foreach(_.collapseLeafs())
@@ -247,12 +262,15 @@ class BookNode {
     }
   }
 
+  @JsonIgnore
   def getRoot(): BookNode = {
     var current = this
     while (current.parent != null) current = current.parent
     current
   }
+  @JsonIgnore
   def getDocumentStart(): Int = this.getRoot.start
+  @JsonIgnore
   def getDocumentEnd(): Int = this.getRoot.end
 
   def findSpaceAfter(position: Int): Int = {
@@ -339,6 +357,7 @@ class BookNode {
     }
   }
 
+  @JsonIgnore
   def getIds(): Map[String, Int] = {
     getId(this.content).map(id => (id -> this.start)).toMap ++ this.children.flatMap(child => child.getIds())
   }

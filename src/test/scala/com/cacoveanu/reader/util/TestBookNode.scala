@@ -4,6 +4,7 @@ import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
 
 import scala.io.{BufferedSource, Source}
@@ -25,7 +26,7 @@ class TestBookNode {
     assert(bodyStringOption.isDefined)
     val bodyString = bodyStringOption.get
     val tree = parseTree()
-    assert(bodyString == tree.getContent())
+    assert(bodyString == tree.extractContent())
   }
 
   @Test
@@ -188,7 +189,7 @@ class TestBookNode {
     tree.prettyPrint()
 
     val part = tree.copy(355, 506)
-    assert(part.getContent() == expectedSubtree)
+    assert(part.extractContent() == expectedSubtree)
   }
 
   @Test
@@ -208,7 +209,7 @@ class TestBookNode {
     val copy2 = tree.copy(middleChildEnd+1, tree.end)
     copy2.prettyPrint()
 
-    assert(copy1.getContent() + copy2.getContent() == tree.getContent())
+    assert(copy1.extractContent() + copy2.extractContent() == tree.extractContent())
   }
 
   @Test
@@ -219,10 +220,10 @@ class TestBookNode {
 
     val splitAndMergedContent = tree.children
       .map(c => tree.copy(c.start, c.end))
-      .map(c => c.getContent())
+      .map(c => c.extractContent())
       .mkString("")
 
-    assert(splitAndMergedContent == tree.getContent())
+    assert(splitAndMergedContent == tree.extractContent())
   }
 
   @Test
@@ -239,5 +240,14 @@ class TestBookNode {
     assert(ids("ch1im2") < ids("ch1s3"))
     assert(ids("ch1s3") < ids("ch1im3"))
     assert(ids("ch1im3") < ids("ch1tbl1"))
+  }
+
+  @Test
+  def testToJson(): Unit = {
+    val tree = parseTree()
+    val mapper = new ObjectMapper();
+
+    val treeString = mapper.writeValueAsString(tree)
+    println(treeString)
   }
 }

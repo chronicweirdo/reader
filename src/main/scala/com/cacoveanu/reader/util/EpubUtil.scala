@@ -118,7 +118,7 @@ object EpubUtil {
     }
   }
 
-  private def parseSection(epubPath: String, sectionPath: String, startPosition: Int = 0) = {
+  def parseSection(epubPath: String, sectionPath: String, startPosition: Int = 0) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
