@@ -96,12 +96,15 @@ function previousPage() {
 }
 
 function handleResize() {
-    var position = document.currentPage.start
-    document.savedPages = []
-    document.currentPage = null
-    var content = document.getElementById("ch_content")
-    content.innerHTML = ""
-    displayPageFor(position)
+    fixComponentHeights()
+    if (document.currentPage != null) {
+        var position = document.currentPage.start
+        document.savedPages = []
+        document.currentPage = null
+        var content = document.getElementById("ch_content")
+        content.innerHTML = ""
+        displayPageFor(position)
+    }
 }
 
 function downloadSection(position, callback) {
@@ -179,7 +182,35 @@ function hideSpinner() {
     spinner.style.visibility = "hidden"
 }
 
+function fixComponentHeights() {
+    var height = getViewportHeight()
+    var contentTop = height * .05
+    var contentHeight = height * .9
+    document.getElementById("ch_content").style.top = contentTop + "px"
+    document.getElementById("ch_content").style.height = contentHeight + "px"
+    document.getElementById("ch_shadow_content").style.top = contentTop + "px"
+    document.getElementById("ch_shadow_content").style.height = contentHeight + "px"
+
+    var pageControlsTop = 0
+    var pageControlsHeight = height * .9
+    document.getElementById("ch_prev").style.top = pageControlsTop + "px"
+    document.getElementById("ch_prev").style.height = pageControlsHeight + "px"
+    document.getElementById("ch_next").style.top = pageControlsTop + "px"
+    document.getElementById("ch_tools_right").style.height = pageControlsHeight + "px"
+
+    var toolsControlsHeight = height - pageControlsHeight
+    document.getElementById("ch_tools_left").style.height = toolsControlsHeight + "px"
+    document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
+}
+
 window.onload = function() {
+    // fix viewport height
+    fixComponentHeights()
+
+
+    // other page controls heights need to be fixed like this too
+
+
     enableGesturesOnElement(document.getElementById("ch_prev"), {
         "clickAction": (x, y) => previousPage()
     })
