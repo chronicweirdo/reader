@@ -85,6 +85,9 @@ function downloadSection(position, callback) {
             console.log(this.responseText)
             var jsonObj = JSON.parse(this.responseText)
             console.log(jsonObj)
+            var node = convert(jsonObj)
+            console.log(node)
+            document.node = node
             if (callback != null) {
                 callback()
             }
