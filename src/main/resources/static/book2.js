@@ -49,7 +49,7 @@ function scheduleComputation() {
     }, 100)
 }
 
-function loadPageFor(position, callback) {
+/*function loadPageFor(position, callback) {
     console.log("loading page for " + position)
     var page = getPageFor(position)
     if (page == null) {
@@ -65,35 +65,69 @@ function loadPageFor(position, callback) {
         var data = loadDataFor(page.start, page.end)
         callback(data)
     }
-}
+}*/
 
-function loadDataFor(start, end) {
+/*function loadDataFor(start, end) {
     if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
         return document.section.copy(start, end).getContent()
     } else {
         return null
     }
+}*/
+
+function getContentFor(start, end, callback) {
+    if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
+        if (callback != null) {
+            callback(document.section.copy(start, end).getContent())
+        }
+    } else {
+        // download section
+        downloadSection(start, function(section) {
+            document.section = section
+            if (document.section.start <= start && start <= end && end <= document.section.end) {
+                if (callback != null) {
+                    callback(document.section.copy(start, end).getContent())
+                }
+            }
+        })
+    }
 }
 
-function displayPageFor(position) {
+function displayPageFor(position, firstTry = true) {
+    console.log("displaying page " + position)
     // show spinner
-    loadPageFor(position, function(page) {
+    var page = getPageFor(position)
+    if (page == null) {
+        // compute pages for section and retry
+        if (firstTry) {
+            computePagesForSection(position)
+        }
+        window.setTimeout(function() {
+            displayPageFor(position, false)
+        }, 100)
+    } else {
+        console.log("found page for " + position)
+        /*var data = loadDataFor(page.start, page.end)
         var content = document.getElementById("content")
-        content.innerHTML = page
-        // hide spinner
-    })
+        content.innerHTML = page*/
+        getContentFor(page.start, page.end, function(text) {
+            var content = document.getElementById("content")
+            content.innerHTML = text
+        })
+    }
+
 }
 
 function downloadSection(position, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            console.log(this.responseText)
+            //console.log(this.responseText)
             var jsonObj = JSON.parse(this.responseText)
-            console.log(jsonObj)
+            //console.log(jsonObj)
             var node = convert(jsonObj)
-            console.log(node)
-            document.node = node
+            //console.log(node)
+            //document.node = node
             if (callback != null) {
                 callback(node)
             }
@@ -114,7 +148,7 @@ function getSectionFor(position) {
     }
 }
 
-function startComputation() {
+/*function startComputation() {
     console.log("starting computation")
     if (document.computationQueue.length > 0) {
         var position = document.computationQueue.shift()
@@ -158,6 +192,45 @@ function startComputation() {
             console.log("section not available yet, retry later")
             scheduleComputation()
         }
+    }
+}*/
+
+function computePagesForSection(position) {
+    downloadSection(position, function(section) {
+        window.setTimeout(function() {
+            compute(section, section.start)
+        }, 100)
+    })
+}
+
+function compute(section, start) {
+    console.log("computing pages for section " + section.start + " position " + start)
+    var shadowContent = document.getElementById("shadowContent")
+    shadowContent.innerHTML = ""
+
+    var previousEnd = start
+    var end = section.findSpaceAfter(start)
+    shadowContent.innerHTML = section.copy(start, end).getContent()
+    while (scrollNecessary(shadowContent) == false && end < section.end) {
+        previousEnd = end
+        end = section.findSpaceAfter(end)
+        shadowContent.innerHTML = section.copy(start, end).getContent()
+    }
+    if (end < section.end) {
+        end = previousEnd
+    }
+
+    // store page
+    if (document.savedPages == null) {
+        document.savedPages = []
+    }
+    document.savedPages.push({start: start, end: end})
+
+    if (end < section.end) {
+        // schedule computation for the next page
+        window.setTimeout(function() {
+            compute(section, end + 1)
+        }, 100)
     }
 }
 
