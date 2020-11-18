@@ -1,7 +1,26 @@
 function scrollNecessary(el) {
+    var images = el.getElementsByTagName('img')
+    var imageCount = images.length
+    if (imageCount > 0) {
+        var loadedImages = 0
+        for (var i = 0; i < imageCount; i++) {
+            var imageResolvedFunction = function() {
+                loadedImages = loadedImages + 1
+                console.log("loaded images: " + loadedImages + " of " + imageCount)
+                if (loadedImages == imageCount) {
+                    return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
+                }
+            }
+            images[i].onload = imageResolvedFunction
+            images[i].onerror = imageResolvedFunction
+        }
+    } else {
+        return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
+    }
+    /*
     var sn = el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
     console.log("scroll necessary: " + sn)
-    return sn
+    return sn*/
 }
 
 function getZoom() {
@@ -115,10 +134,29 @@ function downloadSection(position, callback) {
         if (this.readyState == 4 && this.status == 200) {
             var jsonObj = JSON.parse(this.responseText)
             var node = convert(jsonObj)
-            document.getElementById("ch_load_buffer").innerHTML = node.getContent()
-            if (callback != null) {
-                callback(node)
-            }
+            /*document.getElementById("ch_load_buffer").innerHTML = node.getContent()
+            var images = document.getElementById('ch_load_buffer').getElementsByTagName('img')
+            var imageCount = images.length
+            if (imageCount > 0) {
+                var loadedImages = 0
+                for (var i = 0; i < imageCount; i++) {
+                    var imageResolvedFunction = function() {
+                        loadedImages = loadedImages + 1
+                        console.log("loaded images: " + loadedImages + " of " + imageCount)
+                        if (loadedImages == imageCount) {
+                            if (callback != null) {
+                                callback(node)
+                            }
+                        }
+                    }
+                    images[i].onload = imageResolvedFunction
+                    images[i].onerror = imageResolvedFunction
+                }
+            } else {*/
+                if (callback != null) {
+                    callback(node)
+                }
+            //}
         }
     }
     xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position, true)
@@ -140,7 +178,7 @@ function computePagesForSection(position) {
     downloadSection(position, function(section) {
         window.setTimeout(function() {
             compute(section, section.start)
-        }, 100)
+        }, 10)
     })
 }
 
@@ -174,7 +212,7 @@ function compute(section, start) {
         // schedule computation for the next page
         window.setTimeout(function() {
             compute(section, end + 1)
-        }, 100)
+        }, 10)
     }
 }
 
