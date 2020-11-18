@@ -4,32 +4,128 @@ function scrollNecessary(el) {
     return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
 }
 
-function getPageFor(position, callback) {
-    // get the page
-    var page = data
-    // invoke the callback
-    callback(page)
+function getZoom() {
+    if (document.bookZoom) {
+        return document.bookZoom
+    } else {
+        var zoom = parseFloat(getMeta("bookZoom"))
+        document.bookZoom = zoom
+        return document.bookZoom
+    }
+}
+
+function getPagesKey() {
+    return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
+}
+
+function getPageFor(position) {
+    var pagesKey = getPagesKey()
+    //var savedPages = window.localStorage.getItem(pagesKey)
+    var savedPages = document.savedPages
+    if (savedPages != null) {
+        // search for page
+        for (var i = 0; i < savedPages.length; i++) {
+            if (savedPages[i].start <= position && position <= savedPages[i].end) {
+                // we found the page
+                return savedPages[i]
+            }
+        }
+    }
+    // no page available
+    return null
+}
+
+function computePagesFor(position) {
+    if (! document.computationQueue.includes(position)) {
+        document.computationQueue.push(position)
+    }
+    if (document.computationQueue.length > 0) {
+        console.log("triggerring computation")
+        window.setTimeout(function() {
+            startComputation()
+        }, 100)
+    }
+}
+
+function loadPageFor(position, callback) {
+    console.log("loading page for " + position)
+    var page = getPageFor(position)
+    if (page == null) {
+        // trigger page computation
+        computePagesFor(position)
+
+        // keep trying to retrieve the page periodically, until we have it
+        window.setTimeout(function() {
+            loadPageFor(position, callback)
+        }, 100)
+    } else {
+        console.log("found page for " + position)
+        var data = loadDataFor(page.start, page.end)
+        callback(data)
+    }
+}
+
+function loadDataFor(start, end) {
+    return data.substring(start, end+1)
 }
 
 function displayPageFor(position) {
-    console.log("displaying page for " + position)
     // show spinner
-    getPageFor(position, function(page) {
+    loadPageFor(position, function(page) {
         var content = document.getElementById("content")
-        console.log("content scroll necessary (before): " + scrollNecessary(content))
         content.innerHTML = page
-        console.log("content scroll necessary: " + scrollNecessary(content))
-        var shadowContent = document.getElementById("shadowContent")
-        console.log("shadow content scroll necessary (before): " + scrollNecessary(shadowContent))
-        shadowContent.innerHTML = page
-        console.log("shadow content scroll necessary: " + scrollNecessary(shadowContent))
         // hide spinner
     })
+}
+
+function getSectionFor(position) {
+    return data
+}
+
+function startComputation() {
+    console.log("starting computation")
+    if (document.computationQueue.length > 0) {
+        var position = document.computationQueue.shift()
+        console.log("computing page for position " + position)
+        var section = getSectionFor(position)
+        var shadowContent = document.getElementById("shadowContent")
+        shadowContent.innerHTML = ""
+
+        var previousEnd = position + 1
+        var end = position + 1
+        while (scrollNecessary(shadowContent) == false && end < section.length) {
+            console.log("growing content")
+            previousEnd = end
+            end = end + 1
+            // grow content
+            shadowContent.innerHTML = section.substring(position, end)
+        }
+
+        // store page
+        var pagesKey = getPagesKey()
+        //var savedPages = window.localStorage.getItem(pagesKey)
+        if (document.savedPages == null) {
+            document.savedPages = []
+        }
+        document.savedPages.push({start: position, end: previousEnd})
+        //window.localStorage.setItem(pagesKey, savedPages)
+
+
+        // if we did not finish finding pages in section, request computation of next page
+        if (previousEnd < section.length - 1) {
+            computePagesFor(previousEnd + 1)
+            /*window.setTimeout(function() {
+                startComputation()
+            }, 100)*/
+        }
+    }
 }
 
 window.onload = function() {
     var startPosition = num(getMeta("startPosition"))
     console.log("start position: " + startPosition)
 
+    document.computationQueue = []
+    //startComputation()
     displayPageFor(startPosition)
 }
