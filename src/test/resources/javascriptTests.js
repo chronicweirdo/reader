@@ -1,7 +1,7 @@
 //import getHtmlBody from "./bookNode.js"
 
 var fs = require('fs')
-var bn = require('./bookNode');
+var bn = require('../../main/resources/static/bookNode');
 var filePath = "test1.html"
 
 var parsedNodes = {
