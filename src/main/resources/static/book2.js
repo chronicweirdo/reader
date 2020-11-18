@@ -33,48 +33,6 @@ function getPageFor(position) {
     return null
 }
 
-function computePagesFor(position) {
-    if (! document.computationQueue.includes(position)) {
-        document.computationQueue.push(position)
-    }
-    if (document.computationQueue.length > 0) {
-        console.log("triggerring computation")
-        scheduleComputation()
-    }
-}
-
-function scheduleComputation() {
-    window.setTimeout(function() {
-        startComputation()
-    }, 100)
-}
-
-/*function loadPageFor(position, callback) {
-    console.log("loading page for " + position)
-    var page = getPageFor(position)
-    if (page == null) {
-        // trigger page computation
-        computePagesFor(position)
-
-        // keep trying to retrieve the page periodically, until we have it
-        window.setTimeout(function() {
-            loadPageFor(position, callback)
-        }, 100)
-    } else {
-        console.log("found page for " + position)
-        var data = loadDataFor(page.start, page.end)
-        callback(data)
-    }
-}*/
-
-/*function loadDataFor(start, end) {
-    if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
-        return document.section.copy(start, end).getContent()
-    } else {
-        return null
-    }
-}*/
-
 function getContentFor(start, end, callback) {
     if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
         if (callback != null) {
@@ -95,7 +53,7 @@ function getContentFor(start, end, callback) {
 
 function displayPageFor(position, firstTry = true) {
     console.log("displaying page " + position)
-    // show spinner
+    showSpinner()
     var page = getPageFor(position)
     if (page == null) {
         // compute pages for section and retry
@@ -107,27 +65,45 @@ function displayPageFor(position, firstTry = true) {
         }, 100)
     } else {
         console.log("found page for " + position)
-        /*var data = loadDataFor(page.start, page.end)
-        var content = document.getElementById("content")
-        content.innerHTML = page*/
         getContentFor(page.start, page.end, function(text) {
             var content = document.getElementById("content")
             content.innerHTML = text
+            document.currentPage = page
+            hideSpinner()
         })
     }
+}
 
+function nextPage() {
+    if (document.currentPage != null) {
+        if (document.currentPage.end < parseInt(getMeta("bookEnd"))) {
+            displayPageFor(document.currentPage.end + 1)
+        }
+    }
+}
+function previousPage() {
+    if (document.currentPage != null) {
+        if (document.currentPage.start > parseInt(getMeta("bookStart"))) {
+            displayPageFor(document.currentPage.start - 1)
+        }
+    }
+}
+
+function handleResize() {
+    var position = document.currentPage.start
+    document.savedPages = []
+    document.currentPage = null
+    var content = document.getElementById("content")
+    content.innerHTML = ""
+    displayPageFor(position)
 }
 
 function downloadSection(position, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            //console.log(this.responseText)
             var jsonObj = JSON.parse(this.responseText)
-            //console.log(jsonObj)
             var node = convert(jsonObj)
-            //console.log(node)
-            //document.node = node
             if (callback != null) {
                 callback(node)
             }
@@ -147,53 +123,6 @@ function getSectionFor(position) {
         return null
     }
 }
-
-/*function startComputation() {
-    console.log("starting computation")
-    if (document.computationQueue.length > 0) {
-        var position = document.computationQueue.shift()
-        console.log("computing page for position " + position)
-        var section = getSectionFor(position)
-        if (section != null) {
-            var shadowContent = document.getElementById("shadowContent")
-            shadowContent.innerHTML = ""
-
-            var start = position
-            var previousEnd = position + 1
-            var end = section.findSpaceAfter(start)
-            shadowContent.innerHTML = section.copy(start, end).getContent()
-            while (scrollNecessary(shadowContent) == false && end < section.end) {
-                console.log("growing content")
-                previousEnd = end
-                end = section.findSpaceAfter(end)
-                // grow content
-                shadowContent.innerHTML = section.copy(start, end).getContent()
-            }
-            if (end < section.end) {
-                end = previousEnd
-            }
-
-            // store page
-            var pagesKey = getPagesKey()
-            //var savedPages = window.localStorage.getItem(pagesKey)
-            if (document.savedPages == null) {
-                document.savedPages = []
-            }
-            document.savedPages.push({start: start, end: end})
-            //window.localStorage.setItem(pagesKey, savedPages)
-
-
-            // if we did not finish finding pages in section, request computation of next page
-            if (end < section.end) {
-                computePagesFor(end + 1)
-            }
-        } else {
-            // try again later
-            console.log("section not available yet, retry later")
-            scheduleComputation()
-        }
-    }
-}*/
 
 function computePagesForSection(position) {
     downloadSection(position, function(section) {
@@ -234,12 +163,19 @@ function compute(section, start) {
     }
 }
 
+function showSpinner() {
+    var spinner = document.getElementById("spinner")
+    spinner.style.visibility = "visible"
+}
+
+function hideSpinner() {
+    var spinner = document.getElementById("spinner")
+    spinner.style.visibility = "hidden"
+}
+
 window.onload = function() {
     var startPosition = num(getMeta("startPosition"))
     console.log("start position: " + startPosition)
 
-    document.computationQueue = []
-    //displayPageFor(startPosition)
-    //downloadSection(1000)
     displayPageFor(parseInt(getMeta("startPosition")))
 }

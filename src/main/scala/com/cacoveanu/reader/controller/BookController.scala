@@ -97,6 +97,8 @@ class BookController @Autowired()(private val contentService: ContentService,
         model.addAttribute("title", book.title)
         model.addAttribute("collection", book.collection)
         model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
+        model.addAttribute("bookStart", 0)
+        model.addAttribute("bookEnd", book.size - 1)
         "book"
       case None => "" // todo: throw some error!
     }
