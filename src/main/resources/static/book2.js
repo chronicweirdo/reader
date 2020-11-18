@@ -1,5 +1,7 @@
 function scrollNecessary(el) {
-    return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
+    var sn = el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
+    console.log("scroll necessary: " + sn)
+    return sn
 }
 
 function getZoom() {
@@ -113,6 +115,7 @@ function downloadSection(position, callback) {
         if (this.readyState == 4 && this.status == 200) {
             var jsonObj = JSON.parse(this.responseText)
             var node = convert(jsonObj)
+            document.getElementById("ch_load_buffer").innerHTML = node.getContent()
             if (callback != null) {
                 callback(node)
             }
@@ -148,10 +151,12 @@ function compute(section, start) {
 
     var previousEnd = start
     var end = section.findSpaceAfter(start)
+    console.log("trying end " + end)
     shadowContent.innerHTML = section.copy(start, end).getContent()
     while (scrollNecessary(shadowContent) == false && end < section.end) {
         previousEnd = end
         end = section.findSpaceAfter(end)
+        console.log("trying end " + end)
         shadowContent.innerHTML = section.copy(start, end).getContent()
     }
     if (end < section.end) {
@@ -162,6 +167,7 @@ function compute(section, start) {
     if (document.savedPages == null) {
         document.savedPages = []
     }
+    console.log("going with end " + end)
     document.savedPages.push({start: start, end: end})
 
     if (end < section.end) {
