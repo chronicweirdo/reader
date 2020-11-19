@@ -104,3 +104,7 @@ function fixComponentHeights() {
     document.getElementById("ch_tools_left").style.height = toolsControlsHeight + "px"
     document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
 }
+
+function goHome() {
+    window.location = "/"
+}
