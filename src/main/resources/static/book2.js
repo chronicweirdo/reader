@@ -271,17 +271,20 @@ function toggleTools(left) {
         }
     }
     console.log(chapters)
-    var currentChapter = chapters.length - 1
-    for (var i = 1; i < chapters.length; i++) {
+    var currentChapter = -1
+    var bookEnd = parseInt(getMeta("bookEnd"))
+    for (var i = 0; i < chapters.length; i++) {
         var position = parseInt(chapters[i].getAttribute("ch_position"))
-        console.log(position)
-        if (position > document.currentPage.end) {
-            currentChapter = i - 1
+        var chapterEndPosition = bookEnd
+        if (i < chapters.length - 1) chapterEndPosition = parseInt(chapters[i+1].getAttribute("ch_position"))
+        if (position <= document.currentPage.start && document.currentPage.end <= chapterEndPosition) {
+            currentChapter = i
             break
         }
     }
-    console.log(currentChapter)
-    chapters[currentChapter].classList.add("ch_current")
+    if (currentChapter != -1) {
+        chapters[currentChapter].classList.add("ch_current")
+    }
 }
 
 function displayPageForTocEntry(entry) {
