@@ -228,10 +228,35 @@ var parsedNodes = {
                   				{
                   					"name": "text",
                   					"children": [],
-                  					"content": "Functionality for copying parts of the tree, while keeping the structure of the tree.",
+                  					"content": "Functionality for ",
                   					"start": 775,
+                  					"end": 792,
+                  					"length": 18
+                  				},
+                  				{
+                  					"name": "a",
+                  					"children": [
+                  						{
+                  							"name": "text",
+                  							"children": [],
+                  							"content": "copying",
+                  							"start": 793,
+                  							"end": 799,
+                  							"length": 7
+                  						}
+                  					],
+                  					"content": "<a href=\"#ch1\">",
+                  					"start": 793,
+                  					"end": 799,
+                  					"length": 7
+                  				},
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": " parts of the tree, while keeping the structure of the tree.",
+                  					"start": 800,
                   					"end": 859,
-                  					"length": 85
+                  					"length": 60
                   				}
                   			],
                   			"content": "<p class=\"simple_text\">",
@@ -356,25 +381,82 @@ var parsedNodes = {
                   		},
                   		{
                   			"name": "table",
-                  			"children": [],
-                  			"content": "<table style=\"width:100%\" id=\"ch1tbl1\">\r\n    <tr>\r\n      <th>A</th>\r\n      <th>S</th>\r\n      <th>L</th>\r\n    </tr>\r\n    <tr>\r\n      <td>22</td>\r\n      <td>-</td>\r\n      <td>Lat</td>\r\n    </tr>\r\n    <tr>\r\n      <td>56</td>\r\n      <td>T</td>\r\n      <td>Lon</td>\r\n    </tr>\r\n</table>",
+                  			"children": [
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "\r\n    ",
+                  					"start": 1087,
+                  					"end": 1092,
+                  					"length": 6
+                  				},
+                  				{
+                  					"name": "tr",
+                  					"children": [],
+                  					"content": "<tr>\r\n      <th>A</th>\r\n      <th>S</th>\r\n      <th>L</th>\r\n    </tr>",
+                  					"start": 1093,
+                  					"end": 1093,
+                  					"length": 1
+                  				},
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "\r\n    ",
+                  					"start": 1094,
+                  					"end": 1099,
+                  					"length": 6
+                  				},
+                  				{
+                  					"name": "tr",
+                  					"children": [],
+                  					"content": "<tr>\r\n      <td>22</td>\r\n      <td>-</td>\r\n      <td>Lat</td>\r\n    </tr>",
+                  					"start": 1100,
+                  					"end": 1100,
+                  					"length": 1
+                  				},
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "\r\n    ",
+                  					"start": 1101,
+                  					"end": 1106,
+                  					"length": 6
+                  				},
+                  				{
+                  					"name": "tr",
+                  					"children": [],
+                  					"content": "<tr>\r\n      <td>56</td>\r\n      <td>T</td>\r\n      <td>Lon</td>\r\n    </tr>",
+                  					"start": 1107,
+                  					"end": 1107,
+                  					"length": 1
+                  				},
+                  				{
+                  					"name": "text",
+                  					"children": [],
+                  					"content": "\r\n",
+                  					"start": 1108,
+                  					"end": 1109,
+                  					"length": 2
+                  				}
+                  			],
+                  			"content": "<table style=\"width:100%\" id=\"ch1tbl1\">",
                   			"start": 1087,
-                  			"end": 1087,
-                  			"length": 1
+                  			"end": 1109,
+                  			"length": 23
                   		},
                   		{
                   			"name": "text",
                   			"children": [],
                   			"content": "\r\n",
-                  			"start": 1088,
-                  			"end": 1089,
+                  			"start": 1110,
+                  			"end": 1111,
                   			"length": 2
                   		}
                   	],
                   	"content": "",
                   	"start": 0,
-                  	"end": 1089,
-                  	"length": 1090
+                  	"end": 1111,
+                  	"length": 1112
                   }
 
 fs.readFile(filePath, 'utf8', function (err, data) {
@@ -407,7 +489,7 @@ function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
 }
 
 function testContentSize(tree) {
-    console.assert(tree.getLength() == 1090, "content size not as expected")
+    console.assert(tree.getLength() == 1112, "content size not as expected")
 }
 
 function inorderLeaves(node) {
@@ -423,13 +505,13 @@ function inorderLeaves(node) {
 }
 
 function testNextLeaf(tree) {
-    console.log("testing next leaf")
+    //console.log("testing next leaf")
     var expectedLeaves = inorderLeaves(tree)
 
     var leaf = tree.nextLeaf()
     var i = 0
     while (leaf != null) {
-      leaf.prettyPrint()
+      //leaf.prettyPrint()
       console.assert(leaf == expectedLeaves[i], "next leafs wrong result")
       leaf = leaf.nextLeaf()
       i = i + 1
@@ -450,7 +532,7 @@ function testPreviousLeaf(tree) {
     var leaf = getLastLeaf(tree)
     var i = expectedLeaves.length - 1
     while (leaf != null) {
-      leaf.prettyPrint()
+      //leaf.prettyPrint()
       console.assert(leaf == expectedLeaves[i], "previous leafs wrong result")
       leaf = leaf.previousLeaf()
       i = i - 1
@@ -488,7 +570,7 @@ function testLeafAtPosition(tree) {
 function testFindSpaceAfter(tree) {
     var space = tree.findSpaceAfter(0)
     while (space != tree.getDocumentEnd()) {
-      console.log(space)
+      //console.log(space)
       space = tree.findSpaceAfter(space)
     }
     // we should be able to go over the whole document through conseccutive spaces
@@ -499,7 +581,7 @@ function testFindSpaceBefore(tree) {
     var space = tree.findSpaceBefore(tree.getDocumentEnd())
 
     while (space != 0) {
-      console.log(space)
+      //console.log(space)
       space = tree.findSpaceBefore(space)
     }
     // we should be able to go over the whole document through preceeding spaces
@@ -522,8 +604,8 @@ function testFindSpacesBothWays(tree) {
       space = tree.findSpaceBefore(space)
     }
 
-    console.log(spacesAfter)
-    console.log(spacesBefore)
+    //console.log(spacesAfter)
+    //console.log(spacesBefore)
 
     console.assert(spacesAfter.length == spacesBefore.length, "number of spaces found in document traversal do not match")
     for (var i = 0; i < spacesAfter.length && i < spacesBefore.length; i++) {
@@ -536,8 +618,8 @@ function testCopySection(tree) {
         "  <p class=\"simple_text\">Test if we can parse document to a tree of nodes. Leaves hold content. Leaves can be text nodes, images, empty tags and maybe tables.</p>"
 
     var part = tree.copy(355, 506)
-    part.prettyPrint()
-    console.log(part.getContent())
+    //part.prettyPrint()
+    //console.log(part.getContent())
     console.assert(part.getContent() == expectedSubtree, "copied subtree does not match expected")
 }
 
@@ -546,9 +628,9 @@ function testCopy(tree) {
     var middleChildEnd = tree.children[middleChildIndex].end
 
     var copy1 = tree.copy(tree.start, middleChildEnd)
-    copy1.prettyPrint()
+    //copy1.prettyPrint()
     var copy2 = tree.copy(middleChildEnd + 1, tree.end)
-    copy2.prettyPrint()
+    //copy2.prettyPrint()
 
     console.assert(copy1.getContent() + copy2.getContent() == tree.getContent(), "two halves merged do not match original")
 }

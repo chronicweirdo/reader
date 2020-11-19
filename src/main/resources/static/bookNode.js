@@ -29,7 +29,7 @@ function isVoidElement(tagName) {
   return VOID_ELEMENTS.includes(tagName.toLowerCase())
 }
 
-var LEAF_ELEMENTS = ["img", "table"]
+var LEAF_ELEMENTS = ["img", "tr"]
 
 function shouldBeLeafElement(tagName) {
   return LEAF_ELEMENTS.includes(tagName.toLowerCase())

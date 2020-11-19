@@ -32,8 +32,9 @@ class TestBookNode {
   @Test
   def testContentSize() = {
     val tree = parseTree()
+    tree.prettyPrint()
 
-    assert(tree.getLength() == 1090)
+    assert(tree.getLength() == 1112)
   }
 
   @Test
@@ -43,7 +44,7 @@ class TestBookNode {
     val tree = treeOption.get
 
     assert(tree.start == 10)
-    assert(tree.end == 1099)
+    assert(tree.end == 1121)
   }
 
 
@@ -249,5 +250,7 @@ class TestBookNode {
 
     val treeString = mapper.writeValueAsString(tree)
     println(treeString)
+    assert(treeString != null)
+    assert(treeString.length > 0)
   }
 }
