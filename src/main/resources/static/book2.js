@@ -210,15 +210,7 @@ function compute(section, start) {
     tryForPage(firstEnd, firstEnd)
 }
 
-function showSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.visibility = "visible"
-}
 
-function hideSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.visibility = "hidden"
-}
 
 function fixComponentHeights() {
     var height = getViewportHeight()
@@ -241,27 +233,11 @@ function fixComponentHeights() {
     document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
 }
 
-function hideTools() {
-    var tools = document.getElementById("ch_tools_container")
-    tools.style.display = "none"
-}
 
-function toggleTools(left) {
+
+function prepareBookTools() {
     var tools = document.getElementById("ch_tools")
-    if (left) {
-        tools.className = "left"
-    } else {
-        tools.className = "right"
-    }
-    var toolsContainer = document.getElementById("ch_tools_container")
-    if (toolsContainer.style.display == "block") {
-        toolsContainer.style.display = "none"
-    } else {
-        toolsContainer.style.display = "block"
-    }
-    // scroll tools to max position on start
-    tools.scrollTop = tools.scrollHeight
-    //
+
     var links = tools.getElementsByTagName("a")
     var chapters = []
     for (var i = 0; i < links.length; i++) {
@@ -306,8 +282,8 @@ window.onload = function() {
     enableGesturesOnElement(document.getElementById("ch_next"), {
         "clickAction": (x, y) => nextPage()
     })
-    document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
-    document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
+    document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true, prepareBookTools))
+    document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
 
     var startPosition = num(getMeta("startPosition"))

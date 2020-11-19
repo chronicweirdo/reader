@@ -405,41 +405,6 @@ function goToNextView() {
     }
 }
 
-function showSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "block"
-}
-
-function hideSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "none"
-}
-
-function showTools() {
-    var tools = document.getElementById("tools")
-    tools.style.visibility = "visible"
-}
-
-function hideTools() {
-    var tools = document.getElementById("tools")
-    tools.style.visibility = "hidden"
-}
-
-function toggleTools(left) {
-    var tools = document.getElementById("tools")
-    if (left) {
-        tools.className = "left"
-    } else {
-        tools.className = "right"
-    }
-    var toolsContainer = document.getElementById("toolsContainer")
-    if (toolsContainer.style.visibility == "hidden") {
-        toolsContainer.style.visibility = "visible"
-    } else {
-        toolsContainer.style.visibility = "hidden"
-    }
-}
-
 function goToPreviousView() {
     if (isBeginningOfRow()) {
         if (isBeginningOfColumn()) {
@@ -554,7 +519,7 @@ window.onload = function() {
     // panAction(deltaX, deltaY)
     var originalZoom = null
 
-    enableGesturesOnElement(document.getElementById("canv"), {
+    enableGesturesOnElement(document.getElementById("ch_canv"), {
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
@@ -563,7 +528,7 @@ window.onload = function() {
         "panAction": touchGesturePan
     })
 
-    enableGesturesOnElement(document.getElementById("prev"), {
+    enableGesturesOnElement(document.getElementById("ch_prev"), {
         "clickAction": (x, y) => goToPreviousView(),
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
@@ -572,7 +537,7 @@ window.onload = function() {
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
-    enableGesturesOnElement(document.getElementById("next"), {
+    enableGesturesOnElement(document.getElementById("ch_next"), {
         "clickAction": (x, y) => goToNextView(),
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
@@ -582,9 +547,9 @@ window.onload = function() {
         "panAction": touchGesturePan
     })
 
-    document.getElementById("toolsButtonLeft").addEventListener("click", (event) => toggleTools(true))
-    document.getElementById("toolsButtonRight").addEventListener("click", (event) => toggleTools(false))
-    document.getElementById("toolsContainer").addEventListener("click", (event) => toggleTools())
+    document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
+    document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
+    document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
 
     addPagenumTriggerListener()
 

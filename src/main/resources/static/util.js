@@ -45,3 +45,38 @@ function getViewportWidth() {
 function getViewportHeight() {
     return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 }
+
+function showSpinner() {
+    var spinner = document.getElementById("ch_spinner")
+    spinner.style.display = "block"
+}
+
+function hideSpinner() {
+    var spinner = document.getElementById("ch_spinner")
+    spinner.style.display = "none"
+}
+
+function hideTools() {
+    var tools = document.getElementById("ch_tools_container")
+    tools.style.display = "none"
+}
+
+function toggleTools(left, prepareToolsView) {
+    var tools = document.getElementById("ch_tools")
+    if (left) {
+        tools.className = "left"
+    } else {
+        tools.className = "right"
+    }
+    var toolsContainer = document.getElementById("ch_tools_container")
+    if (toolsContainer.style.display == "block") {
+        toolsContainer.style.display = "none"
+    } else {
+        toolsContainer.style.display = "block"
+    }
+    // scroll tools to max position on start
+    tools.scrollTop = tools.scrollHeight
+    if (prepareToolsView != null) {
+        prepareToolsView()
+    }
+}
