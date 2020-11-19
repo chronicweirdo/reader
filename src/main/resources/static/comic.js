@@ -424,6 +424,7 @@ function goToPreviousView() {
 
 
 function handleResize() {
+    fixComponentHeights()
     updateMinimumZoom()
     updateImage()
 }

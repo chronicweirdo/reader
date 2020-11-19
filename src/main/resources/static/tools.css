@@ -77,15 +77,12 @@
 #ch_spinner {
     display: none;
     position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 5%;
-    height: 5%;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a1a77;
 }
 
 #ch_spinner svg {
-    width: 100%;
-    height: 100%
 }
 
 #ch_tools_left {
