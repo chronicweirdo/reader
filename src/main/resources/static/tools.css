@@ -11,19 +11,17 @@
     font-size: 3vh;
     font-family: Arial, Helvetica, sans-serif;
     overflow-y: auto;
-    margin-left: 10vw;
-    margin-right: 10vw;
+    margin-left: 10%;
+    margin-right: 10%;
     display: block;
     max-height: 100%;
     position: fixed;
 }
 
 #ch_tools.left {
-    left: 10vw;
     text-align: left;
 }
 #ch_tools.right {
-    right: 10vw;
     text-align: right;
 }
 #ch_tools > p {
@@ -81,8 +79,8 @@
     position: fixed;
     bottom: 0;
     right: 0;
-    width: 5vw;
-    height: 5vw;
+    width: 5%;
+    height: 5%;
 }
 
 #ch_spinner svg {
@@ -93,16 +91,16 @@
 #ch_tools_left {
     bottom: 0;
     left: 0;
-    width: 10vw;
-    height: 10vh;
+    width: 10%;
+    height: 10%;
     background-color: #ff00ff99;
     position: fixed;
 }
 #ch_tools_right {
     bottom: 0;
     right: 0;
-    width: 10vw;
-    height: 10vh;
+    width: 10%;
+    height: 10%;
     background-color: #00ffff99;
     position: fixed;
 }
@@ -110,16 +108,16 @@
 #ch_prev {
     top: 0;
     left: 0;
-    width: 10vw;
-    height: 90vh;
+    width: 10%;
+    height: 90%;
     background-color: #ff000099;
     position: fixed;
 }
 #ch_next {
     top: 0;
     right: 0;
-    width: 10vw;
-    height: 90vh;
+    width: 10%;
+    height: 90%;
     background-color: #00ff0099;
     position: fixed;
 }

@@ -11,19 +11,16 @@ body {
     -khtml-user-select: none; /* webkit (konqueror) browsers */
     -ms-user-select: none; /* IE10+ */
 }
-#prev, #next, #toolsButtonLeft, #toolsButtonRight, #canv {
+
+#ch_canv {
     display: block;
     position: fixed;
-}
-
-#canv {
     top: 0;
-    left: 10vw;
-    width: 80vw;
-    height: 100vh;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    background-color: #99990099;
 }
-
-
 
 img {
     position: fixed;

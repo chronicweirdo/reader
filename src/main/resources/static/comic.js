@@ -502,6 +502,7 @@ function touchGesturePan(deltaX, deltaY) {
 }
 
 window.onload = function() {
+    fixComponentHeights()
     enableKeyboardGestures({
         "upAction": () => pan(0, getViewportHeight() / 2),
         "downAction": () => pan(0, - (getViewportHeight() / 2)),
