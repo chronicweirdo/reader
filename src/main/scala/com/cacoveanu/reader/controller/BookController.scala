@@ -2,6 +2,7 @@ package com.cacoveanu.reader.controller
 
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.util
 
 import com.cacoveanu.reader.entity.{Content, Setting}
 import com.cacoveanu.reader.service.{BookService, ContentService, SettingService}
@@ -16,6 +17,7 @@ import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 import org.springframework.ui.Model
 
 import scala.beans.BeanProperty
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 
 @Controller
@@ -99,6 +101,8 @@ class BookController @Autowired()(private val contentService: ContentService,
         model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
         model.addAttribute("bookStart", 0)
         model.addAttribute("bookEnd", book.size - 1)
+        val uiToc: util.List[UiToc] = book.toc.asScala.map(e => UiToc(e.index, e.title, e.position)).sortBy(_.position).asJava
+        model.addAttribute("tableOfContents", uiToc)
         "book"
       case None => "" // todo: throw some error!
     }
@@ -144,3 +148,5 @@ class BookController @Autowired()(private val contentService: ContentService,
   }
 
 }
+
+case class UiToc(@BeanProperty index: Int, @BeanProperty title: String, @BeanProperty position: Int)

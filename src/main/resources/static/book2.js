@@ -305,6 +305,26 @@ function fixComponentHeights() {
     document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
 }
 
+function hideTools() {
+    var tools = document.getElementById("ch_tools_container")
+    tools.style.display = "none"
+}
+
+function toggleTools(left) {
+    var tools = document.getElementById("ch_tools")
+    if (left) {
+        tools.className = "left"
+    } else {
+        tools.className = "right"
+    }
+    var toolsContainer = document.getElementById("ch_tools_container")
+    if (toolsContainer.style.display == "block") {
+        toolsContainer.style.display = "none"
+    } else {
+        toolsContainer.style.display = "block"
+    }
+}
+
 window.onload = function() {
     // fix viewport height
     fixComponentHeights()
@@ -319,6 +339,9 @@ window.onload = function() {
     enableGesturesOnElement(document.getElementById("ch_next"), {
         "clickAction": (x, y) => nextPage()
     })
+    document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
+    document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
+    document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
 
     var startPosition = num(getMeta("startPosition"))
     console.log("start position: " + startPosition)

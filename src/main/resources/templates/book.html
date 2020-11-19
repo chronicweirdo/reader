@@ -27,8 +27,11 @@
 <div id="ch_tools_right"></div>
 <div id="ch_shadow_content"></div>
 <div id="ch_content"></div>
-<div id="toolsContainer" style="visibility: hidden; display: none">
-    <div id="tools">
+<div id="ch_tools_container">
+    <div id="ch_tools">
+        <ol>
+            <li th:each="entry: ${tableOfContents}"><a th:onclick="'displayPageFor(' + ${entry.position} + ')'" th:text="${entry.title}">chapter</a></li>
+        </ol>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <p><span th:text="${title}">Book Title</span></p>
         <p><a onclick="goBack()">back</a></p>
