@@ -23,6 +23,29 @@ function scrollNecessary(el) {
     return sn*/
 }
 
+function scrollNecessaryAsync(el, trueCallback, falseCallback) {
+    var images = el.getElementsByTagName('img')
+    var imageCount = images.length
+    if (imageCount > 0) {
+        var loadedImages = 0
+        for (var i = 0; i < imageCount; i++) {
+            var imageResolvedFunction = function() {
+                loadedImages = loadedImages + 1
+                console.log("loaded images: " + loadedImages + " of " + imageCount)
+                if (loadedImages == imageCount) {
+                    if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) trueCallback()
+                    else falseCallback()
+                }
+            }
+            images[i].onload = imageResolvedFunction
+            images[i].onerror = imageResolvedFunction
+        }
+    } else {
+        if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) trueCallback()
+        else falseCallback()
+    }
+}
+
 function getZoom() {
     if (document.bookZoom) {
         return document.bookZoom
@@ -182,22 +205,57 @@ function computePagesForSection(position) {
     })
 }
 
+function savePage(start, end) {
+    if (document.savedPages == null) {
+        document.savedPages = []
+    }
+    document.savedPages.push({start: start, end: end})
+}
+
 function compute(section, start) {
     console.log("computing pages for section " + section.start + " position " + start)
     var shadowContent = document.getElementById("ch_shadow_content")
     shadowContent.innerHTML = ""
 
-    var previousEnd = start
-    var end = section.findSpaceAfter(start)
-    console.log("trying end " + end)
-    shadowContent.innerHTML = section.copy(start, end).getContent()
-    while (scrollNecessary(shadowContent) == false && end < section.end) {
+    //var previousEnd = start
+    var firstEnd = section.findSpaceAfter(start)
+    //console.log("trying end " + end)
+    //shadowContent.innerHTML = section.copy(start, end).getContent()
+
+    var tryForPage = function(previousEnd, end) {
+        shadowContent.innerHTML = section.copy(start, end).getContent()
+        scrollNecessaryAsync(shadowContent,
+            function() {
+                // we have found our page, it ends at previousEnd
+                savePage(start, previousEnd)
+                if (previousEnd < section.end) { // this check is probably not necessary
+                    // schedule computation for next page
+                    window.setTimeout(function() {
+                        compute(section, previousEnd + 1)
+                    }, 10)
+                }
+            },
+            function() {
+                // if possible, increase page and try again
+                if (end < section.end) {
+                    var newEnd = section.findSpaceAfter(end)
+                    tryForPage(end, newEnd)
+                } else {
+                    // we are at the end of the section, this is the last page
+                    savePage(start, end)
+                }
+            }
+        )
+    }
+    tryForPage(firstEnd, firstEnd)
+
+    /*while (scrollNecessary(shadowContent) == false && end < section.end) {
         previousEnd = end
         end = section.findSpaceAfter(end)
         console.log("trying end " + end)
         shadowContent.innerHTML = section.copy(start, end).getContent()
     }
-    if (end < section.end) {
+    if (end < section.end && previousEnd > start) {
         end = previousEnd
     }
 
@@ -213,7 +271,7 @@ function compute(section, start) {
         window.setTimeout(function() {
             compute(section, end + 1)
         }, 10)
-    }
+    }*/
 }
 
 function showSpinner() {
