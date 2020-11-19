@@ -6,7 +6,6 @@ function scrollNecessary(el) {
         for (var i = 0; i < imageCount; i++) {
             var imageResolvedFunction = function() {
                 loadedImages = loadedImages + 1
-                console.log("loaded images: " + loadedImages + " of " + imageCount)
                 if (loadedImages == imageCount) {
                     return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
                 }
@@ -17,10 +16,6 @@ function scrollNecessary(el) {
     } else {
         return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
     }
-    /*
-    var sn = el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
-    console.log("scroll necessary: " + sn)
-    return sn*/
 }
 
 function scrollNecessaryAsync(el, trueCallback, falseCallback) {
@@ -31,7 +26,6 @@ function scrollNecessaryAsync(el, trueCallback, falseCallback) {
         for (var i = 0; i < imageCount; i++) {
             var imageResolvedFunction = function() {
                 loadedImages = loadedImages + 1
-                console.log("loaded images: " + loadedImages + " of " + imageCount)
                 if (loadedImages == imageCount) {
                     if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) trueCallback()
                     else falseCallback()
@@ -79,21 +73,14 @@ function getPageFor(position) {
 
 function getContentFor(start, end, callback) {
     if (document.section != null && document.section.start <= start && start <= end && end <= document.section.end) {
-        console.log("we have the content")
         if (callback != null) {
             callback(document.section.copy(start, end).getContent())
         }
     } else {
-        console.log("we need to download the content")
-        // download section
         downloadSection(start, function(section) {
-            console.log("we have now downloaded the content")
             document.section = section
-            console.log("we have saved the book section")
             if (document.section.start <= start && start <= end && end <= document.section.end) {
-                console.log("start stop check passed, invoking the callback")
                 if (callback != null) {
-                    console.log("callback is good, invoking now")
                     callback(document.section.copy(start, end).getContent())
                 }
             }
@@ -102,7 +89,6 @@ function getContentFor(start, end, callback) {
 }
 
 function displayPageFor(position, firstTry = true) {
-    console.log("displaying page " + position)
     showSpinner()
     var page = getPageFor(position)
     if (page == null) {
@@ -114,7 +100,6 @@ function displayPageFor(position, firstTry = true) {
             displayPageFor(position, false)
         }, 100)
     } else {
-        console.log("found page for " + position)
         getContentFor(page.start, page.end, function(text) {
             var content = document.getElementById("ch_content")
             content.innerHTML = text
@@ -157,29 +142,9 @@ function downloadSection(position, callback) {
         if (this.readyState == 4 && this.status == 200) {
             var jsonObj = JSON.parse(this.responseText)
             var node = convert(jsonObj)
-            /*document.getElementById("ch_load_buffer").innerHTML = node.getContent()
-            var images = document.getElementById('ch_load_buffer').getElementsByTagName('img')
-            var imageCount = images.length
-            if (imageCount > 0) {
-                var loadedImages = 0
-                for (var i = 0; i < imageCount; i++) {
-                    var imageResolvedFunction = function() {
-                        loadedImages = loadedImages + 1
-                        console.log("loaded images: " + loadedImages + " of " + imageCount)
-                        if (loadedImages == imageCount) {
-                            if (callback != null) {
-                                callback(node)
-                            }
-                        }
-                    }
-                    images[i].onload = imageResolvedFunction
-                    images[i].onerror = imageResolvedFunction
-                }
-            } else {*/
-                if (callback != null) {
-                    callback(node)
-                }
-            //}
+            if (callback != null) {
+                callback(node)
+            }
         }
     }
     xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position, true)
@@ -213,14 +178,8 @@ function savePage(start, end) {
 }
 
 function compute(section, start) {
-    console.log("computing pages for section " + section.start + " position " + start)
     var shadowContent = document.getElementById("ch_shadow_content")
     shadowContent.innerHTML = ""
-
-    //var previousEnd = start
-    var firstEnd = section.findSpaceAfter(start)
-    //console.log("trying end " + end)
-    //shadowContent.innerHTML = section.copy(start, end).getContent()
 
     var tryForPage = function(previousEnd, end) {
         shadowContent.innerHTML = section.copy(start, end).getContent()
@@ -247,31 +206,8 @@ function compute(section, start) {
             }
         )
     }
+    var firstEnd = section.findSpaceAfter(start)
     tryForPage(firstEnd, firstEnd)
-
-    /*while (scrollNecessary(shadowContent) == false && end < section.end) {
-        previousEnd = end
-        end = section.findSpaceAfter(end)
-        console.log("trying end " + end)
-        shadowContent.innerHTML = section.copy(start, end).getContent()
-    }
-    if (end < section.end && previousEnd > start) {
-        end = previousEnd
-    }
-
-    // store page
-    if (document.savedPages == null) {
-        document.savedPages = []
-    }
-    console.log("going with end " + end)
-    document.savedPages.push({start: start, end: end})
-
-    if (end < section.end) {
-        // schedule computation for the next page
-        window.setTimeout(function() {
-            compute(section, end + 1)
-        }, 10)
-    }*/
 }
 
 function showSpinner() {
@@ -323,6 +259,34 @@ function toggleTools(left) {
     } else {
         toolsContainer.style.display = "block"
     }
+    // scroll tools to max position on start
+    tools.scrollTop = tools.scrollHeight
+    //
+    var links = tools.getElementsByTagName("a")
+    var chapters = []
+    for (var i = 0; i < links.length; i++) {
+        links[i].classList.remove("ch_current")
+        if (links[i].classList.contains("ch_chapter")) {
+            chapters.push(links[i])
+        }
+    }
+    console.log(chapters)
+    var currentChapter = chapters.length - 1
+    for (var i = 1; i < chapters.length; i++) {
+        var position = parseInt(chapters[i].getAttribute("ch_position"))
+        console.log(position)
+        if (position > document.currentPage.end) {
+            currentChapter = i - 1
+            break
+        }
+    }
+    console.log(currentChapter)
+    chapters[currentChapter].classList.add("ch_current")
+}
+
+function displayPageForTocEntry(entry) {
+    var position = parseInt(entry.getAttribute("ch_position"))
+    displayPageFor(position)
 }
 
 window.onload = function() {
@@ -344,7 +308,6 @@ window.onload = function() {
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
 
     var startPosition = num(getMeta("startPosition"))
-    console.log("start position: " + startPosition)
 
     displayPageFor(parseInt(getMeta("startPosition")))
 }

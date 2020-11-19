@@ -82,3 +82,15 @@
 
     cursor: pointer;
 }
+
+#ch_tools > p > a.ch_current {
+    color: black;
+    background-color: red;
+    border: 2px solid white;
+
+    text-align: center;
+    text-decoration: none;
+    min-width: 1.5em;
+
+    cursor: pointer;
+}
