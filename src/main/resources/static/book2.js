@@ -235,7 +235,7 @@ function prepareBookTools() {
         var position = parseInt(chapters[i].getAttribute("ch_position"))
         var chapterEndPosition = bookEnd
         if (i < chapters.length - 1) chapterEndPosition = parseInt(chapters[i+1].getAttribute("ch_position"))
-        if (position <= document.currentPage.start && document.currentPage.end <= chapterEndPosition) {
+        if (position <= document.currentPage.start && document.currentPage.start <= chapterEndPosition) {
             currentChapter = i
             break
         }
