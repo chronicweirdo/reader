@@ -132,3 +132,46 @@ function removeProgress() {
     xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"), true)
     xhttp.send()
 }
+
+function updatePositionInput(position) {
+    document.getElementById("positionInput").value = position
+}
+
+function getPositionInput() {
+    return num(document.getElementById("positionInput").value)
+}
+
+function addPositionInputTriggerListener(loadPositionFunction) {
+    var positionInput = document.getElementById("positionInput")
+    var max = positionInput.max
+    var min = positionInput.min
+
+    var loadPosition = function() {
+        var desiredPosition = getPositionInput()
+        if (desiredPosition < min) loadPositionFunction(min)
+        else if (desiredPosition > max) loadPositionFunction(max)
+        else loadPositionFunction(desiredPosition)
+    }
+
+    positionInput.addEventListener('keyup', function (e) {
+        e.preventDefault()
+        if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
+            window.clearTimeout(document.pageChangeTimeout)
+            document.pageChangeTimeout = null
+        }
+        if (e.keyCode === 13) {
+            // if enter, search
+            loadPosition()
+        } else {
+            // if other key, wait to see if finished typing
+            document.pageChangeTimeout = window.setTimeout(loadPosition, 1000)
+        }
+    })
+    positionInput.addEventListener('click', function (e) {
+        e.stopPropagation()
+    })
+    positionInput.addEventListener('mouseup', function (e) {
+        e.preventDefault()
+        loadPosition()
+    })
+}

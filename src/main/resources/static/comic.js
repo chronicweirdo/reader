@@ -143,11 +143,9 @@ function fitPageToScreen() {
 function setPage(page) {
     if (page < 1) page = 1
     if (page > document.comicMaximumPages) page = document.comicMaximumPages
-    document.getElementById("pagenum").value = page
+    updatePositionInput(page)
 }
-function getPage() {
-    return num(document.getElementById("pagenum").value)
-}
+
 function setImageWidth(width) {
     getImage().width = width
 }
@@ -263,7 +261,7 @@ function downloadImageData(page, callback) {
 }
 
 function updateDownloadUrl() {
-    var url = "downloadPage?id=" + getBookId() + "&page=" + (getPage()-1)
+    var url = "downloadPage?id=" + getBookId() + "&page=" + (getPositionInput()-1)
     var downloadLink = document.getElementById("downloadPageButton")
     downloadLink.href = url
 }
@@ -369,16 +367,16 @@ function getBookId() {
 }
 
 function goToNextPage() {
-    if (getPage() < document.comicMaximumPages) {
-        displayPage(getPage() + 1, function() {
+    if (getPositionInput() < document.comicMaximumPages) {
+        displayPage(getPositionInput() + 1, function() {
             updateImage()
         })
     }
 }
 
 function goToPreviousPage() {
-    if (getPage() > 1) {
-        displayPage(getPage() - 1, function() {
+    if (getPositionInput() > 1) {
+        displayPage(getPositionInput() - 1, function() {
             updateImage()
         })
     }
@@ -423,35 +421,9 @@ function handleResize() {
     updateImage()
 }
 
-function jumpToPage() {
-    var page = getPage()
+function jumpToPage(page) {
     displayPage(page, function() {
         updateImage()
-    })
-}
-
-function addPagenumTriggerListener() {
-    var pagenum = document.getElementById("pagenum")
-    pagenum.addEventListener('keyup', function (e) {
-        e.preventDefault()
-        if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
-            window.clearTimeout(document.pageChangeTimeout)
-            document.pageChangeTimeout = null
-        }
-        if (e.keyCode === 13) {
-            // if enter, search
-            jumpToPage()
-        } else {
-            // if other key, wait to see if finished typing
-            document.pageChangeTimeout = window.setTimeout(jumpToPage, 1000)
-        }
-    })
-    pagenum.addEventListener('click', function (e) {
-        e.stopPropagation()
-    })
-    pagenum.addEventListener('mouseup', function (e) {
-        e.preventDefault()
-        jumpToPage()
     })
 }
 
@@ -534,7 +506,7 @@ window.onload = function() {
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
 
-    addPagenumTriggerListener()
+    addPositionInputTriggerListener(jumpToPage)
 
     document.bookId = getMeta("bookId")
     document.bookTitle = getMeta("bookTitle")
