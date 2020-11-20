@@ -110,6 +110,8 @@ function displayPageFor(position, firstTry = true) {
             } else {
                 saveProgress(getMeta("bookId"), page.start)
             }
+            updatePositionInput(page.start)
+
             hideSpinner()
         })
     }
@@ -252,7 +254,6 @@ window.onload = function() {
     // fix viewport height
     fixComponentHeights()
 
-
     // other page controls heights need to be fixed like this too
 
 
@@ -265,6 +266,8 @@ window.onload = function() {
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true, prepareBookTools))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
+
+    addPositionInputTriggerListener(displayPageFor)
 
     var startPosition = num(getMeta("startPosition"))
 
