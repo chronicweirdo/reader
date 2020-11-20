@@ -248,12 +248,6 @@ function cacheContains(page) {
     }
 }
 
-function markComicProgress(page) {
-    var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "markProgress?id=" + getComicId() + "&position=" + (page-1), true)
-    xhttp.send()
-}
-
 function downloadImageData(page, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
@@ -294,7 +288,7 @@ function displayPage(page, callback) {
             var img = getImage()
             img.onload = function() {
                 setPage(page)
-                markComicProgress(page)
+                saveProgress(getComicId(), page-1)
                 setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
                 setImageWidth(getOriginalImageWidth())
                 setImageHeight(getOriginalImageHeight())

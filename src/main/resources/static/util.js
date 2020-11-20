@@ -113,3 +113,9 @@ function fixComponentHeights() {
 function goHome() {
     window.location = "/"
 }
+
+function saveProgress(bookId, position) {
+    var xhttp = new XMLHttpRequest()
+    xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position), true)
+    xhttp.send()
+}

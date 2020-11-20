@@ -104,6 +104,12 @@ function displayPageFor(position, firstTry = true) {
             var content = document.getElementById("ch_content")
             content.innerHTML = text
             document.currentPage = page
+            // if book end is displayed, we mark the book as read
+            if (page.end == parseInt(getMeta("bookEnd"))) {
+                saveProgress(getMeta("bookId"), page.end)
+            } else {
+                saveProgress(getMeta("bookId"), page.start)
+            }
             hideSpinner()
         })
     }
@@ -209,12 +215,6 @@ function compute(section, start) {
     var firstEnd = section.findSpaceAfter(start)
     tryForPage(firstEnd, firstEnd)
 }
-
-
-
-
-
-
 
 function prepareBookTools() {
     var tools = document.getElementById("ch_tools")

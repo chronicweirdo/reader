@@ -25,30 +25,16 @@ class Progress {
   @OnDelete(action = OnDeleteAction.CASCADE)
   var book: Book = _
 
-  var section: String = _
-
   var position: Int = _
 
   var lastUpdate: Date = _
 
   var finished: Boolean = _
 
-  @Transient
-  def getPositionInBook() = {
-    if (section != null && section.length > 0) {
-      val start = book.resources.asScala.find(e => EpubUtil.baseLink(e.path) == section).map(e => e.start.intValue()).getOrElse(0)
-
-      start + position
-    } else {
-      position
-    }
-  }
-
-  def this(user: Account, book: Book, section: String, position: Int, lastUpdate: Date, finished: Boolean) = {
+  def this(user: Account, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
     this.book = book
-    this.section = section
     this.position = position
     this.lastUpdate = lastUpdate
     this.finished = finished

@@ -50,21 +50,6 @@ class BookController @Autowired()(private val contentService: ContentService,
     case _ => ResponseEntity.notFound().build()
   }
 
-  @RequestMapping(Array("/positions_test"))
-  def getPositionsTest() = "positions_test"
-
-  val positionsTestBookId = 8891
-  val positionsTestBookPath = "text%2Fpart0005.html"
-
-  case class PositionsTestResponse(@BeanProperty content: String, @BeanProperty sizeWithoutSpaces: Int)
-
-  @RequestMapping(Array("/positions_test_computed_data"))
-  @ResponseBody
-  def getPositionsTestComputedData() = {
-    val content: Content = contentService.loadResource(positionsTestBookId, URLDecoder.decode(positionsTestBookPath, StandardCharsets.UTF_8.name())).get
-    HtmlUtil.positionsTestGet(content.data)
-  }
-
   @RequestMapping(Array("/book"))
   def getBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {

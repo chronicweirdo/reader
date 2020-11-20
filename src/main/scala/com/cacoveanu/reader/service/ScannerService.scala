@@ -74,7 +74,7 @@ class ScannerService {
       val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
       val matchedProgress = toDeleteProgress.flatMap(p =>
         findEquivalent(p.book, newBooks)
-          .map(newBook => new Progress(p.user, newBook, p.section, p.position, p.lastUpdate, p.finished))
+          .map(newBook => new Progress(p.user, newBook, p.position, p.lastUpdate, p.finished))
       )
       progressRepository.saveAll(matchedProgress.asJava)
       bookRepository.deleteAll(toDelete)
@@ -190,7 +190,7 @@ class ScannerService {
       val cover = EpubUtil.getCover(path)
       //val toc = EpubUtil.getToc(path)
       val (resources, links, toc) = EpubUtil.scanContentMetadata(path)
-      val size = resources.map(_.end).maxOption.map(_.intValue()).getOrElse(0) - resources.map(_.start).minOption.map(_.intValue()).getOrElse(0)
+      val size = resources.map(_.end).maxOption.map(_.intValue()).getOrElse(0) - resources.map(_.start).minOption.map(_.intValue()).getOrElse(0) + 1
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
