@@ -136,7 +136,8 @@ function handleResize() {
     fixComponentHeights()
     if (document.currentPage != null) {
         var position = document.currentPage.start
-        document.savedPages = []
+        //document.savedPages = []
+        loadCache()
         document.currentPage = null
         var content = document.getElementById("ch_content")
         content.innerHTML = ""
@@ -183,6 +184,7 @@ function savePage(start, end) {
         document.savedPages = []
     }
     document.savedPages.push({start: start, end: end})
+    // saveCache() // we probably should not update the cache with every page
 }
 
 function compute(section, start) {
@@ -210,6 +212,7 @@ function compute(section, start) {
                 } else {
                     // we are at the end of the section, this is the last page
                     savePage(start, end)
+                    saveCache() // only update cache once all pages for a section were computed
                 }
             }
         )
@@ -266,6 +269,11 @@ function getSavedZoom() {
     }
 }
 
+function getCacheKey() {
+    var pagesKey = getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSavedZoom()
+    return pagesKey
+}
+
 function increaseZoom(event) {
     console.log(event)
     var currentZoom = getSavedZoom()
@@ -275,6 +283,21 @@ function increaseZoom(event) {
 function decreaseZoom(event) {
     var currentZoom = getSavedZoom()
     setZoom(currentZoom - .1)
+}
+
+function loadCache() {
+    var cacheKey = getCacheKey()
+    var cache = window.localStorage.getItem(cacheKey)
+    if (cache != null) {
+        document.savedPages = JSON.parse(cache)
+    } else {
+        document.savedPages = []
+    }
+}
+
+function saveCache() {
+    var cacheKey = getCacheKey()
+    window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
 window.onload = function() {
@@ -307,6 +330,8 @@ window.onload = function() {
 
     var savedZoom = getSavedZoom()
     setZoom(savedZoom, false)
+
+    loadCache()
 
     var startPosition = num(getMeta("startPosition"))
 
