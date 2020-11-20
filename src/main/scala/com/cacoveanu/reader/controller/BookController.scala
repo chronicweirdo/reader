@@ -28,7 +28,6 @@ class BookController @Autowired()(private val contentService: ContentService,
   private def appendSettings(html: String): String = {
     val settings = Map("bookZoom" -> settingService.getSetting(Setting.BOOK_ZOOM))
     html.asHtml.addMeta(settings).asString
-    //HtmlUtil.addMeta(html, settings)
   }
 
   private def toResponseEntity(content: Option[Content]) = content match {

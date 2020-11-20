@@ -32,6 +32,7 @@
         <div class="ch_separator"></div>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <p><span th:text="${title}">Book Title</span></p>
+        <p><a id="ch_decrease_zoom">-</a><a id="ch_increase_zoom">+</a></p>
         <p><span>position</span><input id="positionInput" type="number" min="0" th:max="${size-1}"/><span>of</span><span th:text="${size-1}">20</span></p>
         <p><a onclick="goHome()">home</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>

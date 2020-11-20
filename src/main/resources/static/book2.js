@@ -250,6 +250,33 @@ function displayPageForTocEntry(entry) {
     displayPageFor(position)
 }
 
+function setZoom(zoom, withResize = true) {
+    var defaultZoom = 1.5
+    document.body.style["font-size"] = (zoom * defaultZoom) + "em"
+    window.localStorage.setItem("bookZoom", zoom)
+    if (withResize) handleResize()
+}
+
+function getSavedZoom() {
+    var savedZoomValue = window.localStorage.getItem("bookZoom")
+    if (savedZoomValue != null) {
+        return parseFloat(savedZoomValue)
+    } else {
+        return 1
+    }
+}
+
+function increaseZoom(event) {
+    console.log(event)
+    var currentZoom = getSavedZoom()
+    setZoom(currentZoom + .1)
+}
+
+function decreaseZoom(event) {
+    var currentZoom = getSavedZoom()
+    setZoom(currentZoom - .1)
+}
+
 window.onload = function() {
     // fix viewport height
     fixComponentHeights()
@@ -266,8 +293,20 @@ window.onload = function() {
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true, prepareBookTools))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
+    document.getElementById("ch_decrease_zoom").addEventListener("click", (event) => {
+        event.stopPropagation()
+        decreaseZoom()
+    })
+    document.getElementById("ch_increase_zoom").addEventListener("click", (event) => {
+        event.stopPropagation()
+        increaseZoom()
+    })
 
     addPositionInputTriggerListener(displayPageFor)
+
+
+    var savedZoom = getSavedZoom()
+    setZoom(savedZoom, false)
 
     var startPosition = num(getMeta("startPosition"))
 

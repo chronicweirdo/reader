@@ -472,7 +472,7 @@ window.onload = function() {
     // pinchStartAction(pinchCenterX, pinchCenterY)
     // pinchAction(currentZoom, pinchCenterX, pinchCenterY)
     // panAction(deltaX, deltaY)
-    var originalZoom = null
+    //var originalZoom = null
 
     enableGesturesOnElement(document.getElementById("ch_canv"), {
         "doubleClickAction": zoomJump,
