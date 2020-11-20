@@ -56,22 +56,6 @@ class BookController @Autowired()(private val contentService: ContentService,
   val positionsTestBookId = 8891
   val positionsTestBookPath = "text%2Fpart0005.html"
 
-  /*@RequestMapping(Array("/positions_test_data"))
-  @ResponseBody
-  def getPositionsTestData() = {
-    // book?id=8891&path=text%2Fpart0005.html&position=0
-    val bks = bookService.loadBooks
-    val i = Random.nextInt(bks.size)
-    val b = bks(i)
-    val si = Random.nextInt(b.getSections().size)
-    val s = b.getSections()(si)
-
-    //toResponseEntity(contentService.loadResource(positionsTestBookId, URLDecoder.decode(positionsTestBookPath, StandardCharsets.UTF_8.name())))
-    val content = contentService.loadResource(b.id, URLDecoder.decode(s.link, StandardCharsets.UTF_8.name())).get
-    val sizeWithoutSpaces = HtmlUtil.positionsTestGet(content.data)
-    PositionsTestResponse(new String(content.data, "UTF-8"), sizeWithoutSpaces)
-  }*/
-
   case class PositionsTestResponse(@BeanProperty content: String, @BeanProperty sizeWithoutSpaces: Int)
 
   @RequestMapping(Array("/positions_test_computed_data"))
@@ -80,14 +64,6 @@ class BookController @Autowired()(private val contentService: ContentService,
     val content: Content = contentService.loadResource(positionsTestBookId, URLDecoder.decode(positionsTestBookPath, StandardCharsets.UTF_8.name())).get
     HtmlUtil.positionsTestGet(content.data)
   }
-
-  /*@RequestMapping(Array("/book"))
-  @ResponseBody
-  def getBookResource(@RequestParam("id") bookId: java.lang.Long,
-                      @RequestParam("path") path: String,
-                      @RequestParam(name = "position", required = false) position: java.lang.Long) = {
-    toResponseEntity(contentService.loadResource(bookId, URLDecoder.decode(path, StandardCharsets.UTF_8.name())))
-  }*/
 
   @RequestMapping(Array("/book"))
   def getBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
@@ -134,11 +110,6 @@ class BookController @Autowired()(private val contentService: ContentService,
         case FileTypes.PDF =>
           new RedirectView(s"/comic?id=$bookId")
 
-        /*case FileTypes.EPUB => bookService.loadProgress(book) match {
-          case Some(progress) => new RedirectView(s"/book?id=$bookId&path=${progress.section}&position=${progress.position}")
-          //case None => new RedirectView(s"/book?id=$bookId&path=${book.getSections()(0).link}")
-          case None => new RedirectView(s"/book?id=$bookId&path=${book.resources.get(0).path}")
-        }*/
         case FileTypes.EPUB =>
           new RedirectView(s"/book?id=$bookId")
       }

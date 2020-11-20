@@ -16,6 +16,7 @@
     display: block;
     max-height: 100%;
     position: fixed;
+    width: 80%;
 }
 
 #ch_tools.left {
@@ -90,7 +91,6 @@
     left: 0;
     width: 10%;
     height: 10%;
-    background-color: #ff00ff99;
     position: fixed;
 }
 #ch_tools_right {
@@ -98,7 +98,6 @@
     right: 0;
     width: 10%;
     height: 10%;
-    background-color: #00ffff99;
     position: fixed;
 }
 
@@ -107,7 +106,6 @@
     left: 0;
     width: 10%;
     height: 90%;
-    background-color: #ff000099;
     position: fixed;
 }
 #ch_next {
@@ -115,7 +113,6 @@
     right: 0;
     width: 10%;
     height: 90%;
-    background-color: #00ff0099;
     position: fixed;
 }
 

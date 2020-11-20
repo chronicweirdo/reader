@@ -34,8 +34,6 @@ class ContentService {
   def loadResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
         .flatMap(book => FileUtil.getExtension(book.path) match {
-          /*case FileTypes.EPUB if resourcePath == "toc" =>
-            processResource(book, "toc", getBookTocHtml(book).getBytes(StandardCharsets.UTF_8))*/
           case FileTypes.EPUB =>
             val basePath = EpubUtil.baseLink(resourcePath)
             EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
@@ -61,11 +59,6 @@ class ContentService {
       </body>
     </html>).toString()
   }
-
-  /*private def findResourceByPosition(book: Book, position: Int) = {
-    book.resources.asScala.find(e => e.end >= position)
-      .map(tocEntry => EpubUtil.baseLink(tocEntry.path))
-  }*/
 
   def loadBookResource(bookId: java.lang.Long, position: java.lang.Long): BookNode = {
     bookRepository.findById(bookId).asScala match {

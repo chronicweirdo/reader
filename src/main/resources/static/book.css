@@ -25,9 +25,6 @@ html {
     position: fixed;
     word-wrap: break-word;
 }
-#ch_content {
-    background-color: #99990099;
-}
 
 #ch_shadow_content {
     visibility: hidden;

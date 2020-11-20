@@ -227,7 +227,6 @@ function prepareBookTools() {
             chapters.push(links[i])
         }
     }
-    console.log(chapters)
     var currentChapter = -1
     var bookEnd = parseInt(getMeta("bookEnd"))
     for (var i = 0; i < chapters.length; i++) {
