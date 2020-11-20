@@ -258,12 +258,12 @@ function downloadImageData(page, callback) {
             }
         }
     }
-    xhttp.open("GET", "imageData?id=" + getComicId() + "&page=" + (page-1), true)
+    xhttp.open("GET", "imageData?id=" + getBookId() + "&page=" + (page-1), true)
     xhttp.send()
 }
 
 function updateDownloadUrl() {
-    var url = "downloadPage?id=" + getComicId() + "&page=" + (getPage()-1)
+    var url = "downloadPage?id=" + getBookId() + "&page=" + (getPage()-1)
     var downloadLink = document.getElementById("downloadPageButton")
     downloadLink.href = url
 }
@@ -288,8 +288,8 @@ function displayPage(page, callback) {
             var img = getImage()
             img.onload = function() {
                 setPage(page)
-                saveProgress(getComicId(), page-1)
-                setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
+                saveProgress(getBookId(), page-1)
+                setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
                 setImageWidth(getOriginalImageWidth())
                 setImageHeight(getOriginalImageHeight())
                 setImageLeft(0)
@@ -364,8 +364,8 @@ function getPreviousPosition(imageDimension, viewportDimension, imageValue, view
     return proposedPreviousPosition
 }
 
-function getComicId() {
-    return document.comicId
+function getBookId() {
+    return document.bookId
 }
 
 function goToNextPage() {
@@ -536,12 +536,12 @@ window.onload = function() {
 
     addPagenumTriggerListener()
 
-    document.comicId = getMeta("comicId")
-    document.comicTitle = getMeta("comicTitle")
-    document.comicMaximumPages = num(getMeta("pages"))
+    document.bookId = getMeta("bookId")
+    document.bookTitle = getMeta("bookTitle")
+    document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
     setZoom(1.0)
-    var startPage = num(getMeta("startPage")) + 1
+    var startPage = num(getMeta("startPosition")) + 1
 
     displayPage(startPage, function() {
         var fit = getMeta("defaultFit")
