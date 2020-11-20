@@ -455,19 +455,6 @@ function addPagenumTriggerListener() {
     })
 }
 
-function removeProgress() {
-    var xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            if (this.status == 200) {
-                window.location = "/"
-            }
-        }
-    }
-    xhttp.open("DELETE", "removeProgress?id=" + document.comicId, true)
-    xhttp.send()
-}
-
 function goBack() {
     window.history.back();
 }

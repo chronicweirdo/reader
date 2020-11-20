@@ -3,7 +3,7 @@
     position: fixed;
     width: 100%;
     height: 100%;
-    background-color: #1a1a1a77;
+    background-color: #1a1a1add;
 }
 #ch_tools {
     display: block;
@@ -17,6 +17,13 @@
     max-height: 100%;
     position: fixed;
     width: 80%;
+}
+#ch_tools .ch_separator {
+    display: block;
+    width: 100%;
+    height: 4px;
+    background-color: white;
+    margin-bottom: .2em;
 }
 
 #ch_tools.left {
@@ -64,8 +71,8 @@
 }
 
 #ch_tools > p > a.ch_current {
-    color: black;
-    background-color: red;
+    color: gold;
+    background-color: black;
     border: 2px solid white;
 
     text-align: center;
@@ -80,7 +87,7 @@
     position: fixed;
     width: 100%;
     height: 100%;
-    background-color: #1a1a1a77;
+    background-color: #1a1a1add;
 }
 
 #ch_spinner svg {

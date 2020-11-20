@@ -119,3 +119,16 @@ function saveProgress(bookId, position) {
     xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position), true)
     xhttp.send()
 }
+
+function removeProgress() {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                window.location = "/"
+            }
+        }
+    }
+    xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"), true)
+    xhttp.send()
+}
