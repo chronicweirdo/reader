@@ -325,7 +325,7 @@ window.onload = function() {
         increaseZoom()
     })
 
-    addPositionInputTriggerListener(displayPageFor)
+    //addPositionInputTriggerListener(displayPageFor)
 
 
     var savedZoom = getSavedZoom()
