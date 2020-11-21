@@ -8,8 +8,6 @@ import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util._
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
@@ -45,20 +43,6 @@ class ContentService {
             None
         })
   }
-
-  /*private def getBookTocHtml(book: Book) = {
-    (<html>
-      <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>{book.title}</title>
-      </head>
-      <body>
-        {book.toc.asScala.sortBy(_.index).map(e => {
-        <p><a href={URLEncoder.encode(e.position.toString, StandardCharsets.UTF_8.name())}>{if (e.title != null && e.title.length > 0) e.title else e.index}</a></p>
-      })}
-      </body>
-    </html>).toString()
-  }*/
 
   def loadBookResource(bookId: java.lang.Long, position: java.lang.Long): BookNode = {
     bookRepository.findById(bookId).asScala match {

@@ -6,14 +6,12 @@ import java.util
 
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService}
-import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, HtmlUtil}
+import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 import org.springframework.ui.Model
 
 import scala.beans.BeanProperty
@@ -22,13 +20,7 @@ import scala.util.Random
 
 @Controller
 class BookController @Autowired()(private val contentService: ContentService,
-                                  private val bookService: BookService/*,
-                                  private val settingService: SettingService*/) {
-
-  /*private def appendSettings(html: String): String = {
-    val settings = Map("bookZoom" -> settingService.getSetting(Setting.BOOK_ZOOM))
-    html.asHtml.addMeta(settings).asString
-  }*/
+                                  private val bookService: BookService) {
 
   private def toResponseEntity(content: Option[Content]) = content match {
     case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) => // todo: probably not happening?

@@ -10,9 +10,6 @@ import com.cacoveanu.reader.entity.{BookLink, BookResource, BookTocEntry, Conten
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
-import org.jsoup.nodes.{Document, Element, Node, TextNode}
 
 import scala.collection.IterableOnce.iterableOnceExtensionMethods
 import scala.jdk.CollectionConverters._
@@ -83,41 +80,6 @@ object EpubUtil {
       case None => None
     }
 
-  /*private def computeStartPositionOfElements(doc: Document) = {
-    val body = doc.body()
-
-    def comp(el: Node): Int = {
-      if (el.isInstanceOf[TextNode]) {
-        val text = el.asInstanceOf[TextNode].text()
-        return text.length
-      } else {
-        var currentSize = 1
-        for (child <- el.childNodes().asScala) {
-          currentSize = currentSize + comp(child)
-        }
-        return currentSize
-      }
-    }
-    comp(body)
-  }*/
-
-  private def getSectionSize(epubPath: String, sectionPath: String) = {
-    val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
-    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
-      EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
-        //.flatMap(getXml)
-        .map(bytes => new String(bytes, "UTF-8"))
-        .map(text =>
-          text.asHtml.bodyText.length
-          /*computeStartPositionOfElements(text.asHtml)*/
-        )
-        //.map(html => (html \ "body").text.length)
-        .getOrElse(-1)
-    } else {
-      1
-    }
-  }
-
   def parseSection(epubPath: String, sectionPath: String, startPosition: Int = 0) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
@@ -181,19 +143,6 @@ object EpubUtil {
         bookLinks = bookLinks ++ parsedSection.getIds().map { case (id, pos) => (resourcePath + "#" + id, pos)}
       }
     }
-    //println(parsedResources)
-    /*val resourcesWithPosition = parsedResources.map { case (i, str, node) => (node.start, node.end, str)}
-    println("positions to resources:")
-    resourcesWithPosition.foreach(println)
-    println()
-    var linkToPosition = Map[String, Int]()
-    for (index <- parsedResources.indices) {
-      linkToPosition = linkToPosition + (parsedResources(index)._2 -> parsedResources(index)._3.start)
-      linkToPosition = linkToPosition ++ parsedResources(index)._3.getIds().map { case (id, pos) => (parsedResources(index)._2 + "#" + id, pos)}
-    }
-    println("links to positions:")
-    linkToPosition.foreach(println)
-    println()*/
 
     val toc = getTocFromNcx2(epubPath).getOrElse(Seq())
     val tocWithPositions = toc.map { case (index, title, link) => {
