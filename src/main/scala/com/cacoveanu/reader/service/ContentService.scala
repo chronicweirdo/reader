@@ -46,7 +46,7 @@ class ContentService {
         })
   }
 
-  private def getBookTocHtml(book: Book) = {
+  /*private def getBookTocHtml(book: Book) = {
     (<html>
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -58,7 +58,7 @@ class ContentService {
       })}
       </body>
     </html>).toString()
-  }
+  }*/
 
   def loadBookResource(bookId: java.lang.Long, position: java.lang.Long): BookNode = {
     bookRepository.findById(bookId).asScala match {
@@ -163,7 +163,7 @@ class ContentService {
     positions
   }
 
-  private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
+  /*private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
     val sections = book.resources.asScala.zipWithIndex
     val currentPath = EpubUtil.baseLink(resourcePath)
     val currentSection = sections.find(e => e._1.path == currentPath)
@@ -200,5 +200,5 @@ class ContentService {
       ))
       .asString
       .getBytes("UTF-8")
-  }
+  }*/
 }

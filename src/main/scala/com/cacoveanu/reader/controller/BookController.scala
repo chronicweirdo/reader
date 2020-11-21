@@ -22,17 +22,17 @@ import scala.util.Random
 
 @Controller
 class BookController @Autowired()(private val contentService: ContentService,
-                                  private val bookService: BookService,
-                                  private val settingService: SettingService) {
+                                  private val bookService: BookService/*,
+                                  private val settingService: SettingService*/) {
 
-  private def appendSettings(html: String): String = {
+  /*private def appendSettings(html: String): String = {
     val settings = Map("bookZoom" -> settingService.getSetting(Setting.BOOK_ZOOM))
     html.asHtml.addMeta(settings).asString
-  }
+  }*/
 
   private def toResponseEntity(content: Option[Content]) = content match {
-    case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) =>
-      ResponseEntity.ok().body(appendSettings(new String(bytes, "UTF-8")))
+    case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) => // todo: probably not happening?
+      ResponseEntity.ok().body(/*appendSettings(*/new String(bytes, "UTF-8")/*)*/)
 
     case Some(Content(_, FileMediaTypes.TEXT_CSS_VALUE, bytes)) =>
       ResponseEntity.ok().body(new String(bytes, "UTF-8"))

@@ -16,7 +16,7 @@ import scala.jdk.CollectionConverters._
 @Controller
 class MainController @Autowired()(
                                    private val bookService: BookService,
-                                   private val settingService: SettingService,
+                                   //private val settingService: SettingService,
                                    private val scannerService: ScannerService) {
 
   @RequestMapping(Array("/collections"))
@@ -29,10 +29,10 @@ class MainController @Autowired()(
   @RequestMapping(Array("/help"))
   def loadHelp(): String = "help"
 
-  @RequestMapping(Array("/settings"))
-  def loadSettings(model: Model): String = {
+  @RequestMapping(Array("/more"))
+  def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
-    "settings"
+    "more"
   }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
@@ -73,7 +73,7 @@ class MainController @Autowired()(
 
     model.addAttribute("user", SessionUtil.getUser().username)
     model.addAttribute("latestRead", latestRead)
-    "collection"
+    "library"
   }
 
   @RequestMapping(
@@ -95,22 +95,22 @@ class MainController @Autowired()(
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
-  @RequestMapping(
+  /*@RequestMapping(
     value=Array("/updateSetting"),
     method=Array(RequestMethod.PUT)
   )
   def updateSetting(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
     settingService.saveSetting(name, value)
-  }
+  }*/
 
-  @RequestMapping(
+  /*@RequestMapping(
     value=Array("/loadSettings"),
     method=Array(RequestMethod.GET)
   )
   @ResponseBody
   def loadSettings(@RequestParam("name") name: Seq[String]) = {
     name.map(n => (n, settingService.getSetting(n))).toMap.asJava
-  }
+  }*/
 
   @RequestMapping(
     value=Array("/scan"),
