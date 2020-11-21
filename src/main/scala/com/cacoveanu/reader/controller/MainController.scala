@@ -1,7 +1,7 @@
 package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, ScannerService, SettingService, UserService}
+import com.cacoveanu.reader.service.{BookService, ScannerService, UserService}
 import com.cacoveanu.reader.util.{SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}

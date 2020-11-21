@@ -4,8 +4,8 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util
 
-import com.cacoveanu.reader.entity.{Content, Setting}
-import com.cacoveanu.reader.service.{BookService, ContentService, SettingService}
+import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.service.{BookService, ContentService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, HtmlUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{MediaType, ResponseEntity}
