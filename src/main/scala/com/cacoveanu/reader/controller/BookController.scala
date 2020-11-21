@@ -97,4 +97,4 @@ class BookController @Autowired()(private val contentService: ContentService,
 
 }
 
-case class UiToc(@BeanProperty index: Int, @BeanProperty title: String, @BeanProperty position: Int)
+case class UiToc(@BeanProperty index: Int, @BeanProperty title: String, @BeanProperty position: Long)

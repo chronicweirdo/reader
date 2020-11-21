@@ -13,5 +13,5 @@ class BookLink {
 
   var link: String = _
 
-  var position: java.lang.Integer = _
+  var position: java.lang.Long = _
 }

@@ -29,7 +29,7 @@ object BookNode {
   private def isVoidElement(tagName: String) = VOID_ELEMENTS.contains(tagName.toLowerCase())
   private def shouldBeLeafElement(tagName: String) = LEAF_ELEMENTS.contains(tagName.toLowerCase())
 
-  private def parseBody(body: String, entrancePosition: Int): Option[BookNode] = {
+  private def parseBody(body: String, entrancePosition: Long): Option[BookNode] = {
     val bodyNode = new BookNode("body", "")
     var current: BookNode = bodyNode
 
@@ -114,7 +114,7 @@ object BookNode {
     }
   }
 
-  def parse(html: String, entrancePosition: Int = 0): Option[BookNode] = {
+  def parse(html: String, entrancePosition: Long = 0): Option[BookNode] = {
     getHtmlBody(html).flatMap(body => parseBody(body, entrancePosition))
   }
 }
@@ -131,9 +131,9 @@ class BookNode {
   @BeanProperty
   var content: String = _
   @BeanProperty
-  var start: Int = _
+  var start: Long = _
   @BeanProperty
-  var end: Int = _
+  var end: Long = _
 
   def getChildren() = {
    this.children.asJava
@@ -145,7 +145,7 @@ class BookNode {
     this.content = content
   }
 
-  private def this(name: String, content: String, start: Int, end: Int) = {
+  private def this(name: String, content: String, start: Long, end: Long) = {
     this(name, content)
     this.start = start
     this.end = end
@@ -223,7 +223,7 @@ class BookNode {
     this.children.foreach(child => child.hrefTransform(transformFunction))
   }
 
-  private def updatePositions(entrancePosition: Int): Unit = {
+  private def updatePositions(entrancePosition: Long): Unit = {
     var position = entrancePosition
     this.start = position
     if (this.name == "text") {
@@ -286,7 +286,7 @@ class BookNode {
     } else null
   }
 
-  def leafAtPosition(position: Int): BookNode = {
+  def leafAtPosition(position: Long): BookNode = {
     if (position < this.start || this.end < position) null
     else {
       var currentNode = this
@@ -307,11 +307,11 @@ class BookNode {
     current
   }
   @JsonIgnore
-  def getDocumentStart(): Int = this.getRoot.start
+  def getDocumentStart(): Long = this.getRoot.start
   @JsonIgnore
-  def getDocumentEnd(): Int = this.getRoot.end
+  def getDocumentEnd(): Long = this.getRoot.end
 
-  def findSpaceAfter(position: Int): Int = {
+  def findSpaceAfter(position: Long): Long = {
     val spacePattern = "\\s".r
     // first get leaf at position
     var leaf = leafAtPosition(position)
@@ -323,7 +323,7 @@ class BookNode {
     }
     if (leaf != null && leaf.name == "text") {
       val searchStartPosition = if (position - leaf.start + 1 > 0) position - leaf.start + 1 else 0
-      val m = spacePattern.findFirstMatchIn(leaf.content.substring(searchStartPosition))
+      val m = spacePattern.findFirstMatchIn(leaf.content.substring(searchStartPosition.toInt))
       if (m.isDefined) {
         return m.get.start + position + 1
       }
@@ -332,11 +332,11 @@ class BookNode {
     else getDocumentEnd()
   }
 
-  def findSpaceBefore(position: Int): Int = {
+  def findSpaceBefore(position: Long): Long = {
     val spacePattern = "\\s[^\\s]*$".r
     var leaf = leafAtPosition(position)
     if (leaf != null && leaf.name == "text") {
-      val searchText = leaf.content.substring(0, position - leaf.start)
+      val searchText = leaf.content.substring(0, (position - leaf.start).toInt)
       val m = spacePattern.findFirstMatchIn(searchText)
       if (m.isDefined) {
         return m.get.start + leaf.start
@@ -349,20 +349,20 @@ class BookNode {
     else getDocumentStart()
   }
 
-  def copy(from: Int, to: Int): BookNode = {
+  def copy(from: Long, to: Long): BookNode = {
     if (this.name == "text") {
       if (from <= this.start && this.end <= to) {
         // this node is copied whole
         new BookNode("text", this.content, this.start, this.end)
       } else if (from <= this.start && this.start <= to && to<= this.end) {
         // copy ends at this node
-        new BookNode(this.name, this.content.substring(0, to - this.start + 1), this.start, to)
+        new BookNode(this.name, this.content.substring(0, (to - this.start + 1).toInt), this.start, to)
       } else if (this.start <= from && from <= this.end && this.end <= to) {
         // copy starts at this node
-        new BookNode(this.name, this.content.substring(from - this.start), from, this.end)
+        new BookNode(this.name, this.content.substring((from - this.start).toInt), from, this.end)
       } else if (this.start <= from && to < this.end) {
         // we only copy part of this node
-        new BookNode(this.name, this.content.substring(from - this.start, to - this.start + 1), from, to)
+        new BookNode(this.name, this.content.substring((from - this.start).toInt, (to - this.start + 1).toInt), from, to)
       } else {
         null
       }
@@ -396,7 +396,7 @@ class BookNode {
   }
 
   @JsonIgnore
-  def getIds(): Map[String, Int] = {
+  def getIds(): Map[String, Long] = {
     getId(this.content).map(id => (id -> this.start)).toMap ++ this.children.flatMap(child => child.getIds())
   }
 }

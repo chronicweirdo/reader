@@ -80,7 +80,7 @@ object EpubUtil {
       case None => None
     }
 
-  def parseSection(epubPath: String, sectionPath: String, startPosition: Int = 0) = {
+  def parseSection(epubPath: String, sectionPath: String, startPosition: Long = 0) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
@@ -122,9 +122,9 @@ object EpubUtil {
     // get book resources and links
     val resources = getTocFromOpf2(epubPath).getOrElse(Seq())
 
-    var lastEnd: Integer = null
+    var lastEnd: java.lang.Long = null
     var bookResources = Seq[BookResource]()
-    var bookLinks = Map[String, Int]()
+    var bookLinks = Map[String, Long]()
     for (index <- resources.indices) {
       val resourcePath = resources(index)._2
       val startPosition = if (lastEnd != null) lastEnd + 1 else 0
@@ -149,7 +149,7 @@ object EpubUtil {
       val bookTocEntry = new BookTocEntry
       bookTocEntry.index = index
       bookTocEntry.title = title
-      val position: Int = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
+      val position: Long = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
       bookTocEntry.position = position
       bookTocEntry
     }}

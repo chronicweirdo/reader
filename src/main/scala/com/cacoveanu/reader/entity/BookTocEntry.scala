@@ -15,5 +15,5 @@ class BookTocEntry {
 
   var title: String = _
 
-  var position: java.lang.Integer = _
+  var position: java.lang.Long = _
 }

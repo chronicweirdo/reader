@@ -13,7 +13,7 @@ class BookResource {
 
   var path: String = _
 
-  var start: java.lang.Integer = _
+  var start: java.lang.Long = _
 
-  var end: java.lang.Integer = _
+  var end: java.lang.Long = _
 }

@@ -94,7 +94,7 @@ class TestBookNode {
 
   // each leaf is copied in the returned sequence * its length
   private def inorderLeavesWeighted(node: BookNode): Seq[BookNode] = {
-    if (node.children.isEmpty) (0 until node.getLength()).map(_ => node)
+    if (node.children.isEmpty) (0 until node.getLength().toInt).map(_ => node)
     else {
       node.children.flatMap(c => inorderLeavesWeighted(c))
     }
@@ -110,9 +110,9 @@ class TestBookNode {
     val leavesAtPositions = inorderLeavesWeighted(tree)
     println(leavesAtPositions.size)
 
-    for (i <- 0 until tree.getLength()) {
+    for (i <- 0 until tree.getLength().toInt) {
       val leaf = tree.leafAtPosition(i)
-      assert(leaf == leavesAtPositions(i))
+      assert(leaf == leavesAtPositions(i.toInt))
     }
   }
 
@@ -158,8 +158,8 @@ class TestBookNode {
     tree.prettyPrint()
     println()
 
-    var spacesAfter = Seq[Int]()
-    var spacesBefore = Seq[Int]()
+    var spacesAfter = Seq[Long]()
+    var spacesBefore = Seq[Long]()
 
     var space = tree.findSpaceAfter(tree.getDocumentStart())
     while (space != tree.getDocumentEnd()) {
