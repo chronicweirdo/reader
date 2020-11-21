@@ -484,23 +484,21 @@ window.onload = function() {
     })
 
     enableGesturesOnElement(document.getElementById("ch_prev"), {
-        "clickAction": (x, y) => goToPreviousView(),
-        "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
+    document.getElementById("ch_prev").addEventListener("click", (event) => goToPreviousView())
     enableGesturesOnElement(document.getElementById("ch_next"), {
-        "clickAction": (x, y) => goToNextView(),
-        "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
+    document.getElementById("ch_next").addEventListener("click", (event) => goToNextView())
 
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
