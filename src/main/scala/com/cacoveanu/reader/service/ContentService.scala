@@ -44,7 +44,20 @@ class ContentService {
         })
   }
 
-  def loadBookResource(bookId: java.lang.Long, position: java.lang.Long): BookNode = {
+  @Cacheable(Array("sectionStartPosition"))
+  def findStartPositionForSectionContaining(bookId: java.lang.Long, position: java.lang.Long): Integer = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) if FileUtil.getExtension(book.path) == FileTypes.EPUB =>
+        book.resources.asScala.find(r => r.start <= position && position <= r.end) match {
+          case Some(section) => section.start
+          case None => -1
+        }
+      case _ => -1
+    }
+  }
+
+  @Cacheable(Array("bookSection"))
+  def loadBookSection(bookId: java.lang.Long, position: Integer): BookNode = {
     bookRepository.findById(bookId).asScala match {
       case Some(book) => FileUtil.getExtension(book.path) match {
         case FileTypes.EPUB =>
@@ -146,43 +159,4 @@ class ContentService {
     val positions = (part * BATCH_SIZE) until (part * BATCH_SIZE + BATCH_SIZE)
     positions
   }
-
-  /*private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    val sections = book.resources.asScala.zipWithIndex
-    val currentPath = EpubUtil.baseLink(resourcePath)
-    val currentSection = sections.find(e => e._1.path == currentPath)
-    val currentIndex = currentSection.map(_._2)
-    val prev = currentIndex.flatMap(i => sections.find(_._2 == i - 1)).map(_._1.path).getOrElse("")
-    val next = currentIndex.flatMap(i => sections.find(_._2 == i + 1)).map(_._1.path).getOrElse("")
-    val size = currentSection.map(e => e._1.end - e._1.start).getOrElse(1)
-    val start = currentSection.map(e => e._1.start).getOrElse(0)
-
-    val htmlContent = new String(bytes, "UTF-8")
-
-    htmlContent
-      .asHtml
-      .transformLinks(resourcePath, book.id, keepEbookStyles)
-      .addResources(Seq(
-        "js" -> "/hammer.min.js",
-        "js" -> "/gestures.js",
-        "js" -> "/util.js",
-        "js" -> "/book.js",
-        "css" -> "/book.css",
-        "css" -> "/tools.css"
-      ))
-      .addMeta(Map(
-        "nextSection" -> next,
-        "prevSection" -> prev,
-        "currentSection" -> currentPath,
-        "bookId" -> book.id.toString,
-        "sectionSize" -> size.toString,
-        "sectionStart" -> start.toString,
-        "title" -> book.title,
-        "bookSize" -> book.size.toString,
-        "collection" -> book.collection//,
-        //"tocLink" -> book.tocLink
-      ))
-      .asString
-      .getBytes("UTF-8")
-  }*/
 }

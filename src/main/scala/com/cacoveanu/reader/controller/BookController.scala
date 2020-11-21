@@ -63,7 +63,8 @@ class BookController @Autowired()(private val contentService: ContentService,
   @RequestMapping(Array("/bookSection"))
   @ResponseBody
   def loadResource(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long) = {
-    val node = contentService.loadBookResource(id, position)
+    val sectionStartPosition = contentService.findStartPositionForSectionContaining(id, position)
+    val node = contentService.loadBookSection(id, sectionStartPosition)
     node
   }
 
