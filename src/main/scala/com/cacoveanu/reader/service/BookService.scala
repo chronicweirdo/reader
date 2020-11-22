@@ -61,7 +61,7 @@ class BookService {
       val finishedParsed = finished.toBooleanOption
       (user, matchingBook, positionParsed, finishedParsed) match {
         case (Some(u), Some(b), Some(p), Some(f)) =>
-          Option(progressRepository.save(new Progress(u, b, section, p, new Date(), f)))
+          Option(progressRepository.save(new Progress(u, b, p, new Date(), f)))
 
         case _ =>
           None
@@ -78,11 +78,11 @@ class BookService {
     progressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
   }
 
-  def saveProgress(bookId: java.lang.Long, section: String, position: Int) = {
+  def saveProgress(bookId: java.lang.Long, position: Int) = {
     loadBook(bookId) match {
       case Some(book) =>
         val finished = position >= book.size - 1
-        val progress = new Progress(SessionUtil.getUser(), book, section, position, new Date(), finished)
+        val progress = new Progress(SessionUtil.getUser(), book, position, new Date(), finished)
         progressRepository.findByUserAndBookId(progress.user, bookId).asScala.foreach(p => progress.id = p.id)
         progressRepository.save(progress)
         true
@@ -126,5 +126,10 @@ class BookService {
     val sort = Sort.by(Direction.ASC, "collection", "title")
     val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
     bookRepository.findAll(pageRequest).asScala.toSeq
+  }
+
+  def loadBooks = {
+    bookRepository.findAll().asScala.toSeq
+      .filter(b => b.path.endsWith(".epub"))
   }
 }

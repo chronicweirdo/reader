@@ -1,53 +1,60 @@
-#toolsContainer {
-    display: block;
+#ch_tools_container {
+    display: none;
     position: fixed;
-    width: 100vw;
-    height: 100vh;
-    background-color: #1a1a1a77;
-    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a1add;
 }
-#tools {
+#ch_tools {
     display: block;
-    position: fixed;
     bottom: 0;
     font-size: 3vh;
     font-family: Arial, Helvetica, sans-serif;
+    overflow-y: auto;
+    margin-left: 10%;
+    margin-right: 10%;
+    display: block;
+    max-height: 100%;
+    position: fixed;
+    width: 80%;
 }
-#tools.left {
-    left: 10vw;
+
+#ch_tools.left {
     text-align: left;
 }
-#tools.right {
-    right: 10vw;
+#ch_tools.right {
     text-align: right;
 }
-#tools > p {
+#ch_tools > p {
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 0.2em;
     max-width: 80vw;
 }
-#tools > p > * {
+#ch_tools > *:first-child {
+    margin-top: 0.2em;
+}
+#ch_tools > p > * {
     display: inline-block;
     padding: .3em;
     margin-left: 0.2em;
 }
-#tools > p > *:first-child {
+#ch_tools > p > *:first-child {
     margin-left: 0;
 }
-#tools > p > span {
+#ch_tools > p > span {
     color: white;
     background-color: black;
 }
-#tools > p > input {
+#ch_tools > p > input {
     font-size: 1em;
     background-color: gold;
     width: 5em;
     border: 2px solid white;
     z-index: 1000;
 }
-#tools > p > a {
+#ch_tools > p > a {
     color: black;
     background-color: gold;
     border: 2px solid white;
@@ -57,4 +64,72 @@
     min-width: 1.5em;
 
     cursor: pointer;
+}
+
+#ch_tools > p > a.ch_chapter {
+    color: white;
+    background-color: #1a1a1a;
+    border-color: black;
+}
+
+#ch_tools > p > a.ch_current {
+    color: gold;
+}
+
+#ch_spinner {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: #1a1a1add;
+}
+
+#ch_spinner svg {
+}
+
+#ch_tools_left {
+    bottom: 0;
+    left: 0;
+    width: 10%;
+    height: 10%;
+    position: fixed;
+}
+#ch_tools_right {
+    bottom: 0;
+    right: 0;
+    width: 10%;
+    height: 10%;
+    position: fixed;
+}
+
+#ch_prev {
+    top: 0;
+    left: 0;
+    width: 10%;
+    height: 90%;
+    position: fixed;
+}
+#ch_next {
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 90%;
+    position: fixed;
+}
+
+#ch_prev, #ch_next, #ch_tools_left, #ch_tools_right {
+    display: block;
+    position: fixed;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }

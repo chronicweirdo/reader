@@ -32,10 +32,10 @@ object PdfUtil {
       pages match {
         case Some(pgs) => Some(pgs.filter(p => p >= 0 && p < numberOfPages)
           .map(p => {
-            val image: BufferedImage = renderer.renderImage(p, 4)
+            val image: BufferedImage = renderer.renderImage(p, 2)
             val out = new ByteArrayOutputStream()
-            //ImageIO.write(image, "png", out)
-            ImageIO.write(image, "jpeg", out)
+            ImageIO.write(image, "png", out)
+            //ImageIO.write(image, "jpeg", out)
             val arr = out.toByteArray
             Content(Some(p), FileMediaTypes.IMAGE_JPEG_VALUE, arr)
           }))

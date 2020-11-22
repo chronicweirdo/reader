@@ -1,98 +1,47 @@
 body {
     overflow: hidden;
     background-color: white;
-    color: white;
+    color: black;
     padding: 0;
     margin: 0;
+    font-size: 1.5em;
+
+    min-height: 100vh;
+    /* mobile viewport bug fix */
+    min-height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
 }
 
 /* ui regions */
-#content {
-    display: none
-}
-
-#prev, #next, #toolsButtonLeft, #toolsButtonRight, #pageContainer {
+#ch_content, #ch_shadow_content {
+    width: 80vw;
+    height: 90vh;
+    left: 10vw;
+    top: 5vh;
     display: block;
     position: fixed;
+    word-wrap: break-word;
 }
 
-#prev {
-    top: 0;
-    left: 0;
-    width: 10vw;
-    height: 90vh;
-}
-#next {
-    top: 0;
-    right: 0;
-    width: 10vw;
-    height: 90vh;
-}
-#toolsButtonLeft {
-    bottom: 0;
-    left: 0;
-    width: 10vw;
-    height: 10vh;
-}
-#toolsButtonRight {
-    bottom: 0;
-    right: 0;
-    width: 10vw;
-    height: 10vh;
-}
-#pageContainer {
-    width: 80vw;
-    left: 10vw;
-    height: 100vh;
-    top: 0;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
+#ch_shadow_content {
+    visibility: hidden;
 }
 
-#page {
-    padding: 5vh 0;
-    color: black;
-    font-family: Georgia, serif;
-}
 
-#loading {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: white;
-    z-index: 1000;
-    font-size: 2em;
-    text-align: center;
-    padding-top: 40vh;
-    color: black;
-}
+
+
+
 
 img, svg {
     max-height: 80vh !important;
     max-width: 80vw !important;
 }
 
-@media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
-only screen and (-o-min-device-pixel-ratio: 13/10),
-only screen and (min-resolution: 120dpi)
-{
-    #page {
-        font-size: 2.4em;
-    }
-    #tools {
-        font-size: 4em;
-    }
-    #loading {
-        font-size: 4em;
-    }
-}
-
-@supports (-webkit-touch-callout: none) {
-    /* CSS specific to iOS devices */
-    #pageContainer {
-        height: 90vh;
-    }
+a {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
 }

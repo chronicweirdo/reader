@@ -1,18 +1,19 @@
 package com.cacoveanu.reader.service
 
-import java.net.URLEncoder
+import java.lang
+import java.net.{URI, URLEncoder}
 import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
 
 import com.cacoveanu.reader.entity.{Book, Content}
 import com.cacoveanu.reader.repository.BookRepository
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util._
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedHtmlString
-import com.cacoveanu.reader.util.HtmlUtil.AugmentedJsoupDocument
 import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
+import scala.None.orNull
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
@@ -29,131 +30,119 @@ class ContentService {
   @BeanProperty
   var keepEbookStyles: Boolean = _
 
-  //@Cacheable(Array("resource"))
-  def loadResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
+  /**
+   * Book resources are loaded based on a path. These are usually images.
+   * @param bookId
+   * @param resourcePath
+   * @return
+   */
+  @Cacheable(Array("bookResource"))
+  def loadBookResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
-        .flatMap(book => FileUtil.getExtension(book.path) match {
-          case FileTypes.EPUB if resourcePath == "toc" =>
-            processResource(book, "toc", getBookTocHtml(book).getBytes(StandardCharsets.UTF_8))
-          case FileTypes.EPUB =>
-            val basePath = EpubUtil.baseLink(resourcePath)
-            EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
-          case FileTypes.CBR =>
-            CbrUtil.readResource(book.path, resourcePath)
-          case FileTypes.CBZ =>
-            CbzUtil.readResource(book.path, resourcePath)
-          case _ =>
-            None
-        })
+      .filter(book => FileUtil.getExtension(book.path) == FileTypes.EPUB)
+      .map(book => (FileUtil.getMediaType(resourcePath), EpubUtil.readResource(book.path, EpubUtil.baseLink(resourcePath))))
+      .filter { case (contentTypeOption, bytesOption) => contentTypeOption.isDefined && bytesOption.isDefined}
+      .flatMap { case (contentTypeOption, bytesOption) => Some(Content(None, contentTypeOption.get, bytesOption.get))}
   }
 
-  private def getBookTocHtml(book: Book) = {
-    (<html>
-      <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>{book.title}</title>
-      </head>
-      <body>
-        {book.toc.asScala.filter(_.fromToc).sortBy(_.index).map(e => {
-        <p><a href={URLEncoder.encode(e.link, StandardCharsets.UTF_8.name())}>{if (e.title != null && e.title.length > 0) e.title else e.index}</a></p>
-      })}
-      </body>
-    </html>).toString()
-  }
-
-  private def findResourceByPosition(book: Book, position: Int) = {
-    book.getSections().find(e => e.start + e.size >= position)
-      .map(tocEntry => EpubUtil.baseLink(tocEntry.link))
-  }
-
-  @Cacheable(Array("resources"))
-  def loadResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
+  @Cacheable(Array("sectionStartPosition"))
+  def findStartPositionForSectionContaining(bookId: java.lang.Long, position: java.lang.Long): Long = {
     bookRepository.findById(bookId).asScala match {
-      case Some(book) => FileUtil.getExtension(book.path) match {
-        /*case FileTypes.EPUB =>
-          positions
-            .flatMap(p => findResourceByPosition(book, p))
-            .distinct
-            .flatMap(baseLink =>
-              EpubUtil.readResource(book.path, baseLink)
-                .flatMap(bytes => processResource(book, baseLink, bytes))
-            )*/
-
-        case FileTypes.CBZ =>
-          CbzUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case FileTypes.CBR =>
-          CbrUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case FileTypes.PDF =>
-          PdfUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case _ =>
-          Seq()
-      }
-
-      case None =>
-        Seq()
+      case Some(book) if FileUtil.getExtension(book.path) == FileTypes.EPUB =>
+        book.resources.asScala.find(r => r.start <= position && position <= r.end) match {
+          case Some(section) => section.start
+          case None => -1
+        }
+      case _ => -1
     }
   }
 
-  private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    FileUtil.getMediaType(resourcePath) match {
-      case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))
+  private def getFolderPath(resourcePath: String): String = {
+    val contextPath = resourcePath
+    val lio = contextPath.lastIndexOf("/")
+    if (lio > 0) contextPath.substring(0, lio)
+    else ""
+  }
 
-      case Some(contentType) =>
-        Some(Content(None, contentType, bytes))
+  private def splitPaths(src: String): (String, String) = {
+    val hashIndex = src.lastIndexOf("#")
+    if (hashIndex > 0) (src.substring(0, hashIndex), src.substring(hashIndex+1))
+    else (src, null)
+  }
 
-      case None if resourcePath == "toc" =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))
-
-      case _ => None
+  private def imageLinkTransform(bookId: Long, resourcePath: String, oldSrc: String): String = {
+    val remoteUri = new URI(oldSrc)
+    if (remoteUri.isAbsolute) {
+      oldSrc
+    } else {
+      val (externalPath, internalPath) = splitPaths(oldSrc)
+      val folder = getFolderPath(resourcePath)
+      val remotePathWithFolder = if (folder.length > 0) folder + "/" + externalPath else externalPath
+      val normalizedPath = Paths.get(remotePathWithFolder).normalize().toString.replaceAll("\\\\", "/")
+      s"bookResource?id=$bookId&path=${URLEncoder.encode(normalizedPath, "UTF-8")}" + (if (internalPath != null) "#" + internalPath else "")
     }
+  }
+
+  private def hrefLinkTransform(linksMap: Map[String, Long], resourcePath: String, oldHref: String): (String, String) = {
+    val remoteUri = new URI(oldHref)
+    val folder = getFolderPath(resourcePath)
+    if (remoteUri.isAbsolute) {
+      ("href", oldHref)
+    } else if (linksMap.contains(oldHref)) {
+      ("onclick", s"displayPageFor(${linksMap(oldHref)})")
+    } else if (linksMap.contains(folder + "/" + oldHref)) {
+      ("onclick", s"displayPageFor(${linksMap(folder + "/" + oldHref)})")
+    } else {
+      ("href", "")
+    }
+  }
+
+  private def nodeSrcTransform(bookId: Long, resourcePath: String, node: BookNode): BookNode = {
+    node.srcTransform(imageLinkTransform(bookId, resourcePath, _: String))
+    node
+  }
+
+  private def nodeHrefTransform(linksMap: Map[String, Long], resourcePath: String, node: BookNode): BookNode = {
+    node.hrefTransform(hrefLinkTransform(linksMap, resourcePath, _: String))
+    node
+  }
+
+  @Cacheable(Array("bookSection"))
+  def loadBookSection(bookId: java.lang.Long, position: Long): BookNode = {
+    bookRepository.findById(bookId).asScala match {
+      case Some(book) if FileUtil.getExtension(book.path) == FileTypes.EPUB => {
+        book.resources.asScala.find(r => r.start <= position && position <= r.end)
+          .map(resource => (resource.path, resource.start))
+          .flatMap { case (resourcePath, resourceStart) => {
+            EpubUtil.parseSection(book.path, resourcePath, resourceStart)
+              .map(nodeSrcTransform(bookId, resourcePath, _))
+              .map(nodeHrefTransform(book.links.asScala.map(l => (l.link -> l.position.toLong)).toMap, resourcePath, _))
+          }}.orNull
+      }
+      case _ => null
+    }
+  }
+
+  /**
+   * Comic resources (or PDF), which are images, are loaded in batches of pages.
+   * @param bookId
+   * @param positions
+   * @return
+   */
+  @Cacheable(Array("resources"))
+  def loadComicResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
+    bookRepository.findById(bookId).asScala
+      .map(book => (book.path, FileUtil.getExtension(book.path))) match {
+        case Some((path, FileTypes.CBZ)) => CbzUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case Some((path, FileTypes.CBR)) => CbrUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case Some((path, FileTypes.PDF)) => PdfUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case _ => Seq()
+      }
   }
 
   def getBatchForPosition(position: Int): Seq[Int] = {
     val part = position / BATCH_SIZE
     val positions = (part * BATCH_SIZE) until (part * BATCH_SIZE + BATCH_SIZE)
     positions
-  }
-
-  private def processHtml(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    val sections = book.getSections().zipWithIndex
-    val currentPath = EpubUtil.baseLink(resourcePath)
-    val currentSection = sections.find(e => e._1.link == currentPath)
-    val currentIndex = currentSection.map(_._2)
-    val prev = currentIndex.flatMap(i => sections.find(_._2 == i - 1)).map(_._1.link).getOrElse("")
-    val next = currentIndex.flatMap(i => sections.find(_._2 == i + 1)).map(_._1.link).getOrElse("")
-    val size = currentSection.map(e => e._1.size).getOrElse(1)
-    val start = currentSection.map(e => e._1.start).getOrElse(0)
-
-    val htmlContent = new String(bytes, "UTF-8")
-
-    htmlContent
-      .asHtml
-      .transformLinks(resourcePath, book.id, keepEbookStyles)
-      .addResources(Seq(
-        "js" -> "/hammer.min.js",
-        "js" -> "/gestures.js",
-        "js" -> "/util.js",
-        "js" -> "/book.js",
-        "css" -> "/book.css",
-        "css" -> "/tools.css"
-      ))
-      .addMeta(Map(
-        "nextSection" -> next,
-        "prevSection" -> prev,
-        "currentSection" -> currentPath,
-        "bookId" -> book.id.toString,
-        "sectionSize" -> size.toString,
-        "sectionStart" -> start.toString,
-        "title" -> book.title,
-        "bookSize" -> book.size.toString,
-        "collection" -> book.collection//,
-        //"tocLink" -> book.tocLink
-      ))
-      .asString
-      .getBytes("UTF-8")
   }
 }

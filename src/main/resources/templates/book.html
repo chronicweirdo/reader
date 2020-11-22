@@ -6,31 +6,33 @@
           content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="bookId" content="1" th:content="${id}">
     <meta name="bookTitle" content="1" th:content="${title}">
-    <meta name="size" content="20" th:content=${pages}>
-    <meta name="startPosition" content="0" th:content=${startPage}>
-    <meta name="defaultFit" content="screen">
-    <title th:text="${title}">Comic Title</title>
-    <link rel="stylesheet" type="text/css" href="comic.css">
+    <meta name="bookStart" content="0" th:content="${bookStart}">
+    <meta name="bookEnd" content="0" th:content="${bookEnd}">
+    <meta name="size" content="20" th:content=${size}>
+    <meta name="startPosition" content="0" th:content=${startPosition}>
+    <title th:text="${title}">Book Title</title>
+    <link rel="stylesheet" type="text/css" href="book.css">
     <link rel="stylesheet" type="text/css" href="tools.css">
     <script src="hammer.min.js"></script>
     <script src="gestures.js"></script>
     <script src="util.js"></script>
-    <script src="comic.js"></script>
+    <script src="bookNode.js"></script>
+    <script src="book2.js"></script>
 </head>
 <body onresize="handleResize()">
-<img src="" />
 <div id="ch_prev"></div>
 <div id="ch_next"></div>
 <div id="ch_tools_left"></div>
 <div id="ch_tools_right"></div>
-<div id="ch_canv"></div>
+<div id="ch_shadow_content"></div>
+<div id="ch_content"></div>
 <div id="ch_tools_container">
     <div id="ch_tools">
+        <p th:each="entry: ${tableOfContents}"><a class="ch_chapter" th:ch_position="${entry.position}" onclick="displayPageForTocEntry(this)" th:text="${entry.title}">chapter</a></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
-        <p><span th:text="${title}">Comic Title</span></p>
-        <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
-        <p><a id="downloadPageButton" href="">download</a></p>
-        <p><a onclick="toggleFullScreen()">fullscreen</a></p>
+        <p><span th:text="${title}">Book Title</span></p>
+        <p><a id="ch_decrease_zoom">-</a><a id="ch_increase_zoom">+</a></p>
+        <p><span>position</span><input id="positionInput" type="number" min="0" th:max="${size-1}" readonly/><span>of</span><span th:text="${size-1}">20</span></p>
         <p><a onclick="goHome()">library</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>
     </div>

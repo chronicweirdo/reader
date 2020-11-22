@@ -50,7 +50,6 @@ class AccountController @Autowired()(private val accountService: UserService,
       p.user.username + ","
         + p.book.author + ","
         + p.book.title + ","
-        + p.section + ","
         + p.position + ","
         + p.finished
     ).mkString("\n")
@@ -88,6 +87,9 @@ class AccountController @Autowired()(private val accountService: UserService,
           val tokens = line.split(",").toSeq
           if (tokens.size == 6) {
             bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
+          } else if (tokens.size == 5) {
+            // section entry for progress is ignored
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4))
           } else None
         })
       s"successfully added ${savedProgress.size} progress"

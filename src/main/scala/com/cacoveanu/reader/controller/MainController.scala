@@ -1,7 +1,7 @@
 package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, ScannerService, SettingService, UserService}
+import com.cacoveanu.reader.service.{BookService, ScannerService, UserService}
 import com.cacoveanu.reader.util.{SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
@@ -16,7 +16,7 @@ import scala.jdk.CollectionConverters._
 @Controller
 class MainController @Autowired()(
                                    private val bookService: BookService,
-                                   private val settingService: SettingService,
+                                   //private val settingService: SettingService,
                                    private val scannerService: ScannerService) {
 
   @RequestMapping(Array("/collections"))
@@ -29,10 +29,10 @@ class MainController @Autowired()(
   @RequestMapping(Array("/help"))
   def loadHelp(): String = "help"
 
-  @RequestMapping(Array("/settings"))
-  def loadSettings(model: Model): String = {
+  @RequestMapping(Array("/more"))
+  def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
-    "settings"
+    "more"
   }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
@@ -51,7 +51,7 @@ class MainController @Autowired()(
         book.collection,
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
-        progressByBook.get(book.id).map(p => p.getPositionInBook()).getOrElse(-1),
+        progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
         progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
       ))
     new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
@@ -67,13 +67,13 @@ class MainController @Autowired()(
         p.book.collection,
         p.book.title,
         WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-        p.getPositionInBook(),
+        p.position,
         p.book.size
       )).asJava
 
     model.addAttribute("user", SessionUtil.getUser().username)
     model.addAttribute("latestRead", latestRead)
-    "collection"
+    "library"
   }
 
   @RequestMapping(
@@ -90,28 +90,9 @@ class MainController @Autowired()(
     method=Array(RequestMethod.PUT)
   )
   def markProgress(@RequestParam("id") id: java.lang.Long,
-                   @RequestParam(name = "path", required = false) section: String,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
-    if (section == "toc") new ResponseEntity[String](HttpStatus.OK)
-    else if (bookService.saveProgress(id, section, position)) new ResponseEntity[String](HttpStatus.OK)
+    if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
-  }
-
-  @RequestMapping(
-    value=Array("/updateSetting"),
-    method=Array(RequestMethod.PUT)
-  )
-  def updateSetting(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
-    settingService.saveSetting(name, value)
-  }
-
-  @RequestMapping(
-    value=Array("/loadSettings"),
-    method=Array(RequestMethod.GET)
-  )
-  @ResponseBody
-  def loadSettings(@RequestParam("name") name: Seq[String]) = {
-    name.map(n => (n, settingService.getSetting(n))).toMap.asJava
   }
 
   @RequestMapping(

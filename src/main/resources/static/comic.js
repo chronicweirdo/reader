@@ -1,23 +1,5 @@
-function num(s, def) {
-    var patt = /[\-]?[0-9\.]+/
-    var match = patt.exec(s)
-    if (match != null && match.length > 0) {
-        var n = match[0]
-        if (n.indexOf('.') > -1) {
-            return parseFloat(n)
-        } else {
-            return parseInt(n)
-        }
-    }
-    return def
-}
 
-function getViewportWidth() {
-    return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
-}
-function getViewportHeight() {
-    return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-}
+
 function pan(x, y) {
     setImageLeft(getImageLeft() + x)
     setImageTop(getImageTop() + y)
@@ -161,11 +143,9 @@ function fitPageToScreen() {
 function setPage(page) {
     if (page < 1) page = 1
     if (page > document.comicMaximumPages) page = document.comicMaximumPages
-    document.getElementById("pagenum").value = page
+    updatePositionInput(page)
 }
-function getPage() {
-    return num(document.getElementById("pagenum").value)
-}
+
 function setImageWidth(width) {
     getImage().width = width
 }
@@ -266,12 +246,6 @@ function cacheContains(page) {
     }
 }
 
-function markComicProgress(page) {
-    var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "markProgress?id=" + getComicId() + "&position=" + (page-1), true)
-    xhttp.send()
-}
-
 function downloadImageData(page, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
@@ -282,12 +256,12 @@ function downloadImageData(page, callback) {
             }
         }
     }
-    xhttp.open("GET", "imageData?id=" + getComicId() + "&page=" + (page-1), true)
+    xhttp.open("GET", "imageData?id=" + getBookId() + "&page=" + (page-1), true)
     xhttp.send()
 }
 
 function updateDownloadUrl() {
-    var url = "downloadPage?id=" + getComicId() + "&page=" + (getPage()-1)
+    var url = "downloadPage?id=" + getBookId() + "&page=" + (getPositionInput()-1)
     var downloadLink = document.getElementById("downloadPageButton")
     downloadLink.href = url
 }
@@ -312,8 +286,8 @@ function displayPage(page, callback) {
             var img = getImage()
             img.onload = function() {
                 setPage(page)
-                markComicProgress(page)
-                setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.comicTitle)
+                saveProgress(getBookId(), page-1)
+                setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
                 setImageWidth(getOriginalImageWidth())
                 setImageHeight(getOriginalImageHeight())
                 setImageLeft(0)
@@ -388,21 +362,21 @@ function getPreviousPosition(imageDimension, viewportDimension, imageValue, view
     return proposedPreviousPosition
 }
 
-function getComicId() {
-    return document.comicId
+function getBookId() {
+    return document.bookId
 }
 
 function goToNextPage() {
-    if (getPage() < document.comicMaximumPages) {
-        displayPage(getPage() + 1, function() {
+    if (getPositionInput() < document.comicMaximumPages) {
+        displayPage(getPositionInput() + 1, function() {
             updateImage()
         })
     }
 }
 
 function goToPreviousPage() {
-    if (getPage() > 1) {
-        displayPage(getPage() - 1, function() {
+    if (getPositionInput() > 1) {
+        displayPage(getPositionInput() - 1, function() {
             updateImage()
         })
     }
@@ -423,41 +397,6 @@ function goToNextView() {
     }
 }
 
-function showSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "block"
-}
-
-function hideSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "none"
-}
-
-function showTools() {
-    var tools = document.getElementById("tools")
-    tools.style.visibility = "visible"
-}
-
-function hideTools() {
-    var tools = document.getElementById("tools")
-    tools.style.visibility = "hidden"
-}
-
-function toggleTools(left) {
-    var tools = document.getElementById("tools")
-    if (left) {
-        tools.className = "left"
-    } else {
-        tools.className = "right"
-    }
-    var toolsContainer = document.getElementById("toolsContainer")
-    if (toolsContainer.style.visibility == "hidden") {
-        toolsContainer.style.visibility = "visible"
-    } else {
-        toolsContainer.style.visibility = "hidden"
-    }
-}
-
 function goToPreviousView() {
     if (isBeginningOfRow()) {
         if (isBeginningOfColumn()) {
@@ -474,66 +413,18 @@ function goToPreviousView() {
 
 }
 
-function getMeta(metaName) {
-    const metas = document.getElementsByTagName('meta');
 
-    for (let i = 0; i < metas.length; i++) {
-        if (metas[i].getAttribute('name') === metaName) {
-        return metas[i].getAttribute('content');
-        }
-    }
-
-    return '';
-}
 
 function handleResize() {
+    fixComponentHeights()
     updateMinimumZoom()
     updateImage()
 }
 
-function jumpToPage() {
-    var page = getPage()
+function jumpToPage(page) {
     displayPage(page, function() {
         updateImage()
     })
-}
-
-function addPagenumTriggerListener() {
-    var pagenum = document.getElementById("pagenum")
-    pagenum.addEventListener('keyup', function (e) {
-        e.preventDefault()
-        if (document.pageChangeTimeout && document.pageChangeTimeout != null) {
-            window.clearTimeout(document.pageChangeTimeout)
-            document.pageChangeTimeout = null
-        }
-        if (e.keyCode === 13) {
-            // if enter, search
-            jumpToPage()
-        } else {
-            // if other key, wait to see if finished typing
-            document.pageChangeTimeout = window.setTimeout(jumpToPage, 1000)
-        }
-    })
-    pagenum.addEventListener('click', function (e) {
-        e.stopPropagation()
-    })
-    pagenum.addEventListener('mouseup', function (e) {
-        e.preventDefault()
-        jumpToPage()
-    })
-}
-
-function removeProgress() {
-    var xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            if (this.status == 200) {
-                window.location = "/"
-            }
-        }
-    }
-    xhttp.open("DELETE", "removeProgress?id=" + document.comicId, true)
-    xhttp.send()
 }
 
 function goBack() {
@@ -565,6 +456,7 @@ function touchGesturePan(deltaX, deltaY) {
 }
 
 window.onload = function() {
+    fixComponentHeights()
     enableKeyboardGestures({
         "upAction": () => pan(0, getViewportHeight() / 2),
         "downAction": () => pan(0, - (getViewportHeight() / 2)),
@@ -580,9 +472,9 @@ window.onload = function() {
     // pinchStartAction(pinchCenterX, pinchCenterY)
     // pinchAction(currentZoom, pinchCenterX, pinchCenterY)
     // panAction(deltaX, deltaY)
-    var originalZoom = null
+    //var originalZoom = null
 
-    enableGesturesOnElement(document.getElementById("canv"), {
+    enableGesturesOnElement(document.getElementById("ch_canv"), {
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
@@ -591,37 +483,35 @@ window.onload = function() {
         "panAction": touchGesturePan
     })
 
-    enableGesturesOnElement(document.getElementById("prev"), {
-        "clickAction": (x, y) => goToPreviousView(),
-        "doubleClickAction": zoomJump,
+    enableGesturesOnElement(document.getElementById("ch_prev"), {
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
-    enableGesturesOnElement(document.getElementById("next"), {
-        "clickAction": (x, y) => goToNextView(),
-        "doubleClickAction": zoomJump,
+    document.getElementById("ch_prev").addEventListener("click", (event) => goToPreviousView())
+    enableGesturesOnElement(document.getElementById("ch_next"), {
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "panAction": touchGesturePan
     })
+    document.getElementById("ch_next").addEventListener("click", (event) => goToNextView())
 
-    document.getElementById("toolsButtonLeft").addEventListener("click", (event) => toggleTools(true))
-    document.getElementById("toolsButtonRight").addEventListener("click", (event) => toggleTools(false))
-    document.getElementById("toolsContainer").addEventListener("click", (event) => toggleTools())
+    document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
+    document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
+    document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
 
-    addPagenumTriggerListener()
+    addPositionInputTriggerListener(jumpToPage)
 
-    document.comicId = getMeta("comicId")
-    document.comicTitle = getMeta("comicTitle")
-    document.comicMaximumPages = num(getMeta("pages"))
+    document.bookId = getMeta("bookId")
+    document.bookTitle = getMeta("bookTitle")
+    document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
     setZoom(1.0)
-    var startPage = num(getMeta("startPage")) + 1
+    var startPage = num(getMeta("startPosition")) + 1
 
     displayPage(startPage, function() {
         var fit = getMeta("defaultFit")

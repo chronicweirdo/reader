@@ -2,7 +2,7 @@ var gestures = {
     mouseDownX: null,
     mouseDownY: null,
     mousePressed: false,
-    clickTimestamp: []
+    clickCount: 0
 }
 
 function disableEventHandlers(el) {
@@ -101,7 +101,6 @@ function mouseWheelScroll(event, scrollAction, scrollEndAction) {
 
 function mouseDown(event, callback) {
     if (event.button == 0) {
-        //event.preventDefault()
         gestures.mouseDownX = event.clientX
         gestures.mouseDownY = event.clientY
         gestures.mousePressed = true
@@ -110,45 +109,29 @@ function mouseDown(event, callback) {
     }
 }
 
-function mouseUp(event, clickAction, doubleClickAction, tripleClickAction) {
+function mouseUp(event, clickAction, doubleClickAction) {
     if (event.button == 0) {
         gestures.mousePressed = false
-        if (gestures.mouseDownX == event.clientX && gestures.mouseDownY == event.clientY) {
+        if (gestures.mouseDownX == event.clientX && gestures.mouseDownY == event.clientY && (clickAction != null || doubleClickAction != null)) {
             // the mouse did not move, it's a click
-            click(event, clickAction, doubleClickAction, tripleClickAction)
+            click(event, clickAction, doubleClickAction)
         }
     }
 }
 
-function click(event, clickAction, doubleClickAction, tripleClickAction) {
-    // fixing click on links - this is the correct fix for click on links, go up the parent hierarchy
-    // but it will be removed because it will no longer be necessary
-    /*var current = event.target
-    while (current != null) {
-        var href = current.getAttribute("href")
-        if (href) {
-            window.location = href
-        }
-        current = current.parentElement
-    }*/
-
+function click(event, clickAction, doubleClickAction) {
     event.preventDefault()
-    var timestamp = + new Date()
-    gestures.clickTimestamp.push(timestamp)
+    gestures.clickCount += 1
     delayed(function() {
-        if (gestures.clickTimestamp.length > 2) {
-            gestures.clickTimestamp = []
-            if (tripleClickAction != null) tripleClickAction(event.clientX, event.clientY)
-        } else if (gestures.clickTimestamp.length > 1) {
-            gestures.clickTimestamp = []
+        if (gestures.clickCount == 2) {
+            gestures.clickCount = 0
             if (doubleClickAction != null) doubleClickAction(event.clientX, event.clientY)
-        } else if (gestures.clickTimestamp.length > 0) {
-            gestures.clickTimestamp = []
+        } else if (gestures.clickCount == 1) {
+            gestures.clickCount = 0
             if (clickAction != null) clickAction(event.clientX, event.clientY)
         }
-        gestures.clickTimestamp.shift()
+        if (gestures.clickCount > 0) gestures.clickCount -= 1
     })
-
 }
 
 function delayed(callback) {
@@ -183,7 +166,7 @@ function enableGesturesOnElement(element, actions) {
     )
     element.addEventListener("wheel", (event) => mouseWheelScroll(event, actions.scrollAction, actions.scrollEndAction))
     element.addEventListener("mousedown", mouseDown)
-    element.addEventListener("mouseup", (event) => mouseUp(event, actions.clickAction, actions.doubleClickAction, actions.tripleClickAction))
+    element.addEventListener("mouseup", (event) => mouseUp(event, actions.clickAction, actions.doubleClickAction))
     element.addEventListener("mouseout", mouseUp)
     element.addEventListener("mousemove", (event) => mouseMove(event, actions.mouseMoveAction))
 }

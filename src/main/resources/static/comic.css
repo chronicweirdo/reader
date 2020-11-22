@@ -11,54 +11,16 @@ body {
     -khtml-user-select: none; /* webkit (konqueror) browsers */
     -ms-user-select: none; /* IE10+ */
 }
-#prev, #next, #toolsButtonLeft, #toolsButtonRight, #canv {
+
+#ch_canv {
     display: block;
     position: fixed;
-}
-#prev {
     top: 0;
-    left: 0;
-    width: 10vw;
-    height: 90vh;
-}
-#next {
-    top: 0;
-    right: 0;
-    width: 10vw;
-    height: 90vh;
-}
-#toolsButtonLeft {
-    bottom: 0;
-    left: 0;
-    width: 10vw;
-    height: 10vh;
-}
-#toolsButtonRight {
-    bottom: 0;
-    right: 0;
-    width: 10vw;
-    height: 10vh;
+    left: 10%;
+    width: 80%;
+    height: 100%;
 }
 
-#canv {
-    top: 0;
-    left: 10vw;
-    width: 80vw;
-    height: 100vh;
-}
-
-#spinner {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 5vw;
-    height: 5vw;
-    display: none;
-}
-#spinner svg {
-    width: 100%;
-    height: 100%
-}
 img {
     position: fixed;
 }
