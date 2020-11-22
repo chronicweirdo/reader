@@ -30,20 +30,19 @@ class ContentService {
   @BeanProperty
   var keepEbookStyles: Boolean = _
 
-  //@Cacheable(Array("resource"))
-  def loadResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
+  /**
+   * Book resources are loaded based on a path. These are usually images.
+   * @param bookId
+   * @param resourcePath
+   * @return
+   */
+  @Cacheable(Array("bookResource"))
+  def loadBookResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
-        .flatMap(book => FileUtil.getExtension(book.path) match {
-          case FileTypes.EPUB =>
-            val basePath = EpubUtil.baseLink(resourcePath)
-            EpubUtil.readResource(book.path, basePath).flatMap(bytes => processResource(book, basePath, bytes))
-          case FileTypes.CBR =>
-            CbrUtil.readResource(book.path, resourcePath)
-          case FileTypes.CBZ =>
-            CbzUtil.readResource(book.path, resourcePath)
-          case _ =>
-            None
-        })
+      .filter(book => FileUtil.getExtension(book.path) == FileTypes.EPUB)
+      .map(book => (FileUtil.getMediaType(resourcePath), EpubUtil.readResource(book.path, EpubUtil.baseLink(resourcePath))))
+      .filter { case (contentTypeOption, bytesOption) => contentTypeOption.isDefined && bytesOption.isDefined}
+      .flatMap { case (contentTypeOption, bytesOption) => Some(Content(None, contentTypeOption.get, bytesOption.get))}
   }
 
   @Cacheable(Array("sectionStartPosition"))
@@ -124,50 +123,21 @@ class ContentService {
     }
   }
 
+  /**
+   * Comic resources (or PDF), which are images, are loaded in batches of pages.
+   * @param bookId
+   * @param positions
+   * @return
+   */
   @Cacheable(Array("resources"))
-  def loadResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
-    bookRepository.findById(bookId).asScala match {
-      case Some(book) => FileUtil.getExtension(book.path) match {
-        /*case FileTypes.EPUB =>
-          positions
-            .flatMap(p => findResourceByPosition(book, p))
-            .distinct
-            .flatMap(baseLink =>
-              EpubUtil.readResource(book.path, baseLink)
-                .flatMap(bytes => processResource(book, baseLink, bytes))
-            )*/
-
-        case FileTypes.CBZ =>
-          CbzUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case FileTypes.CBR =>
-          CbrUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case FileTypes.PDF =>
-          PdfUtil.readPages(book.path, Some(positions)).getOrElse(Seq())
-
-        case _ =>
-          Seq()
+  def loadComicResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
+    bookRepository.findById(bookId).asScala
+      .map(book => (book.path, FileUtil.getExtension(book.path))) match {
+        case Some((path, FileTypes.CBZ)) => CbzUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case Some((path, FileTypes.CBR)) => CbrUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case Some((path, FileTypes.PDF)) => PdfUtil.readPages(path, Some(positions)).getOrElse(Seq())
+        case _ => Seq()
       }
-
-      case None =>
-        Seq()
-    }
-  }
-
-  private def processResource(book: Book, resourcePath: String, bytes: Array[Byte]) = {
-    FileUtil.getMediaType(resourcePath) match {
-      /*case Some(FileMediaTypes.TEXT_HTML_VALUE) =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))*/
-
-      case Some(contentType) =>
-        Some(Content(None, contentType, bytes))
-
-      /*case None if resourcePath == "toc" =>
-        Some(Content(None, FileMediaTypes.TEXT_HTML_VALUE, processHtml(book, resourcePath, bytes)))*/
-
-      case _ => None
-    }
   }
 
   def getBatchForPosition(position: Int): Seq[Int] = {

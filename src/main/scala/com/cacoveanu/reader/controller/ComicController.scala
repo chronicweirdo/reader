@@ -32,7 +32,7 @@ class ComicController @Autowired() (private val userService: UserService,
   @ResponseBody
   def getImageData(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int): String = {
     contentService
-      .loadResources(id, contentService.getBatchForPosition(page))
+      .loadComicResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)
       .map(p => WebUtil.toBase64Image(p.mediaType, p.data))
       .getOrElse("")
@@ -44,7 +44,7 @@ class ComicController @Autowired() (private val userService: UserService,
   def download(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int) = {
     // header('Content-Disposition: attachment; filename="' . $fileName . '"');
     contentService
-      .loadResources(id, contentService.getBatchForPosition(page))
+      .loadComicResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)
       .map(p => ResponseEntity
         .ok()
