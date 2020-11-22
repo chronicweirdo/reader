@@ -6,7 +6,7 @@ import java.util
 
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService}
-import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil}
+import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -22,27 +22,8 @@ import scala.util.Random
 class BookController @Autowired()(private val contentService: ContentService,
                                   private val bookService: BookService) {
 
-  private def toResponseEntity(content: Option[Content]) = content match {
-    case Some(Content(_, FileMediaTypes.TEXT_HTML_VALUE, bytes)) => // todo: probably not happening?
-      ResponseEntity.ok().body(/*appendSettings(*/new String(bytes, "UTF-8")/*)*/)
-
-    case Some(Content(_, FileMediaTypes.TEXT_CSS_VALUE, bytes)) =>
-      ResponseEntity.ok().body(new String(bytes, "UTF-8"))
-
-    case Some(Content(_, FileMediaTypes.IMAGE_JPEG_VALUE, bytes)) =>
-      ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytes)
-
-    case Some(Content(_, FileMediaTypes.IMAGE_PNG_VALUE, bytes)) =>
-      ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(bytes)
-
-    case Some(Content(_, FileMediaTypes.IMAGE_GIF_VALUE, bytes)) =>
-      ResponseEntity.ok().contentType(MediaType.IMAGE_GIF).body(bytes)
-
-    case _ => ResponseEntity.notFound().build()
-  }
-
   @RequestMapping(Array("/book"))
-  def getBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
+  def loadBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(book) =>
         val progress = bookService.loadProgress(book)
@@ -56,13 +37,13 @@ class BookController @Autowired()(private val contentService: ContentService,
         val uiToc: util.List[UiToc] = book.toc.asScala.map(e => UiToc(e.index, e.title, e.position)).sortBy(_.position).asJava
         model.addAttribute("tableOfContents", uiToc)
         "book"
-      case None => "" // todo: throw some error!
+      case None => "error"
     }
   }
 
   @RequestMapping(Array("/bookSection"))
   @ResponseBody
-  def loadResource(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long) = {
+  def loadBookSection(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long) = {
     val sectionStartPosition = contentService.findStartPositionForSectionContaining(id, position)
     val node = contentService.loadBookSection(id, sectionStartPosition)
     node
@@ -70,7 +51,9 @@ class BookController @Autowired()(private val contentService: ContentService,
 
   @RequestMapping(Array("/bookResource"))
   def loadBookResource(@RequestParam("id") id: java.lang.Long, @RequestParam("path") path: String) = {
-    toResponseEntity(contentService.loadBookResource(id, path))
+    contentService.loadBookResource(id, path)
+      .map(content => WebUtil.toResponseEntity(content.mediaType, content.data))
+      .getOrElse(WebUtil.notFound)
   }
 
   @RequestMapping(Array("/openBook"))
@@ -91,7 +74,7 @@ class BookController @Autowired()(private val contentService: ContentService,
           new RedirectView(s"/book?id=$bookId")
       }
 
-      case _ => new RedirectView("/") // todo: maybe better to throw a not found
+      case _ => new RedirectView("/error")
     }
   }
 

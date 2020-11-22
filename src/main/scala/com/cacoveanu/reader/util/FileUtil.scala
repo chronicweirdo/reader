@@ -20,6 +20,7 @@ object FileMediaTypes {
   val IMAGE_WEBP_VALUE = "image/webp"
   val TEXT_HTML_VALUE = MediaType.TEXT_HTML_VALUE
   val TEXT_CSS_VALUE = "text/css"
+  val TEXT_PLAIN_VALUE = MediaType.TEXT_PLAIN_VALUE
 
 }
 

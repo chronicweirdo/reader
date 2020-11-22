@@ -95,23 +95,6 @@ class MainController @Autowired()(
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
-  /*@RequestMapping(
-    value=Array("/updateSetting"),
-    method=Array(RequestMethod.PUT)
-  )
-  def updateSetting(@RequestParam("name") name: String, @RequestParam("value") value: String) = {
-    settingService.saveSetting(name, value)
-  }*/
-
-  /*@RequestMapping(
-    value=Array("/loadSettings"),
-    method=Array(RequestMethod.GET)
-  )
-  @ResponseBody
-  def loadSettings(@RequestParam("name") name: Seq[String]) = {
-    name.map(n => (n, settingService.getSetting(n))).toMap.asJava
-  }*/
-
   @RequestMapping(
     value=Array("/scan"),
     method=Array(RequestMethod.GET)
