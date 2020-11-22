@@ -204,6 +204,20 @@ class BookNode {
         val oldEnd = oldStart + oldSrc.size
         this.content = this.content.substring(0, oldStart) + newSrc + this.content.substring(oldEnd)
       }
+    } else if (this.name == "tr") {
+      val srcPattern = "src=\"([^\"]+)\"".r
+      val matches = srcPattern.findAllMatchIn(this.content)
+      var newContent = ""
+      var lastMatchEnd = 0
+      for (m <- matches.iterator) {
+        val oldSrc = m.group(1)
+        val newSrc = transformFunction(oldSrc)
+        val oldStart = m.start(1)
+        val oldEnd = oldStart + oldSrc.size
+        newContent += this.content.substring(lastMatchEnd, oldStart) + newSrc
+        lastMatchEnd = oldEnd
+      }
+      this.content = newContent + this.content.substring(lastMatchEnd)
     }
     this.children.foreach(child => child.srcTransform(transformFunction))
   }
@@ -219,6 +233,21 @@ class BookNode {
         val oldEnd = oldStart + oldHref.size
         this.content = this.content.substring(0, oldTagStart) + newName + "=\"" + newHref + this.content.substring(oldEnd)
       }
+    } else if (this.name == "tr") {
+      val srcPattern = "(href)=\"([^\"]+)\"".r
+      val matches = srcPattern.findAllMatchIn(this.content)
+      var newContent = ""
+      var lastMatchEnd = 0
+      for (m <- matches.iterator) {
+        val oldHref = m.group(2)
+        val (newName, newHref) = transformFunction(oldHref)
+        val oldTagStart = m.start(1)
+        val oldStart = m.start(2)
+        val oldEnd = oldStart + oldHref.size
+        newContent += this.content.substring(lastMatchEnd, oldTagStart) + newName + "=\"" + newHref
+        lastMatchEnd = oldEnd
+      }
+      this.content = newContent + this.content.substring(lastMatchEnd)
     }
     this.children.foreach(child => child.hrefTransform(transformFunction))
   }
