@@ -305,7 +305,10 @@ window.onload = function() {
     fixComponentHeights()
 
     // other page controls heights need to be fixed like this too
-
+    enableKeyboardGestures({
+        "leftAction": previousPage,
+        "rightAction": nextPage
+    })
 
     enableGesturesOnElement(document.getElementById("ch_prev"), {
         "clickAction": (x, y) => previousPage()
