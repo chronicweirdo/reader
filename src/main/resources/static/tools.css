@@ -52,7 +52,7 @@
     margin-bottom: 8px;
 }
 #ch_tools > p.ch_zoom_controls > .ch_set_zoom {
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-family: 'PT Serif', serif;
 }
 #ch_tools > p.ch_zoom_controls > .selected {
     background-color: black;
