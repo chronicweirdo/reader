@@ -255,17 +255,18 @@ function displayPageForTocEntry(entry) {
 
 function setZoom(zoom, withResize = true) {
     //var defaultZoom = 1.5
-    document.body.style["font-size"] = zoom + "em"
+    document.body.style["font-size"] = (zoom/10.0) + "em"
     window.localStorage.setItem("bookZoom", zoom)
+    highlightZoomSetButtons(zoom)
     if (withResize) handleResize()
 }
 
 function getSavedZoom() {
     var savedZoomValue = window.localStorage.getItem("bookZoom")
     if (savedZoomValue != null) {
-        return parseFloat(savedZoomValue)
+        return parseInt(savedZoomValue)
     } else {
-        return 1.5
+        return 15
     }
 }
 
@@ -275,14 +276,15 @@ function getCacheKey() {
 }
 
 function increaseZoom(event) {
-    console.log(event)
     var currentZoom = getSavedZoom()
-    setZoom(currentZoom + .1)
+    var newZoom = currentZoom + 1
+    setZoom(newZoom)
 }
 
 function decreaseZoom(event) {
     var currentZoom = getSavedZoom()
-    setZoom(currentZoom - .1)
+    var newZoom = currentZoom - 1
+    setZoom(newZoom)
 }
 
 function loadCache() {
@@ -301,12 +303,25 @@ function saveCache() {
 }
 
 function setupZoomSetButton(el) {
-    var zoom = parseFloat(el.getAttribute("zoom"))
-    el.style["font-size"] = zoom + "rem"
+    var zoom = parseInt(el.getAttribute("zoom"))
+    el.style["font-size"] = (zoom * .1) + "rem"
     el.addEventListener("click", (event) => {
         event.stopPropagation()
         setZoom(zoom)
     })
+}
+
+function highlightZoomSetButtons(currentZoom) {
+    var zoomSetters = document.getElementsByClassName("ch_set_zoom")
+    for (var i = 0; i < zoomSetters.length; i++) {
+        var el = zoomSetters[i]
+        var elZoom = parseInt(el.getAttribute("zoom"))
+        if (elZoom == currentZoom) {
+            el.classList.add("selected")
+        } else {
+            el.classList.remove("selected")
+        }
+    }
 }
 
 window.onload = function() {

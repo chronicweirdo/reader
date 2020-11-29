@@ -51,6 +51,10 @@
     vertical-align: top;
     margin-bottom: 8px;
 }
+#ch_tools > p.ch_zoom_controls > .selected {
+    background-color: black;
+    color: gold;
+}
 #ch_tools > p > *:first-child {
     margin-left: 0;
 }
