@@ -6,18 +6,21 @@ function pan(x, y) {
     updateImage()
 }
 function zoom(zoom, centerX, centerY) {
+    var oldRatio = getViewportWidth() / getZoom()
+    var currentRatio = getViewportWidth() / zoom
+
     var sideLeft = centerX - getImageLeft()
-    var ratioLeft = sideLeft / (getImageWidth() * getZoom())
-    var newSideLeft = (getImageWidth() * zoom) * ratioLeft
+    var ratioLeft = sideLeft / (getImageWidth() * oldRatio)
+    var newSideLeft = (getImageWidth() * currentRatio) * ratioLeft
     setImageLeft(centerX - newSideLeft)
 
     var sideTop = centerY - getImageTop()
-    var ratioTop = sideTop / (getImageHeight() * getZoom())
-    var newSideTop = (getImageHeight() * zoom) * ratioTop
+    var ratioTop = sideTop / (getImageHeight() * oldRatio)
+    var newSideTop = (getImageHeight() * currentRatio) * ratioTop
     setImageTop(centerY - newSideTop)
 
     setZoom(zoom)
-    setZoomJumpValue(zoom / getZoomForFitToScreen())
+    //setZoomJumpValue(zoom / getZoomForFitToScreen())
     updateImage()
 }
 function toggleFullScreen() {
@@ -54,6 +57,14 @@ function isAutoFullScreenEnabled() {
     return false;
 }
 
+function setFitToScreen(val) {
+    document.isFitToScreenValue = val
+}
+
+function isFitToScreen() {
+    return document.isFitToScreenValue
+}
+
 function updateImage() {
     if (onMobile() && isAutoFullScreenEnabled()) {
         if (isPageFitToScreen()) {
@@ -65,10 +76,28 @@ function updateImage() {
 
     var img = getImage()
 
-    if (getZoom() < getMinimumZoom()) setZoom(getMinimumZoom())
+    if (getZoom() > getMinimumZoom()) setZoom(getMinimumZoom())
 
-    var newWidth = getOriginalImageWidth() * getZoom()
-    var newHeight = getOriginalImageHeight() * getZoom()
+    /*
+        zoom means how many of the original image width, in pixels, is visible on screen
+        if zoom is less than the image width, only part of the image is visible on screen, so the width needs to be larger than the viewport width
+        if zoom is more, the whole image width is visible
+
+       zoom value       original image width
+       ------------  =  --------------------
+       screen width     current image width
+
+       current image width = screen width * original image width / zoom value
+    */
+    //var ratio = getOriginalImageWidth() / getZoom()
+    var currentZoom = getZoom()
+    //if (isFitToScreen()) currentZoom = getMinimumZoom()
+    //console.log(currentZoom)
+
+    //var newWidth = getOriginalImageWidth() * getZoom()
+    var newWidth = (getViewportWidth() / currentZoom) * getOriginalImageWidth()
+    //var newHeight = getOriginalImageHeight() * getZoom()
+    var newHeight = (getViewportWidth() / currentZoom) * getOriginalImageHeight()
     setImageWidth(newWidth)
     setImageHeight(newHeight)
 
@@ -89,7 +118,8 @@ function getRevertScrollZoom() {
     return true
 }
 function getScrollSpeed() {
-    return .5 * .1
+    //return .5 * .1
+    return 30
 }
 
 function getPanSpeed() {
@@ -105,16 +135,43 @@ function getZoomJumpValue() {
     }
 }
 
-function setZoomJumpValue(value) {
+/*function setZoomJumpValue(value) {
     window.localStorage.setItem("zoomJump", value)
-}
+}*/
 
 function zoomJump(x, y) {
-    if (isPageFitToScreen()) {
+    /*if (isFitToScreen()) {
+        setFitToScreen(false)
+        zoom(getZoom(), x, y)
+    } else {
+        setFitToScreen(true)
+        updateImage()
+    }*/
+
+    /*if (isPageFitToScreen()) {
         zoom(getZoom() * getZoomJumpValue(), x, y)
     } else {
         fitPageToScreen()
+    }*/
+
+    if (getZoom() == getMinimumZoom()) {
+        // we are zoomed out
+        // get old zoom value from storage
+        var oldZoom = parseFloat(window.localStorage.getItem("comicZoomJump"))
+        if (!oldZoom) oldZoom = getMinimumZoom() / 2
+        zoom(oldZoom, x, y)
+    } else {
+        // we are zoomed in
+        // save current zoom value to storage
+        window.localStorage.setItem("comicZoomJump", getZoom())
+        // set zoom to minimum
+        setZoom(getMinimumZoom())
+        updateImage()
     }
+
+
+    // save current zoom
+
 }
 
 function fitPageToScreenWidth() {
@@ -186,13 +243,35 @@ function getImageTop() {
 }
 function setZoom(zoom) {
     document.imageSettings.zoom = zoom
+    window.localStorage.setItem("comicZoom", zoom)
 }
 function getZoom() {
-    return document.imageSettings.zoom
+    if (document.imageSettings.zoom) {
+        return document.imageSettings.zoom
+    } else {
+        var fromStorage = parseFloat(window.localStorage.getItem("comicZoom"))
+        if (fromStorage) {
+            document.imageSettings.zoom = fromStorage
+            return document.imageSettings.zoom
+        } else {
+            setZoom(getOriginalImageWidth())
+            return document.imageSettings.zoom
+        }
+    }
+
 }
 // minimum zoom is determined by image and viewport dimensions
+// this is the zoom necessary to display the whole image on the screen
 function updateMinimumZoom() {
-    document.imageSettings.minimumZoom = Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
+    //document.imageSettings.minimumZoom = Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
+
+    // what should the zoom be so that the width fits in the screen
+    var widthZoom = getOriginalImageWidth()
+
+    // ratio so that height fits in screen
+    var ratio = getViewportHeight() / getOriginalImageHeight()
+    var heightZoom = getViewportWidth() / ratio
+    document.imageSettings.minimumZoom = Math.max(widthZoom, heightZoom)
 }
 function getMinimumZoom() {
     return document.imageSettings.minimumZoom
@@ -439,7 +518,7 @@ function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
 
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
     var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? -1 : 1)
-    var newZoom = getZoom() * zoomDelta
+    var newZoom = getZoom() - zoomDelta
     zoom(newZoom, scrollCenterX, scrollCenterY)
 }
 
@@ -510,15 +589,25 @@ window.onload = function() {
     document.bookTitle = getMeta("bookTitle")
     document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
-    setZoom(1.0)
+    //setZoom(1.0)
+    //setFitToScreen(true)
     var startPage = num(getMeta("startPosition")) + 1
 
     displayPage(startPage, function() {
-        var fit = getMeta("defaultFit")
+        /*var fit = getMeta("defaultFit")
         if (fit == "width") {
             fitPageToScreenWidth()
         } else if (fit = "screen") {
             fitPageToScreen()
-        }
+        }*/
+        //setZoom(getMinimumZoom())
+        updateImage()
     })
 }
+
+/*
+New approach for zoom, we have two modes:
+- fit page to screen
+- fit page to zoom value
+    - zoom is now a number representing the number of pixels of the original image width visible in the screen width
+*/
