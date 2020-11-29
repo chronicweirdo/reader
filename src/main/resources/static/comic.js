@@ -332,7 +332,7 @@ function getRowThreshold() {
 }
 
 function getColumnThreshold() {
-    return getImageHeight() * .1
+    return getImageHeight() * .05
 }
 
 function isEndOfRow() {
