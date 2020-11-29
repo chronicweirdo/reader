@@ -254,8 +254,8 @@ function displayPageForTocEntry(entry) {
 }
 
 function setZoom(zoom, withResize = true) {
-    var defaultZoom = 1.5
-    document.body.style["font-size"] = (zoom * defaultZoom) + "em"
+    //var defaultZoom = 1.5
+    document.body.style["font-size"] = zoom + "em"
     window.localStorage.setItem("bookZoom", zoom)
     if (withResize) handleResize()
 }
@@ -265,7 +265,7 @@ function getSavedZoom() {
     if (savedZoomValue != null) {
         return parseFloat(savedZoomValue)
     } else {
-        return 1
+        return 1.5
     }
 }
 
@@ -300,6 +300,15 @@ function saveCache() {
     window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
+function setupZoomSetButton(el) {
+    var zoom = parseFloat(el.getAttribute("zoom"))
+    el.style["font-size"] = zoom + "rem"
+    el.addEventListener("click", (event) => {
+        event.stopPropagation()
+        setZoom(zoom)
+    })
+}
+
 window.onload = function() {
     // fix viewport height
     fixComponentHeights()
@@ -327,6 +336,10 @@ window.onload = function() {
         event.stopPropagation()
         increaseZoom()
     })
+    var zoomSetters = document.getElementsByClassName("ch_set_zoom")
+    for (var i = 0; i < zoomSetters.length; i++) {
+        setupZoomSetButton(zoomSetters[i])
+    }
 
     //addPositionInputTriggerListener(displayPageFor)
 

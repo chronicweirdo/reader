@@ -31,7 +31,7 @@
         <p th:each="entry: ${tableOfContents}"><a class="ch_chapter" th:ch_position="${entry.position}" onclick="displayPageForTocEntry(this)" th:text="${entry.title}">chapter</a></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <p><span th:text="${title}">Book Title</span></p>
-        <p><a id="ch_decrease_zoom">-</a><a id="ch_increase_zoom">+</a></p>
+        <p class="ch_zoom_controls"><a id="ch_decrease_zoom">-</a><a class="ch_set_zoom" zoom="1.2">1.2</a><a class="ch_set_zoom" zoom="1.5">1.5</a><a class="ch_set_zoom" zoom="1.8">1.8</a><a id="ch_increase_zoom">+</a></p>
         <p><span>position</span><input id="positionInput" type="number" min="0" th:max="${size-1}" readonly/><span>of</span><span th:text="${size-1}">20</span></p>
         <p><a onclick="goHome()">library</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>
