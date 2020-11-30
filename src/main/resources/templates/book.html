@@ -32,12 +32,13 @@
 <div id="ch_tools_container">
     <div id="ch_tools">
         <p th:each="entry: ${tableOfContents}"><a class="ch_chapter" th:ch_position="${entry.position}" onclick="displayPageForTocEntry(this)" th:text="${entry.title}">chapter</a></p>
+        <p class="ch_toc_separator"></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
-        <p><span th:text="${title}">Book Title</span></p>
+        <h1 th:text="${title}">Book Title</h1>
+        <p><span>position</span><span id="positionInput"></span><span>/</span><span th:text="${size-1}">20</span></p>
         <p class="ch_zoom_controls"><a id="ch_decrease_zoom">-</a><a class="ch_set_zoom" zoom="12">1.2</a><a class="ch_set_zoom" zoom="15">1.5</a><a class="ch_set_zoom" zoom="18">1.8</a><a id="ch_increase_zoom">+</a></p>
         <p><a onclick="goHome()">library</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>
-        <p class="ch_position_paragraph"><span id="positionInput"></span><span>/</span><span th:text="${size-1}">20</span></p>
     </div>
 </div>
 <div id="ch_spinner">
