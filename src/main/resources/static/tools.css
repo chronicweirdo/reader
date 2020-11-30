@@ -3,13 +3,14 @@
     position: fixed;
     width: 100%;
     height: 100%;
-    background-color: #1a1a1add;
+    background-color: #1a1a1aee;
 }
 #ch_tools {
     display: block;
     bottom: 0;
     font-size: 3vh;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Roboto', sans-serif;
+    color: white;
     overflow-y: auto;
     margin-left: 10%;
     margin-right: 10%;
@@ -32,6 +33,9 @@
     margin-bottom: 0.2em;
     max-width: 80vw;
 }
+#ch_tools .ch_position_paragraph {
+    text-align: center;
+}
 #ch_tools > *:first-child {
     margin-top: 0.2em;
 }
@@ -51,8 +55,11 @@
     vertical-align: top;
     margin-bottom: 8px;
 }
+#ch_tools > .ch_zoom_controls > a {
+    text-align: center;
+}
 #ch_tools > p.ch_zoom_controls > .ch_set_zoom {
-    font-family: 'PT Serif', serif;
+    font-family: 'Merriweather', serif;
 }
 #ch_tools > p.ch_zoom_controls > .selected {
     background-color: black;
@@ -63,7 +70,7 @@
 }
 #ch_tools > p > span {
     color: white;
-    background-color: black;
+    background-color: #00000000;
 }
 #ch_tools > p > input {
     font-size: 1em;
@@ -75,9 +82,9 @@
 #ch_tools > p > a {
     color: black;
     background-color: gold;
-    border: 2px solid white;
+    border: 2px solid rgb(255, 236, 133);
 
-    text-align: center;
+
     text-decoration: none;
     min-width: 1.5em;
 
@@ -86,8 +93,11 @@
 
 #ch_tools > p > a.ch_chapter {
     color: white;
-    background-color: #1a1a1a;
-    border-color: black;
+    background-color: #1a1a1a00;
+    border: 0;
+    text-decoration: underline;
+    font-style: italic;
+    font-weight: 300;
 }
 
 #ch_tools > p > a.ch_current {

@@ -12,7 +12,8 @@
     <meta name="startPosition" content="0" th:content=${startPosition}>
     <title th:text="${title}">Book Title</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="book.css">
     <link rel="stylesheet" type="text/css" href="tools.css">
     <script src="hammer.min.js"></script>
@@ -34,9 +35,9 @@
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <p><span th:text="${title}">Book Title</span></p>
         <p class="ch_zoom_controls"><a id="ch_decrease_zoom">-</a><a class="ch_set_zoom" zoom="12">1.2</a><a class="ch_set_zoom" zoom="15">1.5</a><a class="ch_set_zoom" zoom="18">1.8</a><a id="ch_increase_zoom">+</a></p>
-        <p><span>position</span><input id="positionInput" type="number" min="0" th:max="${size-1}" readonly/><span>of</span><span th:text="${size-1}">20</span></p>
         <p><a onclick="goHome()">library</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>
+        <p class="ch_position_paragraph"><span id="positionInput"></span><span>/</span><span th:text="${size-1}">20</span></p>
     </div>
 </div>
 <div id="ch_spinner">

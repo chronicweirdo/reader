@@ -1,3 +1,6 @@
+textarea, input, p {
+    font-family: 'Roboto', sans-serif;
+}
 textarea, input[type="text"], input[type="password"] {
     display: inline-block;
     font-size: 1em;
