@@ -11,12 +11,9 @@ body {
     min-height: -webkit-fill-available;
     font-family: 'Merriweather', serif;
 }
-
 html {
   height: -webkit-fill-available;
 }
-
-/* ui regions */
 #ch_content, #ch_shadow_content {
     width: 80vw;
     height: 90vh;
@@ -26,21 +23,13 @@ html {
     position: fixed;
     word-wrap: break-word;
 }
-
 #ch_shadow_content {
     visibility: hidden;
 }
-
-
-
-
-
-
 img, svg {
     max-height: 80vh !important;
     max-width: 80vw !important;
 }
-
 a {
     color: blue;
     text-decoration: underline;
