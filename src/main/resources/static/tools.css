@@ -165,6 +165,7 @@
 #ch_tools.right > .ch_zoom_controls > * {
     margin-left: 0;
     margin-right: 8px;
+    padding-left: 8px;
 }
 #ch_tools > .ch_zoom_controls > a {
     text-align: center;
@@ -191,6 +192,10 @@
     z-index: 1000;
     margin-right: 8px;
     margin-left: 8px;
+    text-align: center;
+}
+#ch_tools.left #positionInput, #ch_tools.right #positionInput {
+    padding-left: 8px;
 }
 #ch_tools .ch_position_paragraph {
     text-align: center;
