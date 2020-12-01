@@ -23,6 +23,7 @@ class MainController @Autowired()(
   def loadCollections(model: Model): String = {
     val collections = bookService.loadCollections().filter(c => ! c.isEmpty).asJava
     model.addAttribute("collections", collections)
+    model.addAttribute("collectionTree", bookService.loadCollectionsTree().toHtml())
     "collectionList"
   }
 

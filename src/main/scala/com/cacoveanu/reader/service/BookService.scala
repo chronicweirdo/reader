@@ -1,5 +1,7 @@
 package com.cacoveanu.reader.service
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Date
 
 import com.cacoveanu.reader.entity.{Account, Book, Progress}
@@ -108,6 +110,28 @@ class BookService {
     bookRepository.findAllCollections().asScala.toSeq
   }
 
+  def loadCollectionsTree(): CollectionNode = {
+    val collections = bookRepository.findAllCollections().asScala.toSeq
+    val root = new CollectionNode("root")
+    collections.filter(_.nonEmpty).foreach(c => {
+      val entries = c.split("\\\\")
+      var current = root
+      for (i <- entries.indices) {
+        val col = entries(i)
+        current.children.find(n => n.name == col) match {
+          case Some(child) =>
+            current = child
+          case None =>
+            val newChild = new CollectionNode(col)
+            newChild.search = URLEncoder.encode(c, StandardCharsets.UTF_8)
+            current.children = current.children :+ newChild
+            current = newChild
+        }
+      }
+    })
+    root
+  }
+
   private def prepareSearchTerm(original: String): String = {
     val lowercase = original.toLowerCase()
     val pattern = "[A-Za-z0-9]+".r
@@ -131,5 +155,24 @@ class BookService {
   def loadBooks = {
     bookRepository.findAll().asScala.toSeq
       .filter(b => b.path.endsWith(".epub"))
+  }
+}
+
+class CollectionNode() {
+  var name: String = _
+  var search: String = _
+  var children: Seq[CollectionNode] = Seq()
+  def this(name: String) {
+    this()
+    this.name = name
+  }
+
+  def toHtml(): String = {
+    var html = if (name != "root") "<a href=\"/?search=" + search + "\">" + name + "</a>" else "<a href=\"/\">everything</a>"
+    if (children.nonEmpty) {
+      html += (if (name == "root") "<ul class=\"tree\">" else "<ul>")
+      html += children.map(c => "<li>" + c.toHtml() + "</li>").mkString("") + "</ul>"
+    }
+    html
   }
 }

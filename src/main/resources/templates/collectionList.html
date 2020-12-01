@@ -23,7 +23,7 @@
         a {
             color: gold;
         }
-        ol {
+        /*ol {
             margin: 0;
             padding: 0;
             max-width: 100%;
@@ -32,21 +32,110 @@
         ol li {
             margin-bottom: 15px;
             max-width: 100%;
-        }
+        }*/
         @media all and (max-width: 999px) {
             #container {
                 width: 100%;
             }
         }
+
+      p.tree,
+      ul.tree,
+      ul.tree ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      ul.tree ul {
+        margin-left: 1.0em;
+      }
+
+      ul.tree li {
+        margin-left: 0.35em;
+        border-left: thin solid gold;
+      }
+
+      ul.tree li:last-child {
+        border-left: none;
+      }
+
+      ul.tree li:before {
+        width: 0.9em;
+        height: 0.6em;
+        margin-right: 0.1em;
+        vertical-align: top;
+        border-bottom: thin solid gold;
+        content: "";
+        display: inline-block;
+      }
+
+      ul.tree li:last-child:before {
+        border-left: thin solid gold;
+      }
+
     </style>
+    <script>
+      function toggle(el) {
+        //console.log(event.target.tagName)
+        var current = el
+        //console.log(current.tagName)
+        while (current.tagName != "LI") current = current.parentElement
+        //console.log(current)
+        var target = current.getElementsByTagName("UL")[0]
+        if (target) {
+          if (target.style.display != "none") {
+            target.style.display = "none"
+          } else {
+            target.style.display = "block"
+          }
+        }
+      }
+      function addExpandControl(item) {
+        var link = item.getElementsByTagName("A")[0]
+        //var expand = document.createElement("a")
+        var expand = document.createElement("span")
+        /*expand.onclick = function(event) {
+          toggle(expand)
+        }*/
+        expand.innerHTML = "+"
+        link.after(expand)
+      }
+      function getLiWithChildren() {
+        var items = document.getElementsByTagName("LI")
+        var result = []
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].getElementsByTagName("UL").length > 0) {
+            result.push(items[i])
+          }
+        }
+        return result
+      }
+      window.onload = function() {
+        var expandable = getLiWithChildren()
+        for (var i = 0; i < expandable.length; i++) {
+          //onsole.log(expandable[i])
+          var el = expandable[i]
+          addExpandControl(el)
+          toggle(el)
+          el.addEventListener("click", (event) => {
+            event.stopPropagation()
+            console.log(event.target)
+            toggle(event.target)
+          })
+        }
+      }
+    </script>
 </head>
 <body>
 <h1>A list of collections, so you know what to choose</h1>
-<p>
+<div th:utext="${collectionTree}"></div>
+<!--p>
 <ol>
+
     <li><a href="/">everything!</a></li>
     <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
 </ol>
-</p>
+</p-->
 </body>
 </html>
