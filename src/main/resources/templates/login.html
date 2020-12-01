@@ -17,7 +17,7 @@
     <p th:if="${param.error}">Invalid credentials.</p>
     <p th:if="${param.logout}">You have been logged out.</p>
     <form th:action="@{/login}" method="post" autocomplete="off">
-        <p><input id="username" type="text" name="username" placeholder="username" autofocus/></p>
+        <p><input id="username" type="text" name="username" placeholder="username" autofocus autocorrect="off" autocapitalize="none" autocomplete="off"/></p>
         <p><input id="password" type="password" name="password" placeholder="password"/></p>
         <input type="checkbox" name="remember-me" checked hidden>
         <p class="submit"><input type="submit" value="Sign In"/></p>
