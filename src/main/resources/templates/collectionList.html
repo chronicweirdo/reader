@@ -15,6 +15,7 @@
             color: gold;
             font-family: 'Merriweather', serif;
             padding: 10px;
+            word-wrap: break-word;
         }
         h1 {
             font-size: 1.2em;
@@ -23,16 +24,11 @@
         a {
             color: gold;
         }
-        /*ol {
-            margin: 0;
-            padding: 0;
-            max-width: 100%;
-            list-style-position:inside;
+        .expand {
+          cursor: pointer;
+          font-family: sans-serif;
+          margin-left: .3em;
         }
-        ol li {
-            margin-bottom: 15px;
-            max-width: 100%;
-        }*/
         @media all and (max-width: 999px) {
             #container {
                 width: 100%;
@@ -48,11 +44,13 @@
       }
 
       ul.tree ul {
-        margin-left: 1.0em;
+        margin-left: .05em;
       }
 
       ul.tree li {
         margin-left: 0.35em;
+        padding-left: .5em;
+        text-indent: -.5em;
         border-left: thin solid gold;
       }
 
@@ -61,7 +59,7 @@
       }
 
       ul.tree li:before {
-        width: 0.9em;
+        width: 0.4em;
         height: 0.6em;
         margin-right: 0.1em;
         vertical-align: top;
@@ -77,11 +75,8 @@
     </style>
     <script>
       function toggle(el) {
-        //console.log(event.target.tagName)
         var current = el
-        //console.log(current.tagName)
-        while (current.tagName != "LI") current = current.parentElement
-        //console.log(current)
+        while (current && current.tagName != "LI") current = current.parentElement
         var target = current.getElementsByTagName("UL")[0]
         if (target) {
           if (target.style.display != "none") {
@@ -91,13 +86,10 @@
           }
         }
       }
-      function addExpandControl(item) {
+      function addExpandSymbol(item) {
         var link = item.getElementsByTagName("A")[0]
-        //var expand = document.createElement("a")
         var expand = document.createElement("span")
-        /*expand.onclick = function(event) {
-          toggle(expand)
-        }*/
+        expand.classList.add("expand")
         expand.innerHTML = "+"
         link.after(expand)
       }
@@ -114,11 +106,9 @@
       window.onload = function() {
         var expandable = getLiWithChildren()
         for (var i = 0; i < expandable.length; i++) {
-          //onsole.log(expandable[i])
-          var el = expandable[i]
-          addExpandControl(el)
-          toggle(el)
-          el.addEventListener("click", (event) => {
+          addExpandSymbol(expandable[i])
+          toggle(expandable[i])
+          expandable[i].addEventListener("click", (event) => {
             event.stopPropagation()
             console.log(event.target)
             toggle(event.target)
@@ -130,12 +120,5 @@
 <body>
 <h1>A list of collections, so you know what to choose</h1>
 <div th:utext="${collectionTree}"></div>
-<!--p>
-<ol>
-
-    <li><a href="/">everything!</a></li>
-    <li th:each="collection: ${collections}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></li>
-</ol>
-</p-->
 </body>
 </html>

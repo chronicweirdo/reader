@@ -4,7 +4,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Date
 
-import com.cacoveanu.reader.entity.{Account, Book, Progress}
+import com.cacoveanu.reader.entity.{Account, Book, CollectionNode, Progress}
 import com.cacoveanu.reader.repository.{AccountRepository, BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
 import com.cacoveanu.reader.util.SessionUtil
@@ -112,9 +112,9 @@ class BookService {
 
   def loadCollectionsTree(): CollectionNode = {
     val collections = bookRepository.findAllCollections().asScala.toSeq
-    val root = new CollectionNode("root")
-    collections.filter(_.nonEmpty).foreach(c => {
-      val entries = c.split("\\\\")
+    val root = new CollectionNode(CollectionNode.EVERYTHING, "")
+    collections.filter(_.nonEmpty).foreach(collection => {
+      val entries = collection.split("\\\\")
       var current = root
       for (i <- entries.indices) {
         val col = entries(i)
@@ -122,8 +122,7 @@ class BookService {
           case Some(child) =>
             current = child
           case None =>
-            val newChild = new CollectionNode(col)
-            newChild.search = URLEncoder.encode(c, StandardCharsets.UTF_8)
+            val newChild = new CollectionNode(col, collection)
             current.children = current.children :+ newChild
             current = newChild
         }
@@ -158,21 +157,3 @@ class BookService {
   }
 }
 
-class CollectionNode() {
-  var name: String = _
-  var search: String = _
-  var children: Seq[CollectionNode] = Seq()
-  def this(name: String) {
-    this()
-    this.name = name
-  }
-
-  def toHtml(): String = {
-    var html = if (name != "root") "<a href=\"/?search=" + search + "\">" + name + "</a>" else "<a href=\"/\">everything</a>"
-    if (children.nonEmpty) {
-      html += (if (name == "root") "<ul class=\"tree\">" else "<ul>")
-      html += children.map(c => "<li>" + c.toHtml() + "</li>").mkString("") + "</ul>"
-    }
-    html
-  }
-}
