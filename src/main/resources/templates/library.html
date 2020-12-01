@@ -190,7 +190,9 @@
             var span = document.createElement("span")
             if (page < totalPages - 1) {
                 span.classList.add("progressbar")
-                span.title = "read " + (page + 1) + " of " + totalPages + " pages"
+                var percent = ((page + 1) / parseFloat(totalPages)) * 100
+                //span.title = percent.toFixed(2) + "%"
+                span.title = Math.floor(percent) + "%"
                 var prog = document.createElement("span")
                 prog.classList.add("read")
                 prog.style.width = (page / (totalPages-1) * 100) + "%"
