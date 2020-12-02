@@ -23,13 +23,13 @@ and mobile devices.
 
 ## Features
 
-- supports reading CBR, CBZ and EPUB files
+- supports reading CBR, CBZ, PDF and EPUB files
 - scan and monitor a library folder for supported file types
 - open and display supported file types in browser
-- keep track of position user has reached in comic book or ebook
-- continue reading from latest position
+- keep track of position user has reached in a comic book or ebook
+- continue reading from the latest position
 - keep track of read ebooks and comic books
-- organize books and comic books by collections (the subfolders they
+- view books and comic books organized by collections (the subfolders they
 are stored in on disk)
 - search for comic books and ebooks
 - add multiple users
@@ -39,7 +39,7 @@ are stored in on disk)
 ## Prerequisites
 
 Download and install the latest java for your operating system. Once all is done, open a command line and verify that
-java is installed correctly with the following command:
+java was installed correctly with the following command:
 
 ```
 java -version
