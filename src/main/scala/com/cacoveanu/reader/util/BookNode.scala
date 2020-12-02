@@ -14,6 +14,7 @@ object BookNode {
 
   // if it starts and ends with angle brackets
   private def isTag(str: String) = "^</?[^>]+>$".r matches str
+  private def isComment(str: String) = "^<!\\-\\-[^>]+\\-\\->$".r matches str
   private def isEndTag(str: String) = "^</[^>]+>$".r matches str
   private def isBothTag(str: String) = "^<[^>/]+/>$".r matches str
   private def getTagName(str: String) = "</?([^>\\s]+)".r findFirstMatchIn str match {
@@ -58,8 +59,10 @@ object BookNode {
         // ending a tag
         if (isTag(content)) {
           val name = getTagName(content)
-          // can only be a tag
-          if (isEndTag(content)) {
+          // if it's comment, ignore
+          if (isComment(content)) {
+            // ignoring comment
+          } else if (isEndTag(content)) {
             // we check that this tag closes the current node correctly
             if (isVoidElement(name)) {
               // the last child should have the correct name
@@ -69,7 +72,7 @@ object BookNode {
               }
             } else {
               // the current node should have the correct name, and it is getting closed
-              if (name != current.name) throw new Throwable("incompatible end tag")
+              if (name != current.name) throw new Throwable("incompatible end tag " + current.name)
               // move current node up
               current = current.parent
             }
