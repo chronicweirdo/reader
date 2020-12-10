@@ -99,7 +99,7 @@ object BookNode {
       }
     }
 
-    bodyNode.collapseLeafs()
+    bodyNode.collapseLeaves()
     bodyNode.updatePositions(entrancePosition)
     Some(bodyNode)
   }
@@ -178,13 +178,13 @@ class BookNode {
     else this.content + this.children.map(_.extractContent()).mkString("") + "</" + this.name + ">"
   }
 
-  private def collapseLeafs(): Unit = {
+  private def collapseLeaves(): Unit = {
     if (shouldBeLeafElement(this.name) && this.children.nonEmpty) {
       // extract content from children
       this.content = this.extractContent()
       this.children = Seq()
     } else {
-      this.children.foreach(_.collapseLeafs())
+      this.children.foreach(_.collapseLeaves())
     }
   }
 

@@ -8,7 +8,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
 
   this.addChild = addChild
   this.prettyPrint = prettyPrint
-  this.collapseLeafs = collapseLeafs
+  this.collapseLeaves = collapseLeaves
   this.getContent = getContent
   this.updatePositions = updatePositions
   this.getLength = getLength
@@ -165,7 +165,7 @@ function parseBody(body) {
     }
   }
 
-  bodyNode.collapseLeafs()
+  bodyNode.collapseLeaves()
   bodyNode.updatePositions()
   return bodyNode
 }
@@ -213,14 +213,14 @@ function getContent() {
   }
 }
 
-function collapseLeafs() {
+function collapseLeaves() {
   if (shouldBeLeafElement(this.name) && this.children.length > 0) {
     // extract content from children
     this.content = this.getContent()
     this.children = []
   } else {
     for (var i = 0; i < this.children.length; i++) {
-      this.children[i].collapseLeafs()  
+      this.children[i].collapseLeaves()
     }
   }
 }

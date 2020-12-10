@@ -512,7 +512,7 @@ function testNextLeaf(tree) {
     var i = 0
     while (leaf != null) {
       //leaf.prettyPrint()
-      console.assert(leaf == expectedLeaves[i], "next leafs wrong result")
+      console.assert(leaf == expectedLeaves[i], "next leaves wrong result")
       leaf = leaf.nextLeaf()
       i = i + 1
     }
@@ -533,7 +533,7 @@ function testPreviousLeaf(tree) {
     var i = expectedLeaves.length - 1
     while (leaf != null) {
       //leaf.prettyPrint()
-      console.assert(leaf == expectedLeaves[i], "previous leafs wrong result")
+      console.assert(leaf == expectedLeaves[i], "previous leaves wrong result")
       leaf = leaf.previousLeaf()
       i = i - 1
     }
