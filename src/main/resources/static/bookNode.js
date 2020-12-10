@@ -23,13 +23,13 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.copy = copy
 }
 
-var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source"]
+var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image"]
 
 function isVoidElement(tagName) {
   return VOID_ELEMENTS.includes(tagName.toLowerCase())
 }
 
-var LEAF_ELEMENTS = ["img", "tr"]
+var LEAF_ELEMENTS = ["img", "tr", "image"]
 
 function shouldBeLeafElement(tagName) {
   return LEAF_ELEMENTS.includes(tagName.toLowerCase())
