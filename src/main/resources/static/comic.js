@@ -244,6 +244,40 @@ function prefetch(page, callback) {
     }
 }
 
+function getSuggestedBackgroundColor() {
+    var img = getImage()
+    var canvas = document.createElement('canvas');
+    canvas.width = getOriginalImageWidth()
+    canvas.height = getOriginalImageHeight()
+    var context = canvas.getContext('2d')
+    context.drawImage(img, 0, 0)
+    var red = 0
+    var green = 0
+    var blue = 0
+    var pixels = 0
+    for (var y = 0; y < getOriginalImageHeight(); y++) {
+        var leftPixel = context.getImageData(0, y, 1, 1).data
+        var rightPixel = context.getImageData(getOriginalImageWidth() - 1, y, 1, 1).data
+        red = red + leftPixel[0] + rightPixel[0]
+        green = green + leftPixel[1] + rightPixel[1]
+        blue = blue + leftPixel[2] + rightPixel[2]
+        pixels = pixels + 2
+    }
+    for (var x = 1; x < getOriginalImageWidth() - 1; x++) {
+        var topPixel = context.getImageData(x, 0, 1, 1).data
+        var bottomPixel = context.getImageData(x, getOriginalImageHeight() - 1, 1, 1).data
+        red = red + topPixel[0] + bottomPixel[0]
+        green = green + topPixel[1] + bottomPixel[1]
+        blue = blue + topPixel[2] + bottomPixel[2]
+        pixels = pixels + 2
+    }
+    red = Math.floor(red / pixels)
+    green = Math.floor(green / pixels)
+    blue = Math.floor(blue / pixels)
+    document.body.style.background="rgb(" + red + "," + green + "," + blue + ")"
+    canvas.remove()
+}
+
 function displayPage(page, callback) {
     var timestamp = + new Date()
     showSpinner()
@@ -253,6 +287,7 @@ function displayPage(page, callback) {
             hideSpinner()
             var img = getImage()
             img.onload = function() {
+                getSuggestedBackgroundColor()
                 setPage(page)
                 saveProgress(getBookId(), page-1)
                 setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
