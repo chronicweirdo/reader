@@ -135,7 +135,6 @@ function removeProgress() {
 
 function updatePositionInput(position) {
     var el = document.getElementById("positionInput")
-    console.log(el.tagName)
     if (el.tagName == "INPUT") {
         el.value = position
     } else {
