@@ -244,6 +244,57 @@ function prefetch(page, callback) {
     }
 }
 
+function getPixelKey(pixelData) {
+    return pixelData[0] + "_" + pixelData[1] + "_" + pixelData[2]
+}
+
+function getKeyColor(key) {
+    var cs = key.split("_")
+    return [parseInt(cs[0]), parseInt(cs[1]), parseInt(cs[2])]
+}
+
+function increaseRepresentation(pixelMap, pixelData) {
+    var k = getPixelKey(pixelData)
+    if (pixelMap[k] !== undefined) {
+        pixelMap[k] = pixelMap[k] + 1
+    } else {
+        pixelMap[k] = 1
+    }
+}
+
+function getMostRepresented(pixelMap) {
+    var total = 0
+    var items = Object.keys(pixelMap).map(function(key) {
+        total = total + pixelMap[key]
+        return [key, pixelMap[key]];
+    })
+    items.sort(function(first, second) {
+        return second[1] - first[1];
+    });
+
+    // select items based on representation (difference in representation)
+    var color = getKeyColor(items[0][0])
+    var selectedColors = [[color, items[0][1]]]
+    var selectedColorsNumber = 1
+    for (var i = 1; i < items.length && (items[i][1] / items[0][1] > .1); i++) {
+        var additionalColor = getKeyColor(items[i][0])
+        selectedColors.push([additionalColor, items[i][1]])
+        color[0] = color[0] + additionalColor[0]
+        color[1] = color[1] + additionalColor[1]
+        color[2] = color[2] + additionalColor[2]
+        selectedColorsNumber = i
+    }
+    console.log(selectedColors)
+    color[0] = Math.floor(color[0] / selectedColorsNumber)
+    color[1] = Math.floor(color[1] / selectedColorsNumber)
+    color[2] = Math.floor(color[2] / selectedColorsNumber)
+
+    //var key = items[0][0]
+    //var cs = key.split("_")
+    //return [parseInt(cs[0]), parseInt(cs[1]), parseInt(cs[2])]
+    return color
+}
+
 function getSuggestedBackgroundColor() {
     var img = getImage()
     var canvas = document.createElement('canvas');
@@ -251,30 +302,20 @@ function getSuggestedBackgroundColor() {
     canvas.height = getOriginalImageHeight()
     var context = canvas.getContext('2d')
     context.drawImage(img, 0, 0)
-    var red = 0
-    var green = 0
-    var blue = 0
-    var pixels = 0
+
+    var pixelMap = {}
     for (var y = 0; y < getOriginalImageHeight(); y++) {
-        var leftPixel = context.getImageData(0, y, 1, 1).data
-        var rightPixel = context.getImageData(getOriginalImageWidth() - 1, y, 1, 1).data
-        red = red + leftPixel[0] + rightPixel[0]
-        green = green + leftPixel[1] + rightPixel[1]
-        blue = blue + leftPixel[2] + rightPixel[2]
-        pixels = pixels + 2
+        increaseRepresentation(pixelMap, context.getImageData(0, y, 1, 1).data)
+        increaseRepresentation(pixelMap, context.getImageData(getOriginalImageWidth() - 1, y, 1, 1).data)
     }
     for (var x = 1; x < getOriginalImageWidth() - 1; x++) {
-        var topPixel = context.getImageData(x, 0, 1, 1).data
-        var bottomPixel = context.getImageData(x, getOriginalImageHeight() - 1, 1, 1).data
-        red = red + topPixel[0] + bottomPixel[0]
-        green = green + topPixel[1] + bottomPixel[1]
-        blue = blue + topPixel[2] + bottomPixel[2]
-        pixels = pixels + 2
+        increaseRepresentation(pixelMap, context.getImageData(x, 0, 1, 1).data)
+        increaseRepresentation(pixelMap, context.getImageData(x, getOriginalImageHeight() - 1, 1, 1).data)
     }
-    red = Math.floor(red / pixels)
-    green = Math.floor(green / pixels)
-    blue = Math.floor(blue / pixels)
-    document.body.style.background="rgb(" + red + "," + green + "," + blue + ")"
+
+    var color = getMostRepresented(pixelMap)
+
+    document.body.style.background="rgb(" + color[0] + "," + color[1] + "," + color[2] + ")"
     canvas.remove()
 }
 
