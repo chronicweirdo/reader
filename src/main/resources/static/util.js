@@ -116,7 +116,7 @@ function goHome() {
 
 function saveProgress(bookId, position) {
     var xhttp = new XMLHttpRequest()
-    xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position), true)
+    xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position))
     xhttp.send()
 }
 
@@ -129,7 +129,7 @@ function removeProgress() {
             }
         }
     }
-    xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"), true)
+    xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"))
     xhttp.send()
 }
 

@@ -349,7 +349,7 @@
                         }
                     }
                 }
-                xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum, true)
+                xhttp.open("GET", "search?term=" + encodeURIComponent(term) + "&page=" + pagenum)
                 document.searchTimestamp = timestamp
                 showSpinner()
                 xhttp.send()
@@ -365,7 +365,7 @@
                     }
                 }
             }
-            xhttp.open("GET", "collections", true)
+            xhttp.open("GET", "collections")
             xhttp.send()
         }
         function createCollectionsUl(collections) {

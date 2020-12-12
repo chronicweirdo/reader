@@ -409,11 +409,16 @@ function convert(object) {
     return node
 }
 
-module.exports = {
-  BookNode: BookNode,
-  getHtmlBody: getHtmlBody,
-  parse: parse,
-  getTagName: getTagName,
-  parseBody: parseBody,
-  convert: convert
-};
+var isNode = new Function("try {return this===global;}catch(e){return false;}")
+
+if (isNode()) {
+    console.log("running under node")
+    module.exports = {
+      BookNode: BookNode,
+      getHtmlBody: getHtmlBody,
+      parse: parse,
+      getTagName: getTagName,
+      parseBody: parseBody,
+      convert: convert
+    };
+}

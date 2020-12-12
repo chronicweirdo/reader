@@ -156,7 +156,7 @@ function downloadSection(position, callback) {
             }
         }
     }
-    xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position, true)
+    xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position)
     xhttp.send()
 }
 

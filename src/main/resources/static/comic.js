@@ -225,7 +225,7 @@ function downloadImageData(page, callback) {
             }
         }
     }
-    xhttp.open("GET", "imageData?id=" + getBookId() + "&page=" + (page-1), true)
+    xhttp.open("GET", "imageData?id=" + getBookId() + "&page=" + (page-1))
     xhttp.send()
 }
 
