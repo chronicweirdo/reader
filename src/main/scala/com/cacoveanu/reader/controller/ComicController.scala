@@ -2,7 +2,8 @@ package com.cacoveanu.reader.controller
 
 import java.nio.charset.StandardCharsets
 
-import com.cacoveanu.reader.service.{BookService, ContentService, UserService}
+import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.service.{BookService, ContentService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{MediaType, ResponseEntity}
@@ -10,9 +11,12 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 
+import scala.beans.BeanProperty
+
+case class ImageDataResponse(@BeanProperty image: String, @BeanProperty color: Array[Int])
+
 @Controller
-class ComicController @Autowired() (private val userService: UserService,
-                                    private val contentService: ContentService,
+class ComicController @Autowired() (private val contentService: ContentService,
                                     private val bookService: BookService) {
 
   @RequestMapping(Array("/comic"))
@@ -30,13 +34,17 @@ class ComicController @Autowired() (private val userService: UserService,
     }
   }
 
+  private def getImageDataResponse(content: Content): ImageDataResponse = {
+    val color = content.meta.getOrElse("color", Array(255, 255, 255)).asInstanceOf[Array[Int]]
+    ImageDataResponse(WebUtil.toBase64Image(content.mediaType, content.data), color)
+  }
+
   @RequestMapping(Array("/imageData"))
   def loadImageData(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int)/*: String*/ = {
     contentService
       .loadComicResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)
-      .map(p => (MediaType.TEXT_PLAIN_VALUE, WebUtil.toBase64Image(p.mediaType, p.data)))
-      .map(t => WebUtil.toResponseEntity(t._1, t._2.getBytes(StandardCharsets.UTF_8)))
+      .map(c => ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(getImageDataResponse(c)))
       .getOrElse(WebUtil.notFound)
   }
 

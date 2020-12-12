@@ -1,8 +1,6 @@
 package com.cacoveanu.reader.service
 
-import java.lang
 import java.net.{URI, URLEncoder}
-import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import com.cacoveanu.reader.entity.{Book, Content}
@@ -13,7 +11,6 @@ import org.springframework.beans.factory.annotation.{Autowired, Value}
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
-import scala.None.orNull
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
@@ -25,6 +22,10 @@ class ContentService {
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
+
+  @BeanProperty
+  @Autowired
+  var imageService: ImageService = _
 
   @Value("${keepEbookStyles}")
   @BeanProperty
@@ -131,13 +132,17 @@ class ContentService {
    */
   @Cacheable(Array("resources"))
   def loadComicResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
-    bookRepository.findById(bookId).asScala
+    val pages = bookRepository.findById(bookId).asScala
       .map(book => (book.path, FileUtil.getExtension(book.path))) match {
         case Some((path, FileTypes.CBZ)) => CbzUtil.readPages(path, Some(positions)).getOrElse(Seq())
         case Some((path, FileTypes.CBR)) => CbrUtil.readPages(path, Some(positions)).getOrElse(Seq())
         case Some((path, FileTypes.PDF)) => PdfUtil.readPages(path, Some(positions)).getOrElse(Seq())
         case _ => Seq()
       }
+    pages.map(c => {
+      val color = imageService.getDominantEdgeColor(c.data)
+      c.copy(c.index, c.mediaType, c.data, Map("color" -> color))
+    })
   }
 
   def getBatchForPosition(position: Int): Seq[Int] = {
