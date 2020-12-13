@@ -116,16 +116,19 @@ class BookService {
     collections.filter(_.nonEmpty).foreach(collection => {
       val entries = collection.split("\\\\")
       var current = root
+      var currentSearch = ""
       for (i <- entries.indices) {
         val col = entries(i)
+        currentSearch += col
         current.children.find(n => n.name == col) match {
           case Some(child) =>
             current = child
           case None =>
-            val newChild = new CollectionNode(col, collection)
+            val newChild = new CollectionNode(col, currentSearch)
             current.children = current.children :+ newChild
             current = newChild
         }
+        currentSearch += "\\"
       }
     })
     root
