@@ -17,7 +17,7 @@ function zoom(zoom, centerX, centerY) {
     setImageTop(centerY - newSideTop)
 
     setZoom(zoom)
-    setZoomJumpValue(zoom / getZoomForFitToScreen())
+    setZoomJumpValue(zoom)
     updateImage()
 }
 
@@ -79,7 +79,7 @@ function setZoomJumpValue(value) {
 
 function zoomJump(x, y) {
     if (isPageFitToScreen()) {
-        zoom(getZoom() * getZoomJumpValue(), x, y)
+        zoom(getZoomJumpValue(), x, y)
     } else {
         fitPageToScreen()
     }
