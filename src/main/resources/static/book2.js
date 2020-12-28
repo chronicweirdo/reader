@@ -221,6 +221,29 @@ function compute(section, start) {
     tryForPage(firstEnd, firstEnd)
 }
 
+function initializeMode() {
+    var savedMode = window.localStorage.getItem("mode")
+    if (savedMode != null) {
+        if (savedMode == "dark") {
+            var body = document.getElementsByTagName("BODY")[0]
+            body.classList.add("dark")
+        }
+    } else {
+        window.localStorage.setItem("mode", "light")
+    }
+}
+
+function toggleMode() {
+    var body = document.getElementsByTagName("BODY")[0]
+    if (body.classList.contains("dark")) {
+        body.classList.remove("dark")
+        window.localStorage.setItem("mode", "light")
+    } else {
+        body.classList.add("dark")
+        window.localStorage.setItem("mode", "dark")
+    }
+}
+
 function prepareBookTools() {
     var tools = document.getElementById("ch_tools")
 
@@ -357,7 +380,7 @@ window.onload = function() {
     }
 
     //addPositionInputTriggerListener(displayPageFor)
-
+    initializeMode()
 
     var savedZoom = getSavedZoom()
     setZoom(savedZoom, false)

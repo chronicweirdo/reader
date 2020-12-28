@@ -11,6 +11,12 @@ body {
     min-height: -webkit-fill-available;
     font-family: 'Merriweather', serif;
 }
+
+body.dark {
+    background-color: black;
+    color: #dddddd;
+}
+
 html {
   height: -webkit-fill-available;
 }
