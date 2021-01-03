@@ -108,7 +108,7 @@ object EpubUtil {
 
   private def getTocFromNcx2(epubPath: String) = {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
-      (ncx \ "navMap" \ "navPoint")
+      (ncx \ "navMap" \\ "navPoint")
         .map(n => (
           (n \ "@playOrder").text.toInt,
           (n \ "navLabel" \ "text").text,
