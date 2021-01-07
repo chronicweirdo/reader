@@ -84,17 +84,30 @@ class ContentService {
     }
   }
 
+  private def getAbsolutePath(currentResourcePath: String, oldHref: String): String = {
+    if (oldHref.startsWith("/")) oldHref
+    else {
+      var currentPath = currentResourcePath.split("/").dropRight(1)
+      val steps = oldHref.split("/")
+      steps.foreach {
+        case ".." => currentPath = currentPath.dropRight(1)
+        case p => currentPath = currentPath :+ p
+      }
+      currentPath.mkString("/")
+    }
+  }
+
   private def hrefLinkTransform(linksMap: Map[String, Long], resourcePath: String, oldHref: String): (String, String) = {
     val remoteUri = new URI(oldHref)
-    val folder = getFolderPath(resourcePath)
     if (remoteUri.isAbsolute) {
       ("href", oldHref)
-    } else if (linksMap.contains(oldHref)) {
-      ("onclick", s"displayPageFor(${linksMap(oldHref)})")
-    } else if (linksMap.contains(folder + "/" + oldHref)) {
-      ("onclick", s"displayPageFor(${linksMap(folder + "/" + oldHref)})")
     } else {
-      ("href", "")
+      val absoluteOldHref = getAbsolutePath(resourcePath, oldHref)
+      if (linksMap.contains(absoluteOldHref)) {
+        ("onclick", s"displayPageFor(${linksMap(absoluteOldHref)})")
+      } else {
+        ("href", "")
+      }
     }
   }
 
