@@ -1,14 +1,9 @@
 package com.cacoveanu.reader.controller
 
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.util
-
-import com.cacoveanu.reader.entity.Content
+import com.cacoveanu.reader.entity.{BookTocEntry, Content, TocNode}
 import com.cacoveanu.reader.service.{BookService, ContentService}
-import com.cacoveanu.reader.util.{FileMediaTypes, FileTypes, FileUtil, WebUtil}
+import com.cacoveanu.reader.util.{FileTypes, FileUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.{MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
@@ -16,7 +11,6 @@ import org.springframework.ui.Model
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
-import scala.util.Random
 
 @Controller
 class BookController @Autowired()(private val contentService: ContentService,
@@ -34,8 +28,8 @@ class BookController @Autowired()(private val contentService: ContentService,
         model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
         model.addAttribute("bookStart", 0)
         model.addAttribute("bookEnd", book.size - 1)
-        val uiToc: util.List[UiToc] = book.toc.asScala.map(e => UiToc(e.index, e.title, e.position)).sortBy(_.position).asJava
-        model.addAttribute("tableOfContents", uiToc)
+        val tocTreeHtml = TocNode.getTocTree(book.toc.asScala.toSeq).toHtml()
+        model.addAttribute("tableOfContentsHtml", tocTreeHtml)
         "book"
       case None => "error"
     }

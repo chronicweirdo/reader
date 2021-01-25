@@ -135,7 +135,30 @@
     border-top: 4px dotted white;
     margin-bottom: 28px;
 }
-#ch_tools > p > a.ch_chapter {
+#ch_tools.left span.expand {
+    float: left;
+}
+#ch_tools.right span.expand {
+    float: right;
+}
+#ch_tools ul li {
+    list-style-type: disc;
+}
+#ch_tools.left ul {
+    padding-left: 40px;
+    padding-right: 0;
+}
+#ch_tools.right ul {
+    padding-left: 0;
+    padding-right: 40px;
+    direction: rtl;
+}
+#ch_tools.right li a {
+    display: inline-block;
+    direction: ltr;
+    padding-bottom: .5em;
+}
+#ch_tools a.ch_chapter {
     color: white;
     background-color: #1a1a1a00;
     border: 0;
@@ -143,7 +166,7 @@
     font-style: italic;
     font-weight: 300;
 }
-#ch_tools > p > a.ch_current {
+#ch_tools a.ch_current {
     color: gold;
 }
 /* ---------------------------------------------------- table of contents end */

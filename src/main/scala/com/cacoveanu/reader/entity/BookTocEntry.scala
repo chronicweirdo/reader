@@ -9,12 +9,12 @@ class BookTocEntry {
   @GeneratedValue(strategy = GenerationType.AUTO)
   var id: java.lang.Long = _
 
-  //var bookId: java.lang.Long = _
-
   var index: java.lang.Integer = _
 
   @Column(length = 3000)
   var title: String = _
 
   var position: java.lang.Long = _
+
+  var level: java.lang.Integer = _
 }

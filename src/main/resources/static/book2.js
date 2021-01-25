@@ -273,6 +273,7 @@ function prepareBookTools() {
 
 function displayPageForTocEntry(entry) {
     var position = parseInt(entry.getAttribute("ch_position"))
+    hideTools()
     displayPageFor(position)
 }
 
@@ -350,6 +351,8 @@ function highlightZoomSetButtons(currentZoom) {
 window.onload = function() {
     // fix viewport height
     fixComponentHeights()
+
+    initTableOfContents()
 
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({

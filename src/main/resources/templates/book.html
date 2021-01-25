@@ -31,7 +31,7 @@
 <div id="ch_content"></div>
 <div id="ch_tools_container">
     <div id="ch_tools">
-        <p th:each="entry: ${tableOfContents}"><a class="ch_chapter" th:ch_position="${entry.position}" onclick="displayPageForTocEntry(this)" th:text="${entry.title}">chapter</a></p>
+        <div th:utext="${tableOfContentsHtml}"></div>
         <p class="ch_toc_separator"></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Book Title</h1>

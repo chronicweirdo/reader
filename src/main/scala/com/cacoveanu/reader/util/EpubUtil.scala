@@ -5,15 +5,13 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.zip.ZipFile
-
 import com.cacoveanu.reader.entity.{BookLink, BookResource, BookTocEntry, Content}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.IterableOnce.iterableOnceExtensionMethods
 import scala.jdk.CollectionConverters._
-import scala.xml.{Elem, XML}
+import scala.xml.{Elem, Node, XML}
 
 object EpubUtil {
 
@@ -106,14 +104,24 @@ object EpubUtil {
     }
   }
 
+  private def getRecursiveTocFromNcx2(ncxPath: String, n: Node, level: Int = 0): Seq[(Int, String, String, Int)] = {
+    var result = Seq[(Int, String, String, Int)]()
+    result = result :+ (
+      (n \ "@playOrder").text.toInt,
+      (n \ "navLabel" \ "text").text,
+      getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name())),
+      level
+    )
+    (n \ "navPoint").foreach(n2 => {
+      result = result ++ getRecursiveTocFromNcx2(ncxPath, n2, level + 1)
+    })
+    result
+  }
+
   private def getTocFromNcx2(epubPath: String) = {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
-      (ncx \ "navMap" \\ "navPoint")
-        .map(n => (
-          (n \ "@playOrder").text.toInt,
-          (n \ "navLabel" \ "text").text,
-          getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name()))
-        ))
+      (ncx \ "navMap" \ "navPoint")
+        .flatMap(n => getRecursiveTocFromNcx2(epubPath, n))
     }
   }
 
@@ -145,12 +153,13 @@ object EpubUtil {
     }
 
     val toc = getTocFromNcx2(epubPath).getOrElse(Seq())
-    val tocWithPositions = toc.map { case (index, title, link) => {
+    val tocWithPositions = toc.map { case (index, title, link, level) => {
       val bookTocEntry = new BookTocEntry
       bookTocEntry.index = index
       bookTocEntry.title = title
       val position: Long = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
       bookTocEntry.position = position
+      bookTocEntry.level = level
       bookTocEntry
     }}
 

@@ -110,7 +110,6 @@
           toggle(expandable[i])
           expandable[i].addEventListener("click", (event) => {
             event.stopPropagation()
-            console.log(event.target)
             toggle(event.target)
           })
         }
