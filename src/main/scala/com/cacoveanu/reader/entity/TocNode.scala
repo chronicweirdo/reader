@@ -55,10 +55,19 @@ class TocNode {
     s"""<a class="ch_chapter" ch_position="${this.position}" onclick="displayPageForTocEntry(this)">${this.title}</a>"""
   }
 
+  private def getLi(): String = {
+    if (children.nonEmpty) {
+      s"""<li class="ch_withsubchapters">"""
+    } else {
+      "<li>"
+    }
+  }
+
   def toHtml(): String = {
     var html = if (this.title != TocNode.ROOT) getA() else ""
     if (children.nonEmpty) {
-      html += "<ul>" + children.map(c => "<li>" + c.toHtml() + "</li>").mkString("") + "</ul>"
+      html += (if (this.title != TocNode.ROOT) s"""<ul class="ch_subchapter">""" else "<ul>")
+      html += children.map(c => c.getLi() + c.toHtml() + "</li>").mkString("") + "</ul>"
     }
     html
   }

@@ -244,41 +244,44 @@ function toggleMode() {
     }
 }
 
-function prepareBookTools() {
-    var tools = document.getElementById("ch_tools")
-
-    var links = tools.getElementsByTagName("a")
-    var chapters = []
-    for (var i = 0; i < links.length; i++) {
-        links[i].classList.remove("ch_current")
-        if (links[i].classList.contains("ch_chapter")) {
-            chapters.push(links[i])
+function getChapters() {
+    if (! document.chapters) {
+        var chapterElements = document.getElementsByClassName("ch_chapter")
+        document.chapters = []
+        for (var i = 0; i < chapterElements.length; i++) {
+            document.chapters.push({
+                start: parseInt(chapterElements[i].getAttribute("ch_position")),
+                element: chapterElements[i]
+            })
         }
     }
+    return document.chapters
+}
+
+function resetCurrentChapter() {
+    // remove current chapter selection
+    var currentChapters = document.getElementsByClassName("ch_current")
+    for (var i = 0; i < currentChapters.length; i++) {
+        currentChapters[i].classList.remove("ch_current")
+    }
+}
+
+function getCurrentChapter() {
+    var chapters = getChapters()
+
+    // find current chapter
     var currentChapter = -1
-    var bookEnd = parseInt(getMeta("bookEnd"))
-    var middlePagePosition = (document.currentPage.start + document.currentPage.end) / 2
-    for (var i = 0; i < chapters.length; i++) {
-        var position = parseInt(chapters[i].getAttribute("ch_position"))
-        var chapterEndPosition = bookEnd
-        if (i < chapters.length - 1) chapterEndPosition = parseInt(chapters[i+1].getAttribute("ch_position"))
-        if (position <= middlePagePosition && middlePagePosition <= chapterEndPosition) {
-            currentChapter = i
-            break
-        }
+    var position = (document.currentPage.start + document.currentPage.end) / 2
+    while (currentChapter < chapters.length - 1 && position > chapters[currentChapter + 1].start) {
+        currentChapter = currentChapter + 1
     }
+    return chapters[currentChapter]
+}
 
-    // collapse all chapters
-    var tools = document.getElementById("ch_tools")
-    var listItems = tools.getElementsByTagName("li")
-    for (var i = 0; i < listItems.length; i++) {
-        hideChildList(listItems[i])
-    }
-
-    // expand toc path
-    if (currentChapter != -1) {
-        chapters[currentChapter].classList.add("ch_current")
-        var current = chapters[currentChapter]
+function expandPathToChapter(chapter) {
+    if (chapter != null) {
+        chapter.element.classList.add("ch_current")
+        var current = chapter.element
         while (current != null) {
             if (current.nodeName == "UL") {
                 current.style.display = "block"
@@ -286,6 +289,56 @@ function prepareBookTools() {
             current = current.parentElement
         }
     }
+}
+
+function prepareBookTools() {
+    resetCurrentChapter()
+    hideAllSubchapters()
+    var chapter = getCurrentChapter()
+    expandPathToChapter(chapter)
+}
+
+function getChildList(current) {
+    var childLists = current.getElementsByTagName("ul")
+    if (childLists.length > 0) {
+        return childLists[0]
+    } else {
+        return null
+    }
+}
+
+function toggleChildList(current) {
+    var childList = getChildList(current)
+    if (childList != null) {
+        if (childList.style.display == "none") {
+            childList.style.display = "block"
+        } else {
+            childList.style.display = "none"
+        }
+    }
+}
+
+function hideAllSubchapters() {
+    var subchapterLists = document.getElementsByClassName("ch_subchapter")
+    for (var i = 0; i < subchapterLists.length; i++) {
+        subchapterLists[i].style.display = "none"
+    }
+}
+
+function initializeChapters() {
+    var listItemsWithSubchapters = document.getElementsByClassName("ch_withsubchapters")
+    for (var i = 0; i < listItemsWithSubchapters.length; i++) {
+        listItemsWithSubchapters[i].style.listStyleType = "' + '"
+        listItemsWithSubchapters[i].addEventListener("click", (event) => {
+            event.stopPropagation()
+            toggleChildList(event.target)
+        })
+    }
+}
+
+function initTableOfContents() {
+    initializeChapters()
+    hideAllSubchapters()
 }
 
 function displayPageForTocEntry(entry) {
