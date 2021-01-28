@@ -141,7 +141,7 @@
 #ch_tools.right span.expand {
     float: right;
 }
-#ch_tools ul li {
+/*#ch_tools ul li {
     list-style-type: disc;
 }
 #ch_tools.left ul {
@@ -152,10 +152,14 @@
     padding-left: 0;
     padding-right: 40px;
     direction: rtl;
+}*/
+#ch_tools li p {
+    margin: 0;
 }
 #ch_tools.right li a {
-    display: inline-block;
-    direction: ltr;
+    display: inline;
+    word-wrap: break-word;
+    /*direction: ltr;*/
     padding-bottom: .5em;
 }
 #ch_tools a.ch_chapter {
@@ -168,6 +172,36 @@
 }
 #ch_tools a.ch_current {
     color: gold;
+}
+
+#ch_tools li {
+    list-style-type: none;
+}
+#ch_tools.left ul {
+    padding-left: 40px;
+    padding-right: 0;
+}
+#ch_tools.left li>p::before {
+    content: "\25CF";
+    padding: 0 5px 0 0;
+}
+#ch_tools.left li.ch_withsubchapters>p::before {
+    content: "+";
+    padding: 0 5px 0 0;
+}
+#ch_tools.right ul {
+    padding-left: 0;
+    padding-right: 40px;
+}
+#ch_tools.right li>p::after {
+    content: "\25CF";
+    padding: 0 0 0 5px;
+    display: inline;
+}
+#ch_tools.right li.ch_withsubchapters>p::after {
+    content: "+";
+    padding: 0 0 0 5px;
+    display: inline;
 }
 /* ---------------------------------------------------- table of contents end */
 

@@ -52,7 +52,7 @@ class TocNode {
   }
 
   private def getA(): String = {
-    s"""<a class="ch_chapter" ch_position="${this.position}" onclick="displayPageForTocEntry(this)">${this.title}</a>"""
+    s"""<p><a class="ch_chapter" ch_position="${this.position}" onclick="displayPageForTocEntry(this)">${this.title}</a></p>"""
   }
 
   private def getLi(): String = {

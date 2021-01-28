@@ -328,10 +328,12 @@ function hideAllSubchapters() {
 function initializeChapters() {
     var listItemsWithSubchapters = document.getElementsByClassName("ch_withsubchapters")
     for (var i = 0; i < listItemsWithSubchapters.length; i++) {
-        listItemsWithSubchapters[i].style.listStyleType = "' + '"
-        listItemsWithSubchapters[i].addEventListener("click", (event) => {
+        //listItemsWithSubchapters[i].style.listStyleType = "' + '"
+        var para = listItemsWithSubchapters[i].getElementsByTagName("p")[0]
+        console.log(para)
+        para.addEventListener("click", (event) => {
             event.stopPropagation()
-            toggleChildList(event.target)
+            toggleChildList(event.target.parentElement)
         })
     }
 }
