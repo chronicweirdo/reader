@@ -267,8 +267,24 @@ function prepareBookTools() {
             break
         }
     }
+
+    // collapse all chapters
+    var tools = document.getElementById("ch_tools")
+    var listItems = tools.getElementsByTagName("li")
+    for (var i = 0; i < listItems.length; i++) {
+        hideChildList(listItems[i])
+    }
+
+    // expand toc path
     if (currentChapter != -1) {
         chapters[currentChapter].classList.add("ch_current")
+        var current = chapters[currentChapter]
+        while (current != null) {
+            if (current.nodeName == "UL") {
+                current.style.display = "block"
+            }
+            current = current.parentElement
+        }
     }
 }
 

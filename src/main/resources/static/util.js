@@ -226,9 +226,18 @@ function getChildList(current) {
 
 function toggleChildList(current) {
     var childList = getChildList(current)
-    if (childList.style.display == "none") {
-        childList.style.display = "block"
-    } else {
+    if (childList != null) {
+        if (childList.style.display == "none") {
+            childList.style.display = "block"
+        } else {
+            childList.style.display = "none"
+        }
+    }
+}
+
+function hideChildList(current) {
+    var childList = getChildList(current)
+    if (childList != null) {
         childList.style.display = "none"
     }
 }
