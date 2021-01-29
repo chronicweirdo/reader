@@ -66,7 +66,7 @@ class TocNode {
   def toHtml(): String = {
     var html = if (this.title != TocNode.ROOT) getA() else ""
     if (children.nonEmpty) {
-      html += (if (this.title != TocNode.ROOT) s"""<ul class="ch_subchapter">""" else "<ul>")
+      html += (if (this.title != TocNode.ROOT) s"""<ul class="ch_subchapter">""" else s"""<ul class="ch_toc_root">""")
       html += children.map(c => c.getLi() + c.toHtml() + "</li>").mkString("") + "</ul>"
     }
     html
