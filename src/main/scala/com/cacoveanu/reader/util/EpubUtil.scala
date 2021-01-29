@@ -121,7 +121,7 @@ object EpubUtil {
   private def getTocFromNcx2(epubPath: String) = {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
       (ncx \ "navMap" \ "navPoint")
-        .flatMap(n => getRecursiveTocFromNcx2(epubPath, n))
+        .flatMap(n => getRecursiveTocFromNcx2(ncxPath, n))
     }
   }
 
@@ -153,14 +153,18 @@ object EpubUtil {
     }
 
     val toc = getTocFromNcx2(epubPath).getOrElse(Seq())
-    val tocWithPositions = toc.map { case (index, title, link, level) => {
+    val tocWithPositions = toc.flatMap { case (index, title, link, level) => {
       val bookTocEntry = new BookTocEntry
       bookTocEntry.index = index
       bookTocEntry.title = title
-      val position: Long = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
-      bookTocEntry.position = position
       bookTocEntry.level = level
-      bookTocEntry
+      val position: Long = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
+      if (position == -1) {
+        None
+      } else {
+        bookTocEntry.position = position
+        Some(bookTocEntry)
+      }
     }}
 
     val bookLinkObjects = bookLinks.map { case (link, position) => {

@@ -195,7 +195,6 @@ class ScannerService {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
           val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size)
-          //book.toc = toc.asJava
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava
