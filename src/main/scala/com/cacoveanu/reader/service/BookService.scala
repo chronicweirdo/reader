@@ -120,12 +120,12 @@ class BookService {
       for (i <- entries.indices) {
         val col = entries(i)
         currentSearch += col
-        current.children.find(n => n.name == col) match {
+        current.children.asScala.find(n => n.name == col) match {
           case Some(child) =>
             current = child
           case None =>
             val newChild = new CollectionNode(col, currentSearch)
-            current.children = current.children :+ newChild
+            current.children.add(newChild)
             current = newChild
         }
         currentSearch += "\\"

@@ -21,7 +21,8 @@ class MainController @Autowired()(
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {
-    model.addAttribute("collectionTree", bookService.loadCollectionsTree().toHtml())
+    val tree = bookService.loadCollectionsTree()
+    model.addAttribute("tree", tree)
     "collectionList"
   }
 
