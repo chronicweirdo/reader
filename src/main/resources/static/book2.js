@@ -319,16 +319,16 @@ function toggleChildList(current) {
 }
 
 function hideAllSubchapters() {
-    var subchapterLists = document.getElementsByClassName("ch_subchapter")
-    for (var i = 0; i < subchapterLists.length; i++) {
-        subchapterLists[i].style.display = "none"
+    var listItemsWithSubchapters = document.getElementsByClassName("ch_withsubchapters")
+    for (var i = 0; i < listItemsWithSubchapters.length; i++) {
+        var subchapterList = listItemsWithSubchapters[i].getElementsByTagName("ul")[0]
+        subchapterList.style.display = "none"
     }
 }
 
 function initializeChapters() {
     var listItemsWithSubchapters = document.getElementsByClassName("ch_withsubchapters")
     for (var i = 0; i < listItemsWithSubchapters.length; i++) {
-        //listItemsWithSubchapters[i].style.listStyleType = "' + '"
         var para = listItemsWithSubchapters[i].getElementsByTagName("p")[0]
         console.log(para)
         para.addEventListener("click", (event) => {

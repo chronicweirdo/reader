@@ -31,7 +31,16 @@
 <div id="ch_content"></div>
 <div id="ch_tools_container">
     <div id="ch_tools">
-        <div th:utext="${tableOfContentsHtml}"></div>
+        <div th:fragment="fragment_node" th:remove="tag">
+            <ul th:if="${not #lists.isEmpty(tableOfContents.children)}" >
+                <li th:class="${not #lists.isEmpty(tableOfContents.children) ? 'ch_withsubchapters' : ''}" th:each="child : ${tableOfContents.children}"
+                    th:inline="text"
+                    th:with="tableOfContents = ${child}">
+                    <p><a class="ch_chapter" th:ch_position="${child.position}" onclick="displayPageForTocEntry(this)" th:text="${child.title}">chapter name</a></p>
+                    <ul th:replace="this::fragment_node">List Item</ul>
+                </li>
+            </ul>
+        </div>
         <p class="ch_toc_separator"></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Book Title</h1>

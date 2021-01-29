@@ -28,8 +28,8 @@ class BookController @Autowired()(private val contentService: ContentService,
         model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
         model.addAttribute("bookStart", 0)
         model.addAttribute("bookEnd", book.size - 1)
-        val tocTreeHtml = TocNode.getTocTree(book.toc.asScala.toSeq).toHtml()
-        model.addAttribute("tableOfContentsHtml", tocTreeHtml)
+        val tocTree = TocNode.getTocTree(book.toc.asScala.toSeq)
+        model.addAttribute("tableOfContents", tocTree)
         "book"
       case None => "error"
     }

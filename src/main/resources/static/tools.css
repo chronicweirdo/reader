@@ -192,10 +192,6 @@
     padding-left: 0;
     padding-right: 30px;
 }
-#ch_tools ul.ch_toc_root {
-    padding-left: 0;
-    padding-right: 0;
-}
 #ch_tools.right li>p::before {
     content: "\2212";
     display: block;
@@ -209,6 +205,11 @@
     position: absolute;
     right: 0;
     top: 0;
+}
+#ch_tools.left > ul, #ch_tools.right > ul {
+    margin-top: 1em;
+    padding-left: 0;
+    padding-right: 0;
 }
 /* ---------------------------------------------------- table of contents end */
 

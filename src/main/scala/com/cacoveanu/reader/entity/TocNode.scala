@@ -1,5 +1,8 @@
 package com.cacoveanu.reader.entity
 
+import java.util
+import scala.beans.BeanProperty
+
 object TocNode {
   val ROOT = "ROOT"
 
@@ -35,10 +38,18 @@ object TocNode {
 }
 
 class TocNode {
+
+  @BeanProperty
   var title: String = _
+
+  @BeanProperty
   var position: Long = _
+
+  @BeanProperty
   var level: Int = _
-  var children: Seq[TocNode] = Seq()
+
+  @BeanProperty
+  var children: java.util.List[TocNode] = new util.ArrayList[TocNode]()
 
   def this(title: String, position: Long, level: Int) {
     this()
@@ -48,27 +59,6 @@ class TocNode {
   }
 
   def add(child: TocNode): Unit = {
-    this.children = this.children :+ child
-  }
-
-  private def getA(): String = {
-    s"""<p><a class="ch_chapter" ch_position="${this.position}" onclick="displayPageForTocEntry(this)">${this.title}</a></p>"""
-  }
-
-  private def getLi(): String = {
-    if (children.nonEmpty) {
-      s"""<li class="ch_withsubchapters">"""
-    } else {
-      "<li>"
-    }
-  }
-
-  def toHtml(): String = {
-    var html = if (this.title != TocNode.ROOT) getA() else ""
-    if (children.nonEmpty) {
-      html += (if (this.title != TocNode.ROOT) s"""<ul class="ch_subchapter">""" else s"""<ul class="ch_toc_root">""")
-      html += children.map(c => c.getLi() + c.toHtml() + "</li>").mkString("") + "</ul>"
-    }
-    html
+    this.children.add(child)
   }
 }
