@@ -74,11 +74,11 @@ function toggleTools(left, prepareToolsView) {
     } else {
         toolsContainer.style.display = "block"
     }
-    // scroll tools to max position on start
-    tools.scrollTop = tools.scrollHeight
     if (prepareToolsView != null) {
         prepareToolsView()
     }
+    // scroll tools to max position on start
+    tools.scrollTop = tools.scrollHeight
 }
 
 function fixComponentHeights() {
