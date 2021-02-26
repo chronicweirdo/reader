@@ -29,6 +29,10 @@ class ScannerService {
   @BeanProperty
   var libraryLocation: String = _
 
+  @Value("${getTitleFromMetadata:true}")
+  @BeanProperty
+  var getTitleFromMetadata: Boolean = _
+
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
@@ -182,9 +186,11 @@ class ScannerService {
     }
   }
 
+
+
   private[service] def scanEpub(path: String): Option[Book] = {
     try {
-      val title = EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path))
+      val title = if (getTitleFromMetadata) EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path)) else FileUtil.getFileName(path)
       val author = EpubUtil.getAuthor(path).getOrElse("")
       val collection = getCollection(path)
       val cover = EpubUtil.getCover(path)
