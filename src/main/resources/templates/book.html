@@ -44,7 +44,7 @@
         <p class="ch_toc_separator"></p>
         <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Book Title</h1>
-        <p><span>position</span><span id="positionInput"></span><span>/</span><span th:text="${size-1}">20</span></p>
+        <p><span>progress:</span><span id="positionInput"></span></p>
         <p class="ch_zoom_controls"><a id="ch_decrease_zoom">-</a><a class="ch_set_zoom" zoom="12">1.2</a><a class="ch_set_zoom" zoom="15">1.5</a><a class="ch_set_zoom" zoom="18">1.8</a><a id="ch_increase_zoom">+</a></p>
         <p><a onclick="toggleFullScreen()">fullscreen</a></p>
         <p><a onclick="toggleMode()">change colors</a></p>

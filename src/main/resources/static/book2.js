@@ -110,11 +110,26 @@ function displayPageFor(position, firstTry = true) {
             } else {
                 saveProgress(getMeta("bookId"), page.start)
             }
-            updatePositionInput(page.start)
+            updatePositionInput(getPositionPercentage(page.start, page.end))
 
             hideSpinner()
         })
     }
+}
+
+function getPositionPercentage(pageStart, pageEnd) {
+    var bookSize = parseInt(getMeta("bookEnd"))
+    var percentage = (pageEnd / bookSize) * 100.0
+    var percentageInteger = Math.floor(percentage)
+    var percentageFraction = Math.floor((percentage - percentageInteger)*100)
+
+    var text = percentageInteger
+    if (percentageFraction > 0) {
+        text += "." + percentageFraction
+    }
+    text += "%"
+
+    return text
 }
 
 function nextPage() {
@@ -454,7 +469,6 @@ window.onload = function() {
         setupZoomSetButton(zoomSetters[i])
     }
 
-    //addPositionInputTriggerListener(displayPageFor)
     initializeMode()
 
     var savedZoom = getSavedZoom()
