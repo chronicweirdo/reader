@@ -11,7 +11,7 @@ var filesToCache = [
   '/gestures.js',
   '/util.js',
   '/bookNode.js',
-  '/book2.js',
+  '/book.js',
 
   //'/comic',
   '/comic.css',
