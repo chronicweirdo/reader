@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.{EnableW
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.web.filter.CommonsRequestLoggingFilter
 
 @SpringBootApplication
 @EnableCaching
@@ -33,6 +34,21 @@ class MvcConfig extends WebMvcConfigurer {
     registry.addRedirectViewController("/logout", "/login")
   }
 }
+
+/*@Configuration
+class RequestLoggingFilterConfig {
+
+  @Bean
+  def logFilter(): CommonsRequestLoggingFilter = {
+    val filter = new CommonsRequestLoggingFilter()
+    filter.setIncludeQueryString(true)
+    filter.setIncludePayload(true)
+    filter.setMaxPayloadLength(10000)
+    filter.setIncludeHeaders(false)
+    filter.setAfterMessagePrefix("REQUEST DATA : ")
+    filter
+  }
+}*/
 
 @Configuration
 @EnableWebSecurity

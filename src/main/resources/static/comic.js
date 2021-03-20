@@ -429,6 +429,12 @@ function touchGesturePan(deltaX, deltaY) {
     pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
 }
 
+function downloadComicToDevice(currentPosition = 0) {
+    var bookId = getMeta("bookId")
+    var pages = num(getMeta("size"))
+    navigator.serviceWorker.controller.postMessage({type: 'storeComic', bookId: bookId, pages: pages})
+}
+
 window.onload = function() {
     fixComponentHeights()
     enableKeyboardGestures({
