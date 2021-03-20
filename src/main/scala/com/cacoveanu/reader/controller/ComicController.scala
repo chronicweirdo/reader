@@ -23,12 +23,10 @@ class ComicController @Autowired() (private val contentService: ContentService,
   def loadComic(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(comic) =>
-        val progress = bookService.loadProgress(comic)
         model.addAttribute("id", id)
         model.addAttribute("pages", comic.size)
         model.addAttribute("title", comic.title)
         model.addAttribute("collection", comic.collection)
-        model.addAttribute("startPage", progress.map(p => p.position).getOrElse(0))
         "comic"
       case None => "error"
     }

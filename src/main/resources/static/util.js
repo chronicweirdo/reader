@@ -120,6 +120,20 @@ function saveProgress(bookId, position) {
     xhttp.send()
 }
 
+function loadProgress(callback) {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var currentPosition = parseInt(this.responseText)
+            if (callback != null) {
+                callback(currentPosition)
+            }
+        }
+    }
+    xhttp.open("GET", "loadProgress?id=" + getMeta("bookId"))
+    xhttp.send()
+}
+
 function removeProgress() {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {

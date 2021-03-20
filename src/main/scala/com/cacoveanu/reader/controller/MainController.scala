@@ -85,14 +85,17 @@ class MainController @Autowired()(
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
-  @RequestMapping(
-    value=Array("/markProgress"),
-    method=Array(RequestMethod.PUT)
-  )
+  @RequestMapping(value=Array("/markProgress"), method=Array(RequestMethod.PUT))
   def markProgress(@RequestParam("id") id: java.lang.Long,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
     if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
+  }
+
+  @RequestMapping(value=Array("/loadProgress"), method=Array(RequestMethod.GET))
+  def loadProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[java.lang.Long] = {
+    bookService.loadProgress(id).map(p => new ResponseEntity[java.lang.Long](p.position, HttpStatus.OK))
+      .getOrElse(new ResponseEntity[java.lang.Long](0L, HttpStatus.OK))
   }
 
   @RequestMapping(

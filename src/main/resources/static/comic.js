@@ -491,14 +491,17 @@ window.onload = function() {
     document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
     setZoom(1.0)
-    var startPage = num(getMeta("startPosition")) + 1
 
-    displayPage(startPage, function() {
-        var fit = getMeta("defaultFit")
-        if (fit == "width") {
-            fitPageToScreenWidth()
-        } else if (fit = "screen") {
-            fitPageToScreen()
-        }
+    loadProgress(function(currentPosition) {
+        var startPage = currentPosition + 1
+        displayPage(startPage, function() {
+            var fit = getMeta("defaultFit")
+            if (fit == "width") {
+                fitPageToScreenWidth()
+            } else if (fit = "screen") {
+                fitPageToScreen()
+            }
+        })
     })
+
 }

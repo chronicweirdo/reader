@@ -20,12 +20,10 @@ class BookController @Autowired()(private val contentService: ContentService,
   def loadBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(book) =>
-        val progress = bookService.loadProgress(book)
         model.addAttribute("id", id)
         model.addAttribute("size", book.size)
         model.addAttribute("title", book.title)
         model.addAttribute("collection", book.collection)
-        model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
         model.addAttribute("bookStart", 0)
         model.addAttribute("bookEnd", book.size - 1)
         val tocTree = TocNode.getTocTree(book.toc.asScala.toSeq)

@@ -162,69 +162,23 @@ function handleResize() {
 }
 
 function downloadSection(position, callback) {
-    /*var section = findSectionInLocalStorage(position)
-    if (section != null) {
-        console.log("section found on device")
-        var node = convert(section)
-        callback(node)
-    } else {*/
-        var xhttp = new XMLHttpRequest()
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var jsonObj = JSON.parse(this.responseText)
-                var node = convert(jsonObj)
-                if (callback != null) {
-                    callback(node)
-                }
-            }
-        }
-        xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position)
-        xhttp.send()
-    //}
-}
-
-/*function findSectionInLocalStorage(position) {
-    var bookId = getMeta("bookId")
-    for (i = 0; i < window.localStorage.length; i++) {
-        key = window.localStorage.key(i);
-        if (key.startsWith("bookSection_" + bookId)) {
-            var tokens = key.split("_")
-            var sectionStart = parseInt(tokens[2])
-            var sectionEnd = parseInt(tokens[3])
-            if (sectionStart <= position && position <= sectionEnd) {
-                var section = JSON.parse(window.localStorage.getItem(key))
-                return section
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var jsonObj = JSON.parse(this.responseText)
+            var node = convert(jsonObj)
+            if (callback != null) {
+                callback(node)
             }
         }
     }
-    return null
-}*/
+    xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + position)
+    xhttp.send()
+}
 
 function downloadBookToDevice(currentPosition = 0) {
     var bookId = getMeta("bookId")
     navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId})
-
-    /*var bookEnd = getMeta("bookEnd")
-    if (currentPosition < bookEnd) {
-        console.log("downloading section " + currentPosition)
-        var xhttp = new XMLHttpRequest()
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var jsonObj = JSON.parse(this.responseText)
-                //var node = convert(jsonObj)
-                // save to local storage
-                var bookSectionCacheKey = "bookSection_" + bookId + "_" + jsonObj.start + "_" + jsonObj.end
-                window.localStorage.setItem(bookSectionCacheKey, JSON.stringify(jsonObj))
-                // advance current position
-                downloadBookToDevice(jsonObj.end + 1)
-            }
-        }
-        xhttp.open("GET", "bookSection?id=" + getMeta("bookId") + "&position=" + currentPosition)
-        xhttp.send()
-    } else {
-        // we have finished downloading the book
-        console.log("finished downloading book")
-    }*/
 }
 
 function getSectionFor(position) {
@@ -528,7 +482,8 @@ window.onload = function() {
 
     loadCache()
 
-    var startPosition = num(getMeta("startPosition"))
+    loadProgress(function(currentPosition) {
+        displayPageFor(currentPosition)
+    })
 
-    displayPageFor(parseInt(getMeta("startPosition")))
 }
