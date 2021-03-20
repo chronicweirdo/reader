@@ -1,21 +1,24 @@
-var cacheName = 'my-cache'
+var cacheName = 'chronic-reader-cache'
 var filesToCache = [
-  //'/',
-  '/form.css',
-  '/favicon.ico',
+    'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
+    'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
 
-  //'/book',
-  '/book.css',
-  '/tools.css',
-  '/hammer.min.js',
-  '/gestures.js',
-  '/util.js',
-  '/bookNode.js',
-  '/book.js',
+    //'/',
+    '/form.css',
+    '/favicon.ico',
 
-  //'/comic',
-  '/comic.css',
-  '/comic.js'
+    //'/book',
+    '/book.css',
+    '/tools.css',
+    '/hammer.min.js',
+    '/gestures.js',
+    '/util.js',
+    '/bookNode.js',
+    '/book.js',
+
+    //'/comic',
+    '/comic.css',
+    '/comic.js'
 ]
 
 self.addEventListener('install', e => {
