@@ -7,6 +7,9 @@ var filesToCache = [
     '/form.css',
     '/favicon.ico',
 
+    '/library.css',
+    '/library.js',
+
     //'/book',
     '/book.css',
     '/tools.css',
@@ -102,7 +105,6 @@ self.addEventListener('message', event => {
 function saveComicToDevice(comicId, pages) {
     console.log("downloading comic to cache")
     caches.open(cacheName).then(cache => {
-        cache.add('/openBook?id=' + comicId)
         cache.add('/comic?id=' + comicId)
         for (var i = 0; i < pages; i++) {
             cache.add('/imageData?id=' + comicId + '&page=' + i)

@@ -2,7 +2,7 @@ package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.service.{BookService, ScannerService, UserService}
-import com.cacoveanu.reader.util.{SessionUtil, WebUtil}
+import com.cacoveanu.reader.util.{FileTypes, FileUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
@@ -48,6 +48,7 @@ class MainController @Autowired()(
     val uiBooks = books
       .map(book => UiBook(
         book.id,
+        getType(book),
         book.collection,
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
@@ -57,6 +58,15 @@ class MainController @Autowired()(
     new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
   }
 
+  def getType(book: Book): String = {
+    FileUtil.getExtension(book.path) match {
+      case FileTypes.CBR => "comic"
+      case FileTypes.CBZ => "comic"
+      case FileTypes.PDF => "comic"
+      case FileTypes.EPUB => "book"
+    }
+  }
+
   @RequestMapping(Array("/"))
   def loadMainPage(model: Model): String = {
     val progress: Seq[Progress] = bookService.loadTopProgress(6)
@@ -64,6 +74,7 @@ class MainController @Autowired()(
     val latestRead = progress
       .map(p => UiBook(
         p.book.id,
+        getType(p.book),
         p.book.collection,
         p.book.title,
         WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
@@ -115,6 +126,7 @@ case class CollectionPage(
 
 case class UiBook(
                     @BeanProperty id: java.lang.Long,
+                    @BeanProperty `type`: String,
                     @BeanProperty collection: String,
                     @BeanProperty title: String,
                     @BeanProperty cover: String,

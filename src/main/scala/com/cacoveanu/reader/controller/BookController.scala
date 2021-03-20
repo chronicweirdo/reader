@@ -47,29 +47,6 @@ class BookController @Autowired()(private val contentService: ContentService,
       .map(content => WebUtil.toResponseEntity(content.mediaType, content.data))
       .getOrElse(WebUtil.notFound)
   }
-
-  @RequestMapping(Array("/openBook"))
-  @ResponseBody
-  def open(@RequestParam("id") bookId: java.lang.Long) = {
-    bookService.loadBook(bookId) match {
-      case Some(book) => FileUtil.getExtension(book.path) match {
-        case FileTypes.CBR =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.CBZ =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.PDF =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.EPUB =>
-          new RedirectView(s"/book?id=$bookId")
-      }
-
-      case _ => new RedirectView("/error")
-    }
-  }
-
 }
 
 case class UiToc(@BeanProperty index: Int, @BeanProperty title: String, @BeanProperty position: Long)
