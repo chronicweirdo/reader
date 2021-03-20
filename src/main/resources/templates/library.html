@@ -13,11 +13,8 @@
     <script src="library.js"></script>
 </head>
 <body>
-<div class="latestRead" th:unless="${#lists.isEmpty(latestRead)}">
+<div class="latestRead" id="ch_latestRead">
     <h1>Latest Read</h1>
-    <p><a class="imgdiv" th:each="book: ${latestRead}" th:href="${book.type} + '?id=' + ${book.id}" th:attr="bookid=${book.id}">
-        <img th:attr="onload='scaleImage(this,' + ${book.progress} + ',' + ${book.pages} + ')'" th:src="${book.cover}" th:title="${book.title}">
-    </a></p>
 </div>
 <div class="tools">
     <input name="search" id="search" type="text" placeholder="Search" autocomplete="off" autofocus/>
@@ -33,45 +30,5 @@
         </rect>
     </svg>
 </div>
-<script>
-    var scrollThreshold = 20
-
-    window.onload = function() {
-        console.log("window loaded")
-        if('serviceWorker' in navigator) {
-            console.log("registering service worker")
-            /*let registration
-
-            const registerServiceWorker = async () => {
-                registration = await navigator.serviceWorker.register('./serviceworker.js')
-            }
-
-            registerServiceWorker()*/
-
-            navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
-                console.log("service worker registered successfully: ", registration)
-                registration.update()
-            }, function(error) {
-                console.log("service worker registration failed: ", error)
-            })
-
-        }
-
-        var searchParameter = getSearchUrlParameter()
-        if (searchParameter != null) {
-            getSearch().value = searchParameter
-        }
-        addSearchTriggerListener()
-        searchForTerm()
-    }
-
-    window.onscroll = function(ev) {
-        if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
-            if (! getEndOfCollection()) {
-                loadNextPage(null)
-            }
-        }
-    }
-</script>
 </body>
 </html>

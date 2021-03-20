@@ -16,7 +16,6 @@ import scala.jdk.CollectionConverters._
 @Controller
 class MainController @Autowired()(
                                    private val bookService: BookService,
-                                   //private val settingService: SettingService,
                                    private val scannerService: ScannerService) {
 
   @RequestMapping(Array("/collections"))
@@ -33,6 +32,25 @@ class MainController @Autowired()(
   def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
     "more"
+  }
+
+  @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
+  @ResponseBody
+  def loadLatestRead(): ResponseEntity[java.util.List[UiBook]] = {
+    val progress: Seq[Progress] = bookService.loadTopProgress(6)
+
+    val latestRead = progress
+      .map(p => UiBook(
+        p.book.id,
+        getType(p.book),
+        p.book.collection,
+        p.book.title,
+        WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
+        p.position,
+        p.book.size
+      ))
+
+    new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }
 
   @RequestMapping(value = Array("/search"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
@@ -68,24 +86,7 @@ class MainController @Autowired()(
   }
 
   @RequestMapping(Array("/"))
-  def loadMainPage(model: Model): String = {
-    val progress: Seq[Progress] = bookService.loadTopProgress(6)
-
-    val latestRead = progress
-      .map(p => UiBook(
-        p.book.id,
-        getType(p.book),
-        p.book.collection,
-        p.book.title,
-        WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-        p.position,
-        p.book.size
-      )).asJava
-
-    model.addAttribute("user", SessionUtil.getUser().username)
-    model.addAttribute("latestRead", latestRead)
-    "library"
-  }
+  def loadMainPage(): String = "library"
 
   @RequestMapping(
     value=Array("/removeProgress"),

@@ -155,6 +155,29 @@ function searchForTerm() {
     setCurrentPage(-1)
     loadNextPage(loadUntilPageFull)
 }
+
+function loadLatestRead() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var books = JSON.parse(this.responseText)
+                if (books.length > 0) {
+                    for (var i = 0; i < books.length; i++) {
+                        var book = books[i]
+                        var collectionDiv = document.getElementById("ch_latestRead")
+                        if (collectionDiv != null) {
+                            collectionDiv.appendChild(getBookHtml(book))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    xhttp.open("GET", "latestRead")
+    xhttp.send()
+}
+
 function loadNextPage(callback) {
     if (document.searchTimestamp === undefined || document.searchTimestamp == null) {
         var pagenum = getCurrentPage() + 1
@@ -259,4 +282,35 @@ function getSearchUrlParameter() {
     var search = url.searchParams.get("search")
     if (search == null) return null
     else return decodeURIComponent(search)
+}
+
+var scrollThreshold = 20
+
+window.onload = function() {
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+            console.log("service worker registered successfully: ", registration)
+            registration.update()
+        }, function(error) {
+            console.log("service worker registration failed: ", error)
+        })
+
+    }
+
+    loadLatestRead()
+
+    var searchParameter = getSearchUrlParameter()
+    if (searchParameter != null) {
+        getSearch().value = searchParameter
+    }
+    addSearchTriggerListener()
+    searchForTerm()
+}
+
+window.onscroll = function(ev) {
+    if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
+        if (! getEndOfCollection()) {
+            loadNextPage(null)
+        }
+    }
 }
