@@ -14,15 +14,19 @@ request.onsuccess = function(event) {
 }
 request.onupgradeneeded = function(event) {
     var db = event.target.result
-    var objectStore = db.createObjectStore('requests', { keyPath: 'url' })
-    objectStore.createIndex('bookId', 'bookId', { unique: false })
-    objectStore.transaction.oncomplete = function(event) {
-        console.log('created object store')
+    var requestsStore = db.createObjectStore('requests', {keyPath: 'url'})
+    requestsStore.createIndex('bookId', 'bookId', { unique: false })
+    requestsStore.transaction.oncomplete = function(event) {
+        console.log('created requests store')
         /*var customerObjectStore = db.transaction("customers", "readwrite").objectStore("customers");
         customerData.forEach(function(customer) {
           customerObjectStore.add(customer);
         });*/
     };
+    var progressStore = db.createObjectStore('progress', {keyPath: 'id'})
+    progressStore.transaction.oncomplete = function(event) {
+            console.log('created progress store')
+    }
 }
 
 var filesToCache = [
@@ -68,6 +72,8 @@ self.addEventListener('fetch', e => {
 
     if (url.pathname === '/markProgress') {
         e.respondWith(fetch(e.request).catch(() => storeToProgressDatabase(e.request, url)))
+    } else if (url.pathname === '/loadProgress') {
+        e.respondWith(fetch(e.request).catch(() => getProgressFromDatabase(e.request, url)))
     } else if (url.pathname === '/latestRead') {
         e.respondWith(fetch(e.request)
             .then(response => {
@@ -91,8 +97,33 @@ self.addEventListener('fetch', e => {
     }
 })
 
+function loadFromDatabase(table, key) {
+    return new Promise((resolve, reject) => {
+        var transaction = db.transaction([table])
+        var objectStore = transaction.objectStore(table)
+        var dbRequest = objectStore.get(key)
+        dbRequest.onerror = function(event) {
+            console.log("failed to load from table " + table + " key " + key)
+            reject()
+        }
+        dbRequest.onsuccess = function(event) {
+            resolve(event.target.result)
+        }
+    })
+}
+
 function fetchResponseFromDatabase(key) {
     return new Promise((resolve, reject) => {
+        loadFromDatabase('requests', key)
+            .then(result => {
+                if (result) {
+                    resolve(new Response(result.response, {headers: new Headers(result.headers)}))
+                } else {
+                    resolve(undefined)
+                }
+            })
+    })
+    /*return new Promise((resolve, reject) => {
         var transaction = db.transaction(["requests"])
         var objectStore = transaction.objectStore("requests");
         var dbRequest = objectStore.get(key);
@@ -113,7 +144,7 @@ function fetchResponseFromDatabase(key) {
                 resolve(undefined)
             }
         };
-    })
+    })*/
 }
 
 /*function sendOfflineOperationResponse(request, url) {
@@ -148,10 +179,29 @@ function handleLatestRead(response) {
 }
 
 function storeToProgressDatabase(request, url) {
-    console.log("storing progress to db for later: " + request.url)
-    var id = url.searchParams.get("id")
-    var position = url.searchParams.get("id")
-    return new Response()
+    return new Promise((resolve, reject) => {
+        console.log("storing progress to db for later: " + request.url)
+        var id = url.searchParams.get("id")
+        var position = url.searchParams.get("position")
+        saveToDatabase('progress', {id: id, position: position})
+            .then(() => resolve(new Response()))
+            .catch(() => reject())
+    })
+}
+
+function getProgressFromDatabase(request, url) {
+    return new Promise((resolve, reject) => {
+        var id = url.searchParams.get("id")
+        loadFromDatabase('progress', id)
+            .then(result => {
+                if (result) {
+                    resolve(new Response(result.position))
+                } else {
+                    reject()
+                }
+            })
+            .catch(() => reject())
+    })
 }
 
 async function fetchFromCache(request, url) {
@@ -197,27 +247,9 @@ function clearFromCache(booksToKeep) {
                     }
                 }
             })
-            /*console.log("books on device from method")
-            console.log(ids)
-            return ids*/
         })
     })
 }
-
-/*function deleteComicFromDevice(comicId) {
-    caches.open(cacheName).then(cache => {
-        cache.keys().then(keys => {
-            keys.forEach(function (request, index, array) {
-                var url = new URL(request.url)
-                if (url.pathname === '/imageData' && url.searchParams.get("id") == comicId) {
-                    cache.delete(request)
-                } else if (url.pathname === '/comic' && url.searchParams.get("id") == comicId) {
-                    cache.delete(request)
-                }
-            })
-        })
-    })
-}*/
 
 function saveComicToDevice(comicId, pages) {
     var url = '/comic?id=' + comicId
@@ -245,7 +277,7 @@ function saveToDatabase(table, value) {
             reject()
         }
         var objectStore = transaction.objectStore(table);
-        var addRequest = objectStore.add(value)
+        var addRequest = objectStore.put(value)
         addRequest.onsuccess = function(event) {
             console.log('add request successful')
         }
