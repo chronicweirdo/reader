@@ -76,19 +76,23 @@ self.addEventListener('fetch', e => {
             })
             .catch(() => fetchFromCache(request, url))
         )
-    } else if (url.pathname === '/imageData') {
-        e.respondWith(fetchFromDatabase(url).catch(() => {
-            console.log("failed to find in database")
-            return fetch(e.request)
+    } else if (url.pathname === '/imageData' || url.pathname === '/comic') {
+        var key = url.pathname + url.search
+        e.respondWith(fetchResponseFromDatabase(key).then(response => {
+            if (response) {
+                return response
+            } else {
+                console.log("failed to find in database")
+                return fetch(e.request)
+            }
         }))
     } else {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
 })
 
-function fetchFromDatabase(url) {
+function fetchResponseFromDatabase(key) {
     return new Promise((resolve, reject) => {
-        var key = url.pathname + url.search
         var transaction = db.transaction(["requests"])
         var objectStore = transaction.objectStore("requests");
         var dbRequest = objectStore.get(key);
@@ -100,14 +104,13 @@ function fetchFromDatabase(url) {
             console.log("success loading from database")
 
             //rObject.status = 200
+            console.log(event.target.result)
             if (event.target.result) {
-                console.log(event.target)
-                var body = JSON.stringify(event.target.result.response)
-                var rObject = new Response(body)
-                console.log(rObject)
-                resolve(rObject)
+                //var body = JSON.stringify(event.target.result.response)
+                resolve(new Response(event.target.result.response, {headers: new Headers(event.target.result.headers)}))
             } else {
-                reject("object not found")
+                //reject("object not found")
+                resolve(undefined)
             }
         };
     })
@@ -217,62 +220,67 @@ function clearFromCache(booksToKeep) {
 }*/
 
 function saveComicToDevice(comicId, pages) {
-    console.log("downloading comic to cache")
-    caches.open(cacheName).then(cache => {
-        cache.add('/comic?id=' + comicId)
-        /*for (var i = 0; i < pages; i++) {
-            cache.add('/imageData?id=' + comicId + '&page=' + i)
-        }*/
-        addComicPageToCache(cache, comicId, pages, 0)
-    })
-    console.log("done saving comic")
+    var url = '/comic?id=' + comicId
+    console.log("downloading comic to cache " + url)
+    fetchResponseFromDatabase(url)
+        .then(response => {
+            console.log(response)
+            if (response) saveComicPageToDevice(comicId, pages, 0)
+            else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, 0))
+        })
 }
 
-function addComicPageToCache(cache, comicId, pages, page) {
+function saveToDatabase(table, value) {
+    return new Promise((resolve, reject) => {
+        console.log("saving to database")
+        console.log(value)
+        var transaction = db.transaction([table], "readwrite")
+        transaction.oncomplete = function(event) {
+            console.log("transaction complete")
+            resolve()
+        }
+        transaction.onerror = function(event) {
+            console.log("transaction error")
+            console.log(event)
+            reject()
+        }
+        var objectStore = transaction.objectStore(table);
+        var addRequest = objectStore.add(value)
+        addRequest.onsuccess = function(event) {
+            console.log('add request successful')
+        }
+        addRequest.onerror = function(event) {
+            console.log("failed to save")
+            console.log(event)
+        }
+    })
+}
+
+function saveResponseToDatabase(url, bookId) {
+    return new Promise((resolve, reject) => {
+        fetch(url).then(response => response.text().then(responseText => {
+            console.log(response.headers)
+            var entry = {
+                url: url,
+                response: responseText,
+                headers: Object.fromEntries(response.headers.entries()),
+                bookId: bookId
+            }
+            saveToDatabase("requests", entry).then(() => resolve())
+                .catch(() => reject())
+        }))
+    })
+}
+
+function saveComicPageToDevice(comicId, pages, page) {
     if (page < pages) {
         var url = '/imageData?id=' + comicId + '&page=' + page
-        fetchFromDatabase(url)
-            .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
-            .catch(() => {
-                fetch(url).then(response => {
-                    response.json().then(responseJson => {
-                        var transaction = db.transaction(["requests"], "readwrite")
-                        transaction.oncomplete = function(event) {
-                            console.log("transaction complete")
-                            addComicPageToCache(cache, comicId, pages, page + 1)
-                        }
-                        transaction.onerror = function(event) {
-                            console.log("transaction error")
-                        }
-                        var requestResponse = {
-                            url: url,
-                            response: responseJson,
-                            bookId: comicId
-                        }
-                        var requestsStore = transaction.objectStore("requests");
-                        var addRequest = requestsStore.add(requestResponse)
-                        addRequest.onsuccess = function(event) {
-                            console.log('add request successful')
-                        }
-                    })
-                })
+        console.log("save comic page to device " + url)
+        fetchResponseFromDatabase(url)
+            .then(response => {
+                if (response) saveComicPageToDevice(comicId, pages, page + 1)
+                else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, page + 1))
             })
-
-
-
-        /*caches.match(url).then(data => {
-            if (data) {
-                console.log("data already in cache for comic " + comicId + " page " + page)
-                addComicPageToCache(cache, comicId, pages, page + 1)
-            } else {
-                cache
-                    .add(url)
-                    .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
-            }
-        })*/
-        //cache
-        //    .add(url)
-        //    .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
     } else {
         console.log("done saving comic " + comicId)
     }
