@@ -77,11 +77,41 @@ self.addEventListener('fetch', e => {
             .catch(() => fetchFromCache(request, url))
         )
     } else if (url.pathname === '/imageData') {
-        e.respondWith(caches.match(e.request).then(response => response ? response : fetch(e.request)))
+        e.respondWith(fetchFromDatabase(url).catch(() => {
+            console.log("failed to find in database")
+            return fetch(e.request)
+        }))
     } else {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
 })
+
+function fetchFromDatabase(url) {
+    return new Promise((resolve, reject) => {
+        var key = url.pathname + url.search
+        var transaction = db.transaction(["requests"])
+        var objectStore = transaction.objectStore("requests");
+        var dbRequest = objectStore.get(key);
+        dbRequest.onerror = function(event) {
+            console.log("failed to load from database")
+            reject()
+        };
+        dbRequest.onsuccess = function(event) {
+            console.log("success loading from database")
+
+            //rObject.status = 200
+            if (event.target.result) {
+                console.log(event.target)
+                var body = JSON.stringify(event.target.result.response)
+                var rObject = new Response(body)
+                console.log(rObject)
+                resolve(rObject)
+            } else {
+                reject("object not found")
+            }
+        };
+    })
+}
 
 /*function sendOfflineOperationResponse(request, url) {
 
@@ -104,7 +134,7 @@ function handleLatestRead(response) {
             console.log(book)
             booksToKeep.add(book.id)
             if (book.type === 'comic') {
-                saveComicToDevice(book.id, book.pages)
+                //saveComicToDevice(book.id, book.pages)
             }
         }
         clearFromCache(booksToKeep)
@@ -201,8 +231,36 @@ function saveComicToDevice(comicId, pages) {
 function addComicPageToCache(cache, comicId, pages, page) {
     if (page < pages) {
         var url = '/imageData?id=' + comicId + '&page=' + page
+        fetchFromDatabase(url)
+            .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
+            .catch(() => {
+                fetch(url).then(response => {
+                    response.json().then(responseJson => {
+                        var transaction = db.transaction(["requests"], "readwrite")
+                        transaction.oncomplete = function(event) {
+                            console.log("transaction complete")
+                            addComicPageToCache(cache, comicId, pages, page + 1)
+                        }
+                        transaction.onerror = function(event) {
+                            console.log("transaction error")
+                        }
+                        var requestResponse = {
+                            url: url,
+                            response: responseJson,
+                            bookId: comicId
+                        }
+                        var requestsStore = transaction.objectStore("requests");
+                        var addRequest = requestsStore.add(requestResponse)
+                        addRequest.onsuccess = function(event) {
+                            console.log('add request successful')
+                        }
+                    })
+                })
+            })
 
-        caches.match(url).then(data => {
+
+
+        /*caches.match(url).then(data => {
             if (data) {
                 console.log("data already in cache for comic " + comicId + " page " + page)
                 addComicPageToCache(cache, comicId, pages, page + 1)
@@ -211,7 +269,7 @@ function addComicPageToCache(cache, comicId, pages, page) {
                     .add(url)
                     .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
             }
-        })
+        })*/
         //cache
         //    .add(url)
         //    .then(() => addComicPageToCache(cache, comicId, pages, page + 1))
