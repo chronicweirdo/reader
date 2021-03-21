@@ -271,7 +271,7 @@ function displayPage(page, callback) {
                 if (callback != null) {
                     callback()
                 }
-                prefetch(page+1, function() {
+                /*prefetch(page+1, function() {
                     prefetch(page+2, function() {
                         prefetch(page+3, function() {
                             prefetch(page-1, function() {
@@ -279,19 +279,19 @@ function displayPage(page, callback) {
                             })
                         })
                     })
-                })
+                })*/
             }
             img.src = data.image
         }
     }
-    var imageData = getFromCache(page)
+    /*var imageData = getFromCache(page)
     if (imageData != null) {
         displayPageInternalCallback(imageData)
-    } else {
+    } else {*/
         downloadImageData(page, function() {
             displayPageInternalCallback(getFromCache(page))
         })
-    }
+    /*}*/
 }
 function setPageTitle(title) {
     document.title = title
@@ -387,8 +387,6 @@ function goToPreviousView() {
 
 }
 
-
-
 function handleResize() {
     fixComponentHeights()
     updateMinimumZoom()
@@ -429,7 +427,7 @@ function touchGesturePan(deltaX, deltaY) {
     pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
 }
 
-function downloadComicToDevice(currentPosition = 0) {
+function downloadComicToDevice() {
     var bookId = getMeta("bookId")
     var pages = num(getMeta("size"))
     navigator.serviceWorker.controller.postMessage({type: 'storeComic', bookId: bookId, pages: pages})
@@ -492,7 +490,7 @@ window.onload = function() {
     document.imageSettings = {}
     setZoom(1.0)
 
-    loadProgress(function(currentPosition) {
+    loadProgress(currentPosition => {
         var startPage = currentPosition + 1
         displayPage(startPage, function() {
             var fit = getMeta("defaultFit")
@@ -504,4 +502,5 @@ window.onload = function() {
         })
     })
 
+    downloadComicToDevice()
 }
