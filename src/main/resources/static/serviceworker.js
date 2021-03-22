@@ -1,6 +1,9 @@
 var cacheName = 'chronic-reader-cache'
 var dbName = 'chronic-reader-db'
 var dbVersion = 1
+var REQUESTS_TABLE = 'requests'
+var PROGRESS_TABLE = 'progress'
+
 const request = indexedDB.open(dbName, dbVersion);
 var db;
 request.onerror = function(event) {
@@ -14,7 +17,7 @@ request.onsuccess = function(event) {
 }
 request.onupgradeneeded = function(event) {
     var db = event.target.result
-    var requestsStore = db.createObjectStore('requests', {keyPath: 'url'})
+    var requestsStore = db.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
     requestsStore.createIndex('bookId', 'bookId', { unique: false })
     requestsStore.transaction.oncomplete = function(event) {
         console.log('created requests store')
@@ -23,7 +26,7 @@ request.onupgradeneeded = function(event) {
           customerObjectStore.add(customer);
         });*/
     };
-    var progressStore = db.createObjectStore('progress', {keyPath: 'id'})
+    var progressStore = db.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
     progressStore.transaction.oncomplete = function(event) {
             console.log('created progress store')
     }
@@ -77,7 +80,7 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/latestRead') {
         e.respondWith(fetch(e.request)
             .then(response => {
-                handleLatestRead(response.clone())
+                updateLatestReadInformation(response.clone())
                 return response
             })
             .catch(() => fetchFromCache(request, url))
@@ -112,9 +115,32 @@ function loadFromDatabase(table, key) {
     })
 }
 
+function findDistinctValues(table, column) {
+    return new Promise((resolve, reject) => {
+        var transaction = db.transaction([table])
+        var objectStore = transaction.objectStore(table)
+        var cursorRequest = objectStore.openCursor()
+        var distinctValues = new Set()
+        cursorRequest.onsuccess = event => {
+            //console.log('processing cursor event')
+            var cursor = event.target.result
+            if (cursor) {
+                //console.log(cursor.value)
+                distinctValues.add(cursor.value[column])
+                cursor.continue()
+            } else {
+                //console.log('Exhausted all documents')
+                //console.log(distinctValues)
+                resolve(distinctValues)
+            }
+        }
+        cursorRequest.onerror = event => reject()
+    })
+}
+
 function fetchResponseFromDatabase(key) {
     return new Promise((resolve, reject) => {
-        loadFromDatabase('requests', key)
+        loadFromDatabase(REQUESTS_TABLE, key)
             .then(result => {
                 if (result) {
                     resolve(new Response(result.response, {headers: new Headers(result.headers)}))
@@ -123,59 +149,50 @@ function fetchResponseFromDatabase(key) {
                 }
             })
     })
-    /*return new Promise((resolve, reject) => {
-        var transaction = db.transaction(["requests"])
-        var objectStore = transaction.objectStore("requests");
-        var dbRequest = objectStore.get(key);
-        dbRequest.onerror = function(event) {
-            console.log("failed to load from database")
-            reject()
-        };
-        dbRequest.onsuccess = function(event) {
-            console.log("success loading from database")
-
-            //rObject.status = 200
-            console.log(event.target.result)
-            if (event.target.result) {
-                //var body = JSON.stringify(event.target.result.response)
-                resolve(new Response(event.target.result.response, {headers: new Headers(event.target.result.headers)}))
-            } else {
-                //reject("object not found")
-                resolve(undefined)
-            }
-        };
-    })*/
 }
 
-/*function sendOfflineOperationResponse(request, url) {
-
-        return storeToProgressDatabase(request, url)
-    } else if (url.pathname == '/latestRead') {
-        return handleLatestRead(request, url)
-    } else {
-        return fetchFromCache(request, url)
+/*function difference(setA, setB) {
+    let _difference = new Set(setA)
+    for (let elem of setB) {
+        _difference.delete(elem)
     }
+    return _difference
 }*/
 
-function handleLatestRead(response) {
+function updateLatestReadInformation(response) {
     console.log("handling latest read")
     console.log(response)
     response.json().then(json => {
-        console.log(json)
         var booksToKeep = new Set()
         for (var i = 0; i < json.length; i++) {
             var book = json[i]
-            console.log(book)
             booksToKeep.add(book.id)
-            if (book.type === 'comic') {
-                //saveComicToDevice(book.id, book.pages)
-            }
         }
-        clearFromCache(booksToKeep)
+        findDistinctValues(REQUESTS_TABLE, 'bookId')
+            .then(booksInDatabase => {
+                console.log('books to keep:')
+                console.log(booksToKeep)
+                console.log('books in database')
+                console.log(booksInDatabase)
+                //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
+                for (let bookId of booksInDatabase) {
+                    if (bookId) {
+                        var bookIdInt = parseInt(bookId)
+                        if (! booksToKeep.has(bookIdInt)) deleteBookFromDatabase(bookId)
+                    }
+                }
+                //var booksToDownload = difference(booksToKeep, booksInDatabase)
+
+            })
+
+        var value = {
+            url: '/latestRead',
+            body: json,
+            headers: Object.fromEntries(response.headers.entries())
+        }
+
+        saveToDatabase(REQUESTS_TABLE, value)
     })
-    /*console.log("books on device:")
-    console.log(getBooksOnDevice())*/
-    //return response
 }
 
 function storeToProgressDatabase(request, url) {
@@ -183,7 +200,7 @@ function storeToProgressDatabase(request, url) {
         console.log("storing progress to db for later: " + request.url)
         var id = url.searchParams.get("id")
         var position = url.searchParams.get("position")
-        saveToDatabase('progress', {id: id, position: position})
+        saveToDatabase(PROGRESS_TABLE, {id: id, position: position})
             .then(() => resolve(new Response()))
             .catch(() => reject())
     })
@@ -192,7 +209,7 @@ function storeToProgressDatabase(request, url) {
 function getProgressFromDatabase(request, url) {
     return new Promise((resolve, reject) => {
         var id = url.searchParams.get("id")
-        loadFromDatabase('progress', id)
+        loadFromDatabase(PROGRESS_TABLE, id)
             .then(result => {
                 if (result) {
                     resolve(new Response(result.position))
@@ -298,7 +315,7 @@ function saveResponseToDatabase(url, bookId) {
                 headers: Object.fromEntries(response.headers.entries()),
                 bookId: bookId
             }
-            saveToDatabase("requests", entry).then(() => resolve())
+            saveToDatabase(REQUESTS_TABLE, entry).then(() => resolve())
                 .catch(() => reject())
         }))
     })
@@ -316,4 +333,23 @@ function saveComicPageToDevice(comicId, pages, page) {
     } else {
         console.log("done saving comic " + comicId)
     }
+}
+
+function deleteBookFromDatabase(bookId) {
+    return new Promise((resolve, reject) => {
+        console.log('deleting book ' + bookId + ' from database')
+        var transaction = db.transaction([REQUESTS_TABLE], "readwrite")
+        var objectStore = transaction.objectStore(REQUESTS_TABLE)
+        var index = objectStore.index('bookId')
+        index.openCursor(IDBKeyRange.only(bookId)).onsuccess = event => {
+            var cursor = event.target.result
+            console.log(cursor)
+            if (cursor) {
+                objectStore.delete(cursor.primaryKey)
+                cursor.continue();
+            } else {
+                resolve()
+            }
+        }
+    })
 }
