@@ -482,6 +482,7 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testCopy(tree)
     testCopy2(tree)
     testConvert(tree)
+    testResources(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -649,4 +650,9 @@ function testCopy2(tree) {
 function testConvert(tree) {
     var tree2 = bn.convert(parsedNodes)
     console.assert(tree2.getContent() == tree.getContent(), "converted content does not match")
+}
+
+function testResources(tree) {
+    var resources = tree.getResources()
+    console.assert(resources.length == 4, "failed to find all resources")
 }

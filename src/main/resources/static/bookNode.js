@@ -21,6 +21,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.findSpaceAfter = findSpaceAfter
   this.findSpaceBefore = findSpaceBefore
   this.copy = copy
+  this.getResources = getResources
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image"]
@@ -407,6 +408,29 @@ function convert(object) {
         node.children.push(childNode)
     }
     return node
+}
+
+function getResources() {
+    if (this.name === 'img') {
+        var rg = /src="([^"]+)"/g
+        return [...this.content.matchAll(rg)].map(m => m[1])
+    } else if (this.name === 'image') {
+        var rg = /xlink:href="([^"]+)"/g
+        return [...this.content.matchAll(rg)].map(m => m[1])
+    } else if (this.name === 'a') {
+        var rgHref = /href="([^"]+)"/g
+        return [...this.content.matchAll(rgHref)].map(m => m[1])
+    } else if (this.name === "tr") {
+        var rgSrc = /src="([^"]+)"/g
+        var rgHref = /href="([^"]+)"/g
+        return [...this.content.matchAll(rgSrc)].map(m => m[1]).concat(
+            [...this.content.matchAll(rgHref)].map(m => m[1])
+        )
+    } else if (this.children.length > 0) {
+        return this.children.flatMap(c => c.getResources())
+    } else {
+        return []
+    }
 }
 
 var isNode = new Function("try {return this===global;}catch(e){return false;}")

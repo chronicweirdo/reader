@@ -188,6 +188,44 @@ class BookNode {
     }
   }
 
+  def getResources(): Seq[String] = {
+    if (this.name == "img") {
+      val srcMatch = "src=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val src = srcMatch.get.group(1)
+        Seq(src)
+      } else {
+        Seq()
+      }
+    } else if (this.name == "image") {
+      val srcMatch = "xlink:href=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val src = srcMatch.get.group(1)
+        Seq(src)
+      } else {
+        Seq()
+      }
+    } else if (this.name == "a") {
+        val hrefMatch = "href=\"([^\"]+)\"".r findFirstMatchIn this.content
+        if (hrefMatch.isDefined) {
+          val href = hrefMatch.get.group(1)
+          Seq(href)
+        } else {
+          Seq()
+        }
+    } else if (this.name == "tr") {
+      val srcPattern = "src=\"([^\"]+)\"".r
+      val srcMatches = srcPattern.findAllMatchIn(this.content)
+      val hrefPattern = "href=\"([^\"]+)\"".r
+      val hrefMatches = hrefPattern.findAllMatchIn(this.content)
+      srcMatches.toSeq.map(m => m.group(1)) ++ hrefMatches.toSeq.map(m => m.group(1))
+    } else if (children.nonEmpty) {
+      children.flatMap(c => c.getResources())
+    } else {
+      Seq()
+    }
+  }
+
   def srcTransform(transformFunction: String => String): Unit = {
     if (this.name == "img") {
       val srcMatch = "src=\"([^\"]+)\"".r findFirstMatchIn this.content

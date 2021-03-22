@@ -30,6 +30,13 @@ class TestBookNode {
   }
 
   @Test
+  def testGetResources() = {
+    val tree = parseTree()
+    val resources = tree.getResources()
+    assert(resources.size == 4)
+  }
+
+  @Test
   def testContentSize() = {
     val tree = parseTree()
     tree.prettyPrint()
