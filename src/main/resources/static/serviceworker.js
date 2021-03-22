@@ -176,9 +176,9 @@ function updateLatestReadInformation(response) {
                 console.log(booksInDatabase)
                 //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
                 for (let bookId of booksInDatabase) {
-                    if (bookId) {
-                        var bookIdInt = parseInt(bookId)
-                        if (! booksToKeep.has(bookIdInt)) deleteBookFromDatabase(bookId)
+                    if (bookId && ! booksToKeep.has(bookId)) {
+                        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
+                        //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
                     }
                 }
                 //var booksToDownload = difference(booksToKeep, booksInDatabase)
@@ -245,9 +245,13 @@ self.addEventListener('message', event => {
     } else if (event.data.type === 'storeComic') {
         console.log("received store comic message")
         console.log(event)
-        var comicId = event.data.bookId
+        var comicId = parseInt(event.data.bookId)
         var comicPages = event.data.pages
         saveComicToDevice(comicId, comicPages)
+    } else if (event.data.type === 'deleteBook') {
+        console.log("received delete book message")
+        console.log(event)
+        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', event.data.bookId)
     }
 })
 
@@ -335,15 +339,13 @@ function saveComicPageToDevice(comicId, pages, page) {
     }
 }
 
-function deleteBookFromDatabase(bookId) {
+function deleteFromDatabaseForIndex(table, indexName, indexValue) {
     return new Promise((resolve, reject) => {
-        console.log('deleting book ' + bookId + ' from database')
-        var transaction = db.transaction([REQUESTS_TABLE], "readwrite")
-        var objectStore = transaction.objectStore(REQUESTS_TABLE)
-        var index = objectStore.index('bookId')
-        index.openCursor(IDBKeyRange.only(bookId)).onsuccess = event => {
+        var transaction = db.transaction([table], "readwrite")
+        var objectStore = transaction.objectStore(table)
+        var index = objectStore.index(indexName)
+        index.openCursor(IDBKeyRange.only(indexValue)).onsuccess = event => {
             var cursor = event.target.result
-            console.log(cursor)
             if (cursor) {
                 objectStore.delete(cursor.primaryKey)
                 cursor.continue();
