@@ -1,3 +1,5 @@
+importScripts('bookNode.js')
+
 var cacheName = 'chronic-reader-cache'
 var dbName = 'chronic-reader-db'
 var dbVersion = 1
@@ -85,7 +87,7 @@ self.addEventListener('fetch', e => {
             })
             .catch(() => fetchFromCache(request, url))
         )
-    } else if (url.pathname === '/imageData' || url.pathname === '/comic') {
+    } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         var key = url.pathname + url.search
         e.respondWith(fetchResponseFromDatabase(key).then(response => {
             if (response) {
@@ -98,10 +100,10 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/bookSection') {
         var id = url.searchParams.get("id")
         var position = url.searchParams.get("position")
-        translatePositionToSectionUrl(parseInt(id), position)
-            .then(sectionUrl => {
+        e.respondWith(
+            translatePositionToSectionUrl(parseInt(id), position).then(sectionUrl => {
                 if (sectionUrl) {
-                    e.respondWith(fetchResponseFromDatabase(sectionUrl).then(response => {
+                    return fetchResponseFromDatabase(sectionUrl).then(response => {
                         if (response) {
                             console.log('found book section in database')
                             return response
@@ -109,12 +111,13 @@ self.addEventListener('fetch', e => {
                             console.log("failed to find in database")
                             return fetch(e.request)
                         }
-                    }))
+                    })
                 } else {
                     console.log("failed to find section in database")
                     return fetch(e.request)
                 }
             })
+        )
     } else {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
@@ -338,11 +341,11 @@ function saveToDatabase(table, value) {
 
 function saveResponseToDatabase(url, bookId) {
     return new Promise((resolve, reject) => {
-        fetch(url).then(response => response.text().then(responseText => {
+        fetch(url).then(response => response.blob().then(responseBlob => {
             console.log(response.headers)
             var entry = {
                 url: url,
-                response: responseText,
+                response: responseBlob,
                 headers: Object.fromEntries(response.headers.entries()),
                 bookId: bookId
             }
@@ -388,11 +391,10 @@ function saveBookSectionToDevice(bookId, maxPositions, position) {
         fetchResponseFromDatabase(url)
             .then(response => {
                 if (response) {
-                    //var nextPosition = JSON.parse(response.response).end + 1
                     var nextPosition = parseInt(response.headers['sectionend']) + 1
                     saveBookSectionToDevice(bookId, maxPositions, nextPosition)
                 } else saveResponseToDatabase(url, bookId).then(response => {
-                    //var nextPosition = JSON.parse(response.response).end + 1
+                    saveBookResourcesToDevice(bookId, response.response)
                     var nextPosition = parseInt(response.headers['sectionend']) + 1
                     saveBookSectionToDevice(bookId, maxPositions, nextPosition)
                 })
@@ -400,6 +402,19 @@ function saveBookSectionToDevice(bookId, maxPositions, position) {
     } else {
         console.log('done saving book to device ' + bookId)
     }
+}
+
+function saveBookResourcesToDevice(bookId, section) {
+    section.text().then(text => {
+        var structure = JSON.parse(text)
+        var node = convert(structure)
+        var resources = node.getResources()
+        console.log('resources:')
+        console.log(resources)
+        resources
+            .filter(resource => resource.startsWith('bookResource'))
+            .forEach(resource => saveResponseToDatabase('/' + resource, bookId))
+    })
 }
 
 function saveComicPageToDevice(comicId, pages, page) {
