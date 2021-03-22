@@ -76,7 +76,8 @@ self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
-        e.respondWith(fetch(e.request).catch(() => storeToProgressDatabase(e.request, url)))
+        storeToProgressDatabase(e.request, url, true)
+        e.respondWith(fetch(e.request).catch(() => storeToProgressDatabase(e.request, url, false)))
     } else if (url.pathname === '/loadProgress') {
         e.respondWith(fetch(e.request).catch(() => getProgressFromDatabase(e.request, url)))
     } else if (url.pathname === '/latestRead') {
@@ -235,12 +236,12 @@ function updateLatestReadInformation(response) {
     })
 }
 
-function storeToProgressDatabase(request, url) {
+function storeToProgressDatabase(request, url, synced) {
     return new Promise((resolve, reject) => {
         console.log("storing progress to db for later: " + request.url)
         var id = url.searchParams.get("id")
         var position = url.searchParams.get("position")
-        saveToDatabase(PROGRESS_TABLE, {id: id, position: position})
+        saveToDatabase(PROGRESS_TABLE, {id: id, position: position, synced: synced})
             .then(() => resolve(new Response()))
             .catch(() => reject())
     })
@@ -385,23 +386,27 @@ function saveComicToDevice(comicId, pages) {
 }
 
 function saveBookSectionToDevice(bookId, maxPositions, position) {
-    if (position < maxPositions) {
-        var url = '/bookSection?id=' + bookId + "&position=" + position
-        console.log('downloading book section ' + url)
-        fetchResponseFromDatabase(url)
-            .then(response => {
-                if (response) {
-                    var nextPosition = parseInt(response.headers['sectionend']) + 1
-                    saveBookSectionToDevice(bookId, maxPositions, nextPosition)
-                } else saveResponseToDatabase(url, bookId).then(response => {
-                    saveBookResourcesToDevice(bookId, response.response)
-                    var nextPosition = parseInt(response.headers['sectionend']) + 1
-                    saveBookSectionToDevice(bookId, maxPositions, nextPosition)
+    return new Promise((resolve, reject) => {
+        if (position < maxPositions) {
+            var url = '/bookSection?id=' + bookId + "&position=" + position
+            console.log('downloading book section ' + url)
+            fetchResponseFromDatabase(url)
+                .then(response => {
+                    if (response) {
+                        var nextPosition = parseInt(response.headers['sectionend']) + 1
+                        saveBookSectionToDevice(bookId, maxPositions, nextPosition)
+                    } else saveResponseToDatabase(url, bookId).then(response => {
+                        saveBookResourcesToDevice(bookId, response.response)
+                        var nextPosition = parseInt(response.headers['sectionend']) + 1
+                        saveBookSectionToDevice(bookId, maxPositions, nextPosition)
+                    })
+                    resolve()
                 })
-            })
-    } else {
-        console.log('done saving book to device ' + bookId)
-    }
+        } else {
+            console.log('done saving book to device ' + bookId)
+            resolve()
+        }
+    })
 }
 
 function saveBookResourcesToDevice(bookId, section) {
@@ -418,17 +423,21 @@ function saveBookResourcesToDevice(bookId, section) {
 }
 
 function saveComicPageToDevice(comicId, pages, page) {
-    if (page < pages) {
-        var url = '/imageData?id=' + comicId + '&page=' + page
-        console.log("save comic page to device " + url)
-        fetchResponseFromDatabase(url)
-            .then(response => {
-                if (response) saveComicPageToDevice(comicId, pages, page + 1)
-                else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, page + 1))
-            })
-    } else {
-        console.log("done saving comic " + comicId)
-    }
+    return new Promise((resolve, reject) => {
+        if (page < pages) {
+            var url = '/imageData?id=' + comicId + '&page=' + page
+            console.log("save comic page to device " + url)
+            fetchResponseFromDatabase(url)
+                .then(response => {
+                    if (response) saveComicPageToDevice(comicId, pages, page + 1)
+                    else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, page + 1))
+                    resolve()
+                })
+        } else {
+            console.log("done saving comic " + comicId)
+            resolve()
+        }
+    })
 }
 
 function deleteFromDatabaseForIndex(table, indexName, indexValue) {
