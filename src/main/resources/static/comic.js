@@ -430,7 +430,7 @@ function touchGesturePan(deltaX, deltaY) {
 function downloadComicToDevice() {
     var bookId = getMeta("bookId")
     var pages = num(getMeta("size"))
-    navigator.serviceWorker.controller.postMessage({type: 'storeComic', bookId: bookId, pages: pages})
+    navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: pages, kind: 'comic'})
 }
 
 window.onload = function() {

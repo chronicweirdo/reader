@@ -176,9 +176,10 @@ function downloadSection(position, callback) {
     xhttp.send()
 }
 
-function downloadBookToDevice(currentPosition = 0) {
+function downloadBookToDevice() {
     var bookId = getMeta("bookId")
-    navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId})
+    var size = num(getMeta("size"))
+    navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: size, kind: 'book'})
 }
 
 function getSectionFor(position) {
@@ -485,5 +486,7 @@ window.onload = function() {
     loadProgress(function(currentPosition) {
         displayPageFor(currentPosition)
     })
+
+    downloadBookToDevice()
 
 }
