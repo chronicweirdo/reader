@@ -56,7 +56,9 @@ var filesToCache = [
 
     //'/comic',
     '/comic.css',
-    '/comic.js'
+    '/comic.js',
+
+    '/'
 ]
 
 self.addEventListener('install', e => {
@@ -86,7 +88,7 @@ self.addEventListener('fetch', e => {
                 updateLatestReadInformation(response.clone())
                 return response
             })
-            .catch(() => fetchFromCache(request, url))
+            .catch(() => fetchResponseFromDatabase('/latestRead'))
         )
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         var key = url.pathname + url.search
@@ -203,36 +205,46 @@ function fetchResponseFromDatabase(key) {
 function updateLatestReadInformation(response) {
     console.log("handling latest read")
     console.log(response)
-    response.json().then(json => {
-        var booksToKeep = new Set()
-        for (var i = 0; i < json.length; i++) {
-            var book = json[i]
-            booksToKeep.add(book.id)
-        }
-        findDistinctValues(REQUESTS_TABLE, 'bookId')
-            .then(booksInDatabase => {
-                console.log('books to keep:')
-                console.log(booksToKeep)
-                console.log('books in database')
-                console.log(booksInDatabase)
-                //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
-                for (let bookId of booksInDatabase) {
-                    if (bookId && ! booksToKeep.has(bookId)) {
-                        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
-                        //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
-                    }
-                }
-                //var booksToDownload = difference(booksToKeep, booksInDatabase)
-
-            })
-
+    response.blob().then(blob => {
         var value = {
             url: '/latestRead',
-            body: json,
+            response: blob,
             headers: Object.fromEntries(response.headers.entries())
         }
-
         saveToDatabase(REQUESTS_TABLE, value)
+        blob.text().then(text => {
+            var json = JSON.parse(text)
+
+            var booksToKeep = new Set()
+            for (var i = 0; i < json.length; i++) {
+                var book = json[i]
+                booksToKeep.add(book.id)
+            }
+            findDistinctValues(REQUESTS_TABLE, 'bookId')
+                .then(booksInDatabase => {
+                    console.log('books to keep:')
+                    console.log(booksToKeep)
+                    console.log('books in database')
+                    console.log(booksInDatabase)
+                    //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
+                    for (let bookId of booksInDatabase) {
+                        if (bookId && ! booksToKeep.has(bookId)) {
+                            deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
+                            //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
+                        }
+                    }
+                    //var booksToDownload = difference(booksToKeep, booksInDatabase)
+                    for (var i = 0; i < json.length; i++) {
+                        var book = json[i]
+                        if (!booksInDatabase.has(book.id)) {
+                            saveToDevice(book.id, book.type, book.pages)
+                            // todo: also save progress immediately to db
+                        }
+                    }
+
+                })
+
+        })
     })
 }
 
