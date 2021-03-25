@@ -1,6 +1,7 @@
 importScripts('bookNode.js')
 
-var cacheName = 'chronic-reader-cache'
+var workerVersion = "1"
+var cacheName = 'chronic-reader-cache-' + workerVersion
 var dbName = 'chronic-reader-db'
 var dbVersion = 1
 var REQUESTS_TABLE = 'requests'
@@ -65,7 +66,7 @@ self.addEventListener('install', e => {
     console.log("service worker processing install")
     e.waitUntil(
         caches.open(cacheName).then(cache => cache.addAll(filesToCache))
-        //self.skipWaiting() // TODO: does this activate the service worker immediately
+        //self.skipWaiting() // TODO: does this activate the service worker immediately?
     )
 })
 
@@ -78,14 +79,22 @@ self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
+        // we always store progress to local database as well
         storeToProgressDatabase(e.request, url, true)
-        e.respondWith(fetch(e.request).catch(() => storeToProgressDatabase(e.request, url, false)))
+        e.respondWith(fetch(e.request).then(response => {
+            syncProgressInDatabase()
+            return response
+        }).catch(() => storeToProgressDatabase(e.request, url, false)))
     } else if (url.pathname === '/loadProgress') {
-        e.respondWith(fetch(e.request).catch(() => getProgressFromDatabase(e.request, url)))
+        e.respondWith(fetch(e.request).then(response => {
+            syncProgressInDatabase()
+            return response
+        }).catch(() => getProgressFromDatabase(e.request, url)))
     } else if (url.pathname === '/latestRead') {
         e.respondWith(fetch(e.request)
             .then(response => {
                 updateLatestReadInformation(response.clone())
+                syncProgressInDatabase()
                 return response
             })
             .catch(() => fetchResponseFromDatabase('/latestRead'))
@@ -212,39 +221,37 @@ function updateLatestReadInformation(response) {
             headers: Object.fromEntries(response.headers.entries())
         }
         saveToDatabase(REQUESTS_TABLE, value)
-        blob.text().then(text => {
-            var json = JSON.parse(text)
+        return blob.text()
+    }).then(text => {
+        var json = JSON.parse(text)
 
-            var booksToKeep = new Set()
-            for (var i = 0; i < json.length; i++) {
-                var book = json[i]
-                booksToKeep.add(book.id)
-            }
-            findDistinctValues(REQUESTS_TABLE, 'bookId')
-                .then(booksInDatabase => {
-                    console.log('books to keep:')
-                    console.log(booksToKeep)
-                    console.log('books in database')
-                    console.log(booksInDatabase)
-                    //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
-                    for (let bookId of booksInDatabase) {
-                        if (bookId && ! booksToKeep.has(bookId)) {
-                            deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
-                            //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
-                        }
+        var booksToKeep = new Set()
+        for (var i = 0; i < json.length; i++) {
+            var book = json[i]
+            booksToKeep.add(book.id)
+        }
+        findDistinctValues(REQUESTS_TABLE, 'bookId')
+            .then(booksInDatabase => {
+                console.log('books to keep:')
+                console.log(booksToKeep)
+                console.log('books in database')
+                console.log(booksInDatabase)
+                //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
+                for (let bookId of booksInDatabase) {
+                    if (bookId && ! booksToKeep.has(bookId)) {
+                        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
+                        //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
                     }
-                    //var booksToDownload = difference(booksToKeep, booksInDatabase)
-                    for (var i = 0; i < json.length; i++) {
-                        var book = json[i]
-                        if (!booksInDatabase.has(book.id)) {
-                            saveToDevice(book.id, book.type, book.pages)
-                            // todo: also save progress immediately to db
-                        }
+                }
+                //var booksToDownload = difference(booksToKeep, booksInDatabase)
+                for (var i = 0; i < json.length; i++) {
+                    var book = json[i]
+                    if (!booksInDatabase.has(book.id)) {
+                        saveToDevice(book.id, book.type, book.pages)
+                        // todo: also save progress immediately to db
                     }
-
-                })
-
-        })
+                }
+            })
     })
 }
 
@@ -256,6 +263,39 @@ function storeToProgressDatabase(request, url, synced) {
         saveToDatabase(PROGRESS_TABLE, {id: id, position: position, synced: synced})
             .then(() => resolve(new Response()))
             .catch(() => reject())
+    })
+}
+
+function syncProgressInDatabase() {
+    console.log("syncing progress to backend")
+    getUnsyncedProgress().then(unsyncedProgress => {
+        unsyncedProgress.forEach(p => {
+            fetch('/markProgress?id=' + p.id + '&position=' + p.position).then(() => {
+                console.log("marking progress as synced")
+                console.log(p)
+                saveToDatabase(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
+            })
+        })
+    })
+}
+
+function getUnsyncedProgress() {
+    return new Promise((resolve, reject) => {
+        console.log("retrieving unsynced progress")
+        var transaction = db.transaction(PROGRESS_TABLE, "readwrite")
+        var objectStore = transaction.objectStore(PROGRESS_TABLE)
+        var unsyncedProgress = []
+        objectStore.openCursor().onsuccess = event => {
+            var cursor = event.target.result
+            if (cursor) {
+                if (cursor.value.synced == false) {
+                    unsyncedProgress.push(cursor.value)
+                }
+                cursor.continue()
+            } else {
+                resolve(unsyncedProgress)
+            }
+        }
     })
 }
 
@@ -280,6 +320,7 @@ async function fetchFromCache(request, url) {
     console.log("for request: " + request.url)
     if (response) {
         console.log("response in cache")
+        console.log(response)
         return response
     } else {
         console.log("special offline response")
