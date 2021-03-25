@@ -77,6 +77,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
+    console.log("fetch url: " + url.pathname)
 
     if (url.pathname === '/markProgress') {
         // we always store progress to local database as well
@@ -130,6 +131,14 @@ self.addEventListener('fetch', e => {
                 }
             })
         )
+    } else if (url.pathname === '/') {
+        e.respondWith(fetch(e.request).then(response => {
+            console.log("response is redirected: " + response.redirected)
+            if (response.status == 200 && !response.redirected) {
+                saveActualResponseToDatabase(response.clone())
+            }
+            return response
+        }).catch(() => fetchResponseFromDatabase('/')))
     } else {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
@@ -241,6 +250,7 @@ function updateLatestReadInformation(response) {
                     if (bookId && ! booksToKeep.has(bookId)) {
                         deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
                         //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
+                        // todo: delete progress as well
                     }
                 }
                 //var booksToDownload = difference(booksToKeep, booksInDatabase)
@@ -406,9 +416,28 @@ function saveToDatabase(table, value) {
     })
 }
 
+function saveActualResponseToDatabase(response) {
+    return new Promise((resolve, reject) => {
+        var url = new URL(response.url)
+        var key = url.pathname + url.search
+        var bookId = url.searchParams.get("id")
+        var headers = Object.fromEntries(response.headers.entries())
+        response.blob().then(responseBlob => {
+            var entry = {
+                url: key,
+                response: responseBlob,
+                headers: Object.fromEntries(response.headers.entries()),
+                bookId: bookId
+            }
+            saveToDatabase(REQUESTS_TABLE, entry)
+                .then(() => resolve(entry))
+        })
+    })
+}
+
 function saveResponseToDatabase(url, bookId) {
     return new Promise((resolve, reject) => {
-        fetch(url).then(response => response.blob().then(responseBlob => {
+        /*fetch(url).then(response => response.blob().then(responseBlob => {
             console.log(response.headers)
             var entry = {
                 url: url,
@@ -418,7 +447,8 @@ function saveResponseToDatabase(url, bookId) {
             }
             saveToDatabase(REQUESTS_TABLE, entry).then(() => resolve(entry))
                 .catch(() => reject())
-        }))
+        }))*/
+        fetch(url).then(response => saveActualResponseToDatabase(response)).then(entity => resolve(entity))
     })
 }
 
