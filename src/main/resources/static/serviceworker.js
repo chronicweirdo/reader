@@ -77,7 +77,6 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
-    console.log("fetch url: " + url.pathname)
 
     if (url.pathname === '/markProgress') {
         // we always store progress to local database as well
@@ -106,7 +105,6 @@ self.addEventListener('fetch', e => {
             if (response) {
                 return response
             } else {
-                console.log("failed to find in database")
                 return fetch(e.request)
             }
         }))
@@ -118,22 +116,18 @@ self.addEventListener('fetch', e => {
                 if (sectionUrl) {
                     return fetchResponseFromDatabase(sectionUrl).then(response => {
                         if (response) {
-                            console.log('found book section in database')
                             return response
                         } else {
-                            console.log("failed to find in database")
                             return fetch(e.request)
                         }
                     })
                 } else {
-                    console.log("failed to find section in database")
                     return fetch(e.request)
                 }
             })
         )
     } else if (url.pathname === '/') {
         e.respondWith(fetch(e.request).then(response => {
-            console.log("response is redirected: " + response.redirected)
             if (response.status == 200 && !response.redirected) {
                 saveActualResponseToDatabase(response.clone())
             }
@@ -146,7 +140,6 @@ self.addEventListener('fetch', e => {
 
 function translatePositionToSectionUrl(bookId, position) {
     return new Promise((resolve, reject) => {
-        console.log('translating book ' + bookId + ' position ' + position + ' to section url')
         var transaction = db.transaction(REQUESTS_TABLE)
         var objectStore = transaction.objectStore(REQUESTS_TABLE)
         var index = objectStore.index('bookId')
@@ -155,8 +148,6 @@ function translatePositionToSectionUrl(bookId, position) {
             if (cursor) {
                 var sectionStart = cursor.value.headers["sectionstart"]
                 var sectionEnd = cursor.value.headers["sectionend"]
-                console.log(sectionStart)
-                console.log(sectionEnd)
                 if (sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)) {
                     resolve(cursor.value.url)
                 } else {
@@ -175,7 +166,6 @@ function loadFromDatabase(table, key) {
         var objectStore = transaction.objectStore(table)
         var dbRequest = objectStore.get(key)
         dbRequest.onerror = function(event) {
-            console.log("failed to load from table " + table + " key " + key)
             reject()
         }
         dbRequest.onsuccess = function(event) {
@@ -191,15 +181,11 @@ function findDistinctValues(table, column) {
         var cursorRequest = objectStore.openCursor()
         var distinctValues = new Set()
         cursorRequest.onsuccess = event => {
-            //console.log('processing cursor event')
             var cursor = event.target.result
             if (cursor) {
-                //console.log(cursor.value)
                 distinctValues.add(cursor.value[column])
                 cursor.continue()
             } else {
-                //console.log('Exhausted all documents')
-                //console.log(distinctValues)
                 resolve(distinctValues)
             }
         }
@@ -221,8 +207,6 @@ function fetchResponseFromDatabase(key) {
 }
 
 function updateLatestReadInformation(response) {
-    console.log("handling latest read")
-    console.log(response)
     response.blob().then(blob => {
         var value = {
             url: '/latestRead',
@@ -241,11 +225,6 @@ function updateLatestReadInformation(response) {
         }
         findDistinctValues(REQUESTS_TABLE, 'bookId')
             .then(booksInDatabase => {
-                console.log('books to keep:')
-                console.log(booksToKeep)
-                console.log('books in database')
-                console.log(booksInDatabase)
-                //var booksToDeleteFromDb = difference(booksInDatabase, booksToKeep)
                 for (let bookId of booksInDatabase) {
                     if (bookId && ! booksToKeep.has(bookId)) {
                         deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
@@ -268,19 +247,15 @@ function updateLatestReadInformation(response) {
 function fetchAndSaveProgress(bookId) {
     fetch('/loadProgress?id=' + bookId)
         .then(response => {
-            console.log(response)
-            console.log("got a response containing progress for " + bookId)
             return response.json()
         })
         .then(position => {
-            console.log("retrieved position " + position + " for id " + bookId)
             saveToDatabase(PROGRESS_TABLE, {id: String(bookId), position: String(position), synced: true})
         })
 }
 
 function storeToProgressDatabase(request, url, synced) {
     return new Promise((resolve, reject) => {
-        console.log("storing progress to db for later: " + request.url)
         var id = url.searchParams.get("id")
         var position = url.searchParams.get("position")
         saveToDatabase(PROGRESS_TABLE, {id: id, position: position, synced: synced})
@@ -290,12 +265,9 @@ function storeToProgressDatabase(request, url, synced) {
 }
 
 function syncProgressInDatabase() {
-    console.log("syncing progress to backend")
     getUnsyncedProgress().then(unsyncedProgress => {
         unsyncedProgress.forEach(p => {
             fetch('/markProgress?id=' + p.id + '&position=' + p.position).then(() => {
-                console.log("marking progress as synced")
-                console.log(p)
                 saveToDatabase(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
             })
         })
@@ -304,7 +276,6 @@ function syncProgressInDatabase() {
 
 function getUnsyncedProgress() {
     return new Promise((resolve, reject) => {
-        console.log("retrieving unsynced progress")
         var transaction = db.transaction(PROGRESS_TABLE, "readwrite")
         var objectStore = transaction.objectStore(PROGRESS_TABLE)
         var unsyncedProgress = []
@@ -340,13 +311,9 @@ function getProgressFromDatabase(request, url) {
 async function fetchFromCache(request, url) {
     var response = await caches.match(request)
 
-    console.log("for request: " + request.url)
     if (response) {
-        console.log("response in cache")
-        console.log(response)
         return response
     } else {
-        console.log("special offline response")
         var rObject = new Response()
         rObject.status = 404
         rObject.body = "am offline"
@@ -355,18 +322,12 @@ async function fetchFromCache(request, url) {
 }
 
 self.addEventListener('message', event => {
-    console.log("received message")
-    console.log(event)
     if (event.data.type === 'storeBook') {
-        console.log("received store book message")
-        console.log(event)
         var bookId = parseInt(event.data.bookId)
         var maxPositions = event.data.maxPositions
         var type = event.data.kind
         saveToDevice(bookId, type, maxPositions)
     } else if (event.data.type === 'deleteBook') {
-        console.log("received delete book message")
-        console.log(event)
         deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', event.data.bookId)
     }
 })
@@ -392,27 +353,12 @@ function clearFromCache(booksToKeep) {
 
 function saveToDatabase(table, value) {
     return new Promise((resolve, reject) => {
-        console.log("saving to database")
-        console.log(value)
         var transaction = db.transaction([table], "readwrite")
         transaction.oncomplete = function(event) {
-            console.log("transaction complete")
-            resolve()
-        }
-        transaction.onerror = function(event) {
-            console.log("transaction error")
-            console.log(event)
-            reject()
+            resolve(value)
         }
         var objectStore = transaction.objectStore(table);
         var addRequest = objectStore.put(value)
-        addRequest.onsuccess = function(event) {
-            console.log('add request successful')
-        }
-        addRequest.onerror = function(event) {
-            console.log("failed to save")
-            console.log(event)
-        }
     })
 }
 
@@ -437,23 +383,11 @@ function saveActualResponseToDatabase(response) {
 
 function saveResponseToDatabase(url, bookId) {
     return new Promise((resolve, reject) => {
-        /*fetch(url).then(response => response.blob().then(responseBlob => {
-            console.log(response.headers)
-            var entry = {
-                url: url,
-                response: responseBlob,
-                headers: Object.fromEntries(response.headers.entries()),
-                bookId: bookId
-            }
-            saveToDatabase(REQUESTS_TABLE, entry).then(() => resolve(entry))
-                .catch(() => reject())
-        }))*/
         fetch(url).then(response => saveActualResponseToDatabase(response)).then(entity => resolve(entity))
     })
 }
 
 function saveToDevice(bookId, type, maxPositions) {
-    console.log('saving to device')
     if (type === 'comic') {
         saveComicToDevice(bookId, maxPositions)
     } else if (type === 'book') {
@@ -463,7 +397,6 @@ function saveToDevice(bookId, type, maxPositions) {
 
 function saveBookToDevice(bookId, maxPositions) {
     var url = '/book?id=' + bookId
-    console.log('downloading book ' + url)
     fetchResponseFromDatabase(url)
         .then(response => {
             if (response) saveBookSectionToDevice(bookId, maxPositions, 0)
@@ -473,7 +406,6 @@ function saveBookToDevice(bookId, maxPositions) {
 
 function saveComicToDevice(comicId, pages) {
     var url = '/comic?id=' + comicId
-    console.log("downloading comic to cache " + url)
     fetchResponseFromDatabase(url)
         .then(response => {
             if (response) saveComicPageToDevice(comicId, pages, 0)
@@ -485,7 +417,6 @@ function saveBookSectionToDevice(bookId, maxPositions, position) {
     return new Promise((resolve, reject) => {
         if (position < maxPositions) {
             var url = '/bookSection?id=' + bookId + "&position=" + position
-            console.log('downloading book section ' + url)
             fetchResponseFromDatabase(url)
                 .then(response => {
                     if (response) {
@@ -499,7 +430,6 @@ function saveBookSectionToDevice(bookId, maxPositions, position) {
                     resolve()
                 })
         } else {
-            console.log('done saving book to device ' + bookId)
             resolve()
         }
     })
@@ -510,8 +440,6 @@ function saveBookResourcesToDevice(bookId, section) {
         var structure = JSON.parse(text)
         var node = convert(structure)
         var resources = node.getResources()
-        console.log('resources:')
-        console.log(resources)
         resources
             .filter(resource => resource.startsWith('bookResource'))
             .forEach(resource => saveResponseToDatabase('/' + resource, bookId))
@@ -522,7 +450,6 @@ function saveComicPageToDevice(comicId, pages, page) {
     return new Promise((resolve, reject) => {
         if (page < pages) {
             var url = '/imageData?id=' + comicId + '&page=' + page
-            console.log("save comic page to device " + url)
             fetchResponseFromDatabase(url)
                 .then(response => {
                     if (response) saveComicPageToDevice(comicId, pages, page + 1)
@@ -530,7 +457,6 @@ function saveComicPageToDevice(comicId, pages, page) {
                     resolve()
                 })
         } else {
-            console.log("done saving comic " + comicId)
             resolve()
         }
     })
