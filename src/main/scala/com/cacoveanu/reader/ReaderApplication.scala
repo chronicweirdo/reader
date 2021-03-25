@@ -35,7 +35,7 @@ class MvcConfig extends WebMvcConfigurer {
   }
 }
 
-/*@Configuration
+@Configuration
 class RequestLoggingFilterConfig {
 
   @Bean
@@ -48,7 +48,7 @@ class RequestLoggingFilterConfig {
     filter.setAfterMessagePrefix("REQUEST DATA : ")
     filter
   }
-}*/
+}
 
 @Configuration
 @EnableWebSecurity
@@ -65,7 +65,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/form.css",
         "/login.css",
         "/gold_logo.png",
-        "/favicon.ico"
+        "/favicon.ico",
+        "/serviceworker.js",
+        "/bookNode.js"
       ).permitAll()
       .antMatchers(
         "/users",
