@@ -248,11 +248,24 @@ function updateLatestReadInformation(response) {
                     var book = json[i]
                     if (!booksInDatabase.has(book.id)) {
                         saveToDevice(book.id, book.type, book.pages)
-                        // todo: also save progress immediately to db
                     }
+                    fetchAndSaveProgress(book.id)
                 }
             })
     })
+}
+
+function fetchAndSaveProgress(bookId) {
+    fetch('/loadProgress?id=' + bookId)
+        .then(response => {
+            console.log(response)
+            console.log("got a response containing progress for " + bookId)
+            return response.json()
+        })
+        .then(position => {
+            console.log("retrieved position " + position + " for id " + bookId)
+            saveToDatabase(PROGRESS_TABLE, {id: String(bookId), position: String(position), synced: true})
+        })
 }
 
 function storeToProgressDatabase(request, url, synced) {
