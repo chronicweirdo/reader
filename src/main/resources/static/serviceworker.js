@@ -351,6 +351,8 @@ function saveResponseToDatabase(url, bookId) {
     })
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////// saving to device
+
 function saveToDevice(bookId, type, maxPositions) {
     if (type === 'comic') {
         saveComicToDevice(bookId, maxPositions)
@@ -359,73 +361,92 @@ function saveToDevice(bookId, type, maxPositions) {
     }
 }
 
-function saveBookToDevice(bookId, maxPositions) {
-    var url = '/book?id=' + bookId
-    fetchResponseFromDatabase(url)
-        .then(response => {
-            if (response) saveBookSectionToDevice(bookId, maxPositions, 0)
-            else saveResponseToDatabase(url, bookId).then(() => saveBookSectionToDevice(bookId, maxPositions, 0))
+function saveBookToDevice(id, size) {
+    let url = '/book?id=' + id
+    databaseLoad(REQUESTS_TABLE, url)
+        .then(entity => {
+            if (!entity) fetch(url).then(response => saveActualResponseToDatabase(response))
         })
+        .finally(() => saveBookSectionToDevice(id, size, 0))
 }
 
-function saveComicToDevice(comicId, pages) {
-    var url = '/comic?id=' + comicId
-    fetchResponseFromDatabase(url)
+function saveComicToDevice(id, size) {
+    let url = '/comic?id=' + id
+    databaseLoad(REQUESTS_TABLE, url)
         .then(response => {
-            if (response) saveComicPageToDevice(comicId, pages, 0)
-            else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, 0))
+            if (!response) fetch(url).then(response => saveActualResponseToDatabase(response))
         })
+        .finally(() => saveComicPageToDevice(id, size, 0))
 }
 
-function saveBookSectionToDevice(bookId, maxPositions, position) {
+function saveBookSectionToDevice(id, size, position) {
     return new Promise((resolve, reject) => {
-        if (position < maxPositions) {
-            var url = '/bookSection?id=' + bookId + "&position=" + position
-            fetchResponseFromDatabase(url)
-                .then(response => {
-                    if (response) {
-                        var nextPosition = parseInt(response.headers['sectionend']) + 1
-                        saveBookSectionToDevice(bookId, maxPositions, nextPosition)
-                    } else saveResponseToDatabase(url, bookId).then(response => {
-                        saveBookResourcesToDevice(bookId, response.response)
-                        var nextPosition = parseInt(response.headers['sectionend']) + 1
-                        saveBookSectionToDevice(bookId, maxPositions, nextPosition)
-                    })
+        if (position < size) {
+            let url = '/bookSection?id=' + id + "&position=" + position
+            databaseLoad(REQUESTS_TABLE, url)
+                .then(entity => new Promise((resolve, reject) => {
+                    if (entity) {
+                        resolve(entity)
+                    } else {
+                        fetch(url)
+                            .then(response => saveActualResponseToDatabase(response))
+                            .then(entity => {
+                                saveBookResourcesToDevice(entity)
+                                resolve(entity)
+                            })
+                    }
+                }))
+                .then(section => {
+                    let nextPosition = parseInt(section.headers['sectionend']) + 1
+                    saveBookSectionToDevice(id, size, nextPosition)
                     resolve()
                 })
         } else {
+            console.log("done saving book " + id)
             resolve()
         }
     })
 }
 
-function saveBookResourcesToDevice(bookId, section) {
-    section.text().then(text => {
+function saveBookResourcesToDevice(section) {
+    section.response.text().then(text => {
         var structure = JSON.parse(text)
         var node = convert(structure)
         var resources = node.getResources()
         resources
             .filter(resource => resource.startsWith('bookResource'))
-            .forEach(resource => saveResponseToDatabase('/' + resource, bookId))
+            .forEach(resource => {
+                let url = '/' + resource
+                fetch(url).then(response => saveActualResponseToDatabase(response))
+            })
     })
 }
 
-function saveComicPageToDevice(comicId, pages, page) {
+function saveComicPageToDevice(id, size, position) {
     return new Promise((resolve, reject) => {
-        if (page < pages) {
-            var url = '/imageData?id=' + comicId + '&page=' + page
-            fetchResponseFromDatabase(url)
-                .then(response => {
-                    if (response) saveComicPageToDevice(comicId, pages, page + 1)
-                    else saveResponseToDatabase(url, comicId).then(() => saveComicPageToDevice(comicId, pages, page + 1))
+        if (position < size) {
+            var url = '/imageData?id=' + id + '&page=' + position
+            //fetchResponseFromDatabase(url)
+            databaseLoad(REQUESTS_TABLE, url)
+                .then(entity => new Promise((resolve, reject) => {
+                    if (entity) {
+                        resolve(entity)
+                    } else {
+                        fetch(url)
+                            .then(response => saveActualResponseToDatabase(response))
+                            .then(savedResponse => resolve(savedResponse))
+                    }
+                }))
+                .finally(() => {
+                    saveComicPageToDevice(id, size, position + 1)
                     resolve()
                 })
         } else {
+            console.log("done saving comic " + id)
             resolve()
         }
     })
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////// database operations
