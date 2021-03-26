@@ -68,6 +68,15 @@ function insertCollectionHtml(collectionHtml) {
         document.body.appendChild(collectionHtml)
     }
 }
+
+function insertOfflineMessage() {
+    var tools = document.getElementById("tools")
+    var offlineMessageHtml = document.createElement("p")
+    offlineMessageHtml.innerHTML = "The application is in offline mode, only the latest read books are available."
+    document.body.insertBefore(offlineMessageHtml, tools)
+    tools.remove()
+}
+
 function addCollections(collections) {
     for (var i = 0; i < collections.length; i++) {
         var collectionId = getCollectionId(collections[i])
@@ -191,13 +200,18 @@ function loadNextPage(callback) {
                 if (this.status == 200) {
                     setCurrentPage(pagenum)
                     var response = JSON.parse(this.responseText)
-                    if (response.books.length > 0) {
+                    console.log(response)
+                    if (response.offline && response.offline == true) {
+                        insertOfflineMessage()
+                    } else if (response.books.length > 0) {
                         addCollections(response.collections)
                         addBooks(response.books)
+                        if (callback != null) callback()
                     } else {
                         setEndOfCollection()
+                        if (callback != null) callback()
                     }
-                    if (callback != null) callback()
+
                 }
             }
         }

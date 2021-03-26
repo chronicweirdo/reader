@@ -14,11 +14,13 @@ request.onerror = function(event) {
     console.log('error opening db')
     console.log(event)
 }
+
 request.onsuccess = function(event) {
     console.log('db opened successfully')
     console.log(event)
     db = event.target.result
 }
+
 request.onupgradeneeded = function(event) {
     var db = event.target.result
     var requestsStore = db.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
@@ -35,15 +37,10 @@ request.onupgradeneeded = function(event) {
 var filesToCache = [
     'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
     'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
-
-    //'/',
     '/form.css',
     '/favicon.ico',
-
     '/library.css',
     '/library.js',
-
-    //'/book',
     '/book.css',
     '/tools.css',
     '/hammer.min.js',
@@ -51,12 +48,8 @@ var filesToCache = [
     '/util.js',
     '/bookNode.js',
     '/book.js',
-
-    //'/comic',
     '/comic.css',
-    '/comic.js',
-
-    '/'
+    '/comic.js'
 ]
 
 self.addEventListener('install', e => {
@@ -76,7 +69,6 @@ self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
-        // we always store progress to local database as well
         storeToProgressDatabase(e.request, url, true)
         e.respondWith(fetch(e.request).then(response => {
             syncProgressInDatabase()
@@ -124,6 +116,10 @@ self.addEventListener('fetch', e => {
             }
             return response
         }).catch(() => fetchResponseFromDatabase('/')))
+    } else if (url.pathname === '/search') {
+        e.respondWith(
+            fetch(e.request).catch(() => new Response('{"offline": true}'))
+        )
     } else {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
@@ -138,39 +134,18 @@ function findSectionForPosition(bookId, position) {
     return databaseFindFirst(matchFunction, REQUESTS_TABLE, ID_INDEX, bookId)
 }
 
-function findDistinctValues(table, column) {
-    return new Promise((resolve, reject) => {
-        var transaction = db.transaction([table])
-        var objectStore = transaction.objectStore(table)
-        var cursorRequest = objectStore.openCursor()
-        var distinctValues = new Set()
-        cursorRequest.onsuccess = event => {
-            var cursor = event.target.result
-            if (cursor) {
-                distinctValues.add(cursor.value[column])
-                cursor.continue()
-            } else {
-                resolve(distinctValues)
-            }
-        }
-        cursorRequest.onerror = event => reject()
-    })
-}
-
 function databaseEntityToResponse(entity) {
-    return new Response(entity.response, {headers: new Headers(entity.headers)})
+    if (entity) {
+        return new Response(entity.response, {headers: new Headers(entity.headers)})
+    } else {
+        return undefined
+    }
 }
 
 function fetchResponseFromDatabase(key) {
     return new Promise((resolve, reject) => {
         databaseLoad(REQUESTS_TABLE, key)
-            .then(result => {
-                if (result) {
-                    resolve(databaseEntityToResponse(result))
-                } else {
-                    resolve(undefined)
-                }
-            })
+            .then(result => resolve(databaseEntityToResponse(result)))
     })
 }
 
@@ -192,7 +167,7 @@ function updateLatestReadInformation(response) {
             var book = json[i]
             booksToKeep.add(book.id)
         }
-        findDistinctValues(REQUESTS_TABLE, ID_INDEX)
+        databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
             .then(booksInDatabase => {
                 console.log(booksInDatabase)
                 console.log(booksToKeep)
@@ -268,7 +243,7 @@ function getUnsyncedProgress() {
 
 function getProgressFromDatabase(request, url) {
     return new Promise((resolve, reject) => {
-        var id = url.searchParams.get("id")
+        var id = parseInt(url.searchParams.get("id"))
         databaseLoad(PROGRESS_TABLE, id)
             .then(result => {
                 if (result) {
@@ -525,5 +500,24 @@ function databaseSave(table, value) {
         }
         let objectStore = transaction.objectStore(table)
         let addRequest = objectStore.put(value)
+    })
+}
+
+function databaseLoadDistinct(table, column) {
+    return new Promise((resolve, reject) => {
+        let transaction = db.transaction([table])
+        let objectStore = transaction.objectStore(table)
+        let cursorRequest = objectStore.openCursor()
+        let distinctValues = new Set()
+        cursorRequest.onsuccess = event => {
+            let cursor = event.target.result
+            if (cursor) {
+                distinctValues.add(cursor.value[column])
+                cursor.continue()
+            } else {
+                resolve(distinctValues)
+            }
+        }
+        cursorRequest.onerror = event => reject()
     })
 }
