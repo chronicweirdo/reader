@@ -6,6 +6,7 @@ var dbName = 'chronic-reader-db'
 var dbVersion = 1
 var REQUESTS_TABLE = 'requests'
 var PROGRESS_TABLE = 'progress'
+var BOOKS_TABLE = 'books'
 var ID_INDEX = 'id'
 
 const request = indexedDB.open(dbName, dbVersion);
@@ -27,10 +28,14 @@ request.onupgradeneeded = function(event) {
     requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
     requestsStore.transaction.oncomplete = function(event) {
         console.log('created requests store')
-    };
+    }
     var progressStore = db.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
     progressStore.transaction.oncomplete = function(event) {
-            console.log('created progress store')
+        console.log('created progress store')
+    }
+    var booksStore = db.createObjectStore(BOOKS_TABLE, {keyPath: 'id'})
+    booksStore.transaction.oncomplete = function(event) {
+        console.log('created books store')
     }
 }
 
@@ -69,24 +74,28 @@ self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
-        storeToProgressDatabase(e.request, url, true)
-        e.respondWith(fetch(e.request).then(response => {
-            syncProgressInDatabase()
-            return response
-        }).catch(() => storeToProgressDatabase(e.request, url, false)))
+        e.respondWith(
+            storeToProgressDatabase(e.request, url, true)
+            .then(() => fetch(e.request))
+            .then(response => syncProgressInDatabase().then(() => response))
+            .catch(() => storeToProgressDatabase(e.request, url, false))
+        )
     } else if (url.pathname === '/loadProgress') {
-        e.respondWith(fetch(e.request).then(response => {
-            syncProgressInDatabase()
-            return response
-        }).catch(() => getProgressFromDatabase(e.request, url)))
+        e.respondWith(
+            fetch(e.request)
+            .then(response => syncProgressInDatabase().then(() => response))
+            .catch(() => getProgressFromDatabase(e.request, url))
+        )
     } else if (url.pathname === '/latestRead') {
-        e.respondWith(fetch(e.request)
-            .then(response => {
-                updateLatestReadInformation(response.clone())
+        e.respondWith(
+            /*fetch(e.request)
+            .then(response =>
                 syncProgressInDatabase()
-                return response
-            })
-            .catch(() => fetchResponseFromDatabase('/latestRead'))
+                .then(() => updateLatestReadInformation(response.clone()))
+                .then(() => response)
+            )
+            .catch(() => fetchResponseFromDatabase('/latestRead'))*/
+            handleLatestReadRequest()
         )
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         var key = url.pathname + url.search
@@ -124,6 +133,56 @@ self.addEventListener('fetch', e => {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
 })
+
+async function awaitTry(func) {
+    let result
+    try {
+        result = await func()
+    } catch (error) {
+        result = undefined
+    }
+    return result
+}
+
+async function handleLatestReadRequest() {
+    let serverResponse
+    try {
+        serverResponse = await fetch('/latestRead')
+    } catch(e) {
+        serverResponse = undefined
+    }
+    console.log("server response")
+    console.log(serverResponse)
+    if (serverResponse) {
+        console.log("internet is on, syncing progress")
+        await syncProgressInDatabase()
+        // reload response with new progress
+        try {
+            serverResponse = await fetch('/latestRead')
+        } catch(e) {
+            serverResponse = undefined
+        }
+    }
+
+    if (serverResponse) {
+        await updateLatestReadInformation(serverResponse.clone())
+        return serverResponse
+    } else {
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
+        let responseText = await databaseResponse.response.text()
+        let responseJson = JSON.parse(responseText)
+        console.log(responseJson)
+        for (var i = 0; i < responseJson.length; i++) {
+            let book = responseJson[i]
+            let latestProgress = await databaseLoad(PROGRESS_TABLE, book.id)
+            book.progress = latestProgress.position
+        }
+        console.log(responseJson)
+        let newResponseText = JSON.stringify(responseJson)
+
+        return new Response(newResponseText, {headers: new Headers(databaseResponse.headers)})
+    }
+}
 
 function findSectionForPosition(bookId, position) {
     const matchFunction = value => {
@@ -213,11 +272,21 @@ function storeToProgressDatabase(request, url, synced) {
 }
 
 function syncProgressInDatabase() {
-    getUnsyncedProgress().then(unsyncedProgress => {
-        unsyncedProgress.forEach(p => {
-            fetch('/markProgress?id=' + p.id + '&position=' + p.position).then(() => {
-                databaseSave(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
-            })
+    console.log("syncing progress")
+    return new Promise((resolve, reject) => {
+        getUnsyncedProgress().then(unsyncedProgress => {
+            console.log("unsynced progress")
+            console.log(unsyncedProgress)
+            Promise.all(unsyncedProgress.map(p => new Promise((resolve, reject) => {
+                fetch('/markProgress?id=' + p.id + '&position=' + p.position, {'method': 'PUT'}).then(() => {
+                    databaseSave(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
+                        .then(() => {
+                            console.log("synced id " + p.id + " position " + p.position)
+                            resolve()
+                        })
+                })
+            })))
+            .then(resolve())
         })
     })
 }
@@ -377,8 +446,13 @@ function saveBookSectionToDevice(id, size, position) {
                     resolve()
                 })
         } else {
-            console.log("done saving book " + id)
-            resolve()
+            databaseSave(BOOKS_TABLE, {
+                'id': id,
+                'date': new Date()
+            }).then(() => {
+                console.log("done saving comic " + id)
+                resolve()
+            })
         }
     })
 }
@@ -417,8 +491,13 @@ function saveComicPageToDevice(id, size, position) {
                     resolve()
                 })
         } else {
-            console.log("done saving comic " + id)
-            resolve()
+            databaseSave(BOOKS_TABLE, {
+                'id': id,
+                'date': new Date()
+            }).then(() => {
+                console.log("done saving comic " + id)
+                resolve()
+            })
         }
     })
 }
