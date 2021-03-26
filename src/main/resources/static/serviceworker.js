@@ -1,11 +1,12 @@
 importScripts('bookNode.js')
 
 var workerVersion = "1"
-var cacheName = 'chronic-reader-cache-' + workerVersion
+var cacheName = 'chronic-reader-cache'
 var dbName = 'chronic-reader-db'
 var dbVersion = 1
 var REQUESTS_TABLE = 'requests'
 var PROGRESS_TABLE = 'progress'
+var ID_INDEX = 'id'
 
 const request = indexedDB.open(dbName, dbVersion);
 var db;
@@ -21,13 +22,9 @@ request.onsuccess = function(event) {
 request.onupgradeneeded = function(event) {
     var db = event.target.result
     var requestsStore = db.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
-    requestsStore.createIndex('bookId', 'bookId', { unique: false })
+    requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
     requestsStore.transaction.oncomplete = function(event) {
         console.log('created requests store')
-        /*var customerObjectStore = db.transaction("customers", "readwrite").objectStore("customers");
-        customerData.forEach(function(customer) {
-          customerObjectStore.add(customer);
-        });*/
     };
     var progressStore = db.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
     progressStore.transaction.oncomplete = function(event) {
@@ -112,15 +109,9 @@ self.addEventListener('fetch', e => {
         var id = url.searchParams.get("id")
         var position = url.searchParams.get("position")
         e.respondWith(
-            translatePositionToSectionUrl(parseInt(id), position).then(sectionUrl => {
-                if (sectionUrl) {
-                    return fetchResponseFromDatabase(sectionUrl).then(response => {
-                        if (response) {
-                            return response
-                        } else {
-                            return fetch(e.request)
-                        }
-                    })
+            findSectionForPosition(parseInt(id), position).then(section => {
+                if (section) {
+                    return databaseEntityToResponse(section)
                 } else {
                     return fetch(e.request)
                 }
@@ -138,40 +129,13 @@ self.addEventListener('fetch', e => {
     }
 })
 
-function translatePositionToSectionUrl(bookId, position) {
-    return new Promise((resolve, reject) => {
-        var transaction = db.transaction(REQUESTS_TABLE)
-        var objectStore = transaction.objectStore(REQUESTS_TABLE)
-        var index = objectStore.index('bookId')
-        index.openCursor(IDBKeyRange.only(bookId)).onsuccess = event => {
-            var cursor = event.target.result
-            if (cursor) {
-                var sectionStart = cursor.value.headers["sectionstart"]
-                var sectionEnd = cursor.value.headers["sectionend"]
-                if (sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)) {
-                    resolve(cursor.value.url)
-                } else {
-                    cursor.continue()
-                }
-            } else {
-                resolve()
-            }
-        }
-    })
-}
-
-function loadFromDatabase(table, key) {
-    return new Promise((resolve, reject) => {
-        var transaction = db.transaction([table])
-        var objectStore = transaction.objectStore(table)
-        var dbRequest = objectStore.get(key)
-        dbRequest.onerror = function(event) {
-            reject()
-        }
-        dbRequest.onsuccess = function(event) {
-            resolve(event.target.result)
-        }
-    })
+function findSectionForPosition(bookId, position) {
+    const matchFunction = value => {
+        let sectionStart = value.headers["sectionstart"]
+        let sectionEnd = value.headers["sectionend"]
+        return sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)
+    }
+    return databaseFindFirst(matchFunction, REQUESTS_TABLE, ID_INDEX, bookId)
 }
 
 function findDistinctValues(table, column) {
@@ -193,12 +157,16 @@ function findDistinctValues(table, column) {
     })
 }
 
+function databaseEntityToResponse(entity) {
+    return new Response(entity.response, {headers: new Headers(entity.headers)})
+}
+
 function fetchResponseFromDatabase(key) {
     return new Promise((resolve, reject) => {
-        loadFromDatabase(REQUESTS_TABLE, key)
+        databaseLoad(REQUESTS_TABLE, key)
             .then(result => {
                 if (result) {
-                    resolve(new Response(result.response, {headers: new Headers(result.headers)}))
+                    resolve(databaseEntityToResponse(result))
                 } else {
                     resolve(undefined)
                 }
@@ -207,13 +175,14 @@ function fetchResponseFromDatabase(key) {
 }
 
 function updateLatestReadInformation(response) {
+    console.log("updating latest read information")
     response.blob().then(blob => {
         var value = {
             url: '/latestRead',
             response: blob,
             headers: Object.fromEntries(response.headers.entries())
         }
-        saveToDatabase(REQUESTS_TABLE, value)
+        databaseSave(REQUESTS_TABLE, value)
         return blob.text()
     }).then(text => {
         var json = JSON.parse(text)
@@ -223,16 +192,15 @@ function updateLatestReadInformation(response) {
             var book = json[i]
             booksToKeep.add(book.id)
         }
-        findDistinctValues(REQUESTS_TABLE, 'bookId')
+        findDistinctValues(REQUESTS_TABLE, ID_INDEX)
             .then(booksInDatabase => {
+                console.log(booksInDatabase)
+                console.log(booksToKeep)
                 for (let bookId of booksInDatabase) {
-                    if (bookId && ! booksToKeep.has(bookId)) {
-                        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', bookId)
-                        //self.controller.postMessage({type: 'deleteBook', bookId: bookId}) // can't do this
-                        // todo: delete progress as well
+                    if (bookId && !booksToKeep.has(bookId)) {
+                        deleteBookFromDatabase(bookId)
                     }
                 }
-                //var booksToDownload = difference(booksToKeep, booksInDatabase)
                 for (var i = 0; i < json.length; i++) {
                     var book = json[i]
                     if (!booksInDatabase.has(book.id)) {
@@ -244,21 +212,26 @@ function updateLatestReadInformation(response) {
     })
 }
 
+function deleteBookFromDatabase(bookId) {
+    databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
+    databaseDelete(progress => progress.id == bookId, PROGRESS_TABLE)
+}
+
 function fetchAndSaveProgress(bookId) {
     fetch('/loadProgress?id=' + bookId)
         .then(response => {
             return response.json()
         })
         .then(position => {
-            saveToDatabase(PROGRESS_TABLE, {id: String(bookId), position: String(position), synced: true})
+            databaseSave(PROGRESS_TABLE, {id: bookId, position: String(position), synced: true})
         })
 }
 
 function storeToProgressDatabase(request, url, synced) {
     return new Promise((resolve, reject) => {
-        var id = url.searchParams.get("id")
+        var id = parseInt(url.searchParams.get("id"))
         var position = url.searchParams.get("position")
-        saveToDatabase(PROGRESS_TABLE, {id: id, position: position, synced: synced})
+        databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: synced})
             .then(() => resolve(new Response()))
             .catch(() => reject())
     })
@@ -268,7 +241,7 @@ function syncProgressInDatabase() {
     getUnsyncedProgress().then(unsyncedProgress => {
         unsyncedProgress.forEach(p => {
             fetch('/markProgress?id=' + p.id + '&position=' + p.position).then(() => {
-                saveToDatabase(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
+                databaseSave(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
             })
         })
     })
@@ -296,7 +269,7 @@ function getUnsyncedProgress() {
 function getProgressFromDatabase(request, url) {
     return new Promise((resolve, reject) => {
         var id = url.searchParams.get("id")
-        loadFromDatabase(PROGRESS_TABLE, id)
+        databaseLoad(PROGRESS_TABLE, id)
             .then(result => {
                 if (result) {
                     resolve(new Response(result.position))
@@ -328,7 +301,7 @@ self.addEventListener('message', event => {
         var type = event.data.kind
         saveToDevice(bookId, type, maxPositions)
     } else if (event.data.type === 'deleteBook') {
-        deleteFromDatabaseForIndex(REQUESTS_TABLE, 'bookId', event.data.bookId)
+        databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, event.data.bookId)
     }
 })
 
@@ -351,31 +324,22 @@ function clearFromCache(booksToKeep) {
 
 
 
-function saveToDatabase(table, value) {
-    return new Promise((resolve, reject) => {
-        var transaction = db.transaction([table], "readwrite")
-        transaction.oncomplete = function(event) {
-            resolve(value)
-        }
-        var objectStore = transaction.objectStore(table);
-        var addRequest = objectStore.put(value)
-    })
-}
+
 
 function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {
         var url = new URL(response.url)
         var key = url.pathname + url.search
-        var bookId = url.searchParams.get("id")
+        var bookId = parseInt(url.searchParams.get("id"))
         var headers = Object.fromEntries(response.headers.entries())
         response.blob().then(responseBlob => {
             var entry = {
                 url: key,
                 response: responseBlob,
                 headers: Object.fromEntries(response.headers.entries()),
-                bookId: bookId
+                id: bookId
             }
-            saveToDatabase(REQUESTS_TABLE, entry)
+            databaseSave(REQUESTS_TABLE, entry)
                 .then(() => resolve(entry))
         })
     })
@@ -462,19 +426,83 @@ function saveComicPageToDevice(comicId, pages, page) {
     })
 }
 
-function deleteFromDatabaseForIndex(table, indexName, indexValue) {
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////// database operations
+
+function databaseFindFirst(matchFunction, table, indexName = undefined, indexValue = undefined) {
     return new Promise((resolve, reject) => {
-        var transaction = db.transaction([table], "readwrite")
-        var objectStore = transaction.objectStore(table)
-        var index = objectStore.index(indexName)
-        index.openCursor(IDBKeyRange.only(indexValue)).onsuccess = event => {
-            var cursor = event.target.result
+        let transaction = db.transaction(table)
+        let objectStore = transaction.objectStore(table)
+        let cursorRequest
+        if (indexName) {
+            let index = objectStore.index(indexName)
+            cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
+        } else {
+            cursorRequest = objectStore.openCursor()
+        }
+        cursorRequest.onsuccess = event => {
+            let cursor = event.target.result
             if (cursor) {
-                objectStore.delete(cursor.primaryKey)
-                cursor.continue();
+                if (matchFunction(cursor.value)) {
+                    resolve(cursor.value)
+                } else {
+                    cursor.continue()
+                }
             } else {
                 resolve()
             }
         }
+    })
+}
+
+function databaseLoad(table, key) {
+    return new Promise((resolve, reject) => {
+        let transaction = db.transaction([table])
+        let objectStore = transaction.objectStore(table)
+        let dbRequest = objectStore.get(key)
+        dbRequest.onsuccess = function(event) {
+            resolve(event.target.result)
+        }
+    })
+}
+
+function databaseDelete(matchFunction, table, indexName = undefined, indexValue = undefined) {
+    return new Promise((resolve, reject) => {
+        let transaction = db.transaction([table], "readwrite")
+        let objectStore = transaction.objectStore(table)
+
+        let cursorRequest
+        if (indexName) {
+            let index = objectStore.index(indexName)
+            cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
+        } else {
+            cursorRequest = objectStore.openCursor()
+        }
+
+        let deletedCount = 0
+        cursorRequest.onsuccess = event => {
+            let cursor = event.target.result
+            if (cursor) {
+                if (matchFunction(cursor.value)) {
+                    objectStore.delete(cursor.primaryKey)
+                    deletedCount += 1
+                }
+                cursor.continue()
+            } else {
+                resolve(deletedCount)
+            }
+        }
+    })
+}
+
+function databaseSave(table, value) {
+    return new Promise((resolve, reject) => {
+        let transaction = db.transaction([table], "readwrite")
+        transaction.oncomplete = function(event) {
+            resolve(value)
+        }
+        let objectStore = transaction.objectStore(table)
+        let addRequest = objectStore.put(value)
     })
 }
