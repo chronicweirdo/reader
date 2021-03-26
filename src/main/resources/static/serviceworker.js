@@ -60,15 +60,15 @@ self.addEventListener('install', e => {
     e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(filesToCache)))
     e.waitUntil(
         caches.keys().then(function(cacheNames) {
-          return Promise.all(
-            cacheNames.filter(function(cacheName) {
-              return cacheName != CACHE_NAME
-            }).map(function(cacheName) {
-              return caches.delete(cacheName)
-            })
-          )
+            return Promise.all(
+                cacheNames.filter(function(cacheName) {
+                    return cacheName != CACHE_NAME
+                }).map(function(cacheName) {
+                    return caches.delete(cacheName)
+                })
+            )
         })
-      )
+    )
 })
 
 self.addEventListener('activate', e => {
@@ -90,24 +90,70 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/bookSection') {
         e.respondWith(handleBookSectionRequest(e.request))
     } else if (url.pathname === '/') {
-        e.respondWith(
-            fetch(e.request)
-                .then(response => {
-                    if (response.status == 200 && !response.redirected) {
-                        saveActualResponseToDatabase(response.clone())
-                    }
-                    return response
-                })
-                .catch(() => fetchResponseFromDatabase('/'))
-        )
+        e.respondWith(handleRootRequest(e.request))
     } else if (url.pathname === '/search') {
-        e.respondWith(
-            fetch(e.request).catch(() => new Response('{"offline": true}'))
-        )
+        e.respondWith(handleSearchRequest(e.request))
     } else {
-        e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
+        e.respondWith(handleWebResourceRequest(e.request))
     }
 })
+
+async function handleWebResourceRequest(request) {
+    let serverResponse
+    try {
+        serverResponse = await fetch(request)
+    } catch (error) {
+        serverResponse = undefined
+    }
+
+    if (serverResponse) {
+        return serverResponse
+    }
+
+    let cacheResponse = await caches.match(request)
+
+    if (cacheResponse) {
+        return cacheResponse
+    } else {
+        let notFoundResponse = new Response()
+        notFoundResponse.status = 404
+        return notFoundResponse
+    }
+}
+
+async function handleSearchRequest(request) {
+    let serverResponse
+    try {
+        serverResponse = await fetch(request)
+    } catch (error) {
+        serverResponse = undefined
+    }
+
+    if (serverResponse) {
+        return serverResponse
+    } else {
+        return new Response('{"offline": true}')
+    }
+}
+
+async function handleRootRequest(request) {
+    let serverResponse
+    try {
+        serverResponse = await fetch(request)
+    } catch (error) {
+        serverResponse = undefined
+    }
+
+    if (serverResponse) {
+        if (serverResponse.status == 200 && !serverResponse.redirected) {
+            saveActualResponseToDatabase(serverResponse.clone())
+        }
+        return serverResponse
+    } else {
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/')
+        return databaseEntityToResponse(databaseResponse)
+    }
+}
 
 async function handleDataRequest(request) {
     let url = new URL(request.url)
@@ -265,13 +311,6 @@ function databaseEntityToResponse(entity) {
     }
 }
 
-function fetchResponseFromDatabase(key) {
-    return new Promise((resolve, reject) => {
-        databaseLoad(REQUESTS_TABLE, key)
-            .then(result => resolve(databaseEntityToResponse(result)))
-    })
-}
-
 async function deleteBookFromDatabase(bookId) {
     let deleted = 0
     deleted += await databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
@@ -316,19 +355,6 @@ function getUnsyncedProgress() {
     })
 }
 
-async function fetchFromCache(request, url) {
-    var response = await caches.match(request)
-
-    if (response) {
-        return response
-    } else {
-        var rObject = new Response()
-        rObject.status = 404
-        rObject.body = "am offline"
-        return rObject
-    }
-}
-
 self.addEventListener('message', event => {
     if (event.data.type === 'storeBook') {
         var bookId = parseInt(event.data.bookId)
@@ -339,27 +365,6 @@ self.addEventListener('message', event => {
         databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, event.data.bookId)
     }
 })
-
-/*function clearFromCache(booksToKeep) {
-    caches.open(CACHE_NAME).then(cache => {
-        cache.keys().then(keys => {
-            //var ids = new Set()
-            keys.forEach(function (request, index, array) {
-                var url = new URL(request.url)
-                if (url.pathname === '/imageData' || url.pathname === '/comic') {
-                    var id = url.searchParams.get("id")
-                    if (! booksToKeep.has(id)) {
-                        cache.delete(request)
-                    }
-                }
-            })
-        })
-    })
-}*/
-
-
-
-
 
 function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {
