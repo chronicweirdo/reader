@@ -80,26 +80,9 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/latestRead') {
         e.respondWith(handleLatestReadRequest())
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
-        var key = url.pathname + url.search
-        e.respondWith(fetchResponseFromDatabase(key).then(response => {
-            if (response) {
-                return response
-            } else {
-                return fetch(e.request)
-            }
-        }))
+        e.respondWith(handleDataRequest(e.request))
     } else if (url.pathname === '/bookSection') {
-        var id = url.searchParams.get("id")
-        var position = url.searchParams.get("position")
-        e.respondWith(
-            findSectionForPosition(parseInt(id), position).then(section => {
-                if (section) {
-                    return databaseEntityToResponse(section)
-                } else {
-                    return fetch(e.request)
-                }
-            })
-        )
+        e.respondWith(handleBookSectionRequest(e.request))
     } else if (url.pathname === '/') {
         e.respondWith(fetch(e.request).then(response => {
             if (response.status == 200 && !response.redirected) {
@@ -115,6 +98,38 @@ self.addEventListener('fetch', e => {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
 })
+
+async function handleDataRequest(request) {
+    let url = new URL(request.url)
+    let key = url.pathname + url.search
+    // always try to load from db first
+    let databaseResponse = await databaseLoad(REQUESTS_TABLE, key)
+
+    if (databaseResponse) {
+        return databaseEntityToResponse(databaseResponse)
+    } else {
+        return fetch(request)
+    }
+}
+
+async function handleBookSectionRequest(request) {
+    let url = new URL(request.url)
+    let id = parseInt(url.searchParams.get("id"))
+    let position = parseInt(url.searchParams.get("position"))
+
+    const matchFunction = value => {
+        let sectionStart = value.headers["sectionstart"]
+        let sectionEnd = value.headers["sectionend"]
+        return sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)
+    }
+    let databaseResponse = await databaseFindFirst(matchFunction, REQUESTS_TABLE, ID_INDEX, id)
+
+    if (databaseResponse) {
+        return databaseEntityToResponse(databaseResponse)
+    } else {
+        return fetch(request)
+    }
+}
 
 async function handleLoadProgress(request) {
     let url = new URL(request.url)
@@ -194,15 +209,6 @@ async function handleLatestReadRequest() {
 
         return new Response(newResponseText, {headers: new Headers(databaseResponse.headers)})
     }
-}
-
-function findSectionForPosition(bookId, position) {
-    const matchFunction = value => {
-        let sectionStart = value.headers["sectionstart"]
-        let sectionEnd = value.headers["sectionend"]
-        return sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)
-    }
-    return databaseFindFirst(matchFunction, REQUESTS_TABLE, ID_INDEX, bookId)
 }
 
 function databaseEntityToResponse(entity) {
