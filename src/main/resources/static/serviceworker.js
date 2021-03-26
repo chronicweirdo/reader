@@ -74,27 +74,15 @@ self.addEventListener('fetch', e => {
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
-        e.respondWith(
-            storeToProgressDatabase(e.request, url, true)
-            .then(() => fetch(e.request))
-            .then(response => syncProgressInDatabase().then(() => response))
-            .catch(() => storeToProgressDatabase(e.request, url, false))
-        )
+        e.respondWith(handleMarkProgress(e.request))
     } else if (url.pathname === '/loadProgress') {
-        e.respondWith(
-            fetch(e.request)
+        e.respondWith(handleLoadProgress(e.request)
+            /*fetch(e.request)
             .then(response => syncProgressInDatabase().then(() => response))
-            .catch(() => getProgressFromDatabase(e.request, url))
+            .catch(() => getProgressFromDatabase(e.request, url))*/
         )
     } else if (url.pathname === '/latestRead') {
         e.respondWith(
-            /*fetch(e.request)
-            .then(response =>
-                syncProgressInDatabase()
-                .then(() => updateLatestReadInformation(response.clone()))
-                .then(() => response)
-            )
-            .catch(() => fetchResponseFromDatabase('/latestRead'))*/
             handleLatestReadRequest()
         )
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
@@ -144,6 +132,47 @@ async function awaitTry(func) {
     return result
 }
 
+async function handleLoadProgress(request) {
+    let url = new URL(request.url)
+    let id = parseInt(url.searchParams.get("id"))
+
+    // always get progress from database
+    let databaseProgress = await databaseLoad(PROGRESS_TABLE, id)
+
+    // if nothing, try to grab from backend
+    if (databaseProgress) {
+        return new Response(databaseProgress.position)
+    } else {
+        let progressResponse = await fetch(e.request)
+        return progressResponse
+    }
+}
+
+async function handleMarkProgress(request) {
+    let url = new URL(request.url)
+    let id = parseInt(url.searchParams.get("id"))
+    let position = parseInt(url.searchParams.get("position"))
+    let dbProgress = await databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: true})
+
+    let markProgressResponse
+    try {
+        markProgressResponse = await fetch(request)
+    } catch (error) {
+        markProgressResponse = undefined
+    }
+
+    if (markProgressResponse) {
+        // we have internet connection
+        let syncedProgressCount = await syncProgressInDatabase()
+    } else {
+        // fetch from db and mark progress as unsynced
+        let unsyncedDbProgress = await databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: false})
+        markProgressResponse = new Response()
+    }
+
+    return markProgressResponse
+}
+
 async function handleLatestReadRequest() {
     let serverResponse
     try {
@@ -151,16 +180,15 @@ async function handleLatestReadRequest() {
     } catch(e) {
         serverResponse = undefined
     }
-    console.log("server response")
-    console.log(serverResponse)
     if (serverResponse) {
         console.log("internet is on, syncing progress")
-        await syncProgressInDatabase()
-        // reload response with new progress
-        try {
-            serverResponse = await fetch('/latestRead')
-        } catch(e) {
-            serverResponse = undefined
+        let syncedProgressCount = await syncProgressInDatabase()
+        if (syncedProgressCount > 0) {
+            try {
+                serverResponse = await fetch('/latestRead')
+            } catch(e) {
+                serverResponse = undefined
+            }
         }
     }
 
@@ -208,50 +236,48 @@ function fetchResponseFromDatabase(key) {
     })
 }
 
-function updateLatestReadInformation(response) {
+async function updateLatestReadInformation(response) {
     console.log("updating latest read information")
-    response.blob().then(blob => {
-        var value = {
-            url: '/latestRead',
-            response: blob,
-            headers: Object.fromEntries(response.headers.entries())
-        }
-        databaseSave(REQUESTS_TABLE, value)
-        return blob.text()
-    }).then(text => {
-        var json = JSON.parse(text)
+    let blob = await response.blob()
+    let entity = {
+        url: '/latestRead',
+        response: blob,
+        headers: Object.fromEntries(response.headers.entries())
+    }
+    let savedEntity = await databaseSave(REQUESTS_TABLE, entity)
+    let text = await savedEntity.response.text()
+    let json = JSON.parse(text)
 
-        var booksToKeep = new Set()
-        for (var i = 0; i < json.length; i++) {
-            var book = json[i]
-            booksToKeep.add(book.id)
+    let booksToKeep = new Set()
+    for (var i = 0; i < json.length; i++) {
+        var book = json[i]
+        booksToKeep.add(book.id)
+    }
+    let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
+
+    for (let bookId of booksInDatabase) {
+        if (bookId && !booksToKeep.has(bookId)) {
+            deleteBookFromDatabase(bookId)
         }
-        databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
-            .then(booksInDatabase => {
-                console.log(booksInDatabase)
-                console.log(booksToKeep)
-                for (let bookId of booksInDatabase) {
-                    if (bookId && !booksToKeep.has(bookId)) {
-                        deleteBookFromDatabase(bookId)
-                    }
-                }
-                for (var i = 0; i < json.length; i++) {
-                    var book = json[i]
-                    if (!booksInDatabase.has(book.id)) {
-                        saveToDevice(book.id, book.type, book.pages)
-                    }
-                    fetchAndSaveProgress(book.id)
-                }
-            })
-    })
+    }
+    for (let i = 0; i < json.length; i++) {
+        var book = json[i]
+        if (! booksInDatabase.has(book.id)) {
+            saveToDevice(book.id, book.type, book.pages)
+        }
+        //fetchAndSaveProgress(book.id)
+        databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
+    }
 }
 
-function deleteBookFromDatabase(bookId) {
-    databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
-    databaseDelete(progress => progress.id == bookId, PROGRESS_TABLE)
+async function deleteBookFromDatabase(bookId) {
+    let deleted = 0
+    deleted += await databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
+    deleted += await databaseDelete(progress => progress.id == bookId, PROGRESS_TABLE)
+    return deleted
 }
 
-function fetchAndSaveProgress(bookId) {
+/*function fetchAndSaveProgress(bookId) {
     fetch('/loadProgress?id=' + bookId)
         .then(response => {
             return response.json()
@@ -259,24 +285,21 @@ function fetchAndSaveProgress(bookId) {
         .then(position => {
             databaseSave(PROGRESS_TABLE, {id: bookId, position: String(position), synced: true})
         })
-}
+}*/
 
-function storeToProgressDatabase(request, url, synced) {
+/*function storeToProgressDatabase(request, url, synced) {
     return new Promise((resolve, reject) => {
         var id = parseInt(url.searchParams.get("id"))
-        var position = url.searchParams.get("position")
+        var position = parseInt(url.searchParams.get("position"))
         databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: synced})
             .then(() => resolve(new Response()))
             .catch(() => reject())
     })
-}
+}*/
 
 function syncProgressInDatabase() {
-    console.log("syncing progress")
     return new Promise((resolve, reject) => {
         getUnsyncedProgress().then(unsyncedProgress => {
-            console.log("unsynced progress")
-            console.log(unsyncedProgress)
             Promise.all(unsyncedProgress.map(p => new Promise((resolve, reject) => {
                 fetch('/markProgress?id=' + p.id + '&position=' + p.position, {'method': 'PUT'}).then(() => {
                     databaseSave(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
@@ -286,7 +309,7 @@ function syncProgressInDatabase() {
                         })
                 })
             })))
-            .then(resolve())
+            .then(resolve(unsyncedProgress.length))
         })
     })
 }
@@ -310,7 +333,7 @@ function getUnsyncedProgress() {
     })
 }
 
-function getProgressFromDatabase(request, url) {
+/*function getProgressFromDatabase(request, url) {
     return new Promise((resolve, reject) => {
         var id = parseInt(url.searchParams.get("id"))
         databaseLoad(PROGRESS_TABLE, id)
@@ -323,7 +346,7 @@ function getProgressFromDatabase(request, url) {
             })
             .catch(() => reject())
     })
-}
+}*/
 
 async function fetchFromCache(request, url) {
     var response = await caches.match(request)
