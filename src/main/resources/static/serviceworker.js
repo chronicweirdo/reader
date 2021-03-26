@@ -1,21 +1,19 @@
 importScripts('bookNode.js')
 
-var workerVersion = "1"
-var cacheName = 'chronic-reader-cache'
-var dbName = 'chronic-reader-db'
-var dbVersion = 1
+var CACHE_NAME = 'chronic-reader-cache-1'
+var DATABASE_NAME = 'chronic-reader-db'
+var DATABASE_VERSION = 1
 var REQUESTS_TABLE = 'requests'
 var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var ID_INDEX = 'id'
 
-const request = indexedDB.open(dbName, dbVersion);
-var db;
+const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
+var db
 request.onerror = function(event) {
     console.log('error opening db')
     console.log(event)
 }
-
 request.onsuccess = function(event) {
     console.log('db opened successfully')
     console.log(event)
@@ -59,10 +57,18 @@ var filesToCache = [
 
 self.addEventListener('install', e => {
     console.log("service worker processing install")
+    e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(filesToCache)))
     e.waitUntil(
-        caches.open(cacheName).then(cache => cache.addAll(filesToCache))
-        //self.skipWaiting() // TODO: does this activate the service worker immediately?
-    )
+        caches.keys().then(function(cacheNames) {
+          return Promise.all(
+            cacheNames.filter(function(cacheName) {
+              return cacheName != CACHE_NAME
+            }).map(function(cacheName) {
+              return caches.delete(cacheName)
+            })
+          )
+        })
+      )
 })
 
 self.addEventListener('activate', e => {
@@ -84,12 +90,16 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/bookSection') {
         e.respondWith(handleBookSectionRequest(e.request))
     } else if (url.pathname === '/') {
-        e.respondWith(fetch(e.request).then(response => {
-            if (response.status == 200 && !response.redirected) {
-                saveActualResponseToDatabase(response.clone())
-            }
-            return response
-        }).catch(() => fetchResponseFromDatabase('/')))
+        e.respondWith(
+            fetch(e.request)
+                .then(response => {
+                    if (response.status == 200 && !response.redirected) {
+                        saveActualResponseToDatabase(response.clone())
+                    }
+                    return response
+                })
+                .catch(() => fetchResponseFromDatabase('/'))
+        )
     } else if (url.pathname === '/search') {
         e.respondWith(
             fetch(e.request).catch(() => new Response('{"offline": true}'))
@@ -262,41 +272,6 @@ function fetchResponseFromDatabase(key) {
     })
 }
 
-/*async function updateLatestReadInformation(response) {
-    console.log("updating latest read information")
-    let blob = await response.blob()
-    let entity = {
-        url: '/latestRead',
-        response: blob,
-        headers: Object.fromEntries(response.headers.entries())
-    }
-    let savedEntity = await databaseSave(REQUESTS_TABLE, entity)
-    let text = await savedEntity.response.text()
-    let json = JSON.parse(text)
-
-    let booksToKeep = new Set()
-    for (var i = 0; i < json.length; i++) {
-        var book = json[i]
-        booksToKeep.add(book.id)
-    }
-    let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
-
-
-
-    for (let bookId of booksInDatabase) {
-        if (bookId && !booksToKeep.has(bookId)) {
-            deleteBookFromDatabase(bookId)
-        }
-    }
-    for (let i = 0; i < json.length; i++) {
-        var book = json[i]
-        if (! booksInDatabase.has(book.id)) {
-            saveToDevice(book.id, book.type, book.pages)
-        }
-        databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
-    }
-}*/
-
 async function deleteBookFromDatabase(bookId) {
     let deleted = 0
     deleted += await databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
@@ -365,8 +340,8 @@ self.addEventListener('message', event => {
     }
 })
 
-function clearFromCache(booksToKeep) {
-    caches.open(cacheName).then(cache => {
+/*function clearFromCache(booksToKeep) {
+    caches.open(CACHE_NAME).then(cache => {
         cache.keys().then(keys => {
             //var ids = new Set()
             keys.forEach(function (request, index, array) {
@@ -380,7 +355,7 @@ function clearFromCache(booksToKeep) {
             })
         })
     })
-}
+}*/
 
 
 
