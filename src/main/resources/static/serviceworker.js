@@ -76,15 +76,9 @@ self.addEventListener('fetch', e => {
     if (url.pathname === '/markProgress') {
         e.respondWith(handleMarkProgress(e.request))
     } else if (url.pathname === '/loadProgress') {
-        e.respondWith(handleLoadProgress(e.request)
-            /*fetch(e.request)
-            .then(response => syncProgressInDatabase().then(() => response))
-            .catch(() => getProgressFromDatabase(e.request, url))*/
-        )
+        e.respondWith(handleLoadProgress(e.request))
     } else if (url.pathname === '/latestRead') {
-        e.respondWith(
-            handleLatestReadRequest()
-        )
+        e.respondWith(handleLatestReadRequest())
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         var key = url.pathname + url.search
         e.respondWith(fetchResponseFromDatabase(key).then(response => {
@@ -121,16 +115,6 @@ self.addEventListener('fetch', e => {
         e.respondWith(fetch(e.request).catch(() => fetchFromCache(e.request, url)))
     }
 })
-
-async function awaitTry(func) {
-    let result
-    try {
-        result = await func()
-    } catch (error) {
-        result = undefined
-    }
-    return result
-}
 
 async function handleLoadProgress(request) {
     let url = new URL(request.url)
@@ -265,7 +249,6 @@ async function updateLatestReadInformation(response) {
         if (! booksInDatabase.has(book.id)) {
             saveToDevice(book.id, book.type, book.pages)
         }
-        //fetchAndSaveProgress(book.id)
         databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
     }
 }
@@ -276,26 +259,6 @@ async function deleteBookFromDatabase(bookId) {
     deleted += await databaseDelete(progress => progress.id == bookId, PROGRESS_TABLE)
     return deleted
 }
-
-/*function fetchAndSaveProgress(bookId) {
-    fetch('/loadProgress?id=' + bookId)
-        .then(response => {
-            return response.json()
-        })
-        .then(position => {
-            databaseSave(PROGRESS_TABLE, {id: bookId, position: String(position), synced: true})
-        })
-}*/
-
-/*function storeToProgressDatabase(request, url, synced) {
-    return new Promise((resolve, reject) => {
-        var id = parseInt(url.searchParams.get("id"))
-        var position = parseInt(url.searchParams.get("position"))
-        databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: synced})
-            .then(() => resolve(new Response()))
-            .catch(() => reject())
-    })
-}*/
 
 function syncProgressInDatabase() {
     return new Promise((resolve, reject) => {
@@ -332,21 +295,6 @@ function getUnsyncedProgress() {
         }
     })
 }
-
-/*function getProgressFromDatabase(request, url) {
-    return new Promise((resolve, reject) => {
-        var id = parseInt(url.searchParams.get("id"))
-        databaseLoad(PROGRESS_TABLE, id)
-            .then(result => {
-                if (result) {
-                    resolve(new Response(result.position))
-                } else {
-                    reject()
-                }
-            })
-            .catch(() => reject())
-    })
-}*/
 
 async function fetchFromCache(request, url) {
     var response = await caches.match(request)
@@ -498,7 +446,6 @@ function saveComicPageToDevice(id, size, position) {
     return new Promise((resolve, reject) => {
         if (position < size) {
             var url = '/imageData?id=' + id + '&page=' + position
-            //fetchResponseFromDatabase(url)
             databaseLoad(REQUESTS_TABLE, url)
                 .then(entity => new Promise((resolve, reject) => {
                     if (entity) {
@@ -515,8 +462,7 @@ function saveComicPageToDevice(id, size, position) {
                 })
         } else {
             databaseSave(BOOKS_TABLE, {
-                'id': id,
-                'date': new Date()
+                'id': id
             }).then(() => {
                 console.log("done saving comic " + id)
                 resolve()
@@ -601,6 +547,7 @@ function databaseSave(table, value) {
             resolve(value)
         }
         let objectStore = transaction.objectStore(table)
+        value['date'] = new Date()
         let addRequest = objectStore.put(value)
     })
 }
