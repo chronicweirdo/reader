@@ -74,8 +74,9 @@ function insertCollectionHtml(collectionHtml) {
 
 function insertOfflineMessage() {
     var tools = document.getElementById("tools")
-    var offlineMessageHtml = document.createElement("p")
-    offlineMessageHtml.innerHTML = "The application is in offline mode, only the latest read books are available."
+    var offlineMessageHtml = document.createElement("h1")
+    offlineMessageHtml.id = 'fin'
+    offlineMessageHtml.innerHTML = "~ The application is in offline mode, only the latest read books are available. ~"
     document.body.insertBefore(offlineMessageHtml, tools)
     tools.remove()
 }
