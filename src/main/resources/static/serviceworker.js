@@ -142,7 +142,7 @@ async function handleLoadProgress(request) {
     if (databaseProgress) {
         return new Response(databaseProgress.position)
     } else {
-        let progressResponse = await fetch(e.request)
+        let progressResponse = await fetch(request)
         return progressResponse
     }
 }
@@ -192,8 +192,44 @@ async function handleLatestReadRequest() {
     }
 
     if (serverResponse) {
-        await updateLatestReadInformation(serverResponse.clone())
-        return serverResponse
+        let blob = await serverResponse.blob()
+        // cache response
+        let savedEntity = await databaseSave(REQUESTS_TABLE, {
+            url: '/latestRead',
+            response: blob,
+            headers: Object.fromEntries(serverResponse.headers.entries())
+        })
+        let text = await blob.text()
+        let json = JSON.parse(text)
+
+        // decide what needs downloading and start downloads
+        let booksToKeep = new Set(json.map(e => e.id))
+        let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
+        let booksToDelete = [...booksInDatabase].filter(id => id && !booksToKeep.has(id))
+        console.log("books to delete")
+        console.log(booksToDelete)
+        booksToDelete.forEach(id => deleteBookFromDatabase(id))
+        let booksToDownload = json.filter(book => ! booksInDatabase.has(book.id))
+        console.log("books to download")
+        console.log(booksToDownload)
+        booksToDownload.forEach(book => saveToDevice(book.id, book.type, book.pages))
+        json.forEach(book => databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true}))
+
+        // find out what has been completely downloaded
+        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+        let responseJson = json.map(book => {
+            if (completelyDownloadedBooks.has(book.id)) {
+                book["downloaded"] = true
+            } else {
+                book["downloaded"] = false
+            }
+            return book
+        })
+        let responseText = JSON.stringify(responseJson)
+
+        //await updateLatestReadInformation(serverResponse.clone())
+        //return serverResponse
+        return new Response(responseText, {headers: new Headers(savedEntity.headers)})
     } else {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
         let responseText = await databaseResponse.response.text()
@@ -226,7 +262,7 @@ function fetchResponseFromDatabase(key) {
     })
 }
 
-async function updateLatestReadInformation(response) {
+/*async function updateLatestReadInformation(response) {
     console.log("updating latest read information")
     let blob = await response.blob()
     let entity = {
@@ -245,6 +281,8 @@ async function updateLatestReadInformation(response) {
     }
     let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
 
+
+
     for (let bookId of booksInDatabase) {
         if (bookId && !booksToKeep.has(bookId)) {
             deleteBookFromDatabase(bookId)
@@ -257,12 +295,13 @@ async function updateLatestReadInformation(response) {
         }
         databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
     }
-}
+}*/
 
 async function deleteBookFromDatabase(bookId) {
     let deleted = 0
     deleted += await databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, bookId)
     deleted += await databaseDelete(progress => progress.id == bookId, PROGRESS_TABLE)
+    deleted += await databaseDelete(book => book.id == bookId, BOOKS_TABLE)
     return deleted
 }
 

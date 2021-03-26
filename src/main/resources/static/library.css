@@ -147,6 +147,9 @@ only screen and (min-resolution: 120dpi)*/
     border: 1px solid black;
     color: black;
 }
+.imgdiv .progressbar.downloaded {
+    background-color: gold;
+}
 .imgdiv .progressbar .read {
     display: block;
     background-color: black;

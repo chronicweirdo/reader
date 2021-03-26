@@ -13,7 +13,7 @@ function addPagenum(image, page, totalPages) {
     span.classList.add("pagenum")
     image.parentElement.appendChild(span)
 }
-function addProgress(image, page, totalPages) {
+function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {
         span.classList.add("progressbar")
@@ -27,11 +27,14 @@ function addProgress(image, page, totalPages) {
         span.innerText = "\u2713"
         span.classList.add("progresscheck")
     }
+    if (downloaded) {
+        span.classList.add("downloaded")
+    }
     image.parentElement.appendChild(span)
 }
-function scaleImage(image, page, totalPages) {
+function scaleImage(image, page, totalPages, downloaded) {
     if (page >= 0) {
-        addProgress(image, page, totalPages)
+        addProgress(image, page, totalPages, downloaded)
     }
     var imageContainer = document.getElementsByClassName("imgdiv")[0]
     var expectedHeight = imageContainer.offsetHeight
@@ -93,7 +96,7 @@ function getBookHtml(book) {
     a.setAttribute("bookid", book.id)
     var img = document.createElement("img")
     img.onload = function() {
-        scaleImage(img, book.progress, book.pages)
+        scaleImage(img, book.progress, book.pages, book.downloaded)
     }
     img.src = book.cover
     img.title = book.title
