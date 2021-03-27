@@ -99,6 +99,14 @@ self.addEventListener('fetch', e => {
 })
 
 async function handleWebResourceRequest(request) {
+    // first try to get from cache
+    let cacheResponse = await caches.match(request)
+
+    if (cacheResponse) {
+        return cacheResponse
+    }
+
+    // then try to get from server
     let serverResponse
     try {
         serverResponse = await fetch(request)
@@ -107,13 +115,9 @@ async function handleWebResourceRequest(request) {
     }
 
     if (serverResponse) {
+        let cache = await caches.open(CACHE_NAME)
+        cache.put(request, serverResponse.clone())
         return serverResponse
-    }
-
-    let cacheResponse = await caches.match(request)
-
-    if (cacheResponse) {
-        return cacheResponse
     } else {
         let notFoundResponse = new Response()
         notFoundResponse.status = 404
