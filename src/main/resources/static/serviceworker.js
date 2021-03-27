@@ -11,30 +11,21 @@ var ID_INDEX = 'id'
 const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
 var db
 request.onerror = function(event) {
-    console.log('error opening db')
     console.log(event)
 }
 request.onsuccess = function(event) {
-    console.log('db opened successfully')
-    console.log(event)
     db = event.target.result
 }
 
 request.onupgradeneeded = function(event) {
     var db = event.target.result
+
     var requestsStore = db.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
     requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
-    requestsStore.transaction.oncomplete = function(event) {
-        console.log('created requests store')
-    }
+
     var progressStore = db.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
-    progressStore.transaction.oncomplete = function(event) {
-        console.log('created progress store')
-    }
+
     var booksStore = db.createObjectStore(BOOKS_TABLE, {keyPath: 'id'})
-    booksStore.transaction.oncomplete = function(event) {
-        console.log('created books store')
-    }
 }
 
 var filesToCache = [
@@ -56,7 +47,6 @@ var filesToCache = [
 ]
 
 self.addEventListener('install', e => {
-    console.log("service worker processing install")
     e.waitUntil(initCache)
     e.waitUntil(
         caches.keys().then(function(cacheNames) {
@@ -76,7 +66,6 @@ function initCache() {
 }
 
 self.addEventListener('activate', e => {
-    console.log("service worker activating")
     self.clients.claim()
 })
 
@@ -124,8 +113,6 @@ async function resetApplication() {
     await databaseDeleteAll(REQUESTS_TABLE)
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
-
-    console.log("done resetting application")
 }
 
 async function handleWebResourceRequest(request) {
@@ -285,7 +272,6 @@ async function handleLatestReadRequest() {
         serverResponse = undefined
     }
     if (serverResponse) {
-        console.log("internet is on, syncing progress")
         let syncedProgressCount = await syncProgressInDatabase()
         if (syncedProgressCount > 0) {
             try {
@@ -311,12 +297,8 @@ async function handleLatestReadRequest() {
         let booksToKeep = new Set(json.map(e => e.id))
         let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
         let booksToDelete = [...booksInDatabase].filter(id => id && !booksToKeep.has(id))
-        console.log("books to delete")
-        console.log(booksToDelete)
         booksToDelete.forEach(id => deleteBookFromDatabase(id))
         let booksToDownload = json.filter(book => ! booksInDatabase.has(book.id))
-        console.log("books to download")
-        console.log(booksToDownload)
         booksToDownload.forEach(book => saveToDevice(book.id, book.type, book.pages))
         json.forEach(book => databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true}))
 
@@ -339,13 +321,11 @@ async function handleLatestReadRequest() {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
         let responseText = await databaseResponse.response.text()
         let responseJson = JSON.parse(responseText)
-        console.log(responseJson)
         for (var i = 0; i < responseJson.length; i++) {
             let book = responseJson[i]
             let latestProgress = await databaseLoad(PROGRESS_TABLE, book.id)
             book.progress = latestProgress.position
         }
-        console.log(responseJson)
         let newResponseText = JSON.stringify(responseJson)
 
         return new Response(newResponseText, {headers: new Headers(databaseResponse.headers)})
@@ -375,7 +355,6 @@ function syncProgressInDatabase() {
                 fetch('/markProgress?id=' + p.id + '&position=' + p.position, {'method': 'PUT'}).then(() => {
                     databaseSave(PROGRESS_TABLE, {id: p.id, position: p.position, synced: true})
                         .then(() => {
-                            console.log("synced id " + p.id + " position " + p.position)
                             resolve()
                         })
                 })
@@ -486,7 +465,6 @@ function saveBookSectionToDevice(id, size, position) {
                 'id': id,
                 'date': new Date()
             }).then(() => {
-                console.log("done saving comic " + id)
                 resolve()
             })
         }
@@ -529,7 +507,6 @@ function saveComicPageToDevice(id, size, position) {
             databaseSave(BOOKS_TABLE, {
                 'id': id
             }).then(() => {
-                console.log("done saving comic " + id)
                 resolve()
             })
         }
@@ -582,7 +559,6 @@ function databaseDeleteAll(table) {
         let objectStore = transaction.objectStore(table)
         let deleteRequest = objectStore.clear()
         deleteRequest.onsuccess = event => {
-            console.log(event)
             resolve()
         }
     })

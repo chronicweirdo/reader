@@ -204,7 +204,6 @@ function loadNextPage(callback) {
                 if (this.status == 200) {
                     setCurrentPage(pagenum)
                     var response = JSON.parse(this.responseText)
-                    console.log(response)
                     if (response.offline && response.offline == true) {
                         insertOfflineMessage()
                     } else if (response.books.length > 0) {
@@ -307,7 +306,6 @@ var scrollThreshold = 20
 window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
-            console.log("service worker registered successfully: ", registration)
             registration.update()
         }, function(error) {
             console.log("service worker registration failed: ", error)
