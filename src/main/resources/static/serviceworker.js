@@ -130,7 +130,22 @@ async function handleSearchRequest(request) {
     }
 
     if (serverResponse) {
-        return serverResponse
+        let text = await serverResponse.text()
+        let json = JSON.parse(text)
+        // find out what has been completely downloaded
+        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+        let decoratedBooks = json.books.map(book => {
+            if (completelyDownloadedBooks.has(book.id)) {
+                book["downloaded"] = true
+            } else {
+                book["downloaded"] = false
+            }
+            return book
+        })
+        json.books = decoratedBooks
+        let responseText = JSON.stringify(json)
+
+        return new Response(responseText, {headers: new Headers(serverResponse.headers)})
     } else {
         return new Response('{"offline": true}')
     }
