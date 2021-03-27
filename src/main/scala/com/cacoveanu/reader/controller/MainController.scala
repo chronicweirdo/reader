@@ -34,6 +34,9 @@ class MainController @Autowired()(
     "more"
   }
 
+  @RequestMapping(Array("/settings"))
+  def settingsPage(): String = "settings"
+
   @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
   def loadLatestRead(): ResponseEntity[java.util.List[UiBook]] = {

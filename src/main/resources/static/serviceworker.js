@@ -86,8 +86,10 @@ self.addEventListener('fetch', e => {
         e.respondWith(handleRootRequest(e.request))
     } else if (url.pathname === '/search') {
         e.respondWith(handleSearchRequest(e.request))
-    } else {
+    } else if (filesToCache.includes(url.pathname)) {
         e.respondWith(handleWebResourceRequest(e.request))
+    } else {
+        e.respondWith(fetch(e.request))
     }
 })
 

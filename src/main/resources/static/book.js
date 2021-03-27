@@ -245,26 +245,39 @@ function compute(section, start) {
     tryForPage(firstEnd, firstEnd)
 }
 
+
+
+function setDarkMode() {
+    let background = getSetting(SETTING_DARK_MODE_BACKGROUND)
+    let foreground = getSetting(SETTING_DARK_MODE_FOREGROUND)
+    document.body.style.color = foreground
+    document.body.style.backgroundColor = background
+    putSetting(SETTING_DARK_MODE, true)
+}
+
+function setLightMode() {
+    let background = getSetting(SETTING_LIGHT_MODE_BACKGROUND)
+    let foreground = getSetting(SETTING_LIGHT_MODE_FOREGROUND)
+    document.body.style.color = foreground
+    document.body.style.backgroundColor = background
+    putSetting(SETTING_DARK_MODE, false)
+}
+
 function initializeMode() {
-    var savedMode = window.localStorage.getItem("mode")
-    if (savedMode != null) {
-        if (savedMode == "dark") {
-            var body = document.getElementsByTagName("BODY")[0]
-            body.classList.add("dark")
-        }
+    let darkModeOn = getSetting(SETTING_DARK_MODE)
+    if (darkModeOn) {
+        setDarkMode()
     } else {
-        window.localStorage.setItem("mode", "light")
+        setLightMode()
     }
 }
 
 function toggleMode() {
-    var body = document.getElementsByTagName("BODY")[0]
-    if (body.classList.contains("dark")) {
-        body.classList.remove("dark")
-        window.localStorage.setItem("mode", "light")
+    let darkModeOn = getSetting(SETTING_DARK_MODE)
+    if (darkModeOn) {
+        setLightMode()
     } else {
-        body.classList.add("dark")
-        window.localStorage.setItem("mode", "dark")
+        setDarkMode()
     }
 }
 

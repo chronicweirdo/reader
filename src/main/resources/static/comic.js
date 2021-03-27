@@ -57,7 +57,8 @@ function getRevertScrollZoom() {
     return true
 }
 function getScrollSpeed() {
-    return .5 * .01
+    let s = getSetting(SETTING_COMIC_SCROLL_SPEED)
+    return s
 }
 
 function getPanSpeed() {
