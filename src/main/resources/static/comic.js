@@ -57,7 +57,7 @@ function getRevertScrollZoom() {
     return true
 }
 function getScrollSpeed() {
-    return .5 * .1
+    return .5 * .01
 }
 
 function getPanSpeed() {
