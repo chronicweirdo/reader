@@ -312,7 +312,6 @@ window.onload = function() {
         }, function(error) {
             console.log("service worker registration failed: ", error)
         })
-
     }
 
     loadLatestRead()

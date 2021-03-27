@@ -177,9 +177,11 @@ function downloadSection(position, callback) {
 }
 
 function downloadBookToDevice() {
-    var bookId = getMeta("bookId")
-    var size = num(getMeta("size"))
-    navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: size, kind: 'book'})
+    if('serviceWorker' in navigator) {
+        var bookId = getMeta("bookId")
+        var size = num(getMeta("size"))
+        navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: size, kind: 'book'})
+    }
 }
 
 function getSectionFor(position) {

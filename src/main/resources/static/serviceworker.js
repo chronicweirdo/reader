@@ -57,7 +57,7 @@ var filesToCache = [
 
 self.addEventListener('install', e => {
     console.log("service worker processing install")
-    e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(filesToCache)))
+    e.waitUntil(initCache)
     e.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
@@ -70,6 +70,10 @@ self.addEventListener('install', e => {
         })
     )
 })
+
+function initCache() {
+    return caches.open(CACHE_NAME).then(cache => cache.addAll(filesToCache))
+}
 
 self.addEventListener('activate', e => {
     console.log("service worker activating")
@@ -97,6 +101,32 @@ self.addEventListener('fetch', e => {
         e.respondWith(handleWebResourceRequest(e.request))
     }
 })
+
+self.addEventListener('message', event => {
+    if (event.data.type === 'storeBook') {
+        var bookId = parseInt(event.data.bookId)
+        var maxPositions = event.data.maxPositions
+        var type = event.data.kind
+        saveToDevice(bookId, type, maxPositions)
+    } else if (event.data.type === 'deleteBook') {
+        deleteBookFromDatabase(event.data.bookId)
+    } else if (event.data.type === 'reset') {
+        resetApplication()
+    }
+})
+
+async function resetApplication() {
+    // delete all data from cache
+    await caches.delete(CACHE_NAME)
+    await initCache()
+
+    // delete all data from database
+    await databaseDeleteAll(REQUESTS_TABLE)
+    await databaseDeleteAll(BOOKS_TABLE)
+    await databaseDeleteAll(PROGRESS_TABLE)
+
+    console.log("done resetting application")
+}
 
 async function handleWebResourceRequest(request) {
     // first try to get from cache
@@ -374,16 +404,7 @@ function getUnsyncedProgress() {
     })
 }
 
-self.addEventListener('message', event => {
-    if (event.data.type === 'storeBook') {
-        var bookId = parseInt(event.data.bookId)
-        var maxPositions = event.data.maxPositions
-        var type = event.data.kind
-        saveToDevice(bookId, type, maxPositions)
-    } else if (event.data.type === 'deleteBook') {
-        deleteBookFromDatabase(event.data.bookId)
-    }
-})
+
 
 function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {
@@ -551,6 +572,18 @@ function databaseLoad(table, key) {
         let dbRequest = objectStore.get(key)
         dbRequest.onsuccess = function(event) {
             resolve(event.target.result)
+        }
+    })
+}
+
+function databaseDeleteAll(table) {
+     return new Promise((resolve, reject) => {
+        let transaction = db.transaction([table], "readwrite")
+        let objectStore = transaction.objectStore(table)
+        let deleteRequest = objectStore.clear()
+        deleteRequest.onsuccess = event => {
+            console.log(event)
+            resolve()
         }
     })
 }

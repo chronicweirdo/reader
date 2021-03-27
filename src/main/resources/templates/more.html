@@ -35,6 +35,9 @@
     <script>
         function clearStorage(element) {
             window.localStorage.clear()
+            if('serviceWorker' in navigator) {
+                navigator.serviceWorker.controller.postMessage({type: 'reset'})
+            }
             element.innerHTML = element.innerHTML + " - done!"
         }
     </script>
