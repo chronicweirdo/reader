@@ -40,6 +40,12 @@
     width: 100%;
     height: 100%;
     background-color: #1a1a1add;
+    text-align: center;
+}
+#ch_spinner a {
+    font-family: 'Roboto', sans-serif;
+    font-size: 48px;
+    color: gold;
 }
 /* -------------------------------------------------------------- spinner end */
 

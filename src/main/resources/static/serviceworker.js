@@ -362,7 +362,7 @@ self.addEventListener('message', event => {
         var type = event.data.kind
         saveToDevice(bookId, type, maxPositions)
     } else if (event.data.type === 'deleteBook') {
-        databaseDelete(() => true, REQUESTS_TABLE, ID_INDEX, event.data.bookId)
+        deleteBookFromDatabase(event.data.bookId)
     }
 })
 
