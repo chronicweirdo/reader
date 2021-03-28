@@ -221,9 +221,11 @@
 
 /* ----------------------------------------------------------- position start */
 div#ch_settings {
-    display:grid;
+    display: grid;
     grid-template-columns: auto auto;
     grid-gap:5px;
+    padding: 8px;
+    display: none;
 }
 div#ch_settings label:after {
     content: ": "

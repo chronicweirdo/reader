@@ -195,6 +195,17 @@ function addPositionInputTriggerListener(loadPositionFunction) {
     })
 }
 
+function toggleSettings() {
+    let settings = document.getElementById('ch_settings')
+    if (settings) {
+        if (window.getComputedStyle(settings).display == 'none') {
+            settings.style.display = 'grid'
+        } else {
+            settings.style.display = 'none'
+        }
+    }
+}
+
 function toggleFullScreen() {
     var doc = window.document;
     var docEl = doc.documentElement;
