@@ -206,6 +206,15 @@ function toggleSettings() {
     }
 }
 
+async function initializeFullscreen() {
+    let fullscreenOn = getSetting(SETTING_FULL_SCREEN)
+    if (fullscreenOn) {
+        await makeFullScreen()
+    } else {
+        await unmakeFullScreen()
+    }
+}
+
 function toggleFullScreen() {
     var doc = window.document;
     var docEl = doc.documentElement;

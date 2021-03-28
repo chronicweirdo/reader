@@ -5,6 +5,7 @@ var SETTING_DARK_MODE = "dark_mode"
 var SETTING_LIGHT_MODE_BACKGROUND = "light_mode_background"
 var SETTING_LIGHT_MODE_FOREGROUND = "light_mode_foreground"
 var SETTING_BOOK_ZOOM = "book_zoom"
+var SETTING_FULL_SCREEN = "full_screen"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -14,7 +15,7 @@ settingDefaults[SETTING_DARK_MODE] = "false"
 settingDefaults[SETTING_LIGHT_MODE_BACKGROUND] = "#ffffff"
 settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
 settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
-
+settingDefaults[SETTING_FULL_SCREEN] = "false"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -24,6 +25,7 @@ var settingParsers = {}
 settingParsers[SETTING_COMIC_SCROLL_SPEED] = parseFloat
 settingParsers[SETTING_BOOK_ZOOM] = parseFloat
 settingParsers[SETTING_DARK_MODE] = parseBoolean
+settingParsers[SETTING_FULL_SCREEN] = parseBoolean
 
 var settingEncoders = {}
 
@@ -84,6 +86,7 @@ settingControllers[SETTING_LIGHT_MODE_BACKGROUND] = () => createColorController(
 settingControllers[SETTING_LIGHT_MODE_FOREGROUND] = () => createColorController(SETTING_LIGHT_MODE_FOREGROUND, "light text",)
 settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.5, 2.5, 0.1)
 settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
+settingControllers[SETTING_FULL_SCREEN] = () => createBooleanController(SETTING_FULL_SCREEN, "fullscreen")
 
 function updateSetting(element) {
     let value
