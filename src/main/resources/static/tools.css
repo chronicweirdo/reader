@@ -222,12 +222,8 @@
 /* ----------------------------------------------------------- position start */
 div#ch_settings {
     display:grid;
-    /*grid-template-columns: max-content max-content;*/
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto;
     grid-gap:5px;
-}
-div#ch_settings label {
-    /*grid-column: 1 / 3;*//*span multiple columns*/
 }
 div#ch_settings input {
     height: 3vh;
