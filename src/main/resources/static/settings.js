@@ -29,13 +29,62 @@ var settingEncoders = {}
 
 var settingListeners = {}
 
-/*function createColorController(wrapperType, settingName, label) {
-    let wrapperType = document.createElement(wrapper)
+function createColorController(settingName, text) {
     let label = document.createElement('label')
+    label.htmlFor = settingName
+    label.innerHTML = text
+    let input = document.createElement('input')
+    input.type = 'color'
+    input.name = settingName
+    let value = getSetting(settingName)
+    input.value = value
+    input.onchange = function(event) {
+        updateSetting(event.target)
+    }
+    let span = document.createElement('span')
+    span.innerHTML = value
+    return [label, input, span]
+}
 
-}*/
+function createNumberController(settingName, text, min, max, step) {
+    let label = document.createElement('label')
+    label.htmlFor = settingName
+    label.innerHTML = text
+    let input = document.createElement('input')
+    input.type = 'range'
+    input.name = settingName
+    input.min = min
+    input.max = max
+    input.step = step
+    let value = getSetting(settingName)
+    input.value = value
+    input.onchange = function(event) {
+        updateSetting(event.target)
+    }
+    let span = document.createElement('span')
+    span.innerHTML = value
+    return [label, input, span]
+}
+
+function createBooleanController(settingName, text) {
+    let label = document.createElement('label')
+    label.htmlFor = settingName
+    label.innerHTML = text
+    let input = document.createElement('input')
+    input.type = 'checkbox'
+    input.name = settingName
+    let value = getSetting(settingName)
+    input.checked = value
+    input.onchange = function(event) {
+        updateSetting(event.target)
+    }
+    let span = document.createElement('span')
+    span.innerHTML = value
+    return [label, input, span]
+}
 
 var settingControllers = {}
+/*
 settingControllers[SETTING_DARK_MODE_BACKGROUND] =
     '<label for="' + SETTING_DARK_MODE_BACKGROUND + '">dark mode background color</label>'
     + '<input type="color" name="' + SETTING_DARK_MODE_BACKGROUND + '"><span></span>'
@@ -53,12 +102,19 @@ settingControllers[SETTING_COMIC_SCROLL_SPEED] =
     + '<input type="range" name="' + SETTING_COMIC_SCROLL_SPEED + '" min="0.0001" max="0.05" step="0.001">'
     + '<span></span>'
 settingControllers[SETTING_DARK_MODE] =
-    '<label for"' + SETTING_DARK_MODE + '">dark mode:</label>'
+    '<label for="' + SETTING_DARK_MODE + '">dark mode:</label>'
     + '<input type="checkbox" name="' + SETTING_DARK_MODE + '"><span></span>'
 settingControllers[SETTING_BOOK_ZOOM] =
     '<label for="' + SETTING_BOOK_ZOOM + '">book zoom:</label>'
     + '<input type="range" name="' + SETTING_BOOK_ZOOM + '" min="0.5" max="2.5" step="0.1">'
     + '<span></span>'
+*/
+settingControllers[SETTING_DARK_MODE_BACKGROUND] = () => createColorController(SETTING_DARK_MODE_BACKGROUND, "dark mode background color")
+settingControllers[SETTING_DARK_MODE_FOREGROUND] = () => createColorController(SETTING_DARK_MODE_FOREGROUND, "dark mode text color")
+settingControllers[SETTING_LIGHT_MODE_BACKGROUND] = () => createColorController(SETTING_LIGHT_MODE_BACKGROUND, "light mode background color")
+settingControllers[SETTING_LIGHT_MODE_FOREGROUND] = () => createColorController(SETTING_LIGHT_MODE_FOREGROUND, "light mode text color")
+settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.5, 2.5, 0.1)
+settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
 
 function updateSetting(element) {
     let valueField = event.target.nextElementSibling
@@ -75,10 +131,17 @@ function updateSetting(element) {
 }
 
 function initElement(element) {
+    console.log("initializing element for " + element.name)
     let value = getSetting(element.name)
-    if (value) {
-        element.value = value
+    console.log(value)
+    if (value != undefined) {
+        if (element.type == 'checkbox') {
+            element.checked = value
+        } else {
+            element.value = value
+        }
         let valueField = element.nextElementSibling
+        console.log(valueField)
         if (valueField) {
             valueField.innerHTML = value
         }
@@ -89,13 +152,17 @@ function initElement(element) {
 }
 
 function getSettingController(name) {
-    let settingControllerHtml = settingControllers[name]
+    /*let settingControllerHtml = settingControllers[name]
     if (settingControllerHtml) {
         let wrapper = document.createElement('p')
         wrapper.innerHTML = settingControllerHtml
         let input = wrapper.getElementsByTagName('input')[0]
         initElement(input)
-        return wrapper
+        return wrapper.children
+    }*/
+    let settingControllerCreator = settingControllers[name]
+    if (settingControllerCreator) {
+        return settingControllerCreator()
     }
     return undefined
 }

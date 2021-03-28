@@ -40,23 +40,12 @@ function scrollNecessaryAsync(el, trueCallback, falseCallback) {
     }
 }
 
-/*function getZoom() {
-    if (document.bookZoom) {
-        return document.bookZoom
-    } else {
-        var zoom = parseFloat(getMeta("bookZoom"))
-        document.bookZoom = zoom
-        return document.bookZoom
-    }
-}*/
-
 function getPagesKey() {
     return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) //getZoom()
 }
 
 function getPageFor(position) {
     var pagesKey = getPagesKey()
-    //var savedPages = window.localStorage.getItem(pagesKey)
     var savedPages = document.savedPages
     if (savedPages != null) {
         // search for page
@@ -152,7 +141,6 @@ function handleResize() {
     fixComponentHeights()
     if (document.currentPage != null) {
         var position = document.currentPage.start
-        //document.savedPages = []
         loadCache()
         document.currentPage = null
         var content = document.getElementById("ch_content")
@@ -208,7 +196,6 @@ function savePage(start, end) {
         document.savedPages = []
     }
     document.savedPages.push({start: start, end: end})
-    // saveCache() // we probably should not update the cache with every page
 }
 
 function compute(section, start) {
@@ -245,14 +232,11 @@ function compute(section, start) {
     tryForPage(firstEnd, firstEnd)
 }
 
-
-
 function setDarkMode() {
     let background = getSetting(SETTING_DARK_MODE_BACKGROUND)
     let foreground = getSetting(SETTING_DARK_MODE_FOREGROUND)
     document.body.style.color = foreground
     document.body.style.backgroundColor = background
-    //putSetting(SETTING_DARK_MODE, true)
 }
 
 function setLightMode() {
@@ -260,7 +244,6 @@ function setLightMode() {
     let foreground = getSetting(SETTING_LIGHT_MODE_FOREGROUND)
     document.body.style.color = foreground
     document.body.style.backgroundColor = background
-    //putSetting(SETTING_DARK_MODE, false)
 }
 
 function initializeMode() {
@@ -269,15 +252,6 @@ function initializeMode() {
         setDarkMode()
     } else {
         setLightMode()
-    }
-}
-
-function toggleMode() {
-    let darkModeOn = getSetting(SETTING_DARK_MODE)
-    if (darkModeOn) {
-        setLightMode()
-    } else {
-        setDarkMode()
     }
 }
 
@@ -386,38 +360,14 @@ function displayPageForTocEntry(entry) {
 }
 
 function setZoom(zoom, withResize = true) {
-    //var defaultZoom = 1.5
     document.body.style["font-size"] = zoom + "em"
-    //window.localStorage.setItem("bookZoom", zoom)
-    //highlightZoomSetButtons(zoom)
     if (withResize) handleResize()
 }
-
-/*function getSavedZoom() {
-    var savedZoomValue = window.localStorage.getItem("bookZoom")
-    if (savedZoomValue != null) {
-        return parseInt(savedZoomValue)
-    } else {
-        return 15
-    }
-}*/
 
 function getBookPagesCacheKey() {
     var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM)
     return pagesKey
 }
-
-/*function increaseZoom(event) {
-    var currentZoom = getSavedZoom()
-    var newZoom = currentZoom + 1
-    setZoom(newZoom)
-}
-
-function decreaseZoom(event) {
-    var currentZoom = getSavedZoom()
-    var newZoom = currentZoom - 1
-    setZoom(newZoom)
-}*/
 
 function loadCache() {
     var cacheKey = getBookPagesCacheKey()
@@ -434,36 +384,29 @@ function saveCache() {
     window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
-/*function setupZoomSetButton(el) {
-    var zoom = parseInt(el.getAttribute("zoom"))
-    el.style["font-size"] = (zoom * .1) + "rem"
-    el.addEventListener("click", (event) => {
-        event.stopPropagation()
-        setZoom(zoom)
-    })
-}*/
-
-/*function highlightZoomSetButtons(currentZoom) {
-    var zoomSetters = document.getElementsByClassName("ch_set_zoom")
-    for (var i = 0; i < zoomSetters.length; i++) {
-        var el = zoomSetters[i]
-        var elZoom = parseInt(el.getAttribute("zoom"))
-        if (elZoom == currentZoom) {
-            el.classList.add("selected")
-        } else {
-            el.classList.remove("selected")
+function appendAll(parent, children) {
+    console.log(children)
+    if (children) {
+        for (let i = 0; i < children.length; i++) {
+            parent.appendChild(children[i])
         }
     }
-}*/
+}
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE))
+    /*settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE))
     settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_BACKGROUND))
     settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_FOREGROUND))
     settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
-    settingsWrapper.appendChild(getSettingController(SETTING_BOOK_ZOOM))
+    settingsWrapper.appendChild(getSettingController(SETTING_BOOK_ZOOM))*/
+    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
+    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
+    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
+    appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
+    appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
     addSettingListener(SETTING_DARK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
@@ -495,25 +438,9 @@ window.onload = function() {
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
-    /*document.getElementById("ch_decrease_zoom").addEventListener("click", (event) => {
-        event.stopPropagation()
-        decreaseZoom()
-    })
-    document.getElementById("ch_increase_zoom").addEventListener("click", (event) => {
-        event.stopPropagation()
-        increaseZoom()
-    })
-    var zoomSetters = document.getElementsByClassName("ch_set_zoom")
-    for (var i = 0; i < zoomSetters.length; i++) {
-        setupZoomSetButton(zoomSetters[i])
-    }*/
 
     initializeMode()
-
-    /*var savedZoom = getSavedZoom()*/
-    /*setZoom(savedZoom, false)*/
     setZoom(getSetting(SETTING_BOOK_ZOOM), false)
-
     loadCache()
 
     loadProgress(function(currentPosition) {
