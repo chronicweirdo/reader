@@ -40,7 +40,7 @@ function scrollNecessaryAsync(el, trueCallback, falseCallback) {
     }
 }
 
-function getZoom() {
+/*function getZoom() {
     if (document.bookZoom) {
         return document.bookZoom
     } else {
@@ -48,10 +48,10 @@ function getZoom() {
         document.bookZoom = zoom
         return document.bookZoom
     }
-}
+}*/
 
 function getPagesKey() {
-    return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getZoom()
+    return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) //getZoom()
 }
 
 function getPageFor(position) {
@@ -252,7 +252,7 @@ function setDarkMode() {
     let foreground = getSetting(SETTING_DARK_MODE_FOREGROUND)
     document.body.style.color = foreground
     document.body.style.backgroundColor = background
-    putSetting(SETTING_DARK_MODE, true)
+    //putSetting(SETTING_DARK_MODE, true)
 }
 
 function setLightMode() {
@@ -260,7 +260,7 @@ function setLightMode() {
     let foreground = getSetting(SETTING_LIGHT_MODE_FOREGROUND)
     document.body.style.color = foreground
     document.body.style.backgroundColor = background
-    putSetting(SETTING_DARK_MODE, false)
+    //putSetting(SETTING_DARK_MODE, false)
 }
 
 function initializeMode() {
@@ -387,27 +387,27 @@ function displayPageForTocEntry(entry) {
 
 function setZoom(zoom, withResize = true) {
     //var defaultZoom = 1.5
-    document.body.style["font-size"] = (zoom/10.0) + "em"
-    window.localStorage.setItem("bookZoom", zoom)
-    highlightZoomSetButtons(zoom)
+    document.body.style["font-size"] = zoom + "em"
+    //window.localStorage.setItem("bookZoom", zoom)
+    //highlightZoomSetButtons(zoom)
     if (withResize) handleResize()
 }
 
-function getSavedZoom() {
+/*function getSavedZoom() {
     var savedZoomValue = window.localStorage.getItem("bookZoom")
     if (savedZoomValue != null) {
         return parseInt(savedZoomValue)
     } else {
         return 15
     }
-}
+}*/
 
 function getBookPagesCacheKey() {
-    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSavedZoom()
+    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM)
     return pagesKey
 }
 
-function increaseZoom(event) {
+/*function increaseZoom(event) {
     var currentZoom = getSavedZoom()
     var newZoom = currentZoom + 1
     setZoom(newZoom)
@@ -417,7 +417,7 @@ function decreaseZoom(event) {
     var currentZoom = getSavedZoom()
     var newZoom = currentZoom - 1
     setZoom(newZoom)
-}
+}*/
 
 function loadCache() {
     var cacheKey = getBookPagesCacheKey()
@@ -434,16 +434,16 @@ function saveCache() {
     window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
-function setupZoomSetButton(el) {
+/*function setupZoomSetButton(el) {
     var zoom = parseInt(el.getAttribute("zoom"))
     el.style["font-size"] = (zoom * .1) + "rem"
     el.addEventListener("click", (event) => {
         event.stopPropagation()
         setZoom(zoom)
     })
-}
+}*/
 
-function highlightZoomSetButtons(currentZoom) {
+/*function highlightZoomSetButtons(currentZoom) {
     var zoomSetters = document.getElementsByClassName("ch_set_zoom")
     for (var i = 0; i < zoomSetters.length; i++) {
         var el = zoomSetters[i]
@@ -454,6 +454,22 @@ function highlightZoomSetButtons(currentZoom) {
             el.classList.remove("selected")
         }
     }
+}*/
+
+function initSettings() {
+    let settingsWrapper = document.getElementById('ch_settings')
+    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE))
+    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_BACKGROUND))
+    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_FOREGROUND))
+    settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
+    settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
+    settingsWrapper.appendChild(getSettingController(SETTING_BOOK_ZOOM))
+    addSettingListener(SETTING_DARK_MODE, initializeMode)
+    addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
+    addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
+    addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
+    addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
+    addSettingListener(SETTING_BOOK_ZOOM, setZoom)
 }
 
 window.onload = function() {
@@ -461,6 +477,7 @@ window.onload = function() {
     fixComponentHeights()
 
     initTableOfContents()
+    initSettings()
 
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({
@@ -478,7 +495,7 @@ window.onload = function() {
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
-    document.getElementById("ch_decrease_zoom").addEventListener("click", (event) => {
+    /*document.getElementById("ch_decrease_zoom").addEventListener("click", (event) => {
         event.stopPropagation()
         decreaseZoom()
     })
@@ -489,12 +506,13 @@ window.onload = function() {
     var zoomSetters = document.getElementsByClassName("ch_set_zoom")
     for (var i = 0; i < zoomSetters.length; i++) {
         setupZoomSetButton(zoomSetters[i])
-    }
+    }*/
 
     initializeMode()
 
-    var savedZoom = getSavedZoom()
-    setZoom(savedZoom, false)
+    /*var savedZoom = getSavedZoom()*/
+    /*setZoom(savedZoom, false)*/
+    setZoom(getSetting(SETTING_BOOK_ZOOM), false)
 
     loadCache()
 

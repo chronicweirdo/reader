@@ -34,26 +34,7 @@
     </style>
     <script src="settings.js"></script>
     <script>
-        function updateSetting(element) {
-            let valueField = event.target.nextElementSibling
-            if (valueField) {
-                valueField.innerHTML = element.value
-            }
-            putSetting(element.name, element.value)
-        }
-        function initElement(element) {
-            let value = getSetting(element.name)
-            if (value) {
-                element.value = value
-                let valueField = element.nextElementSibling
-                if (valueField) {
-                    valueField.innerHTML = value
-                }
-            }
-            element.onchange = function(event) {
-                updateSetting(event.target)
-            }
-        }
+
         window.onload = function() {
             /*let el = document.getElementById('comic_scroll_speed')
             el.value = getSetting(el.name)
@@ -64,41 +45,21 @@
                 valueField.innerHTML = event.target.value
                 putSetting(event.target.name, event.target.value)
             }*/
-            let inputs = document.getElementsByTagName('input')
+            /*let inputs = document.getElementsByTagName('input')
             for (let i = 0; i < inputs.length; i++) {
                 initElement(inputs.item(i))
-            }
+            }*/
+            document.body.appendChild(getSettingController(SETTING_COMIC_SCROLL_SPEED))
+            document.body.appendChild(getSettingController(SETTING_DARK_MODE_BACKGROUND))
+            document.body.appendChild(getSettingController(SETTING_DARK_MODE_FOREGROUND))
+            document.body.appendChild(getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
+            document.body.appendChild(getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
         }
     </script>
 </head>
 <body>
 <div id="container">
     <h1>Chronic Reader Settings</h1>
-    <p>
-        <label for="comic_scroll_speed">comic scroll speed:</label>
-        <input type="range" id="comic_scroll_speed" name="comic_scroll_speed" min="0.0001" max="0.05" step="0.001">
-        <span class="value"></span>
-    </p>
-    <p>
-        <label for="dark_mode_background">dark mode background color</label>
-        <input type="color" name="dark_mode_background" id="dark_mode_background">
-        <span></span>
-    </p>
-    <p>
-        <label for="dark_mode_foreground">dark mode text color</label>
-        <input type="color" name="dark_mode_foreground" id="dark_mode_foreground">
-        <span></span>
-    </p>
-    <p>
-        <label for="light_mode_background">light mode background color</label>
-        <input type="color" name="light_mode_background" id="light_mode_background">
-        <span></span>
-    </p>
-    <p>
-        <label for="light_mode_foreground">light mode text color</label>
-        <input type="color" name="light_mode_foreground" id="light_mode_foreground">
-        <span></span>
-    </p>
     <p><a href="/">Go back</a></p>
 </div>
 </body>
