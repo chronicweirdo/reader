@@ -5,15 +5,19 @@ var SETTING_DARK_MODE = "dark_mode"
 var SETTING_LIGHT_MODE_BACKGROUND = "light_mode_background"
 var SETTING_LIGHT_MODE_FOREGROUND = "light_mode_foreground"
 var SETTING_BOOK_ZOOM = "book_zoom"
+var SETTING_COMIC_PAN_SPEED = "comic_pan_speed"
+var SETTING_COMIC_INVERT_SCROLL = "comic_invert_scroll"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
+settingDefaults[SETTING_COMIC_PAN_SPEED] = "3"
 settingDefaults[SETTING_DARK_MODE_BACKGROUND] = "#000000"
 settingDefaults[SETTING_DARK_MODE_FOREGROUND] = "#ffffff"
 settingDefaults[SETTING_DARK_MODE] = "false"
 settingDefaults[SETTING_LIGHT_MODE_BACKGROUND] = "#ffffff"
 settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
 settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
+settingDefaults[SETTING_COMIC_INVERT_SCROLL] = "false"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -22,7 +26,9 @@ function parseBoolean(value) {
 var settingParsers = {}
 settingParsers[SETTING_COMIC_SCROLL_SPEED] = parseFloat
 settingParsers[SETTING_BOOK_ZOOM] = parseFloat
+settingParsers[SETTING_COMIC_PAN_SPEED] = parseInt
 settingParsers[SETTING_DARK_MODE] = parseBoolean
+settingParsers[SETTING_COMIC_INVERT_SCROLL] = parseBoolean
 
 var settingEncoders = {}
 
@@ -82,7 +88,10 @@ settingControllers[SETTING_DARK_MODE_FOREGROUND] = () => createColorController(S
 settingControllers[SETTING_LIGHT_MODE_BACKGROUND] = () => createColorController(SETTING_LIGHT_MODE_BACKGROUND, "light background")
 settingControllers[SETTING_LIGHT_MODE_FOREGROUND] = () => createColorController(SETTING_LIGHT_MODE_FOREGROUND, "light text",)
 settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.5, 2.5, 0.1)
+settingControllers[SETTING_COMIC_SCROLL_SPEED] = () => createNumberController(SETTING_COMIC_SCROLL_SPEED, "scroll speed", 0.0005, 0.005, 0.0001)
+settingControllers[SETTING_COMIC_PAN_SPEED] = () => createNumberController(SETTING_COMIC_PAN_SPEED, "pan speed", 1, 10, 1)
 settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
+settingControllers[SETTING_COMIC_INVERT_SCROLL] = () => createBooleanController(SETTING_COMIC_INVERT_SCROLL, "invert scroll")
 
 function updateSetting(element) {
     let value

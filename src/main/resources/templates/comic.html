@@ -33,6 +33,8 @@
         <h1 th:text="${title}">Comic Title</h1>
         <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
         <p><a id="downloadPageButton" href="">download</a></p>
+        <p><a onclick="toggleSettings()">settings</a></p>
+        <div id="ch_settings"></div>
         <p><a onclick="goHome()">library</a></p>
         <p><a onclick="removeProgress()">remove progress</a></p>
     </div>

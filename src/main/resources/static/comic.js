@@ -23,14 +23,6 @@ function zoom(zoom, centerX, centerY) {
 
 
 function updateImage() {
-    if (onMobile() && isAutoFullScreenEnabled()) {
-        if (isPageFitToScreen()) {
-            unmakeFullScreen()
-        } else {
-            makeFullScreen()
-        }
-    }
-
     var img = getImage()
 
     if (getZoom() < getMinimumZoom()) setZoom(getMinimumZoom())
@@ -54,15 +46,14 @@ function getImage() {
     return document.getElementsByTagName("img")[0]
 }
 function getRevertScrollZoom() {
-    return true
+    return getSetting(SETTING_COMIC_INVERT_SCROLL)
 }
 function getScrollSpeed() {
-    let s = getSetting(SETTING_COMIC_SCROLL_SPEED)
-    return s
+    return getSetting(SETTING_COMIC_SCROLL_SPEED)
 }
 
 function getPanSpeed() {
-    return 3
+    return getSetting(SETTING_COMIC_PAN_SPEED)
 }
 
 function getZoomJumpValue() {
@@ -411,7 +402,7 @@ function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
 }
 
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
-    var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? -1 : 1)
+    var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? 1 : -1)
     var newZoom = getZoom() * zoomDelta
     zoom(newZoom, scrollCenterX, scrollCenterY)
 }
@@ -434,6 +425,14 @@ function downloadComicToDevice() {
         var pages = num(getMeta("size"))
         navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: pages, kind: 'comic'})
     }
+}
+
+function initSettings() {
+    let settingsWrapper = document.getElementById('ch_settings')
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
+    //addSettingListener(SETTING_COMIC_SCROLL_SPEED, undefined)
 }
 
 window.onload = function() {
@@ -493,6 +492,8 @@ window.onload = function() {
     document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
     setZoom(1.0)
+
+    initSettings()
 
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
