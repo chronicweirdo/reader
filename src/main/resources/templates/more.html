@@ -32,6 +32,8 @@
             }
         }
     </style>
+    <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
         function clearStorage(element) {
             window.localStorage.clear()
@@ -40,11 +42,23 @@
             }
             element.innerHTML = element.innerHTML + " - done!"
         }
+        window.onload = function() {
+            let settingsWrapper = document.getElementById('ch_latestReadSetting')
+            appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
+            let settingValue = getSetting(SETTING_LATEST_READ_LIMIT)
+            let settingValueDisplay = document.createElement('span')
+            settingValueDisplay.innerHTML = settingValue
+            settingsWrapper.appendChild(settingValueDisplay)
+            addSettingListener(SETTING_LATEST_READ_LIMIT, (value) => {
+                settingValueDisplay.innerHTML = value
+            })
+        }
     </script>
 </head>
 <body>
 <div id="container">
     <h1>Chronic Reader</h1>
+    <p id="ch_latestReadSetting"></p>
     <p><a href="/collections">Collections</a></p>
     <p><a href="/help">Help</a></p>
     <p><a href="/password">Change password</a></p>

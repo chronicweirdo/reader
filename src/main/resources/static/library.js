@@ -202,7 +202,7 @@ function loadLatestRead() {
             }
         }
     }
-    xhttp.open("GET", "latestRead")
+    xhttp.open("GET", "latestRead?limit=" + getSetting(SETTING_LATEST_READ_LIMIT))
     xhttp.send()
 }
 

@@ -7,6 +7,7 @@ var SETTING_LIGHT_MODE_FOREGROUND = "light_mode_foreground"
 var SETTING_BOOK_ZOOM = "book_zoom"
 var SETTING_COMIC_PAN_SPEED = "comic_pan_speed"
 var SETTING_COMIC_INVERT_SCROLL = "comic_invert_scroll"
+var SETTING_LATEST_READ_LIMIT = "latest_read_limit"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -18,6 +19,7 @@ settingDefaults[SETTING_LIGHT_MODE_BACKGROUND] = "#ffffff"
 settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
 settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
 settingDefaults[SETTING_COMIC_INVERT_SCROLL] = "false"
+settingDefaults[SETTING_LATEST_READ_LIMIT] = "6"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -29,6 +31,7 @@ settingParsers[SETTING_BOOK_ZOOM] = parseFloat
 settingParsers[SETTING_COMIC_PAN_SPEED] = parseInt
 settingParsers[SETTING_DARK_MODE] = parseBoolean
 settingParsers[SETTING_COMIC_INVERT_SCROLL] = parseBoolean
+settingParsers[SETTING_LATEST_READ_LIMIT] = parseInt
 
 var settingEncoders = {}
 
@@ -92,6 +95,7 @@ settingControllers[SETTING_COMIC_SCROLL_SPEED] = () => createNumberController(SE
 settingControllers[SETTING_COMIC_PAN_SPEED] = () => createNumberController(SETTING_COMIC_PAN_SPEED, "pan speed", 1, 10, 1)
 settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
 settingControllers[SETTING_COMIC_INVERT_SCROLL] = () => createBooleanController(SETTING_COMIC_INVERT_SCROLL, "invert scroll")
+settingControllers[SETTING_LATEST_READ_LIMIT] = () => createNumberController(SETTING_LATEST_READ_LIMIT, "latest read to load", 0, 12, 1)
 
 function updateSetting(element) {
     let value

@@ -10,6 +10,8 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
+import java.util
+import java.util.Collections
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
@@ -36,19 +38,21 @@ class MainController @Autowired()(
 
   @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def loadLatestRead(): ResponseEntity[java.util.List[UiBook]] = {
-    val progress: Seq[Progress] = bookService.loadTopProgress(6)
+  def loadLatestRead(@RequestParam("limit") limit: Int): ResponseEntity[java.util.List[UiBook]] = {
+    val latestRead = if (limit > 0) {
+      val progress: Seq[Progress] = bookService.loadTopProgress(limit)
 
-    val latestRead = progress
-      .map(p => UiBook(
-        p.book.id,
-        getType(p.book),
-        p.book.collection,
-        p.book.title,
-        WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-        p.position,
-        p.book.size
-      ))
+      progress
+        .map(p => UiBook(
+          p.book.id,
+          getType(p.book),
+          p.book.collection,
+          p.book.title,
+          WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
+          p.position,
+          p.book.size
+        ))
+    } else Seq()
 
     new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }

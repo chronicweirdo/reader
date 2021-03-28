@@ -78,7 +78,7 @@ self.addEventListener('fetch', e => {
     } else if (url.pathname === '/loadProgress') {
         e.respondWith(handleLoadProgress(e.request))
     } else if (url.pathname === '/latestRead') {
-        e.respondWith(handleLatestReadRequest())
+        e.respondWith(handleLatestReadRequest(e.request))
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         e.respondWith(handleDataRequest(e.request))
     } else if (url.pathname === '/bookSection') {
@@ -267,10 +267,10 @@ async function handleMarkProgress(request) {
     return markProgressResponse
 }
 
-async function handleLatestReadRequest() {
+async function handleLatestReadRequest(request) {
     let serverResponse
     try {
-        serverResponse = await fetch('/latestRead')
+        serverResponse = await fetch(request)
     } catch(e) {
         serverResponse = undefined
     }
@@ -278,7 +278,7 @@ async function handleLatestReadRequest() {
         let syncedProgressCount = await syncProgressInDatabase()
         if (syncedProgressCount > 0) {
             try {
-                serverResponse = await fetch('/latestRead')
+                serverResponse = await fetch(request)
             } catch(e) {
                 serverResponse = undefined
             }
