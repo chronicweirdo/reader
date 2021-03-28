@@ -7,12 +7,14 @@ function hideSpinner() {
     var spinner = document.getElementById("spinner")
     spinner.style.display = "none"
 }
+
 function addPagenum(image, page, totalPages) {
     var span = document.createElement("span")
     span.innerText = page + " / " + totalPages
     span.classList.add("pagenum")
     image.parentElement.appendChild(span)
 }
+
 function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {
@@ -32,6 +34,7 @@ function addProgress(image, page, totalPages, downloaded) {
     }
     image.parentElement.appendChild(span)
 }
+
 function scaleImage(image, page, totalPages, downloaded) {
     if (page >= 0) {
         addProgress(image, page, totalPages, downloaded)
@@ -49,10 +52,12 @@ function scaleImage(image, page, totalPages, downloaded) {
     image.style.left = (- differenceWidth / 2) + "px"
     image.style.top = (- differenceHeight / 2) + "px"
 }
+
 function getCollectionId(collection) {
     if (collection.length == 0) return "default"
     else return encodeURIComponent(collection)
 }
+
 function getCollectionHtml(collection) {
     var collectionId = getCollectionId(collection)
     var div = document.createElement("div")
@@ -63,6 +68,7 @@ function getCollectionHtml(collection) {
     div.appendChild(h1)
     return div
 }
+
 function insertCollectionHtml(collectionHtml) {
     var fin = document.getElementById("fin")
     if (fin != null) {
@@ -115,9 +121,11 @@ function addBooks(books) {
         }
     }
 }
+
 function setCurrentPage(currentPage) {
     document.currentPage = currentPage
 }
+
 function getCurrentPage() {
     if (document.currentPage) {
         return document.currentPage
@@ -126,6 +134,7 @@ function getCurrentPage() {
         return document.currentPage
     }
 }
+
 function setEndOfCollection() {
     if (! getEndOfCollection()) {
         var fin = document.createElement("h1")
@@ -134,9 +143,11 @@ function setEndOfCollection() {
         document.body.appendChild(fin)
     }
 }
+
 function getEndOfCollection() {
     return document.getElementById("fin") != null
 }
+
 function removeExistingBooks() {
     var collections = document.getElementsByClassName("collection-container")
     while (collections.length > 0) {
@@ -147,12 +158,15 @@ function removeExistingBooks() {
         document.body.removeChild(fin)
     }
 }
+
 function getSearch() {
     return document.getElementById("search")
 }
+
 function getTerm() {
     return getSearch().value
 }
+
 function clearTerm() {
     var search = getSearch()
     if (search.value === "") {
@@ -163,6 +177,7 @@ function clearTerm() {
         search.focus()
     }
 }
+
 function searchForTerm() {
     removeExistingBooks()
     setCurrentPage(-1)
@@ -224,6 +239,7 @@ function loadNextPage(callback) {
         xhttp.send()
     }
 }
+
 function loadCollections(callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
@@ -237,6 +253,7 @@ function loadCollections(callback) {
     xhttp.open("GET", "collections")
     xhttp.send()
 }
+
 function createCollectionsUl(collections) {
     var ul = document.createElement("ul")
 
@@ -248,6 +265,7 @@ function createCollectionsUl(collections) {
 
     return ul
 }
+
 function showCollectionsDialog() {
     loadCollections(function(collections) {
         var collectionsUl = createCollectionsUl(collections)
@@ -257,26 +275,32 @@ function showCollectionsDialog() {
         collectionsDialog.classList.add("visible")
     })
 }
+
 function hideCollectionsDialog() {
     var collectionsDialog = document.getElementById("collections")
     var collectionsContent = collectionsDialog.getElementsByTagName("p")[0]
     collectionsContent.innerHTML = ""
     collectionsDialog.classList.remove("visible")
 }
+
 function getViewportHeight() {
     return Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 }
+
 function getScrollTop() {
     return document.documentElement.scrollTop
 }
+
 function getDocumentHeight() {
     return document.body.offsetHeight
 }
+
 function loadUntilPageFull() {
     if ((document.body.offsetHeight <= getViewportHeight()) && ! getEndOfCollection()) {
         loadNextPage(loadUntilPageFull)
     }
 }
+
 function addSearchTriggerListener() {
     var search = document.getElementById("search")
     search.addEventListener('keyup', function (e) {
@@ -293,6 +317,7 @@ function addSearchTriggerListener() {
         }
     })
 }
+
 function getSearchUrlParameter() {
     var urlString = window.location.href
     var url = new URL(urlString)

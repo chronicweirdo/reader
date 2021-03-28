@@ -384,8 +384,6 @@ function saveCache() {
     window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
-
-
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))

@@ -43,7 +43,8 @@ var filesToCache = [
     '/bookNode.js',
     '/book.js',
     '/comic.css',
-    '/comic.js'
+    '/comic.js',
+    '/settings.js'
 ]
 
 self.addEventListener('install', e => {
@@ -384,8 +385,6 @@ function getUnsyncedProgress() {
         }
     })
 }
-
-
 
 function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {

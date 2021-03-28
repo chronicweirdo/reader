@@ -142,19 +142,6 @@ function mouseMove(event, callback) {
     if (callback) callback(gestures.mousePressed, event.movementX, event.movementY)
 }
 
-// supported actions:
-// clickAction(mouseX, mouseY)
-// doubleClickAction(mouseX, mouseY)
-// tripleClickAction(mouseX, mouseY)
-// mouseMoveAction(mouseButtonPressed, deltaX, deltaY)
-// scrollAction(scrollCenterX, scrollCenterY, scrollValue)
-// scrollEndAction(scrollCenterX, scrollCenterY, scrollValue)
-// pinchStartAction(pinchCenterX, pinchCenterY)
-// pinchAction(currentZoom, pinchCenterX, pinchCenterY)
-// pinchEndAction(currentZoom, pinchCenterX, pinchCenterY)
-// panAction(deltaX, deltaY)
-// panEndAction(deltaX, deltaY)
-
 function enableGesturesOnElement(element, actions) {
     enableTouchGestures(
         element,
@@ -170,12 +157,6 @@ function enableGesturesOnElement(element, actions) {
     element.addEventListener("mouseout", mouseUp)
     element.addEventListener("mousemove", (event) => mouseMove(event, actions.mouseMoveAction))
 }
-
-// supported actions:
-// upAction()
-// downAction()
-// leftAction()
-// rightAction()
 
 function enableKeyboardGestures(actions) {
     document.onkeydown = function(e) {
