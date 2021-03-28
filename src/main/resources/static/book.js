@@ -384,37 +384,22 @@ function saveCache() {
     window.localStorage.setItem(cacheKey, JSON.stringify(document.savedPages))
 }
 
-function appendAll(parent, children) {
-    console.log(children)
-    if (children) {
-        for (let i = 0; i < children.length; i++) {
-            parent.appendChild(children[i])
-        }
-    }
-}
+
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    /*settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE))
-    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_BACKGROUND))
-    settingsWrapper.appendChild(getSettingController(SETTING_DARK_MODE_FOREGROUND))
-    settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
-    settingsWrapper.appendChild(getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
-    settingsWrapper.appendChild(getSettingController(SETTING_BOOK_ZOOM))*/
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
-    appendAll(settingsWrapper, getSettingController(SETTING_FULL_SCREEN))
     addSettingListener(SETTING_DARK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_BOOK_ZOOM, setZoom)
-    addSettingListener(SETTING_FULL_SCREEN, initializeFullscreen)
 }
 
 window.onload = function() {
@@ -442,7 +427,6 @@ window.onload = function() {
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
     initializeMode()
-    initializeFullscreen()
     setZoom(getSetting(SETTING_BOOK_ZOOM), false)
     loadCache()
 
