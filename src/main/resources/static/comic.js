@@ -484,6 +484,7 @@ window.onload = function() {
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
+    document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
     addPositionInputTriggerListener(jumpToPage)
 

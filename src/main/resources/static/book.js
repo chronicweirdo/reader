@@ -367,7 +367,6 @@ function initializeChapters() {
     var listItemsWithSubchapters = document.getElementsByClassName("ch_withsubchapters")
     for (var i = 0; i < listItemsWithSubchapters.length; i++) {
         var para = listItemsWithSubchapters[i].getElementsByTagName("p")[0]
-        console.log(para)
         para.addEventListener("click", (event) => {
             event.stopPropagation()
             toggleChildList(event.target.parentElement)
@@ -478,6 +477,7 @@ window.onload = function() {
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true, prepareBookTools))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
+    document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
     document.getElementById("ch_decrease_zoom").addEventListener("click", (event) => {
         event.stopPropagation()
         decreaseZoom()
