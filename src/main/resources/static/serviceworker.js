@@ -215,9 +215,9 @@ async function handleBookSectionRequest(request) {
     const matchFunction = value => {
         let sectionStart = value.headers["sectionstart"]
         let sectionEnd = value.headers["sectionend"]
-        return sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)
+        return id == value.id && sectionStart && sectionEnd && parseInt(sectionStart) <= position && position <= parseInt(sectionEnd)
     }
-    let databaseResponse = await databaseFindFirst(matchFunction, REQUESTS_TABLE, ID_INDEX, id)
+    let databaseResponse = await databaseFindFirst(matchFunction, REQUESTS_TABLE)
 
     if (databaseResponse) {
         return databaseEntityToResponse(databaseResponse)
