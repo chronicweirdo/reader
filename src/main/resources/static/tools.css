@@ -225,6 +225,9 @@ div#ch_settings {
     grid-template-columns: auto auto;
     grid-gap:5px;
 }
+div#ch_settings label:after {
+    content: ": "
+}
 div#ch_settings input {
     height: 3vh;
 }
