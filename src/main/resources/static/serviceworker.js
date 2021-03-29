@@ -8,42 +8,54 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var ID_INDEX = 'id'
 
-const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
 var db
-request.onerror = function(event) {
-    console.log(event)
+
+function getDb() {
+    return new Promise((resolve, reject) => {
+        if (! db) {
+            const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
+            request.onerror = function(event) {
+                console.log(event)
+                reject()
+            }
+            request.onsuccess = function(event) {
+                db = event.target.result
+                resolve(event.target.result)
+            }
+            request.onupgradeneeded = function(event) {
+                let localDb = event.target.result
+                var requestsStore = localDb.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
+                requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
+                var progressStore = localDb.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
+                var booksStore = localDb.createObjectStore(BOOKS_TABLE, {keyPath: 'id'})
+            }
+        } else {
+            resolve(db)
+        }
+    })
 }
-request.onsuccess = function(event) {
-    db = event.target.result
-}
 
-request.onupgradeneeded = function(event) {
-    var db = event.target.result
-
-    var requestsStore = db.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
-    requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
-
-    var progressStore = db.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
-
-    var booksStore = db.createObjectStore(BOOKS_TABLE, {keyPath: 'id'})
-}
+getDb().then(db => console.log("initialized database"))
 
 var filesToCache = [
-    '/form.css',
-    '/favicon.ico',
-    '/library.css',
-    '/library.js',
     '/book.css',
-    '/tools.css',
-    '/hammer.min.js',
-    '/gestures.js',
-    '/util.js',
-    '/bookNode.js',
     '/book.js',
+    '/bookNode.js',
     '/comic.css',
     '/comic.js',
-    '/settings.js',
+    '/favicon.ico',
     '/fonts.css',
+    '/form.css',
+    '/gestures.js',
+    '/gold_logo.png',
+    '/hammer.min.js',
+    '/library.css',
+    '/library.js',
+    '/login.css',
+    '/serviceworker.js',
+    '/settings.js',
+    '/tools.css',
+    '/util.js',
     '/Merriweather/Merriweather-Black.ttf',
     '/Merriweather/Merriweather-BlackItalic.ttf',
     '/Merriweather/Merriweather-Bold.ttf',
@@ -546,108 +558,120 @@ function saveComicPageToDevice(id, size, position) {
 
 function databaseFindFirst(matchFunction, table, indexName = undefined, indexValue = undefined) {
     return new Promise((resolve, reject) => {
-        let transaction = db.transaction(table)
-        let objectStore = transaction.objectStore(table)
-        let cursorRequest
-        if (indexName) {
-            let index = objectStore.index(indexName)
-            cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
-        } else {
-            cursorRequest = objectStore.openCursor()
-        }
-        cursorRequest.onsuccess = event => {
-            let cursor = event.target.result
-            if (cursor) {
-                if (matchFunction(cursor.value)) {
-                    resolve(cursor.value)
-                } else {
-                    cursor.continue()
-                }
+        getDb().then(db => {
+            let transaction = db.transaction(table)
+            let objectStore = transaction.objectStore(table)
+            let cursorRequest
+            if (indexName) {
+                let index = objectStore.index(indexName)
+                cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
             } else {
-                resolve()
+                cursorRequest = objectStore.openCursor()
             }
-        }
+            cursorRequest.onsuccess = event => {
+                let cursor = event.target.result
+                if (cursor) {
+                    if (matchFunction(cursor.value)) {
+                        resolve(cursor.value)
+                    } else {
+                        cursor.continue()
+                    }
+                } else {
+                    resolve()
+                }
+            }
+        })
     })
 }
 
 function databaseLoad(table, key) {
     return new Promise((resolve, reject) => {
-        let transaction = db.transaction([table])
-        let objectStore = transaction.objectStore(table)
-        let dbRequest = objectStore.get(key)
-        dbRequest.onsuccess = function(event) {
-            resolve(event.target.result)
-        }
+        getDb().then(db => {
+            let transaction = db.transaction([table])
+            let objectStore = transaction.objectStore(table)
+            let dbRequest = objectStore.get(key)
+            dbRequest.onsuccess = function(event) {
+                resolve(event.target.result)
+            }
+        })
     })
 }
 
 function databaseDeleteAll(table) {
      return new Promise((resolve, reject) => {
-        let transaction = db.transaction([table], "readwrite")
-        let objectStore = transaction.objectStore(table)
-        let deleteRequest = objectStore.clear()
-        deleteRequest.onsuccess = event => {
-            resolve()
-        }
+        getDb().then(db => {
+            let transaction = db.transaction([table], "readwrite")
+            let objectStore = transaction.objectStore(table)
+            let deleteRequest = objectStore.clear()
+            deleteRequest.onsuccess = event => {
+                resolve()
+            }
+        })
     })
 }
 
 function databaseDelete(matchFunction, table, indexName = undefined, indexValue = undefined) {
     return new Promise((resolve, reject) => {
-        let transaction = db.transaction([table], "readwrite")
-        let objectStore = transaction.objectStore(table)
+        getDb().then(db => {
+            let transaction = db.transaction([table], "readwrite")
+            let objectStore = transaction.objectStore(table)
 
-        let cursorRequest
-        if (indexName) {
-            let index = objectStore.index(indexName)
-            cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
-        } else {
-            cursorRequest = objectStore.openCursor()
-        }
-
-        let deletedCount = 0
-        cursorRequest.onsuccess = event => {
-            let cursor = event.target.result
-            if (cursor) {
-                if (matchFunction(cursor.value)) {
-                    objectStore.delete(cursor.primaryKey)
-                    deletedCount += 1
-                }
-                cursor.continue()
+            let cursorRequest
+            if (indexName) {
+                let index = objectStore.index(indexName)
+                cursorRequest = index.openCursor(IDBKeyRange.only(indexValue))
             } else {
-                resolve(deletedCount)
+                cursorRequest = objectStore.openCursor()
             }
-        }
+
+            let deletedCount = 0
+            cursorRequest.onsuccess = event => {
+                let cursor = event.target.result
+                if (cursor) {
+                    if (matchFunction(cursor.value)) {
+                        objectStore.delete(cursor.primaryKey)
+                        deletedCount += 1
+                    }
+                    cursor.continue()
+                } else {
+                    resolve(deletedCount)
+                }
+            }
+        })
     })
 }
 
 function databaseSave(table, value) {
     return new Promise((resolve, reject) => {
-        let transaction = db.transaction([table], "readwrite")
-        transaction.oncomplete = function(event) {
-            resolve(value)
-        }
-        let objectStore = transaction.objectStore(table)
-        value['date'] = new Date()
-        let addRequest = objectStore.put(value)
+        getDb().then(db => {
+            let transaction = db.transaction([table], "readwrite")
+            transaction.oncomplete = function(event) {
+                resolve(value)
+            }
+            let objectStore = transaction.objectStore(table)
+            value['date'] = new Date()
+            let addRequest = objectStore.put(value)
+        })
     })
 }
 
 function databaseLoadDistinct(table, column) {
     return new Promise((resolve, reject) => {
-        let transaction = db.transaction([table])
-        let objectStore = transaction.objectStore(table)
-        let cursorRequest = objectStore.openCursor()
-        let distinctValues = new Set()
-        cursorRequest.onsuccess = event => {
-            let cursor = event.target.result
-            if (cursor) {
-                distinctValues.add(cursor.value[column])
-                cursor.continue()
-            } else {
-                resolve(distinctValues)
+        getDb().then(db => {
+            let transaction = db.transaction([table])
+            let objectStore = transaction.objectStore(table)
+            let cursorRequest = objectStore.openCursor()
+            let distinctValues = new Set()
+            cursorRequest.onsuccess = event => {
+                let cursor = event.target.result
+                if (cursor) {
+                    distinctValues.add(cursor.value[column])
+                    cursor.continue()
+                } else {
+                    resolve(distinctValues)
+                }
             }
-        }
-        cursorRequest.onerror = event => reject()
+            cursorRequest.onerror = event => reject()
+        })
     })
 }

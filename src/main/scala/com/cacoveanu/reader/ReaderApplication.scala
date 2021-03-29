@@ -62,16 +62,26 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .csrf().disable().cors().and()
       .authorizeRequests()
       .antMatchers(
-        "/form.css",
-        "/login.css",
-        "/gold_logo.png",
-        "/favicon.ico",
-        "/serviceworker.js",
+        "/book.css",
+        "/book.js",
         "/bookNode.js",
-        "/Merriweather/*",
-        "/Roboto/*",
+        "/comic.css",
+        "/comic.js",
+        "/favicon.ico",
         "/fonts.css",
-        "/settings.js"
+        "/form.css",
+        "/gestures.js",
+        "/gold_logo.png",
+        "/hammer.min.js",
+        "/library.css",
+        "/library.js",
+        "/login.css",
+        "/serviceworker.js",
+        "/settings.js",
+        "/tools.css",
+        "/util.js",
+        "/Merriweather/*",
+        "/Roboto/*"
       ).permitAll()
       .antMatchers(
         "/users",
