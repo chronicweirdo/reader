@@ -469,85 +469,69 @@ function saveResponseToDatabase(url, bookId) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////// saving to device
 
-function saveToDevice(bookId, type, maxPositions) {
+async function saveToDevice(bookId, type, maxPositions) {
     console.log("save " + type + " " + bookId + " to device")
-    databaseLoad(BOOKS_TABLE, bookId).then(entity => {
-        if (! entity) {
-            if (type === 'comic') {
-                saveComicToDevice(bookId, maxPositions)
-            } else if (type === 'book') {
-                saveBookToDevice(bookId, maxPositions)
-            }
-        } else {
-            console.log(type + " " + bookId + " already on device")
-            downloadNext()
+    let entity = await databaseLoad(BOOKS_TABLE, bookId)
+    if (! entity) {
+        if (type === 'comic') {
+            saveComicToDevice(bookId, maxPositions)
+        } else if (type === 'book') {
+            saveBookToDevice(bookId, maxPositions)
         }
-    })
+    } else {
+        console.log(type + " " + bookId + " already on device")
+        downloadNext()
+    }
 }
 
-function saveBookToDevice(id, size) {
+async function saveBookToDevice(id, size) {
     let url = '/book?id=' + id
-    databaseLoad(REQUESTS_TABLE, url)
-        .then(entity => {
-            if (!entity) {
-                console.log("saving " + url)
-                fetch(url).then(response => saveActualResponseToDatabase(response))
-            } else {
-                console.log(url + " already saved")
-            }
-        })
-        .finally(() => saveBookSectionToDevice(id, size, 0))
+    let entity = await databaseLoad(REQUESTS_TABLE, url)
+    if (! entity) {
+        console.log("saving " + url)
+        let response = await fetch(url)
+        let savedResponse = await saveActualResponseToDatabase(response)
+    } else {
+        console.log(url + " already saved")
+    }
+    saveBookSectionToDevice(id, size, 0)
 }
 
-function saveComicToDevice(id, size) {
+async function saveComicToDevice(id, size) {
     let url = '/comic?id=' + id
-    databaseLoad(REQUESTS_TABLE, url)
-        .then(response => {
-            if (!response) {
-                console.log("saving " + url)
-                fetch(url).then(response => saveActualResponseToDatabase(response))
-            } else {
-                console.log(url + " already saved")
-            }
-        })
-        .finally(() => saveComicPageToDevice(id, size, 0))
+    let entity = await databaseLoad(REQUESTS_TABLE, url)
+    if (! entity) {
+        console.log("saving " + url)
+        let response = await fetch(url)
+        let savedResponse = await saveActualResponseToDatabase(response)
+    } else {
+        console.log(url + " already saved")
+    }
+    saveComicPageToDevice(id, size, 0)
 }
 
-function saveBookSectionToDevice(id, size, position) {
-    return new Promise((resolve, reject) => {
-        if (position < size) {
-            let url = '/bookSection?id=' + id + "&position=" + position
-            databaseLoad(REQUESTS_TABLE, url)
-                .then(entity => new Promise((resolve, reject) => {
-                    if (entity) {
-                        console.log(url + " already saved")
-                        resolve(entity)
-                    } else {
-                        console.log("saving " + url)
-                        fetch(url)
-                            .then(response => saveActualResponseToDatabase(response))
-                            .then(entity => {
-                                saveBookResourcesToDevice(entity)
-                                resolve(entity)
-                            })
-                    }
-                }))
-                .then(section => {
-                    let nextPosition = parseInt(section.headers['sectionend']) + 1
-                    saveBookSectionToDevice(id, size, nextPosition)
-                    resolve()
-                })
+async function saveBookSectionToDevice(id, size, position) {
+    if (position < size) {
+        let url = '/bookSection?id=' + id + "&position=" + position
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (entity) {
+            console.log(url + " already saved")
         } else {
-            databaseSave(BOOKS_TABLE, {
-                'id': id,
-                'date': new Date()
-            }).then(() => {
-                console.log("finished saving book " + id)
-                downloadNext()
-                resolve()
-            })
+            console.log("saving " + url)
+            let response = await fetch(url)
+            entity = await saveActualResponseToDatabase(response)
+            saveBookResourcesToDevice(entity)
         }
-    })
+        let nextPosition = parseInt(entity.headers['sectionend']) + 1
+        saveBookSectionToDevice(id, size, nextPosition)
+    } else {
+        let savedBook = await databaseSave(BOOKS_TABLE, {
+            'id': id,
+            'date': new Date()
+        })
+        console.log("finished saving book " + id)
+        downloadNext()
+    }
 }
 
 function saveBookResourcesToDevice(section) {
@@ -565,36 +549,23 @@ function saveBookResourcesToDevice(section) {
     })
 }
 
-function saveComicPageToDevice(id, size, position) {
-    return new Promise((resolve, reject) => {
-        if (position < size) {
-            var url = '/imageData?id=' + id + '&page=' + position
-            databaseLoad(REQUESTS_TABLE, url)
-                .then(entity => new Promise((resolve, reject) => {
-                    if (entity) {
-                        console.log(url + " already on device")
-                        resolve(entity)
-                    } else {
-                        console.log("saving " + url)
-                        fetch(url)
-                            .then(response => saveActualResponseToDatabase(response))
-                            .then(savedResponse => resolve(savedResponse))
-                    }
-                }))
-                .finally(() => {
-                    saveComicPageToDevice(id, size, position + 1)
-                    resolve()
-                })
+async function saveComicPageToDevice(id, size, position) {
+    if (position < size) {
+        var url = '/imageData?id=' + id + '&page=' + position
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (entity) {
+            console.log(url + " already on device")
         } else {
-            databaseSave(BOOKS_TABLE, {
-                'id': id
-            }).then(() => {
-                console.log("finished saving comic " + id)
-                downloadNext()
-                resolve()
-            })
+            console.log("saving " + url)
+            let response = await fetch(url)
+            let savedResponse = await saveActualResponseToDatabase(response)
         }
-    })
+        saveComicPageToDevice(id, size, position + 1)
+    } else {
+        let savedBook = await databaseSave(BOOKS_TABLE, {'id': id})
+        console.log("finished saving comic " + id)
+        downloadNext()
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////// new download framework
