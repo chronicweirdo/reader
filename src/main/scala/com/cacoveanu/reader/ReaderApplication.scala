@@ -67,7 +67,10 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/gold_logo.png",
         "/favicon.ico",
         "/serviceworker.js",
-        "/bookNode.js"
+        "/bookNode.js",
+        "/Merriweather/*",
+        "/Roboto/*",
+        "/fonts.css"
       ).permitAll()
       .antMatchers(
         "/users",

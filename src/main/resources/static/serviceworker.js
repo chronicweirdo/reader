@@ -29,8 +29,6 @@ request.onupgradeneeded = function(event) {
 }
 
 var filesToCache = [
-    'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
-    'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap',
     '/form.css',
     '/favicon.ico',
     '/library.css',
@@ -44,11 +42,32 @@ var filesToCache = [
     '/book.js',
     '/comic.css',
     '/comic.js',
-    '/settings.js'
+    '/settings.js',
+    '/fonts.css',
+    '/Merriweather/Merriweather-Black.ttf',
+    '/Merriweather/Merriweather-BlackItalic.ttf',
+    '/Merriweather/Merriweather-Bold.ttf',
+    '/Merriweather/Merriweather-BoldItalic.ttf',
+    '/Merriweather/Merriweather-Italic.ttf',
+    '/Merriweather/Merriweather-Light.ttf',
+    '/Merriweather/Merriweather-LightItalic.ttf',
+    '/Merriweather/Merriweather-Regular.ttf',
+    '/Roboto/Roboto-Black.ttf',
+    '/Roboto/Roboto-BlackItalic.ttf',
+    '/Roboto/Roboto-Bold.ttf',
+    '/Roboto/Roboto-BoldItalic.ttf',
+    '/Roboto/Roboto-Italic.ttf',
+    '/Roboto/Roboto-Light.ttf',
+    '/Roboto/Roboto-LightItalic.ttf',
+    '/Roboto/Roboto-Medium.ttf',
+    '/Roboto/Roboto-MediumItalic.ttf',
+    '/Roboto/Roboto-Regular.ttf',
+    '/Roboto/Roboto-Thin.ttf',
+    '/Roboto/Roboto-ThinItalic.ttf'
 ]
 
 self.addEventListener('install', e => {
-    e.waitUntil(initCache)
+    e.waitUntil(initCache())
     e.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
@@ -63,7 +82,10 @@ self.addEventListener('install', e => {
 })
 
 function initCache() {
-    return caches.open(CACHE_NAME).then(cache => cache.addAll(filesToCache))
+    return caches.open(CACHE_NAME).then(cache => {
+        console.log("adding all to cache")
+        cache.addAll(filesToCache)
+    })
 }
 
 self.addEventListener('activate', e => {
