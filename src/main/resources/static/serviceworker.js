@@ -132,12 +132,14 @@ self.addEventListener('message', event => {
 async function resetApplication() {
     // delete all data from cache
     await caches.delete(CACHE_NAME)
-    await initCache()
 
     // delete all data from database
     await databaseDeleteAll(REQUESTS_TABLE)
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
+
+    // unregister service worker
+    self.registration.unregister()
 }
 
 async function handleWebResourceRequest(request) {

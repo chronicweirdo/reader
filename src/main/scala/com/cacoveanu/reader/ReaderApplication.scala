@@ -70,7 +70,8 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/bookNode.js",
         "/Merriweather/*",
         "/Roboto/*",
-        "/fonts.css"
+        "/fonts.css",
+        "/settings.js"
       ).permitAll()
       .antMatchers(
         "/users",
