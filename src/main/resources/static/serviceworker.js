@@ -328,12 +328,14 @@ async function handleLatestReadRequest(request) {
             response: blob,
             headers: Object.fromEntries(serverResponse.headers.entries())
         })
+        downloadNext()
+
         let text = await blob.text()
         let json = JSON.parse(text)
 
         // trigger download of everything in latest read, including progress
         json.forEach(book => {
-            saveToDevice(book.id, book.type, book.pages)
+            //saveToDevice(book.id, book.type, book.pages)
             databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
         })
 
@@ -367,6 +369,25 @@ async function handleLatestReadRequest(request) {
         let newResponseText = JSON.stringify(responseJson)
 
         return new Response(newResponseText, {headers: new Headers(databaseResponse.headers)})
+    }
+}
+
+async function downloadNext() {
+    let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
+    if (databaseResponse) {
+        let responseText = await databaseResponse.response.text()
+        let latestReadBooks = JSON.parse(responseText)
+        let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
+        let nextToDownload = latestReadBooks.find(book => ! booksInDatabase.has(book.id))
+        if (nextToDownload) {
+            console.log("next to download is: ")
+            console.log(nextToDownload)
+            saveToDevice(nextToDownload.id, nextToDownload.type, nextToDownload.pages)
+        } else {
+            console.log("nothing left to download")
+        }
+    } else {
+        console.log("latest read not in database")
     }
 }
 
@@ -449,6 +470,7 @@ function saveResponseToDatabase(url, bookId) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////// saving to device
 
 function saveToDevice(bookId, type, maxPositions) {
+    console.log("save " + type + " " + bookId + " to device")
     databaseLoad(BOOKS_TABLE, bookId).then(entity => {
         if (! entity) {
             if (type === 'comic') {
@@ -456,6 +478,9 @@ function saveToDevice(bookId, type, maxPositions) {
             } else if (type === 'book') {
                 saveBookToDevice(bookId, maxPositions)
             }
+        } else {
+            console.log(type + " " + bookId + " already on device")
+            downloadNext()
         }
     })
 }
@@ -464,7 +489,12 @@ function saveBookToDevice(id, size) {
     let url = '/book?id=' + id
     databaseLoad(REQUESTS_TABLE, url)
         .then(entity => {
-            if (!entity) fetch(url).then(response => saveActualResponseToDatabase(response))
+            if (!entity) {
+                console.log("saving " + url)
+                fetch(url).then(response => saveActualResponseToDatabase(response))
+            } else {
+                console.log(url + " already saved")
+            }
         })
         .finally(() => saveBookSectionToDevice(id, size, 0))
 }
@@ -473,7 +503,12 @@ function saveComicToDevice(id, size) {
     let url = '/comic?id=' + id
     databaseLoad(REQUESTS_TABLE, url)
         .then(response => {
-            if (!response) fetch(url).then(response => saveActualResponseToDatabase(response))
+            if (!response) {
+                console.log("saving " + url)
+                fetch(url).then(response => saveActualResponseToDatabase(response))
+            } else {
+                console.log(url + " already saved")
+            }
         })
         .finally(() => saveComicPageToDevice(id, size, 0))
 }
@@ -485,8 +520,10 @@ function saveBookSectionToDevice(id, size, position) {
             databaseLoad(REQUESTS_TABLE, url)
                 .then(entity => new Promise((resolve, reject) => {
                     if (entity) {
+                        console.log(url + " already saved")
                         resolve(entity)
                     } else {
+                        console.log("saving " + url)
                         fetch(url)
                             .then(response => saveActualResponseToDatabase(response))
                             .then(entity => {
@@ -505,6 +542,8 @@ function saveBookSectionToDevice(id, size, position) {
                 'id': id,
                 'date': new Date()
             }).then(() => {
+                console.log("finished saving book " + id)
+                downloadNext()
                 resolve()
             })
         }
@@ -520,6 +559,7 @@ function saveBookResourcesToDevice(section) {
             .filter(resource => resource.startsWith('bookResource'))
             .forEach(resource => {
                 let url = '/' + resource
+                console.log("saving " + url)
                 fetch(url).then(response => saveActualResponseToDatabase(response))
             })
     })
@@ -532,8 +572,10 @@ function saveComicPageToDevice(id, size, position) {
             databaseLoad(REQUESTS_TABLE, url)
                 .then(entity => new Promise((resolve, reject) => {
                     if (entity) {
+                        console.log(url + " already on device")
                         resolve(entity)
                     } else {
+                        console.log("saving " + url)
                         fetch(url)
                             .then(response => saveActualResponseToDatabase(response))
                             .then(savedResponse => resolve(savedResponse))
@@ -547,11 +589,22 @@ function saveComicPageToDevice(id, size, position) {
             databaseSave(BOOKS_TABLE, {
                 'id': id
             }).then(() => {
+                console.log("finished saving comic " + id)
+                downloadNext()
                 resolve()
             })
         }
     })
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////// new download framework
+
+/*
+- need a queue for downloads, to make sure a single resource is downloaded at once
+- as a resource is processed, a new download request may be added to the queue
+*/
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////// database operations
