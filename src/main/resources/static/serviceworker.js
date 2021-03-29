@@ -320,16 +320,19 @@ async function handleLatestReadRequest(request) {
         let text = await blob.text()
         let json = JSON.parse(text)
 
-        // decide what needs downloading and start downloads
+        // trigger download of everything in latest read, including progress
+        json.forEach(book => {
+            saveToDevice(book.id, book.type, book.pages)
+            databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
+        })
+
+        // find out what we need to delete
         let booksToKeep = new Set(json.map(e => e.id))
         let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
         let booksToDelete = [...booksInDatabase].filter(id => id && !booksToKeep.has(id))
         booksToDelete.forEach(id => deleteBookFromDatabase(id))
-        let booksToDownload = json.filter(book => ! booksInDatabase.has(book.id))
-        booksToDownload.forEach(book => saveToDevice(book.id, book.type, book.pages))
-        json.forEach(book => databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true}))
 
-        // find out what has been completely downloaded
+        // mark completely downloaded books in response
         let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
         let responseJson = json.map(book => {
             if (completelyDownloadedBooks.has(book.id)) {
@@ -340,9 +343,6 @@ async function handleLatestReadRequest(request) {
             return book
         })
         let responseText = JSON.stringify(responseJson)
-
-        //await updateLatestReadInformation(serverResponse.clone())
-        //return serverResponse
         return new Response(responseText, {headers: new Headers(savedEntity.headers)})
     } else {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
@@ -438,11 +438,18 @@ function saveResponseToDatabase(url, bookId) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////// saving to device
 
 function saveToDevice(bookId, type, maxPositions) {
-    if (type === 'comic') {
-        saveComicToDevice(bookId, maxPositions)
-    } else if (type === 'book') {
-        saveBookToDevice(bookId, maxPositions)
-    }
+    databaseLoad(BOOKS_TABLE, bookId).then(entity => {
+        if (! entity) {
+            if (type === 'comic') {
+                saveComicToDevice(bookId, maxPositions)
+            } else if (type === 'book') {
+                saveBookToDevice(bookId, maxPositions)
+            }
+        } else {
+            console.log("book " + bookId + " already downloaded")
+        }
+    })
+
 }
 
 function saveBookToDevice(id, size) {
