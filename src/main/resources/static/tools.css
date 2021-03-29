@@ -47,6 +47,12 @@
     font-size: 48px;
     color: gold;
 }
+#ch_errorPanel {
+    margin-top: 24px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    color: gold;
+}
 /* -------------------------------------------------------------- spinner end */
 
 /* --------------------------------------------------------- containers start */

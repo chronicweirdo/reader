@@ -35,7 +35,7 @@ class MvcConfig extends WebMvcConfigurer {
   }
 }
 
-@Configuration
+/*@Configuration
 class RequestLoggingFilterConfig {
 
   @Bean
@@ -48,7 +48,7 @@ class RequestLoggingFilterConfig {
     filter.setAfterMessagePrefix("REQUEST DATA : ")
     filter
   }
-}
+}*/
 
 @Configuration
 @EnableWebSecurity

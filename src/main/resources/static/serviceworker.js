@@ -83,7 +83,6 @@ self.addEventListener('install', e => {
 
 function initCache() {
     return caches.open(CACHE_NAME).then(cache => {
-        console.log("adding all to cache")
         cache.addAll(filesToCache)
     })
 }
@@ -445,11 +444,8 @@ function saveToDevice(bookId, type, maxPositions) {
             } else if (type === 'book') {
                 saveBookToDevice(bookId, maxPositions)
             }
-        } else {
-            console.log("book " + bookId + " already downloaded")
         }
     })
-
 }
 
 function saveBookToDevice(id, size) {

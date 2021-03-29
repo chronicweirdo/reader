@@ -152,11 +152,15 @@ function handleResize() {
 function downloadSection(position, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var jsonObj = JSON.parse(this.responseText)
-            var node = convert(jsonObj)
-            if (callback != null) {
-                callback(node)
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var jsonObj = JSON.parse(this.responseText)
+                var node = convert(jsonObj)
+                if (callback != null) {
+                    callback(node)
+                }
+            } else {
+                reportError(this.status + " " + this.responseText)
             }
         }
     }

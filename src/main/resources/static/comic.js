@@ -230,11 +230,15 @@ function cacheContains(page) {
 function downloadImageData(page, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-            var jsonResponse = JSON.parse(this.responseText)
-            addToCache(page, jsonResponse)
-            if (callback != null) {
-                callback()
+        if (this.readyState == 4) {
+            if (this.status == 200 && this.responseText.length > 0) {
+                var jsonResponse = JSON.parse(this.responseText)
+                addToCache(page, jsonResponse)
+                if (callback != null) {
+                    callback()
+                }
+            } else {
+                reportError(this.status + " " + this.responseText)
             }
         }
     }

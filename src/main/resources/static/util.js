@@ -213,3 +213,8 @@ function appendAll(parent, children) {
         }
     }
 }
+
+function reportError(message) {
+    let errorPanel = document.getElementById('ch_errorPanel')
+    errorPanel.innerHTML = message
+}
