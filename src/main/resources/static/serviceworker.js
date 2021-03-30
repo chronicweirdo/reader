@@ -45,16 +45,35 @@ getDb().then(db => console.log("initialized database"))
 
 var downloadQueue = []
 
-function appendToDownloadQueue(url) {
-    downloadQueue.push(url)
+function appendToDownloadQueue(o) {
+    let existingIndex = downloadQueue.findIndex(u => {
+        return u.id == o.id && u.kind == o.kind && u.position == o.position && u.size == o.size && u.url == o.url
+    })
+    if (existingIndex < 0) {
+        // only add to queue if it does not exist there
+        downloadQueue.push(o)
+    }
 }
 
-function pushToDownloadQueue(url) {
-    downloadQueue.unshift(url)
+function pushToDownloadQueue(o) {
+    let existingIndex = downloadQueue.findIndex(u => {
+        return u.id == o.id && u.kind == o.kind && u.position == o.position && u.size == o.size && u.url == o.url
+    })
+    if (existingIndex >= 0) {
+        downloadQueue.splice(existingIndex, 1)
+    }
+    downloadQueue.unshift(o)
 }
 
 function popFromDownloadQueue() {
-    return downloadQueue.shift()
+    let prioIndex = downloadQueue.findIndex(e => e.prioritary)
+    if (prioIndex >= 0) {
+        let result = downloadQueue[prioIndex]
+        downloadQueue.splice(prioIndex, 1)
+        return result
+    } else {
+        return downloadQueue.shift()
+    }
 }
 
 var filesToCache = [
@@ -197,7 +216,8 @@ async function triggerStoreBook(id, kind, size) {
         pushToDownloadQueue({
             'kind': kind,
             'id': id,
-            'size': size
+            'size': size,
+            'prioritary': true
         })
     } else {
         console.log(kind + " " + id + " already fully downloaded")
@@ -402,7 +422,7 @@ async function handleLatestReadRequest(request) {
             let book = json[i]
             let savedBook = await databaseLoad(BOOKS_TABLE, book.id)
             if (! savedBook) {
-                pushToDownloadQueue({
+                appendToDownloadQueue({
                     'kind': book.type,
                     'id': book.id,
                     'size': parseInt(book.pages)
