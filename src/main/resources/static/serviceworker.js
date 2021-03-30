@@ -6,13 +6,17 @@ var DATABASE_VERSION = 1
 var REQUESTS_TABLE = 'requests'
 var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
+var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
+
+var downloadingBook = new Set()
 
 var db
 
 function getDb() {
     return new Promise((resolve, reject) => {
         if (! db) {
+            console.log("initializing db")
             const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
             request.onerror = function(event) {
                 console.log(event)
@@ -23,11 +27,13 @@ function getDb() {
                 resolve(event.target.result)
             }
             request.onupgradeneeded = function(event) {
+                console.log("upgrade db")
                 let localDb = event.target.result
                 var requestsStore = localDb.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
                 requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
                 var progressStore = localDb.createObjectStore(PROGRESS_TABLE, {keyPath: 'id'})
                 var booksStore = localDb.createObjectStore(BOOKS_TABLE, {keyPath: 'id'})
+                var workerStore = localDb.createObjectStore(WORKER_TABLE, {keyPath: 'id'})
             }
         } else {
             resolve(db)
@@ -103,7 +109,35 @@ self.addEventListener('activate', e => {
     self.clients.claim()
 })
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function singleFunctionRunning() {
+    let existingWorker = await databaseFindFirst(() => true, WORKER_TABLE)
+    let now = new Date()
+    if (existingWorker) {
+        // check if stale
+        let timeDifference = Math.abs(existingWorker.date.getTime() - now.getTime())
+        if (timeDifference < 60 * 1000) {
+            console.log("single function already running")
+            return
+        }
+    }
+
+    let methodId = new Date().getTime()
+    console.log("starting single function " + methodId)
+    await databaseDeleteAll(WORKER_TABLE)
+    await databaseSave(WORKER_TABLE, {'id': methodId})
+    while (true) {
+        console.log("single function " + methodId)
+        await databaseSave(WORKER_TABLE, {'id': methodId})
+        await sleep(1000)
+    }
+}
+
 self.addEventListener('fetch', e => {
+    singleFunctionRunning()
     var url = new URL(e.request.url)
 
     if (url.pathname === '/markProgress') {
@@ -130,9 +164,11 @@ self.addEventListener('fetch', e => {
 self.addEventListener('message', event => {
     if (event.data.type === 'storeBook') {
         var bookId = parseInt(event.data.bookId)
-        var maxPositions = event.data.maxPositions
-        var type = event.data.kind
-        saveToDevice(bookId, type, maxPositions)
+        if (! downloadingBook.has(bookId)) {
+            var maxPositions = event.data.maxPositions
+            var type = event.data.kind
+            saveToDevice(bookId, type, maxPositions)
+        }
     } else if (event.data.type === 'deleteBook') {
         deleteBookFromDatabase(event.data.bookId)
     } else if (event.data.type === 'reset') {
@@ -148,6 +184,7 @@ async function resetApplication() {
     await databaseDeleteAll(REQUESTS_TABLE)
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
+    await databaseDeleteAll(WORKER_TABLE)
 
     // unregister service worker
     self.registration.unregister()
@@ -372,22 +409,31 @@ async function handleLatestReadRequest(request) {
     }
 }
 
+
+
 async function downloadNext() {
-    let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
-    if (databaseResponse) {
-        let responseText = await databaseResponse.response.text()
-        let latestReadBooks = JSON.parse(responseText)
-        let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
-        let nextToDownload = latestReadBooks.find(book => ! booksInDatabase.has(book.id))
-        if (nextToDownload) {
-            console.log("next to download is: ")
-            console.log(nextToDownload)
-            saveToDevice(nextToDownload.id, nextToDownload.type, nextToDownload.pages)
+    //todo: clear downloading book that is older than some date
+    return
+    if (downloadingBook.size == 0) {
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
+        if (databaseResponse) {
+            let responseText = await databaseResponse.response.text()
+            let latestReadBooks = JSON.parse(responseText)
+            let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
+            let nextToDownload = latestReadBooks.find(book => ! booksInDatabase.has(book.id) && ! downloadingBook.has(book.id))
+            if (nextToDownload) {
+                console.log("next to download is: ")
+                console.log(nextToDownload)
+                downloadingBook.add(nextToDownload.id)
+                saveToDevice(nextToDownload.id, nextToDownload.type, nextToDownload.pages)
+            } else {
+                console.log("nothing left to download")
+            }
         } else {
-            console.log("nothing left to download")
+            console.log("latest read not in database")
         }
     } else {
-        console.log("latest read not in database")
+        console.log("already downloading something")
     }
 }
 
@@ -485,32 +531,94 @@ async function saveToDevice(bookId, type, maxPositions) {
 }
 
 async function saveBookToDevice(id, size) {
-    let url = '/book?id=' + id
-    let entity = await databaseLoad(REQUESTS_TABLE, url)
-    if (! entity) {
-        console.log("saving " + url)
-        let response = await fetch(url)
-        let savedResponse = await saveActualResponseToDatabase(response)
-    } else {
-        console.log(url + " already saved")
+    console.log("downloading books")
+    console.log(downloadingBook)
+    {
+        let url = '/book?id=' + id
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (! entity) {
+            console.log("saving " + url)
+            let response = await fetch(url)
+            let savedResponse = await saveActualResponseToDatabase(response)
+        } else {
+            console.log(url + " already saved")
+        }
     }
-    saveBookSectionToDevice(id, size, 0)
+    let position = 0
+    while (position < size) {
+        let url = '/bookSection?id=' + id + "&position=" + position
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (entity) {
+            console.log(url + " already saved")
+        } else {
+            console.log("saving " + url)
+            let response = await fetch(url)
+            entity = await saveActualResponseToDatabase(response)
+        }
+
+        // save section resources
+        let text = await entity.response.text()
+        let structure = JSON.parse(text)
+        let node = convert(structure)
+        let resources = node.getResources()
+        for (let i = 0; i < resources.length; i++) {
+            let resource = resources[i]
+            let resourceUrl = '/' + resource
+            let resourceEntity = await databaseLoad(REQUESTS_TABLE, resourceUrl)
+            if (! resourceEntity) {
+                console.log("saving " + resourceUrl)
+                let resourceResponse = await fetch(resourceUrl)
+                await saveActualResponseToDatabase(resourceResponse)
+            } else {
+                console.log(resourceUrl + " already saved")
+            }
+        }
+
+        let nextPosition = parseInt(entity.headers['sectionend']) + 1
+        position = nextPosition
+    }
+
+    let savedBook = await databaseSave(BOOKS_TABLE, {'id': id})
+    console.log("finished saving book " + id)
+    downloadingBook.delete(id)
+    downloadNext()
 }
 
 async function saveComicToDevice(id, size) {
-    let url = '/comic?id=' + id
-    let entity = await databaseLoad(REQUESTS_TABLE, url)
-    if (! entity) {
-        console.log("saving " + url)
-        let response = await fetch(url)
-        let savedResponse = await saveActualResponseToDatabase(response)
-    } else {
-        console.log(url + " already saved")
+    console.log("downloading books")
+    console.log(downloadingBook)
+    {
+        let url = '/comic?id=' + id
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (! entity) {
+            console.log("saving " + url)
+            let response = await fetch(url)
+            let savedResponse = await saveActualResponseToDatabase(response)
+        } else {
+            console.log(url + " already saved")
+        }
     }
-    saveComicPageToDevice(id, size, 0)
+    let position = 0
+    while (position < size) {
+        let url = '/imageData?id=' + id + '&page=' + position
+        let entity = await databaseLoad(REQUESTS_TABLE, url)
+        if (entity) {
+            console.log(url + " already on device")
+        } else {
+            console.log("saving " + url)
+            let response = await fetch(url)
+            let savedResponse = await saveActualResponseToDatabase(response)
+        }
+        position += 1
+    }
+
+    let savedBook = await databaseSave(BOOKS_TABLE, {'id': id})
+    console.log("finished saving comic " + id)
+    downloadingBook.delete(id)
+    downloadNext()
 }
 
-async function saveBookSectionToDevice(id, size, position) {
+/*async function saveBookSectionToDevice(id, size, position) {
     if (position < size) {
         let url = '/bookSection?id=' + id + "&position=" + position
         let entity = await databaseLoad(REQUESTS_TABLE, url)
@@ -532,9 +640,9 @@ async function saveBookSectionToDevice(id, size, position) {
         console.log("finished saving book " + id)
         downloadNext()
     }
-}
+}*/
 
-function saveBookResourcesToDevice(section) {
+/*function saveBookResourcesToDevice(section) {
     section.response.text().then(text => {
         var structure = JSON.parse(text)
         var node = convert(structure)
@@ -547,9 +655,9 @@ function saveBookResourcesToDevice(section) {
                 fetch(url).then(response => saveActualResponseToDatabase(response))
             })
     })
-}
+}*/
 
-async function saveComicPageToDevice(id, size, position) {
+/*async function saveComicPageToDevice(id, size, position) {
     if (position < size) {
         var url = '/imageData?id=' + id + '&page=' + position
         let entity = await databaseLoad(REQUESTS_TABLE, url)
@@ -564,9 +672,10 @@ async function saveComicPageToDevice(id, size, position) {
     } else {
         let savedBook = await databaseSave(BOOKS_TABLE, {'id': id})
         console.log("finished saving comic " + id)
+        downloadingBook.delete(id)
         downloadNext()
     }
-}
+}*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////// new download framework
 
