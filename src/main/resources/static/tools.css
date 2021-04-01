@@ -242,6 +242,13 @@ div#ch_settings input {
 div#ch_settings input[type=checkbox] {
     width: 3vh;
 }
+div#ch_settings a {
+    color: gold;
+    text-decoration: none;
+}
+div#ch_settings a.critical {
+    color: orangered;
+}
 
 #ch_tools > p > input {
     font-size: 1em;

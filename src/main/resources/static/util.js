@@ -218,3 +218,28 @@ function reportError(message) {
     let errorPanel = document.getElementById('ch_errorPanel')
     errorPanel.innerHTML = message
 }
+
+function getRemoveProgressButton() {
+    let label = document.createElement('span')
+    label.innerHTML = ""
+    let button = document.createElement('a')
+    button.innerHTML = 'remove progress'
+
+    let removeProgressFunction = (event) => {
+        removeProgress()
+    }
+    let confirmationRequestFunction = (event) => {
+        console.log(event)
+        label.innerHTML = "are you sure?"
+        button.onclick = removeProgressFunction
+        button.classList.add('critical')
+        window.setTimeout(function() {
+            label.innerHTML = ""
+            button.onclick = confirmationRequestFunction
+            button.classList.remove('critical')
+        }, 2500)
+    }
+
+    button.onclick = confirmationRequestFunction
+    return [label, button]
+}

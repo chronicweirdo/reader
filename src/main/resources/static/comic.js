@@ -443,7 +443,7 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
-    //addSettingListener(SETTING_COMIC_SCROLL_SPEED, undefined)
+    appendAll(settingsWrapper, getRemoveProgressButton())
 }
 
 window.onload = function() {
