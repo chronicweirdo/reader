@@ -260,4 +260,40 @@ class TestBookNode {
     assert(treeString != null)
     assert(treeString.length > 0)
   }
+
+  @Test
+  def testNextTraversal(): Unit = {
+    val expectedNodes = Array(Array("body", 0, 1111),Array("text", 0, 3),Array("p", 4, 23),Array("text", 4, 23),Array("text", 24, 27),Array("p", 28, 350),Array("text", 28, 350),Array("text", 351, 354),Array("h2", 355, 369),Array("text", 355, 369),Array("text", 370, 373),Array("p", 374, 506),Array("text", 374, 506),Array("text", 507, 510),Array("img", 511, 511),Array("text", 512, 515),Array("p", 516, 627),Array("text", 516, 627),Array("text", 628, 631),Array("p", 632, 731),Array("text", 632, 731),Array("text", 732, 735),Array("div", 736, 736),Array("text", 737, 740),Array("h2", 741, 770),Array("text", 741, 770),Array("text", 771, 774),Array("p", 775, 859),Array("text", 775, 792),Array("a", 793, 799),Array("text", 793, 799),Array("text", 800, 859),Array("text", 860, 863),Array("p", 864, 907),Array("text", 864, 907),Array("text", 908, 911),Array("img", 912, 912),Array("text", 913, 916),Array("h2", 917, 931),Array("text", 917, 931),Array("text", 932, 935),Array("img", 936, 936),Array("text", 937, 940),Array("p", 941, 1082),Array("text", 941, 1082),Array("text", 1083, 1086),Array("table", 1087, 1109),Array("text", 1087, 1092),Array("tr", 1093, 1093),Array("text", 1094, 1099),Array("tr", 1100, 1100),Array("text", 1101, 1106),Array("tr", 1107, 1107),Array("text", 1108, 1109),Array("text", 1110, 1111))
+
+    val tree = parseTree()
+    var current = tree
+    var index = 0
+    while (current != null) {
+      println(current.name + " " + current.start + " " + current.end)
+      assert(current.name == expectedNodes(index)(0))
+      assert(current.start == expectedNodes(index)(1))
+      assert(current.end == expectedNodes(index)(2))
+      current = current.nextNode()
+      index = index + 1
+    }
+    assert(index == 55)
+  }
+
+  @Test
+  def textNextHeader(): Unit = {
+    val tree = parseTree()
+    val p1 = tree.leafAtPosition(632)
+    val h1 = p1.nextNodeOfName("h2")
+    assert(h1 != null)
+    println(h1.name + " " + h1.start + " " + h1.end)
+    assert(h1.start == 741)
+    val h2 = h1.nextNodeOfName("h2")
+    assert(h2 != null)
+    println(h2.name + " " + h2.start + " " + h2.end)
+    assert(h2.start == 917)
+
+    val p2 = tree.leafAtPosition(1108)
+    val h3 = p2.nextNodeOfName("h2")
+    assert(h3 == null)
+  }
 }

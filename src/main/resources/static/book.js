@@ -44,7 +44,7 @@ function getPagesKey() {
     return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) //getZoom()
 }
 
-function getPageFor(position) {
+function getPageFor(position, withIndex = false) {
     var pagesKey = getPagesKey()
     var savedPages = document.savedPages
     if (savedPages != null) {
@@ -52,12 +52,46 @@ function getPageFor(position) {
         for (var i = 0; i < savedPages.length; i++) {
             if (savedPages[i].start <= position && position <= savedPages[i].end) {
                 // we found the page
-                return savedPages[i]
+                let page = savedPages[i]
+                if (withIndex) {
+                    page.index = i
+                }
+                return page
             }
         }
     }
     // no page available
     return null
+}
+
+function getRemainingPagesInChapter() {
+    let fromPosition = document.currentPage.end
+    console.log("from position: " + fromPosition)
+    if (document.section != null && document.section.start <= fromPosition && fromPosition <= document.section.end) {
+        let currentNode = document.section.leafAtPosition(fromPosition)
+        console.log("current node:")
+        console.log(currentNode)
+        let nextHeader = currentNode.nextNodeOfName("h1")
+        console.log("next header:")
+        console.log(nextHeader)
+        let startPage = getPageFor(fromPosition, true)
+        console.log("start page:")
+        console.log(startPage)
+        let endPage
+        if (nextHeader) {
+            // get page for that position, minus page for current position
+            endPage = getPageFor(nextHeader.start, true)
+        } else {
+            // get pages in chapte minus current page
+            endPage = getPageFor(document.section.end, true)
+        }
+        console.log("end page:")
+        console.log(endPage)
+        if (endPage) {
+            let pagesLeft = endPage.index - startPage.index
+            return pagesLeft
+        }
+    }
 }
 
 function getContentFor(start, end, callback) {
@@ -117,6 +151,17 @@ function getPositionPercentage(pageStart, pageEnd) {
         text += "." + percentageFraction
     }
     text += "%"
+
+    let remainingPages = getRemainingPagesInChapter()
+    if (remainingPages != undefined) {
+        text += " -- " + remainingPages
+        if (remainingPages == 1) {
+            text += " page "
+        } else {
+            text += " pages "
+        }
+        text += "left in chapter"
+    }
 
     return text
 }

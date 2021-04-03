@@ -315,6 +315,37 @@ class BookNode {
     }
   }
 
+  def nextNode(): BookNode = {
+    var current = this
+    if (current.children.isEmpty) {
+      // go up the parent line until we find next sibling
+      var parent = current.parent
+      while (parent != null && parent.children.indexOf(current) == parent.children.size - 1) {
+        current = parent
+        parent = current.parent
+      }
+      if (parent != null) {
+        // we have the next sibling in current, must find first leaf
+        val sibling = parent.children(parent.children.indexOf(current) + 1)
+        sibling
+      } else {
+        // we have reached root, this was the last leaf, there is no other
+        null
+      }
+    } else {
+      current.children.head
+    }
+  }
+
+  def nextNodeOfName(name: String): BookNode = {
+    var current = this.nextNode()
+    while (current != null) {
+      if (current.name == name) return current
+      current = current.nextNode()
+    }
+    null
+  }
+
   def nextLeaf(): BookNode = {
     // is this a leaf?
     var current = this
