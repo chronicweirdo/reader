@@ -226,27 +226,39 @@
 /* ---------------------------------------------------- table of contents end */
 
 /* ----------------------------------------------------------- position start */
-div#ch_settings {
+#ch_settings {
     display: grid;
     grid-template-columns: auto auto;
     grid-gap:5px;
     padding: 8px;
     display: none;
+    align-items: center;
+    justify-items: start;
+    border: 4px dotted black;
 }
-div#ch_settings label:after {
+
+#ch_tools.right #ch_settings {
+    justify-items: end;
+}
+
+#ch_settings label:after {
     content: ": "
 }
-div#ch_settings input {
+
+#ch_settings input {
     height: 3vh;
 }
-div#ch_settings input[type=checkbox] {
+
+#ch_settings input[type=checkbox] {
     width: 3vh;
 }
-div#ch_settings a {
+
+#ch_settings a {
     color: gold;
     text-decoration: none;
 }
-div#ch_settings a.critical {
+
+#ch_settings a.critical {
     color: orangered;
 }
 

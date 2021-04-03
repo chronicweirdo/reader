@@ -109,19 +109,21 @@ async function displayPageFor(position) {
 
 function updatePagesLeft() {
     let el = document.getElementById("pagesLeft")
+    el.innerHTML = ""
 
     let remainingPages = getRemainingPagesInChapter()
-    let text = ""
     if (remainingPages != undefined) {
-        text += remainingPages
+        let span = document.createElement("span")
+        text = remainingPages
         if (remainingPages == 1) {
             text += " page "
         } else {
             text += " pages "
         }
         text += "left in chapter"
+        span.innerHTML = text
+        el.appendChild(span)
     }
-    el.innerHTML = text
 }
 
 function getPositionPercentage(pageStart, pageEnd) {

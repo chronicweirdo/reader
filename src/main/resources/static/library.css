@@ -8,12 +8,10 @@ body {
     word-wrap: break-word;
 }
 h1 {
-    margin: .5vw;
-    border-bottom: 2px dotted black;
-    font-style: italic;
-    font-weight: normal;
+    margin: 1vw;
+    border-bottom: 4px dotted black;
+    font-weight: bold;
     font-size: 1.6em;
-    padding: 4px;
 }
 .tools {
     display: block;
@@ -81,7 +79,7 @@ h1 {
     height: 25vw;
     overflow: hidden;
     text-decoration: none;
-    margin: .5vw;
+    margin: 1vw 0 1vw 1vw;
 }
 #spinner {
     position: fixed;
@@ -108,7 +106,7 @@ only screen and (min-resolution: 120dpi)*/
     .imgdiv {
         width: 30vw;
         height: 50vw;
-        margin: 1vw;
+        margin: 1vw 0 1vw 1vw;
     }
 }
 .imgdiv img {
@@ -159,4 +157,5 @@ only screen and (min-resolution: 120dpi)*/
     font-weight: normal;
     font-style: italic;
     text-align: center;
+    border: 0;
 }
