@@ -40,12 +40,7 @@ function scrollNecessaryAsync(el, trueCallback, falseCallback) {
     }
 }
 
-function getPagesKey() {
-    return getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) //getZoom()
-}
-
 function getPageFor(position, withIndex = false) {
-    var pagesKey = getPagesKey()
     var savedPages = document.savedPages
     if (savedPages != null) {
         // search for page
@@ -66,17 +61,17 @@ function getPageFor(position, withIndex = false) {
 
 function getRemainingPagesInChapter() {
     let fromPosition = document.currentPage.end
-    console.log("from position: " + fromPosition)
+    //console.log("from position: " + fromPosition)
     if (document.section != null && document.section.start <= fromPosition && fromPosition <= document.section.end) {
         let currentNode = document.section.leafAtPosition(fromPosition)
-        console.log("current node:")
-        console.log(currentNode)
+        //console.log("current node:")
+        //console.log(currentNode)
         let nextHeader = currentNode.nextNodeOfName("h1")
-        console.log("next header:")
-        console.log(nextHeader)
+        //console.log("next header:")
+        //console.log(nextHeader)
         let startPage = getPageFor(fromPosition, true)
-        console.log("start page:")
-        console.log(startPage)
+        //console.log("start page:")
+        //console.log(startPage)
         let endPage
         if (nextHeader) {
             // get page for that position, minus page for current position
@@ -85,8 +80,8 @@ function getRemainingPagesInChapter() {
             // get pages in chapte minus current page
             endPage = getPageFor(document.section.end, true)
         }
-        console.log("end page:")
-        console.log(endPage)
+        //console.log("end page:")
+        //console.log(endPage)
         if (endPage) {
             let pagesLeft = endPage.index - startPage.index
             return pagesLeft
@@ -491,5 +486,4 @@ window.onload = function() {
     })
 
     downloadBookToDevice()
-
 }
