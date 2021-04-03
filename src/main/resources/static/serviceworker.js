@@ -238,14 +238,7 @@ async function resetApplication() {
     self.registration.unregister()
 }
 
-async function handleWebResourceRequest(request) {
-    // first try to get from cache
-    let cacheResponse = await caches.match(request)
-
-    if (cacheResponse) {
-        return cacheResponse
-    }
-
+async function updateResourceInCache(request) {
     // then try to get from server
     let serverResponse
     try {
@@ -262,6 +255,21 @@ async function handleWebResourceRequest(request) {
         let notFoundResponse = new Response()
         notFoundResponse.status = 404
         return notFoundResponse
+    }
+}
+
+async function handleWebResourceRequest(request) {
+    console.log("updating web resource in cache " + request.url)
+    // first try to get from cache
+    let cacheResponse = await caches.match(request)
+
+    if (cacheResponse) {
+        // always update resource in cache asynchronously
+        updateResourceInCache(request)
+        return cacheResponse
+    } else {
+        let serverResponse = await updateResourceInCache(request)
+        return serverResponse
     }
 }
 
