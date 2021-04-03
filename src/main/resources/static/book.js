@@ -83,34 +83,28 @@ function getContentFor(start, end, callback) {
     }
 }
 
-function displayPageFor(position, firstTry = true) {
+async function displayPageFor(position) {
     showSpinner()
-    var page = getPageFor(position)
+    let page = getPageFor(position)
     if (page == null) {
-        // compute pages for section and retry
-        if (firstTry) {
-            computePagesForSection(position)
-        }
-        window.setTimeout(function() {
-            displayPageFor(position, false)
-        }, 100)
-    } else {
-        getContentFor(page.start, page.end, function(text) {
-            var content = document.getElementById("ch_content")
-            content.innerHTML = text
-            document.currentPage = page
-            // if book end is displayed, we mark the book as read
-            if (page.end == parseInt(getMeta("bookEnd"))) {
-                saveProgress(getMeta("bookId"), page.end)
-            } else {
-                saveProgress(getMeta("bookId"), page.start)
-            }
-            updatePositionInput(getPositionPercentage(page.start, page.end))
-            updatePagesLeft()
-
-            hideSpinner()
-        })
+        computePagesForSection(position)
+        page = await getPageForPromise(position)
     }
+
+    getContentFor(page.start, page.end, function(text) {
+        var content = document.getElementById("ch_content")
+        content.innerHTML = text
+        document.currentPage = page
+        // if book end is displayed, we mark the book as read
+        if (page.end == parseInt(getMeta("bookEnd"))) {
+            saveProgress(getMeta("bookId"), page.end)
+        } else {
+            saveProgress(getMeta("bookId"), page.start)
+        }
+        updatePositionInput(getPositionPercentage(page.start, page.end))
+        updatePagesLeft()
+        hideSpinner()
+    })
 }
 
 function updatePagesLeft() {
@@ -230,6 +224,17 @@ function timeout(ms) {
         window.setTimeout(function() {
             resolve()
         }, ms)
+    })
+}
+
+function getPageForPromise(position) {
+    return new Promise((resolve, reject) => {
+        let page = getPageFor(position)
+        if (page == null) {
+            timeout(100).then(() => resolve(getPageForPromise(position)))
+        } else {
+            resolve(page)
+        }
     })
 }
 
