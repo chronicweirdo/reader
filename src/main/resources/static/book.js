@@ -134,10 +134,29 @@ function displayPageFor(position, firstTry = true) {
                 saveProgress(getMeta("bookId"), page.start)
             }
             updatePositionInput(getPositionPercentage(page.start, page.end))
+            updatePagesLeft()
 
             hideSpinner()
         })
     }
+}
+
+function updatePagesLeft() {
+    let el = document.getElementById("pagesLeft")
+
+    let remainingPages = getRemainingPagesInChapter()
+    let text = ""
+    if (remainingPages != undefined) {
+        text += remainingPages
+        if (remainingPages == 1) {
+            text += " page "
+        } else {
+            text += " pages "
+        }
+        text += "left in chapter"
+    }
+    el.innerHTML = text
+
 }
 
 function getPositionPercentage(pageStart, pageEnd) {
@@ -151,17 +170,6 @@ function getPositionPercentage(pageStart, pageEnd) {
         text += "." + percentageFraction
     }
     text += "%"
-
-    let remainingPages = getRemainingPagesInChapter()
-    if (remainingPages != undefined) {
-        text += " -- " + remainingPages
-        if (remainingPages == 1) {
-            text += " page "
-        } else {
-            text += " pages "
-        }
-        text += "left in chapter"
-    }
 
     return text
 }
