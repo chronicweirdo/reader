@@ -122,7 +122,6 @@ function updatePagesLeft() {
         text += "left in chapter"
     }
     el.innerHTML = text
-
 }
 
 function getPositionPercentage(pageStart, pageEnd) {
@@ -265,6 +264,7 @@ async function compute(section, start) {
     } else {
         savePage(start, end)
         saveCache()
+        updatePagesLeft()
     }
 }
 
