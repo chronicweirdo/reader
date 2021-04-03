@@ -1,43 +1,31 @@
-function scrollNecessary(el) {
-    var images = el.getElementsByTagName('img')
-    var imageCount = images.length
-    if (imageCount > 0) {
-        var loadedImages = 0
-        for (var i = 0; i < imageCount; i++) {
-            var imageResolvedFunction = function() {
-                loadedImages = loadedImages + 1
-                if (loadedImages == imageCount) {
-                    return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
-                }
-            }
-            images[i].onload = imageResolvedFunction
-            images[i].onerror = imageResolvedFunction
+function imageLoadedPromise(image) {
+    return new Promise((resolve, reject) => {
+        let imageResolveFunction = function() {
+            resolve()
         }
-    } else {
-        return el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth
-    }
+        image.onload = imageResolveFunction
+        image.onerror = imageResolveFunction
+    })
 }
 
-function scrollNecessaryAsync(el, trueCallback, falseCallback) {
-    var images = el.getElementsByTagName('img')
-    var imageCount = images.length
-    if (imageCount > 0) {
-        var loadedImages = 0
-        for (var i = 0; i < imageCount; i++) {
-            var imageResolvedFunction = function() {
-                loadedImages = loadedImages + 1
-                if (loadedImages == imageCount) {
-                    if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) trueCallback()
-                    else falseCallback()
-                }
+function scrollNecessaryPromise(el) {
+    return new Promise((resolve, reject) => {
+        var images = el.getElementsByTagName('img')
+        var imageCount = images.length
+        if (imageCount > 0) {
+            let imagePromises = []
+            for (var i = 0; i < imageCount; i++) {
+                imagePromises.push(imageLoadedPromise(images[i]))
             }
-            images[i].onload = imageResolvedFunction
-            images[i].onerror = imageResolvedFunction
+            Promise.all(imagePromises).then(() => {
+                if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) resolve(true)
+                else resolve(false)
+            })
+        } else {
+            if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) resolve(true)
+            else resolve(false)
         }
-    } else {
-        if (el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) trueCallback()
-        else falseCallback()
-    }
+    })
 }
 
 function getPageFor(position, withIndex = false) {
@@ -61,27 +49,16 @@ function getPageFor(position, withIndex = false) {
 
 function getRemainingPagesInChapter() {
     let fromPosition = document.currentPage.end
-    //console.log("from position: " + fromPosition)
     if (document.section != null && document.section.start <= fromPosition && fromPosition <= document.section.end) {
         let currentNode = document.section.leafAtPosition(fromPosition)
-        //console.log("current node:")
-        //console.log(currentNode)
         let nextHeader = currentNode.nextNodeOfName("h1")
-        //console.log("next header:")
-        //console.log(nextHeader)
         let startPage = getPageFor(fromPosition, true)
-        //console.log("start page:")
-        //console.log(startPage)
         let endPage
         if (nextHeader) {
-            // get page for that position, minus page for current position
             endPage = getPageFor(nextHeader.start, true)
         } else {
-            // get pages in chapte minus current page
             endPage = getPageFor(document.section.end, true)
         }
-        //console.log("end page:")
-        //console.log(endPage)
         if (endPage) {
             let pagesLeft = endPage.index - startPage.index
             return pagesLeft
@@ -237,9 +214,7 @@ function getSectionFor(position) {
 
 function computePagesForSection(position) {
     downloadSection(position, function(section) {
-        window.setTimeout(function() {
-            compute(section, section.start)
-        }, 10)
+        compute(section, section.start)
     })
 }
 
@@ -250,38 +225,42 @@ function savePage(start, end) {
     document.savedPages.push({start: start, end: end})
 }
 
-function compute(section, start) {
-    var shadowContent = document.getElementById("ch_shadow_content")
+function timeout(ms) {
+    return new Promise((resolve, reject) => {
+        window.setTimeout(function() {
+            resolve()
+        }, ms)
+    })
+}
+
+async function compute(section, start) {
+    let shadowContent = document.getElementById("ch_shadow_content")
     shadowContent.innerHTML = ""
 
-    var tryForPage = function(previousEnd, end) {
+    let firstEnd = section.findSpaceAfter(start)
+    let end = firstEnd
+    let previousEnd = firstEnd
+    shadowContent.innerHTML = section.copy(start, end).getContent()
+    let overflow = await scrollNecessaryPromise(shadowContent)
+
+    while ((!overflow) && (end < section.end)) {
+        previousEnd = end
+        end = section.findSpaceAfter(end)
         shadowContent.innerHTML = section.copy(start, end).getContent()
-        scrollNecessaryAsync(shadowContent,
-            function() {
-                // we have found our page, it ends at previousEnd
-                savePage(start, previousEnd)
-                if (previousEnd < section.end) { // this check is probably not necessary
-                    // schedule computation for next page
-                    window.setTimeout(function() {
-                        compute(section, previousEnd + 1)
-                    }, 10)
-                }
-            },
-            function() {
-                // if possible, increase page and try again
-                if (end < section.end) {
-                    var newEnd = section.findSpaceAfter(end)
-                    tryForPage(end, newEnd)
-                } else {
-                    // we are at the end of the section, this is the last page
-                    savePage(start, end)
-                    saveCache() // only update cache once all pages for a section were computed
-                }
-            }
-        )
+        // TODO: following line seems to fix first page in section overflow computation issues but it may slow the
+        // computation too much to be worth it
+        if (section.start == start) await timeout(10)
+        overflow = await scrollNecessaryPromise(shadowContent)
     }
-    var firstEnd = section.findSpaceAfter(start)
-    tryForPage(firstEnd, firstEnd)
+
+    // we have a page
+    if (end < section.end) {
+        savePage(start, previousEnd)
+        compute(section, previousEnd + 1)
+    } else {
+        savePage(start, end)
+        saveCache()
+    }
 }
 
 function setDarkMode() {
@@ -454,9 +433,7 @@ function initSettings() {
 }
 
 window.onload = function() {
-    // fix viewport height
     fixComponentHeights()
-
     initTableOfContents()
     initSettings()
 
