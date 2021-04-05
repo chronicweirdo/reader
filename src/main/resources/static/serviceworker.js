@@ -358,6 +358,8 @@ async function handleBookSectionRequest(request) {
 }
 
 async function handleLoadProgress(request) {
+    await syncProgressInDatabase()
+
     let url = new URL(request.url)
     let id = parseInt(url.searchParams.get("id"))
 
