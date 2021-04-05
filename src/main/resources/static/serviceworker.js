@@ -8,6 +8,7 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
+//var MAXIMUM_DOWNLOAD_RETRIES = 5
 
 var downloadingBook = new Set()
 
@@ -66,6 +67,7 @@ function pushToDownloadQueue(o) {
 }
 
 function popFromDownloadQueue() {
+    console.log(downloadQueue)
     let prioIndex = downloadQueue.findIndex(e => e.prioritary)
     if (prioIndex >= 0) {
         let result = downloadQueue[prioIndex]
@@ -147,19 +149,20 @@ function sleep(ms) {
 }
 
 async function singleFunctionRunning() {
+    console.log("trying to start single function")
     let existingWorker = await databaseFindFirst(() => true, WORKER_TABLE)
     let now = new Date()
     if (existingWorker) {
         // check if stale
         let timeDifference = Math.abs(existingWorker.date.getTime() - now.getTime())
         if (timeDifference < 60 * 1000) {
-            //console.log("single function already running")
+            console.log("single function already running")
             return
         }
     }
 
-    let methodId = new Date().getTime()
-    //console.log("starting single function " + methodId)
+    let methodId = now.getTime()
+    console.log("starting single function " + methodId)
     await databaseDeleteAll(WORKER_TABLE)
     await databaseSave(WORKER_TABLE, {'id': methodId})
     let running = true
@@ -169,7 +172,7 @@ async function singleFunctionRunning() {
         await databaseSave(WORKER_TABLE, {'id': methodId})
         //await sleep(1000)
     }
-    //console.log("single function stopping " + methodId)
+    console.log("single function stopping " + methodId)
     await databaseDeleteAll(WORKER_TABLE)
 }
 
@@ -358,15 +361,20 @@ async function handleLoadProgress(request) {
     let url = new URL(request.url)
     let id = parseInt(url.searchParams.get("id"))
 
-    // always get progress from database
-    let databaseProgress = await databaseLoad(PROGRESS_TABLE, id)
+    // always get progress from backend - otherwise this doesn't sync well with the server
+    let serverProgress
+    try {
+        serverProgress = await fetch(request)
+    } catch (error) {
+        serverProgress = undefined
+    }
 
-    // if nothing, try to grab from backend
-    if (databaseProgress) {
-        return new Response(databaseProgress.position)
+    // if nothing, try to grab from database
+    if (serverProgress) {
+        return serverProgress
     } else {
-        let progressResponse = await fetch(request)
-        return progressResponse
+        let databaseProgress = await databaseLoad(PROGRESS_TABLE, id)
+        return new Response(databaseProgress.position)
     }
 }
 
@@ -423,51 +431,64 @@ async function handleLatestReadRequest(request) {
         })
 
         let text = await blob.text()
-        let json = JSON.parse(text)
+        let booksToKeep = new Set()
+        let json
+        if (text && text.length > 0) {
+            json = JSON.parse(text)
 
-        // trigger download of everything in latest read, including progress
-        for (let i = 0; i < json.length; i++) {
-            let book = json[i]
-            let savedBook = await databaseLoad(BOOKS_TABLE, book.id)
-            if (! savedBook) {
-                appendToDownloadQueue({
-                    'kind': book.type,
-                    'id': book.id,
-                    'size': parseInt(book.pages)
-                })
+            // trigger download of everything in latest read, including progress
+            for (let i = 0; i < json.length; i++) {
+                let book = json[i]
+                let savedBook = await databaseLoad(BOOKS_TABLE, book.id)
+                if (! savedBook) {
+                    appendToDownloadQueue({
+                        'kind': book.type,
+                        'id': book.id,
+                        'size': parseInt(book.pages)
+                    })
+                }
+                await databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
             }
-            await databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
+            singleFunctionRunning()
+            booksToKeep = new Set(json.map(e => e.id))
         }
-        singleFunctionRunning()
 
         // find out what we need to delete
-        let booksToKeep = new Set(json.map(e => e.id))
         let booksInDatabase = await databaseLoadDistinct(REQUESTS_TABLE, ID_INDEX)
         let booksToDelete = [...booksInDatabase].filter(id => id && !booksToKeep.has(id))
         booksToDelete.forEach(id => deleteBookFromDatabase(id))
 
         // mark completely downloaded books in response
-        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
-        let responseJson = json.map(book => {
-            if (completelyDownloadedBooks.has(book.id)) {
-                book["downloaded"] = true
-            } else {
-                book["downloaded"] = false
-            }
-            return book
-        })
-        let responseText = JSON.stringify(responseJson)
+        let responseText = ""
+        if (json) {
+            let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+            let responseJson = json.map(book => {
+                if (completelyDownloadedBooks.has(book.id)) {
+                    book["downloaded"] = true
+                } else {
+                    book["downloaded"] = false
+                }
+                return book
+            })
+
+            responseText = JSON.stringify(responseJson)
+        }
         return new Response(responseText, {headers: new Headers(savedEntity.headers)})
     } else {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
         let responseText = await databaseResponse.response.text()
         let responseJson = JSON.parse(responseText)
+        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+        let booksOnDevice = []
         for (var i = 0; i < responseJson.length; i++) {
             let book = responseJson[i]
-            let latestProgress = await databaseLoad(PROGRESS_TABLE, book.id)
-            book.progress = latestProgress.position
+            if (completelyDownloadedBooks.has(book.id)) {
+                let latestProgress = await databaseLoad(PROGRESS_TABLE, book.id)
+                book.progress = latestProgress.position
+                booksOnDevice.push(book)
+            }
         }
-        let newResponseText = JSON.stringify(responseJson)
+        let newResponseText = JSON.stringify(booksOnDevice)
 
         return new Response(newResponseText, {headers: new Headers(databaseResponse.headers)})
     }
@@ -556,13 +577,29 @@ function saveResponseToDatabase(url, bookId) {
 async function downloadFromQueue() {
     let o = popFromDownloadQueue()
     if (o) {
-        if (o.kind === 'book') {
-            await downloadBook(o)
+        console.log("downloading from queue", o)
+        try {
+            if (o.kind === 'book') await downloadBook(o)
+            else if (o.kind === 'bookResource') await downloadBookResource(o)
+            else if (o.kind === 'bookSection') await downloadBookSection(o)
+            else if (o.kind === 'comic') await downloadComic(o)
+            else if (o.kind === 'imageData') await downloadImageData(o)
+        } catch (error) {
+            console.log(error)
+            /*console.log("failed to download, reenqueuing")
+            if (o.retries == undefined || o.retries < MAXIMUM_DOWNLOAD_RETRIES) {
+                o.retries = o.retries ? o.retries + 1 : 1
+                pushToDownloadQueue(o)
+            }*/
+            if (o.kind === 'book' || o.kind === 'bookSection' || o.kind === 'comic' || o.kind === 'imageData') {
+                pushToDownloadQueue(o)
+                return false
+            } else {
+                // just ignore issue and continue
+                return true
+            }
+
         }
-        else if (o.kind === 'bookResource') await downloadBookResource(o)
-        else if (o.kind === 'bookSection') await downloadBookSection(o)
-        else if (o.kind === 'comic') await downloadComic(o)
-        else if (o.kind === 'imageData') await downloadImageData(o)
     }
     return o
 }
@@ -624,10 +661,18 @@ async function downloadBookSection(o) {
         let resource = resources[i]
         pushToDownloadQueue({
             'kind': 'bookResource',
-            'url': '/' + resource
+            'url': resource
         })
     }
 }
+
+/*function getUrl(resource) {
+    if (resource.startsWith('http')) {
+        return resource
+    } else {
+        return '/' + resource
+    }
+}*/
 
 async function downloadBookResource(o) {
     if (! o.kind === 'bookResource') return

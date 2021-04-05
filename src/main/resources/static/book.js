@@ -48,11 +48,14 @@ function getPageFor(position, withIndex = false) {
 }
 
 function getRemainingPagesInChapter() {
-    let fromPosition = document.currentPage.end
-    if (document.section != null && document.section.start <= fromPosition && fromPosition <= document.section.end) {
-        let currentNode = document.section.leafAtPosition(fromPosition)
+    if (document.currentPage
+        && document.section != null
+        && document.section.start <= document.currentPage.end
+        && document.currentPage.end <= document.section.end) {
+
+        let currentNode = document.section.leafAtPosition(document.currentPage.end)
         let nextHeader = currentNode.nextNodeOfName("h1")
-        let startPage = getPageFor(fromPosition, true)
+        let startPage = getPageFor(document.currentPage.end, true)
         let endPage
         if (nextHeader) {
             endPage = getPageFor(nextHeader.start, true)
