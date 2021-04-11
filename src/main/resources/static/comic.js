@@ -174,68 +174,14 @@ function getMinimumZoom() {
     return document.imageSettings.minimumZoom
 }
 
-function evictOldest() {
-    if (document.comicPageCache) {
-        var oldest = null
-        var oldestPage = null
-        for (let [key, value] of Object.entries(document.comicPageCache)) {
-            if (oldest == null) {
-                oldest = value.timestamp
-                oldestPage = key
-            } else if (value.timestamp < oldest) {
-                oldest = value.timestamp
-                oldestPage = key
-            }
-        }
-        delete document.comicPageCache[oldestPage]
-    }
-}
-
-function getMaximumCacheSize() {
-    return 10
-}
-
-function getCacheSize() {
-    return Object.keys(document.comicPageCache).length
-}
-
-function addToCache(page, data) {
-    if (! document.comicPageCache) document.comicPageCache = {}
-    document.comicPageCache[page] = {
-        "timestamp": + new Date(),
-        "data": data
-    }
-    // evict some old data if cache is too large
-    while (getCacheSize() > getMaximumCacheSize()) {
-        evictOldest()
-    }
-}
-
-function getFromCache(page) {
-    if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
-        return document.comicPageCache[page].data
-    } else {
-        return null
-    }
-}
-
-function cacheContains(page) {
-    if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
-        return true
-    } else {
-        return false
-    }
-}
-
 function downloadImageData(page, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200 && this.responseText.length > 0) {
                 var jsonResponse = JSON.parse(this.responseText)
-                addToCache(page, jsonResponse)
                 if (callback != null) {
-                    callback()
+                    callback(jsonResponse)
                 }
             } else {
                 reportError(this.status + " " + this.responseText)
@@ -250,16 +196,6 @@ function updateDownloadUrl() {
     var url = "downloadPage?id=" + getBookId() + "&page=" + (getPositionInput()-1)
     var downloadLink = document.getElementById("downloadPageButton")
     downloadLink.href = url
-}
-
-function prefetch(page, callback) {
-    if (! cacheContains(page)) {
-        downloadImageData(page, callback)
-    } else {
-        if (callback != null) {
-            callback()
-        }
-    }
 }
 
 function getRgb(colorArray) {
@@ -292,10 +228,9 @@ function displayPage(page, callback) {
             img.src = data.image
         }
     }
-    downloadImageData(page, function() {
-        displayPageInternalCallback(getFromCache(page))
-    })
+    downloadImageData(page, displayPageInternalCallback)
 }
+
 function setPageTitle(title) {
     document.title = title
 }
