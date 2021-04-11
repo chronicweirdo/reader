@@ -243,3 +243,19 @@ function getRemoveProgressButton() {
     button.onclick = confirmationRequestFunction
     return [label, button]
 }
+
+function getBookId(bookPagesKey) {
+    let tokens = bookPagesKey.split("_")
+    if (tokens.length > 2) {
+        return parseInt(tokens[1])
+    } else {
+        return undefined
+    }
+}
+
+function cleanupBookPages(booksToKeep) {
+    let keysToDelete = Object.keys(window.localStorage).filter(k => k.startsWith("bookPages_")).filter(k => ! booksToKeep.includes(getBookId(k)))
+    for (let i = 0; i < keysToDelete.length; i++) {
+        window.localStorage.removeItem(keysToDelete[i])
+    }
+}
