@@ -194,6 +194,8 @@ self.addEventListener('fetch', e => {
         e.respondWith(handleRootRequest(e.request))
     } else if (url.pathname === '/search') {
         e.respondWith(handleSearchRequest(e.request))
+    } else if ((url.pathname === '/login' && e.request.method == 'POST') || (url.pathname === '/logout')) {
+        e.respondWith(handleLoginLogout(e.request))
     } else if (filesToCache.includes(url.pathname)) {
         e.respondWith(handleWebResourceRequest(e.request))
     } else {
@@ -239,6 +241,17 @@ async function resetApplication() {
 
     // unregister service worker
     self.registration.unregister()
+}
+
+async function handleLoginLogout(request) {
+    let serverResponse
+    try {
+        serverResponse = await fetch(request)
+        await resetApplication()
+    } catch (error) {
+        serverResponse = undefined
+    }
+    return serverResponse
 }
 
 async function updateResourceInCache(request) {
