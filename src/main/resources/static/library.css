@@ -8,10 +8,17 @@ body {
     word-wrap: break-word;
 }
 h1 {
-    margin: 1vw;
-    border-bottom: 4px dotted black;
+    padding: 1vw;
     font-weight: bold;
     font-size: 1.6em;
+    background-color: gold;
+}
+h1 > * {
+    margin-right: .2em;
+}
+h1 a {
+    text-decoration: underline;
+    color: black;
 }
 .tools {
     display: block;
