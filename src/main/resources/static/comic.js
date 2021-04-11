@@ -438,11 +438,23 @@ function downloadComicToDevice() {
     }
 }
 
+// <a id="downloadPageButton" href="">download</a><
+function getDownloadPageButton() {
+    let label = document.createElement('span')
+    label.innerHTML = ""
+    let button = document.createElement('a')
+    button.id = 'downloadPageButton'
+    button.innerHTML = 'download'
+
+    return [label, button]
+}
+
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     if (fullscreenAvailable()) {
         appendAll(settingsWrapper, getFullscreenButton())
     }
+    appendAll(settingsWrapper, getDownloadPageButton())
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
