@@ -30,7 +30,6 @@ import org.springframework.web.servlet.config.annotation.{ViewControllerRegistry
 @Configuration
 class MvcConfig extends WebMvcConfigurer {
   override def addViewControllers(registry: ViewControllerRegistry): Unit = {
-    registry.addViewController("/login").setViewName("login")
     registry.addRedirectViewController("/logout", "/login")
   }
 }
