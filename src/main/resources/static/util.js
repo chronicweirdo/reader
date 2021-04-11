@@ -259,3 +259,56 @@ function cleanupBookPages(booksToKeep) {
         window.localStorage.removeItem(keysToDelete[i])
     }
 }
+
+function fullscreenAvailable() {
+    return document.fullscreen != undefined
+     || document.mozFullScreen != undefined
+     || document.webkitIsFullScreen != undefined
+     || document.msFullscreenElement != undefined
+}
+
+function toggleFullscreen() {
+    var d = document.documentElement
+    console.log(d)
+    if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        }
+        else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        }
+        else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    } else {
+        if (d.requestFullscreen) {
+            console.log("requestFullscreen")
+            d.requestFullscreen()
+        }
+        else if (d.mozRequestFullScreen) {
+            console.log("mozRequestFullscreen")
+            d.mozRequestFullScreen()
+        }
+        else if (d.webkitRequestFullScreen) {
+            console.log("webkitRequestFullscreen")
+            d.webkitRequestFullScreen()
+        }
+        else if (d.msRequestFullscreen) {
+            console.log("msRequestFullscreen")
+            d.msRequestFullscreen()
+        }
+    }
+}
+
+function getFullscreenButton() {
+    let label = document.createElement('label')
+    label.innerHTML = "fullscreen"
+    let button = document.createElement('a')
+    button.innerHTML = 'toggle'
+
+    button.onclick = toggleFullscreen
+    return [label, button]
+}

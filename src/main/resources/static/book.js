@@ -449,6 +449,9 @@ function initSettings() {
             displayPageFor(currentPosition)
         })
     })
+    if (fullscreenAvailable()) {
+        appendAll(settingsWrapper, getFullscreenButton())
+    }
     appendAll(settingsWrapper, getRemoveProgressButton())
 }
 
