@@ -251,14 +251,14 @@ async function compute(section, start) {
     let previousEnd = firstEnd
     shadowContent.innerHTML = section.copy(start, end).getContent()
     let overflow = await scrollNecessaryPromise(shadowContent)
+    let variantB = getSetting(SETTING_PAGE_COMPUTATION_B)
 
     while ((!overflow) && (end < section.end)) {
         previousEnd = end
         end = section.findSpaceAfter(end)
         shadowContent.innerHTML = section.copy(start, end).getContent()
-        // TODO: following line seems to fix first page in section overflow computation issues but it may slow the
-        // computation too much to be worth it
-        if (section.start == start) await timeout(10)
+        // TODO: if not useful, remove variant b of page computation
+        if (variantB && section.start == start) await timeout(10)
         overflow = await scrollNecessaryPromise(shadowContent)
     }
 
@@ -407,6 +407,9 @@ function setZoom(zoom, withResize = true) {
 
 function getBookPagesCacheKey() {
     var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM)
+    if (getSetting(SETTING_PAGE_COMPUTATION_B)) {
+        pagesKey = pagesKey + "_b"
+    }
     return pagesKey
 }
 
@@ -433,12 +436,19 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
+    appendAll(settingsWrapper, getSettingController(SETTING_PAGE_COMPUTATION_B))
     addSettingListener(SETTING_DARK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_BOOK_ZOOM, setZoom)
+    addSettingListener(SETTING_PAGE_COMPUTATION_B, function () {
+        document.savedPages = null
+        loadProgress(function(currentPosition) {
+            displayPageFor(currentPosition)
+        })
+    })
     appendAll(settingsWrapper, getRemoveProgressButton())
 }
 
