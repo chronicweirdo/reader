@@ -204,10 +204,11 @@ function getRgb(colorArray) {
 
 function displayPage(page, callback) {
     var timestamp = + new Date()
-    showSpinner()
+
     document.pageDisplayTimestamp = timestamp
     var displayPageInternalCallback = function(data) {
         if (document.pageDisplayTimestamp == timestamp) {
+            document.pageDisplayTimestamp = null
             hideSpinner()
             var img = getImage()
             img.onload = function() {
@@ -229,6 +230,11 @@ function displayPage(page, callback) {
         }
     }
     downloadImageData(page, displayPageInternalCallback)
+    window.setTimeout(function() {
+        if (document.pageDisplayTimestamp == timestamp) {
+            showSpinner()
+        }
+    }, 100)
 }
 
 function setPageTitle(title) {
