@@ -30,6 +30,7 @@ h1 a {
     padding-bottom: 1em;
     text-align: center;
     max-width: 100%;
+    border-bottom: 2px solid white;
 }
 #collections {
     position: absolute;
@@ -113,7 +114,10 @@ only screen and (min-resolution: 120dpi)*/
     .imgdiv {
         width: 30vw;
         height: 50vw;
-        margin: 1vw 0 1vw 1vw;
+        margin: 2vw 0 2vw 2vw;
+    }
+    h1 {
+        padding: 2vw;
     }
 }
 .imgdiv img {
@@ -165,4 +169,5 @@ only screen and (min-resolution: 120dpi)*/
     font-style: italic;
     text-align: center;
     border: 0;
+    background-color: white;
 }
