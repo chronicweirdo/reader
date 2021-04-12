@@ -350,7 +350,6 @@ function initBookCollectionLinks() {
     let collectionParagraph = document.getElementById('ch_collection')
     if (collectionParagraph) {
         let collection = collectionParagraph.firstChild.innerHTML
-        console.log(collection)
         collectionParagraph.innerHTML = ''
         addCollectionLinkTokens(collectionParagraph, collection, '\\', searchLinkBuildHrefFunction)
     }

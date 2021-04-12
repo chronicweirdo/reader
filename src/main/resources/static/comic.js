@@ -62,7 +62,7 @@ function getZoomJumpValue() {
     if (zoomJump) {
         return parseFloat(zoomJump)
     } else {
-        return 2.5
+        return 1.0
     }
 }
 
