@@ -13,6 +13,9 @@ h1 {
     font-size: 1.6em;
     background-color: gold;
 }
+.collection-container ~ .collection-container {
+    margin-top: 1vw;
+}
 h1 > * {
     margin-right: .2em;
 }
@@ -30,6 +33,7 @@ h1 a {
     padding-bottom: 1em;
     text-align: center;
     max-width: 100%;
+    border-top: 2px solid white;
     border-bottom: 2px solid white;
 }
 #collections {
@@ -87,7 +91,7 @@ h1 a {
     height: 25vw;
     overflow: hidden;
     text-decoration: none;
-    margin: 1vw 0 1vw 1vw;
+    margin: 1vw 0 0 1vw;
 }
 #spinner {
     position: fixed;
@@ -114,10 +118,13 @@ only screen and (min-resolution: 120dpi)*/
     .imgdiv {
         width: 30vw;
         height: 50vw;
-        margin: 2vw 0 2vw 2vw;
+        margin: 2vw 0 0 2vw;
     }
     h1 {
         padding: 2vw;
+    }
+    .collection-container ~ .collection-container {
+        margin-top: 2vw;
     }
 }
 .imgdiv img {
