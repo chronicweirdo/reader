@@ -42,7 +42,7 @@
             </ul>
         </div>
         <p class="ch_toc_separator"></p>
-        <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+        <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Book Title</h1>
         <p><span>progress:</span><span id="positionInput"></span></p>
         <p id="pagesLeft"></p>

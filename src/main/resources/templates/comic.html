@@ -27,7 +27,7 @@
 <div id="ch_canv"></div>
 <div id="ch_tools_container">
     <div id="ch_tools">
-        <p th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+        <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Comic Title</h1>
         <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
         <p><a onclick="toggleSettings()">settings</a></p>

@@ -458,6 +458,7 @@ window.onload = function() {
 
     initSettings()
     initFullscreenButton()
+    initBookCollectionLinks()
 
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1

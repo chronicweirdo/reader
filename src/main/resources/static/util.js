@@ -319,3 +319,39 @@ function initFullscreenButton() {
         }
     }
 }
+
+function triggerSearchBuildHrefFunction(currentSearch) {
+    return "javascript:triggerSearch('" + currentSearch + "')"
+}
+
+function searchLinkBuildHrefFunction(currentSearch) {
+    return "/?search=" + encodeURIComponent(currentSearch)
+}
+
+function addCollectionLinkTokens(parent, collection, searchSeparator, buildHrefFunction) {
+    let tokens = collection.split('\\')
+    let currentSearch = ""
+    for (let i = 0; i < tokens.length; i++) {
+        if (i > 0) {
+            let slash = document.createElement("span")
+            slash.innerHTML = "\\"
+            parent.appendChild(slash)
+            currentSearch += searchSeparator
+        }
+        let a = document.createElement("a")
+        currentSearch += tokens[i]
+        a.href = buildHrefFunction(currentSearch)
+        a.innerHTML = tokens[i]
+        parent.appendChild(a)
+    }
+}
+
+function initBookCollectionLinks() {
+    let collectionParagraph = document.getElementById('ch_collection')
+    if (collectionParagraph) {
+        let collection = collectionParagraph.firstChild.innerHTML
+        console.log(collection)
+        collectionParagraph.innerHTML = ''
+        addCollectionLinkTokens(collectionParagraph, collection, '\\', searchLinkBuildHrefFunction)
+    }
+}

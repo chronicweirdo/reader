@@ -58,24 +58,6 @@ function getCollectionId(collection) {
     else return encodeURIComponent(collection)
 }
 
-function addCollectionComponents(heading, collection) {
-    let tokens = collection.split('\\')
-    let currentSearch = ""
-    for (let i = 0; i < tokens.length; i++) {
-        if (i > 0) {
-            let slash = document.createElement("span")
-            slash.innerHTML = "\\"
-            heading.appendChild(slash)
-            currentSearch += "\\\\"
-        }
-        let a = document.createElement("a")
-        currentSearch += tokens[i]
-        a.href = "javascript:triggerSearch('" + currentSearch + "')"
-        a.innerHTML = tokens[i]
-        heading.appendChild(a)
-    }
-}
-
 function getCollectionHtml(collection) {
     var collectionId = getCollectionId(collection)
     var div = document.createElement("div")
@@ -83,7 +65,7 @@ function getCollectionHtml(collection) {
     div.classList.add("collection-container")
     if (collection.length > 0) {
         var h1 = document.createElement("h1")
-        addCollectionComponents(h1, collection)
+        addCollectionLinkTokens(h1, collection, '\\\\', triggerSearchBuildHrefFunction)
         div.appendChild(h1)
     }
     return div

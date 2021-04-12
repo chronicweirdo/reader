@@ -457,6 +457,7 @@ window.onload = function() {
     initTableOfContents()
     initSettings()
     initFullscreenButton()
+    initBookCollectionLinks()
 
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({
