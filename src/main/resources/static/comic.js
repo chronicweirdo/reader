@@ -267,12 +267,17 @@ function isBeginningOfColumn() {
     return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0, getColumnThreshold())
 }
 
+function getLastPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
+    return viewportDimension - imageDimension
+}
+
 function getNextPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
     if (approx(imageValue, viewportDimension - imageDimension, threshold)) return 0
-    var proposedNextPosition = (imageValue - viewportDimension *  viewportJumpPercentage) | 0
+    var proposedNextPosition = (imageValue - viewportDimension * viewportJumpPercentage) | 0
     if (proposedNextPosition < viewportDimension - imageDimension) return viewportDimension - imageDimension
     return proposedNextPosition
 }
+
 function getPreviousPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
     if (approx(imageValue, 0, threshold)) return viewportDimension - imageDimension
     var proposedPreviousPosition = (imageValue + viewportDimension * viewportJumpPercentage) | 0
@@ -292,9 +297,11 @@ function goToNextPage() {
     }
 }
 
-function goToPreviousPage() {
+function goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
     if (getPositionInput() > 1) {
         displayPage(getPositionInput() - 1, function() {
+            if (proposedLeft) setImageLeft(proposedLeft)
+            if (proposedTop) setImageTop(proposedTop)
             updateImage()
         })
     }
@@ -318,7 +325,9 @@ function goToNextView() {
 function goToPreviousView() {
     if (isBeginningOfRow()) {
         if (isBeginningOfColumn()) {
-            goToPreviousPage()
+            let lastLeft = getLastPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold())
+            let lastTop = getLastPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold())
+            goToPreviousPage(lastLeft, lastTop)
         } else {
             setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
             setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
