@@ -303,12 +303,19 @@ function toggleFullscreen() {
     }
 }
 
-function getFullscreenButton() {
-    let label = document.createElement('label')
-    label.innerHTML = "fullscreen"
-    let button = document.createElement('a')
-    button.innerHTML = 'toggle'
-
-    button.onclick = toggleFullscreen
-    return [label, button]
+function initFullscreenButton() {
+    if (fullscreenAvailable()) {
+        let p = document.createElement('p')
+        let a = document.createElement('a')
+        a.innerHTML = 'fullscreen'
+        a.onclick = toggleFullscreen
+        p.appendChild(a)
+        let tools = document.getElementById('ch_tools')
+        let backButton = document.getElementById('ch_back')
+        if (backButton) {
+            tools.insertBefore(p, backButton)
+        } else {
+            tools.appendChild(p)
+        }
+    }
 }

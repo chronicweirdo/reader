@@ -449,9 +449,6 @@ function initSettings() {
             displayPageFor(currentPosition)
         })
     })
-    if (fullscreenAvailable()) {
-        appendAll(settingsWrapper, getFullscreenButton())
-    }
     appendAll(settingsWrapper, getRemoveProgressButton())
 }
 
@@ -459,6 +456,7 @@ window.onload = function() {
     fixComponentHeights()
     initTableOfContents()
     initSettings()
+    initFullscreenButton()
 
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({

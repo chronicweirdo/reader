@@ -401,9 +401,6 @@ function getDownloadPageButton() {
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    if (fullscreenAvailable()) {
-        appendAll(settingsWrapper, getFullscreenButton())
-    }
     appendAll(settingsWrapper, getDownloadPageButton())
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
@@ -460,6 +457,7 @@ window.onload = function() {
     setZoom(1.0)
 
     initSettings()
+    initFullscreenButton()
 
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
