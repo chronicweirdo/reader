@@ -17,10 +17,8 @@ var db
 function getDb() {
     return new Promise((resolve, reject) => {
         if (! db) {
-            //console.log("initializing db")
             const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION)
             request.onerror = function(event) {
-                //console.log(event)
                 reject()
             }
             request.onsuccess = function(event) {
@@ -28,7 +26,6 @@ function getDb() {
                 resolve(event.target.result)
             }
             request.onupgradeneeded = function(event) {
-                //console.log("upgrade db")
                 let localDb = event.target.result
                 var requestsStore = localDb.createObjectStore(REQUESTS_TABLE, {keyPath: 'url'})
                 requestsStore.createIndex(ID_INDEX, ID_INDEX, { unique: false })
@@ -42,7 +39,7 @@ function getDb() {
     })
 }
 
-getDb().then(db => console.log("initialized database"))
+getDb()
 
 var downloadQueue = []
 
@@ -67,7 +64,6 @@ function pushToDownloadQueue(o) {
 }
 
 function popFromDownloadQueue() {
-    console.log(downloadQueue)
     let prioIndex = downloadQueue.findIndex(e => e.prioritary)
     if (prioIndex >= 0) {
         let result = downloadQueue[prioIndex]
@@ -149,30 +145,24 @@ function sleep(ms) {
 }
 
 async function singleFunctionRunning() {
-    console.log("trying to start single function")
     let existingWorker = await databaseFindFirst(() => true, WORKER_TABLE)
     let now = new Date()
     if (existingWorker) {
         // check if stale
         let timeDifference = Math.abs(existingWorker.date.getTime() - now.getTime())
         if (timeDifference < 60 * 1000) {
-            console.log("single function already running")
             return
         }
     }
 
     let methodId = now.getTime()
-    console.log("starting single function " + methodId)
     await databaseDeleteAll(WORKER_TABLE)
     await databaseSave(WORKER_TABLE, {'id': methodId})
     let running = true
     while (running) {
-        //console.log("single function " + methodId)
         running = await downloadFromQueue()
         await databaseSave(WORKER_TABLE, {'id': methodId})
-        //await sleep(1000)
     }
-    console.log("single function stopping " + methodId)
     await databaseDeleteAll(WORKER_TABLE)
 }
 
@@ -225,7 +215,6 @@ async function triggerStoreBook(id, kind, size) {
             'prioritary': true
         })
     } else {
-        //console.log(kind + " " + id + " already fully downloaded")
     }
 }
 
@@ -275,7 +264,6 @@ async function updateResourceInCache(request) {
 }
 
 async function handleWebResourceRequest(request) {
-    //console.log("updating web resource in cache " + request.url)
     // first try to get from cache
     let cacheResponse = await caches.match(request)
 
@@ -592,7 +580,6 @@ function saveResponseToDatabase(url, bookId) {
 async function downloadFromQueue() {
     let o = popFromDownloadQueue()
     if (o) {
-        console.log("downloading from queue", o)
         try {
             if (o.kind === 'book') await downloadBook(o)
             else if (o.kind === 'bookResource') await downloadBookResource(o)
@@ -600,12 +587,6 @@ async function downloadFromQueue() {
             else if (o.kind === 'comic') await downloadComic(o)
             else if (o.kind === 'imageData') await downloadImageData(o)
         } catch (error) {
-            console.log(error)
-            /*console.log("failed to download, reenqueuing")
-            if (o.retries == undefined || o.retries < MAXIMUM_DOWNLOAD_RETRIES) {
-                o.retries = o.retries ? o.retries + 1 : 1
-                pushToDownloadQueue(o)
-            }*/
             if (o.kind === 'book' || o.kind === 'bookSection' || o.kind === 'comic' || o.kind === 'imageData') {
                 pushToDownloadQueue(o)
                 return false
@@ -625,11 +606,8 @@ async function downloadBook(o) {
     let url = '/book?id=' + o.id
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
-        //console.log("saving " + url)
         let response = await fetch(url)
         let savedResponse = await saveActualResponseToDatabase(response)
-    } else {
-        //console.log(url + " already saved")
     }
 
     pushToDownloadQueue({
@@ -645,10 +623,7 @@ async function downloadBookSection(o) {
 
     let url = '/bookSection?id=' + o.id + "&position=" + o.position
     let entity = await databaseLoad(REQUESTS_TABLE, url)
-    if (entity) {
-        //console.log(url + " already saved")
-    } else {
-        //console.log("saving " + url)
+    if (! entity) {
         let response = await fetch(url)
         entity = await saveActualResponseToDatabase(response)
     }
@@ -664,7 +639,6 @@ async function downloadBookSection(o) {
         })
     } else {
         let savedBook = await databaseSave(BOOKS_TABLE, {'id': o.id})
-        //console.log("finished saving book " + o.id)
     }
 
     // add resources download, if they exist
@@ -681,24 +655,13 @@ async function downloadBookSection(o) {
     }
 }
 
-/*function getUrl(resource) {
-    if (resource.startsWith('http')) {
-        return resource
-    } else {
-        return '/' + resource
-    }
-}*/
-
 async function downloadBookResource(o) {
     if (! o.kind === 'bookResource') return
 
     let resourceEntity = await databaseLoad(REQUESTS_TABLE, o.url)
     if (! resourceEntity) {
-        //console.log("saving " + o.url)
         let resourceResponse = await fetch(o.url)
         await saveActualResponseToDatabase(resourceResponse)
-    } else {
-        //console.log(o.url + " already saved")
     }
 }
 
@@ -708,11 +671,8 @@ async function downloadComic(o) {
     let url = '/comic?id=' + o.id
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
-        //console.log("saving " + url)
         let response = await fetch(url)
         let savedResponse = await saveActualResponseToDatabase(response)
-    } else {
-        //console.log(url + " already saved")
     }
     pushToDownloadQueue({
         'kind': 'imageData',
@@ -727,10 +687,7 @@ async function downloadImageData(o) {
 
     let url = '/imageData?id=' + o.id + '&page=' + o.position
     let entity = await databaseLoad(REQUESTS_TABLE, url)
-    if (entity) {
-        //console.log(url + " already on device")
-    } else {
-        //console.log("saving " + url)
+    if (! entity) {
         let response = await fetch(url)
         let savedResponse = await saveActualResponseToDatabase(response)
     }
@@ -745,7 +702,6 @@ async function downloadImageData(o) {
         })
     } else {
         let savedBook = await databaseSave(BOOKS_TABLE, {'id': o.id})
-        //console.log("finished saving comic " + o.id)
     }
 }
 
