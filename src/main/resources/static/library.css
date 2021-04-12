@@ -94,7 +94,7 @@ h1 a {
     bottom: 0;
     right: 0;
     width: 5vw;
-    height: 5vw;
+    height: 8vw;
     display: none;
     z-index: 1000;
 }
@@ -109,7 +109,7 @@ only screen and (min-resolution: 120dpi)*/
 {
     #spinner {
         width: 15vw;
-        height: 15vw;
+        height: 25vw;
     }
     .imgdiv {
         width: 30vw;
