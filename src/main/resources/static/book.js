@@ -273,18 +273,46 @@ async function compute(section, start) {
     }
 }
 
+function getBookStyleSheet() {
+    let styleSheets = window.document.styleSheets
+    for (let i = 0; i < styleSheets.length; i++) {
+        if (styleSheets[i].href.endsWith("book.css")) {
+            return styleSheets[i]
+        }
+    }
+}
+
 function setDarkMode() {
     let background = getSetting(SETTING_DARK_MODE_BACKGROUND)
     let foreground = getSetting(SETTING_DARK_MODE_FOREGROUND)
-    document.body.style.color = foreground
-    document.body.style.backgroundColor = background
+    setUiColors(foreground, background)
+}
+
+function createDynamicStyleSheet() {
+    var sheet = (function() {
+        var style = document.createElement("style");
+        // WebKit hack
+        style.appendChild(document.createTextNode(""));
+        document.head.appendChild(style);
+        return style.sheet;
+    })();
+    document.dynamicStyleSheet = sheet
 }
 
 function setLightMode() {
     let background = getSetting(SETTING_LIGHT_MODE_BACKGROUND)
     let foreground = getSetting(SETTING_LIGHT_MODE_FOREGROUND)
-    document.body.style.color = foreground
-    document.body.style.backgroundColor = background
+    setUiColors(foreground, background)
+}
+
+function setUiColors(foreground, background) {
+    let bookStyleSheet = document.dynamicStyleSheet
+    if (bookStyleSheet) {
+        while (bookStyleSheet.cssRules.length > 0) bookStyleSheet.deleteRule(0)
+        bookStyleSheet.insertRule('body { color: ' + foreground + '; background-color: ' + background + '; }', 0)
+        bookStyleSheet.insertRule('a { color: ' + foreground + '; }', 0)
+        bookStyleSheet.insertRule('table, th, td { border-color: ' + foreground + '; }', 0)
+    }
 }
 
 function initializeMode() {
@@ -453,6 +481,7 @@ function initSettings() {
 }
 
 window.onload = function() {
+    createDynamicStyleSheet()
     fixComponentHeights()
     initTableOfContents()
     initSettings()

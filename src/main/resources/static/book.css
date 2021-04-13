@@ -13,7 +13,7 @@ body {
 }
 
 html {
-  height: -webkit-fill-available;
+    height: -webkit-fill-available;
 }
 #ch_content, #ch_shadow_content {
     width: 80vw;
@@ -35,4 +35,7 @@ a {
     color: blue;
     text-decoration: underline;
     cursor: pointer;
+}
+table, th, td {
+    border: 1px solid black;
 }
