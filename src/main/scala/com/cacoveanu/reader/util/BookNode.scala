@@ -14,7 +14,9 @@ object BookNode {
 
   // if it starts and ends with angle brackets
   private def isTag(str: String) = "^</?[^>]+>$".r matches str
-  private def isComment(str: String) = "^<!\\-\\-[^>]+\\-\\->$".r matches str
+  private def isComment(str: String) = "^<!\\-\\-.+\\-\\->$".r matches str
+  private def insideComment(str: String) = str.startsWith("<!--")
+  private def commentEnd(str: String) = str.endsWith("-->")
   private def isEndTag(str: String) = "^</[^>]+>$".r matches str
   private def isBothTag(str: String) = "^<[^>/]+/>$".r matches str
   private def getTagName(str: String) = "</?([^>\\s]+)".r findFirstMatchIn str match {
@@ -39,7 +41,7 @@ object BookNode {
     for (i <- 0 until body.length) {
       val c = body(i)
 
-      if (c == '<') {
+      if (c == '<' && !insideComment(content)) {
         // starting a new tag
         // save what we have in content
         if (isTag(content)) throw new Throwable("this should not happen")
@@ -56,38 +58,51 @@ object BookNode {
       content += c
 
       if (c == '>') {
-        // ending a tag
-        if (isTag(content)) {
-          val name = getTagName(content)
-          // if it's comment, ignore
-          if (isComment(content)) {
-            // ignoring comment
-          } else if (isEndTag(content)) {
-            // we check that this tag closes the current node correctly
-            if (isVoidElement(name)) {
-              // the last child should have the correct name
-              if (name != current.children.last.name) throw new Throwable("incompatible end for void tag")
-              else {
-                current.children.last.content += content
-              }
-            } else {
-              // the current node should have the correct name, and it is getting closed
-              if (name != current.name) throw new Throwable("incompatible end tag " + current.name)
-              // move current node up
-              current = current.parent
-            }
-          } else if (isBothTag(content) || isVoidElement(name)) {
-            // just add this tag without content
-            current.addChild(new BookNode(name, content))
+        if (insideComment(content)) {
+          if (commentEnd(content)) {
+            // we ignore comment by clearing content
+            content = ""
           } else {
-            // a start tag
-            val newNode = new BookNode(name, content)
-            current.addChild(newNode)
-            current = newNode
+            // we ignore and continue accumulating
           }
-          // reset content
-          content = ""
-        } else throw new Throwable("wild > encountered")
+        } else {
+          // ending a tag
+          if (isTag(content)) {
+            val name = getTagName(content)
+            // if it's comment, ignore
+            if (isComment(content)) {
+              // ignoring comment
+            } else if (isEndTag(content)) {
+              // we check that this tag closes the current node correctly
+              if (isVoidElement(name)) {
+                // the last child should have the correct name
+                if (name != current.children.last.name) throw new Throwable("incompatible end for void tag")
+                else {
+                  current.children.last.content += content
+                }
+              } else {
+                // the current node should have the correct name, and it is getting closed
+                if (name != current.name) {
+                  throw new Throwable("incompatible end tag " + current.name)
+                }
+                // move current node up
+                current = current.parent
+              }
+            } else if (isBothTag(content) || isVoidElement(name)) {
+              // just add this tag without content
+              current.addChild(new BookNode(name, content))
+            } else {
+              // a start tag
+              val newNode = new BookNode(name, content)
+              current.addChild(newNode)
+              current = newNode
+            }
+            // reset content
+            content = ""
+          } else {
+            throw new Throwable("wild > encountered")
+          }
+        }
       }
     }
     // add the last text node, if there is still such a thing remaining
