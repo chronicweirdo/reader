@@ -2,8 +2,9 @@ package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{BookTocEntry, Content, TocNode}
 import com.cacoveanu.reader.service.{BookService, ContentService}
-import com.cacoveanu.reader.util.{FileTypes, FileUtil, WebUtil}
+import com.cacoveanu.reader.util.{BookNode, FileTypes, FileUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.{HttpHeaders, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
@@ -20,12 +21,10 @@ class BookController @Autowired()(private val contentService: ContentService,
   def loadBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(book) =>
-        val progress = bookService.loadProgress(book)
         model.addAttribute("id", id)
         model.addAttribute("size", book.size)
         model.addAttribute("title", book.title)
         model.addAttribute("collection", book.collection)
-        model.addAttribute("startPosition", progress.map(p => p.position).getOrElse(0))
         model.addAttribute("bookStart", 0)
         model.addAttribute("bookEnd", book.size - 1)
         val tocTree = TocNode.getTocTree(book.toc.asScala.toSeq)
@@ -37,10 +36,13 @@ class BookController @Autowired()(private val contentService: ContentService,
 
   @RequestMapping(Array("/bookSection"))
   @ResponseBody
-  def loadBookSection(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long) = {
+  def loadBookSection(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long): ResponseEntity[BookNode] = {
     val sectionStartPosition = contentService.findStartPositionForSectionContaining(id, position)
     val node = contentService.loadBookSection(id, sectionStartPosition)
-    node
+    val headers = new HttpHeaders()
+    headers.set("sectionStart", node.start.toString)
+    headers.set("sectionEnd", node.end.toString)
+    ResponseEntity.ok().headers(headers).body(node)
   }
 
   @RequestMapping(Array("/bookResource"))
@@ -49,29 +51,6 @@ class BookController @Autowired()(private val contentService: ContentService,
       .map(content => WebUtil.toResponseEntity(content.mediaType, content.data))
       .getOrElse(WebUtil.notFound)
   }
-
-  @RequestMapping(Array("/openBook"))
-  @ResponseBody
-  def open(@RequestParam("id") bookId: java.lang.Long) = {
-    bookService.loadBook(bookId) match {
-      case Some(book) => FileUtil.getExtension(book.path) match {
-        case FileTypes.CBR =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.CBZ =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.PDF =>
-          new RedirectView(s"/comic?id=$bookId")
-
-        case FileTypes.EPUB =>
-          new RedirectView(s"/book?id=$bookId")
-      }
-
-      case _ => new RedirectView("/error")
-    }
-  }
-
 }
 
 case class UiToc(@BeanProperty index: Int, @BeanProperty title: String, @BeanProperty position: Long)

@@ -24,6 +24,7 @@ and mobile devices.
 ## Features
 
 - supports reading CBR, CBZ, PDF and EPUB files
+- store latest read books on device for offline reading
 - scan and monitor a library folder for supported file types
 - open and display supported file types in browser
 - keep track of position user has reached in a comic book or ebook
@@ -32,6 +33,7 @@ and mobile devices.
 - view books and comic books organized by collections (the subfolders they
 are stored in on disk)
 - search for comic books and ebooks
+- supports device specific settings for book background and foreground colors, book dark mode, number of books saved on device
 - add multiple users
 - import or export users and book progress information
 - change password functionality

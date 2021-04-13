@@ -40,6 +40,18 @@
     width: 100%;
     height: 100%;
     background-color: #1a1a1add;
+    text-align: center;
+}
+#ch_spinner a {
+    font-family: 'Roboto', sans-serif;
+    font-size: 48px;
+    color: gold;
+}
+#ch_errorPanel {
+    margin-top: 24px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    color: gold;
 }
 /* -------------------------------------------------------------- spinner end */
 
@@ -213,42 +225,43 @@
 }
 /* ---------------------------------------------------- table of contents end */
 
-/* ------------------------------------------------------ zoom controls start */
-#ch_tools > .ch_zoom_controls > * {
-    display: inline-block;
-    line-height: 2rem;
-    height: 2rem;
-    width: 3rem;
-    min-width: 2rem;
-    vertical-align: top;
-    margin-bottom: 8px;
+/* ----------------------------------------------------------- position start */
+#ch_settings {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap:5px;
+    padding: 8px;
+    display: none;
+    align-items: center;
+    justify-items: start;
+    border: 4px dotted black;
 }
-#ch_tools.left > .ch_zoom_controls > * {
-    margin-left: 8px;
-    margin-right: 0;
+
+#ch_tools.right #ch_settings {
+    justify-items: end;
 }
-#ch_tools.right > .ch_zoom_controls > * {
-    margin-left: 0;
-    margin-right: 8px;
-    padding-left: 8px;
+
+#ch_settings label:after {
+    content: ": "
 }
-#ch_tools > .ch_zoom_controls > a {
-    text-align: center;
-    background-color: gold;
-    color: black;
-    border: 2px solid rgb(255, 236, 133);
+
+#ch_settings input {
+    height: 3vh;
+}
+
+#ch_settings input[type=checkbox] {
+    width: 3vh;
+}
+
+#ch_settings a {
+    color: gold;
     text-decoration: none;
 }
-#ch_tools > .ch_zoom_controls > .ch_set_zoom {
-    font-family: 'Merriweather', serif;
-}
-#ch_tools > .ch_zoom_controls > .selected {
-    background-color: black;
-    color: gold;
-}
-/* -------------------------------------------------------- zoom controls end */
 
-/* ----------------------------------------------------------- position start */
+#ch_settings a.critical {
+    color: orangered;
+}
+
 #ch_tools > p > input {
     font-size: 1em;
     background-color: gold;

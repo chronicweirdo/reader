@@ -12,6 +12,8 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getContent = getContent
   this.updatePositions = updatePositions
   this.getLength = getLength
+  this.nextNode = nextNode
+  this.nextNodeOfName = nextNodeOfName
   this.nextLeaf = nextLeaf
   this.previousLeaf = previousLeaf
   this.leafAtPosition = leafAtPosition
@@ -21,6 +23,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.findSpaceAfter = findSpaceAfter
   this.findSpaceBefore = findSpaceBefore
   this.copy = copy
+  this.getResources = getResources
 }
 
 var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image"]
@@ -233,6 +236,39 @@ function parse(html) {
   return null
 }
 
+function nextNode() {
+    // is this a leaf?
+    var current = this
+    if (current.children.length == 0) {
+        // go up the parent line until we find next sibling
+        var parent = current.parent
+        while (parent != null && parent.children.indexOf(current) == parent.children.length - 1) {
+            current = parent
+            parent = current.parent
+        }
+        if (parent != null) {
+            // we have the next sibling node
+            current = parent.children[parent.children.indexOf(current) + 1]
+            return current
+        } else {
+            // we have reached root, this was the last leaf, there is no other
+            return null
+        }
+    } else {
+        current = current.children[0]
+        return current
+    }
+}
+
+function nextNodeOfName(name) {
+    let current = this.nextNode()
+    while (current != null) {
+        if (current.name == name) return current
+        current = current.nextNode()
+    }
+    return null
+}
+
 function nextLeaf() {
   // is this a leaf?
   var current = this
@@ -407,6 +443,29 @@ function convert(object) {
         node.children.push(childNode)
     }
     return node
+}
+
+function getResources() {
+    if (this.name === 'img') {
+        var rg = /src="([^"]+)"/g
+        return [...this.content.matchAll(rg)].map(m => m[1])
+    } else if (this.name === 'image') {
+        var rg = /xlink:href="([^"]+)"/g
+        return [...this.content.matchAll(rg)].map(m => m[1])
+    } else if (this.name === 'a') {
+        var rgHref = /href="([^"]+)"/g
+        return [...this.content.matchAll(rgHref)].map(m => m[1])
+    } else if (this.name === "tr") {
+        var rgSrc = /src="([^"]+)"/g
+        var rgHref = /href="([^"]+)"/g
+        return [...this.content.matchAll(rgSrc)].map(m => m[1]).concat(
+            [...this.content.matchAll(rgHref)].map(m => m[1])
+        )
+    } else if (this.children.length > 0) {
+        return this.children.flatMap(c => c.getResources())
+    } else {
+        return []
+    }
 }
 
 var isNode = new Function("try {return this===global;}catch(e){return false;}")

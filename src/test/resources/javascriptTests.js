@@ -482,6 +482,9 @@ fs.readFile(filePath, 'utf8', function (err, data) {
     testCopy(tree)
     testCopy2(tree)
     testConvert(tree)
+    testResources(tree)
+    testNextTraversal(tree)
+    testNextHeader(tree)
 })
 
 function testTreeParsingDoesNotLoseInformation(bodyString, tree) {
@@ -649,4 +652,38 @@ function testCopy2(tree) {
 function testConvert(tree) {
     var tree2 = bn.convert(parsedNodes)
     console.assert(tree2.getContent() == tree.getContent(), "converted content does not match")
+}
+
+function testResources(tree) {
+    var resources = tree.getResources()
+    console.assert(resources.length == 4, "failed to find all resources")
+}
+
+function testNextTraversal(tree) {
+    let expectedNodes = [['body', 0, 1111],['text', 0, 3],['p', 4, 23],['text', 4, 23],['text', 24, 27],['p', 28, 350],['text', 28, 350],['text', 351, 354],['h2', 355, 369],['text', 355, 369],['text', 370, 373],['p', 374, 506],['text', 374, 506],['text', 507, 510],['img', 511, 511],['text', 512, 515],['p', 516, 627],['text', 516, 627],['text', 628, 631],['p', 632, 731],['text', 632, 731],['text', 732, 735],['div', 736, 736],['text', 737, 740],['h2', 741, 770],['text', 741, 770],['text', 771, 774],['p', 775, 859],['text', 775, 792],['a', 793, 799],['text', 793, 799],['text', 800, 859],['text', 860, 863],['p', 864, 907],['text', 864, 907],['text', 908, 911],['img', 912, 912],['text', 913, 916],['h2', 917, 931],['text', 917, 931],['text', 932, 935],['img', 936, 936],['text', 937, 940],['p', 941, 1082],['text', 941, 1082],['text', 1083, 1086],['table', 1087, 1109],['text', 1087, 1092],['tr', 1093, 1093],['text', 1094, 1099],['tr', 1100, 1100],['text', 1101, 1106],['tr', 1107, 1107],['text', 1108, 1109],['text', 1110, 1111]]
+    let current = tree
+    let index = 0
+    while (current != null) {
+        console.assert(expectedNodes[index], "expected node missing for index " + index)
+        console.assert(current.name == expectedNodes[index][0], "node name in traversal does not match on index " + index)
+        console.assert(current.start == expectedNodes[index][1], "start position in traversal does not match on index " + index)
+        console.assert(current.end == expectedNodes[index][2], "end node position in traversal does not match on index " + index)
+        current = current.nextNode()
+        index = index + 1
+    }
+    console.assert(index == 55, "missing nodes in traversal")
+}
+
+function testNextHeader(tree) {
+    let p1 = tree.leafAtPosition(632)
+    let h1 = p1.nextNodeOfName("h2")
+    console.assert(h1 != null, "next header not found")
+    console.assert(h1.start == 741, "next header position incorrect")
+    let h2 = h1.nextNodeOfName("h2")
+    console.assert(h2 != null, "next header after next header not found")
+    console.assert(h2.start == 917, "next header after next header position incorrect")
+
+    let p2 = tree.leafAtPosition(1108)
+    let h3 = p2.nextNodeOfName("h2")
+    console.assert(h3 == null, "end of document not handled correctly in next header")
 }

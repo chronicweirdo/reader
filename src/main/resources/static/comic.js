@@ -1,10 +1,9 @@
-
-
 function pan(x, y) {
     setImageLeft(getImageLeft() + x)
     setImageTop(getImageTop() + y)
     updateImage()
 }
+
 function zoom(zoom, centerX, centerY) {
     var sideLeft = centerX - getImageLeft()
     var ratioLeft = sideLeft / (getImageWidth() * getZoom())
@@ -21,16 +20,7 @@ function zoom(zoom, centerX, centerY) {
     updateImage()
 }
 
-
 function updateImage() {
-    if (onMobile() && isAutoFullScreenEnabled()) {
-        if (isPageFitToScreen()) {
-            unmakeFullScreen()
-        } else {
-            makeFullScreen()
-        }
-    }
-
     var img = getImage()
 
     if (getZoom() < getMinimumZoom()) setZoom(getMinimumZoom())
@@ -50,18 +40,21 @@ function updateImage() {
     if (getImageTop() < minimumTop) setImageTop(minimumTop)
     if (getImageTop() > maximumTop) setImageTop(maximumTop)
 }
+
 function getImage() {
     return document.getElementsByTagName("img")[0]
 }
+
 function getRevertScrollZoom() {
-    return true
+    return getSetting(SETTING_COMIC_INVERT_SCROLL)
 }
+
 function getScrollSpeed() {
-    return .5 * .1
+    return getSetting(SETTING_COMIC_SCROLL_SPEED)
 }
 
 function getPanSpeed() {
-    return 3
+    return getSetting(SETTING_COMIC_PAN_SPEED)
 }
 
 function getZoomJumpValue() {
@@ -69,7 +62,7 @@ function getZoomJumpValue() {
     if (zoomJump) {
         return parseFloat(zoomJump)
     } else {
-        return 2.5
+        return 1.0
     }
 }
 
@@ -117,111 +110,81 @@ function setPage(page) {
 function setImageWidth(width) {
     getImage().width = width
 }
+
 function getImageWidth() {
     return getImage().width
 }
+
 function setImageHeight(height) {
     getImage().height = height
 }
+
 function getImageHeight() {
     return getImage().height
 }
+
 function getOriginalImageWidth() {
     return getImage().naturalWidth
 }
+
 function getOriginalImageHeight() {
     return getImage().naturalHeight
 }
+
 function getHorizontalJumpPercentage() {
     if (getViewportHeight() > getViewportWidth()) return .9
     else return .5
 }
+
 function getVerticalJumpPercentage() {
     if (getViewportHeight() > getViewportWidth()) return .5
     else return .9
 }
+
 function setImageLeft(left) {
     getImage().style.left = left + "px"
 }
+
 function getImageLeft() {
     return num(getImage().style.left, 0)
 }
+
 function setImageTop(top) {
     getImage().style.top = top + "px"
 }
+
 function getImageTop() {
     return num(getImage().style.top, 0)
 }
+
 function setZoom(zoom) {
     document.imageSettings.zoom = zoom
 }
+
 function getZoom() {
     return document.imageSettings.zoom
 }
+
 // minimum zoom is determined by image and viewport dimensions
 function updateMinimumZoom() {
     document.imageSettings.minimumZoom = Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
 }
+
 function getMinimumZoom() {
     return document.imageSettings.minimumZoom
-}
-
-function evictOldest() {
-    if (document.comicPageCache) {
-        var oldest = null
-        var oldestPage = null
-        for (let [key, value] of Object.entries(document.comicPageCache)) {
-            if (oldest == null) {
-                oldest = value.timestamp
-                oldestPage = key
-            } else if (value.timestamp < oldest) {
-                oldest = value.timestamp
-                oldestPage = key
-            }
-        }
-        delete document.comicPageCache[oldestPage]
-    }
-}
-function getMaximumCacheSize() {
-    return 10
-}
-function getCacheSize() {
-    return Object.keys(document.comicPageCache).length
-}
-function addToCache(page, data) {
-    if (! document.comicPageCache) document.comicPageCache = {}
-    document.comicPageCache[page] = {
-        "timestamp": + new Date(),
-        "data": data
-    }
-    // evict some old data if cache is too large
-    while (getCacheSize() > getMaximumCacheSize()) {
-        evictOldest()
-    }
-}
-function getFromCache(page) {
-    if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
-        return document.comicPageCache[page].data
-    } else {
-        return null
-    }
-}
-function cacheContains(page) {
-    if (document.comicPageCache && document.comicPageCache[page] && document.comicPageCache[page] != null) {
-        return true
-    } else {
-        return false
-    }
 }
 
 function downloadImageData(page, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200 && this.responseText.length > 0) {
-            var jsonResponse = JSON.parse(this.responseText)
-            addToCache(page, jsonResponse)
-            if (callback != null) {
-                callback()
+        if (this.readyState == 4) {
+            if (this.status == 200 && this.responseText.length > 0) {
+                var jsonResponse = JSON.parse(this.responseText)
+                if (callback != null) {
+                    callback(jsonResponse)
+                }
+            } else {
+                reportError(this.status + " " + this.responseText)
             }
         }
     }
@@ -235,26 +198,17 @@ function updateDownloadUrl() {
     downloadLink.href = url
 }
 
-function prefetch(page, callback) {
-    if (! cacheContains(page)) {
-        downloadImageData(page, callback)
-    } else {
-        if (callback != null) {
-            callback()
-        }
-    }
-}
-
 function getRgb(colorArray) {
     return "rgb(" + colorArray[0] + "," + colorArray[1] + "," + colorArray[2] + ")"
 }
 
 function displayPage(page, callback) {
     var timestamp = + new Date()
-    showSpinner()
+
     document.pageDisplayTimestamp = timestamp
     var displayPageInternalCallback = function(data) {
         if (document.pageDisplayTimestamp == timestamp) {
+            document.pageDisplayTimestamp = null
             hideSpinner()
             var img = getImage()
             img.onload = function() {
@@ -271,28 +225,18 @@ function displayPage(page, callback) {
                 if (callback != null) {
                     callback()
                 }
-                prefetch(page+1, function() {
-                    prefetch(page+2, function() {
-                        prefetch(page+3, function() {
-                            prefetch(page-1, function() {
-                                prefetch(page-2, null)
-                            })
-                        })
-                    })
-                })
             }
             img.src = data.image
         }
     }
-    var imageData = getFromCache(page)
-    if (imageData != null) {
-        displayPageInternalCallback(imageData)
-    } else {
-        downloadImageData(page, function() {
-            displayPageInternalCallback(getFromCache(page))
-        })
-    }
+    downloadImageData(page, displayPageInternalCallback)
+    window.setTimeout(function() {
+        if (document.pageDisplayTimestamp == timestamp) {
+            showSpinner()
+        }
+    }, 100)
 }
+
 function setPageTitle(title) {
     document.title = title
 }
@@ -323,12 +267,17 @@ function isBeginningOfColumn() {
     return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0, getColumnThreshold())
 }
 
+function getLastPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
+    return viewportDimension - imageDimension
+}
+
 function getNextPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
     if (approx(imageValue, viewportDimension - imageDimension, threshold)) return 0
-    var proposedNextPosition = (imageValue - viewportDimension *  viewportJumpPercentage) | 0
+    var proposedNextPosition = (imageValue - viewportDimension * viewportJumpPercentage) | 0
     if (proposedNextPosition < viewportDimension - imageDimension) return viewportDimension - imageDimension
     return proposedNextPosition
 }
+
 function getPreviousPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
     if (approx(imageValue, 0, threshold)) return viewportDimension - imageDimension
     var proposedPreviousPosition = (imageValue + viewportDimension * viewportJumpPercentage) | 0
@@ -348,9 +297,11 @@ function goToNextPage() {
     }
 }
 
-function goToPreviousPage() {
+function goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
     if (getPositionInput() > 1) {
         displayPage(getPositionInput() - 1, function() {
+            if (proposedLeft) setImageLeft(proposedLeft)
+            if (proposedTop) setImageTop(proposedTop)
             updateImage()
         })
     }
@@ -374,7 +325,9 @@ function goToNextView() {
 function goToPreviousView() {
     if (isBeginningOfRow()) {
         if (isBeginningOfColumn()) {
-            goToPreviousPage()
+            let lastLeft = getLastPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold())
+            let lastTop = getLastPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold())
+            goToPreviousPage(lastLeft, lastTop)
         } else {
             setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
             setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
@@ -386,8 +339,6 @@ function goToPreviousView() {
     }
 
 }
-
-
 
 function handleResize() {
     fixComponentHeights()
@@ -412,7 +363,7 @@ function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
 }
 
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
-    var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? -1 : 1)
+    var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? 1 : -1)
     var newZoom = getZoom() * zoomDelta
     zoom(newZoom, scrollCenterX, scrollCenterY)
 }
@@ -429,6 +380,34 @@ function touchGesturePan(deltaX, deltaY) {
     pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
 }
 
+function downloadComicToDevice() {
+    if('serviceWorker' in navigator) {
+        var bookId = getMeta("bookId")
+        var pages = num(getMeta("size"))
+        navigator.serviceWorker.controller.postMessage({type: 'storeBook', bookId: bookId, maxPositions: pages, kind: 'comic'})
+    }
+}
+
+// <a id="downloadPageButton" href="">download</a><
+function getDownloadPageButton() {
+    let label = document.createElement('span')
+    label.innerHTML = ""
+    let button = document.createElement('a')
+    button.id = 'downloadPageButton'
+    button.innerHTML = 'download'
+
+    return [label, button]
+}
+
+function initSettings() {
+    let settingsWrapper = document.getElementById('ch_settings')
+    appendAll(settingsWrapper, getDownloadPageButton())
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
+    appendAll(settingsWrapper, getRemoveProgressButton())
+}
+
 window.onload = function() {
     fixComponentHeights()
     enableKeyboardGestures({
@@ -437,16 +416,6 @@ window.onload = function() {
         "leftAction": goToPreviousView,
         "rightAction": goToNextView
     })
-
-    // supported actions:
-    // clickAction(mouseX, mouseY)
-    // doubleClickAction(mouseX, mouseY)
-    // mouseMoveAction(mouseButtonPressed, deltaX, deltaY)
-    // scrollAction(scrollCenterX, scrollCenterY, scrollValue)
-    // pinchStartAction(pinchCenterX, pinchCenterY)
-    // pinchAction(currentZoom, pinchCenterX, pinchCenterY)
-    // panAction(deltaX, deltaY)
-    //var originalZoom = null
 
     enableGesturesOnElement(document.getElementById("ch_canv"), {
         "doubleClickAction": zoomJump,
@@ -477,6 +446,7 @@ window.onload = function() {
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
+    document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
     addPositionInputTriggerListener(jumpToPage)
 
@@ -485,14 +455,22 @@ window.onload = function() {
     document.comicMaximumPages = num(getMeta("size"))
     document.imageSettings = {}
     setZoom(1.0)
-    var startPage = num(getMeta("startPosition")) + 1
 
-    displayPage(startPage, function() {
-        var fit = getMeta("defaultFit")
-        if (fit == "width") {
-            fitPageToScreenWidth()
-        } else if (fit = "screen") {
-            fitPageToScreen()
-        }
+    initSettings()
+    initFullscreenButton()
+    initBookCollectionLinks()
+
+    loadProgress(currentPosition => {
+        var startPage = currentPosition + 1
+        displayPage(startPage, function() {
+            var fit = getMeta("defaultFit")
+            if (fit == "width") {
+                fitPageToScreenWidth()
+            } else if (fit = "screen") {
+                fitPageToScreen()
+            }
+        })
     })
+
+    downloadComicToDevice()
 }

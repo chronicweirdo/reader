@@ -5,15 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>More - Chronic Reader</title>
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
         body {
             font-size: 2em;
             background-color: black;
             color: gold;
             font-family: 'Roboto', sans-serif;
+            margin: 5vh 10vw;
         }
         h1 {
             font-size: 1.2em;
@@ -21,6 +20,13 @@
         a {
             color: gold;
             text-decoration: underline;
+        }
+        input {
+            margin-left: 1em;
+            margin-right: 1em;
+        }
+        label:after {
+            content: ": "
         }
         #container {
             width: 1000px;
@@ -32,16 +38,33 @@
             }
         }
     </style>
+    <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
         function clearStorage(element) {
             window.localStorage.clear()
+            if('serviceWorker' in navigator) {
+                navigator.serviceWorker.controller.postMessage({type: 'reset'})
+            }
             element.innerHTML = element.innerHTML + " - done!"
+        }
+        window.onload = function() {
+            let settingsWrapper = document.getElementById('ch_latestReadSetting')
+            appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
+            let settingValue = getSetting(SETTING_LATEST_READ_LIMIT)
+            let settingValueDisplay = document.createElement('span')
+            settingValueDisplay.innerHTML = settingValue
+            settingsWrapper.appendChild(settingValueDisplay)
+            addSettingListener(SETTING_LATEST_READ_LIMIT, (value) => {
+                settingValueDisplay.innerHTML = value
+            })
         }
     </script>
 </head>
 <body>
 <div id="container">
     <h1>Chronic Reader</h1>
+    <p id="ch_latestReadSetting"></p>
     <p><a href="/collections">Collections</a></p>
     <p><a href="/help">Help</a></p>
     <p><a href="/password">Change password</a></p>

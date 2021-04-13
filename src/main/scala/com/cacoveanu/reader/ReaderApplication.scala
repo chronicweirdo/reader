@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.{EnableW
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.web.filter.CommonsRequestLoggingFilter
 
 @SpringBootApplication
 @EnableCaching
@@ -29,10 +30,24 @@ import org.springframework.web.servlet.config.annotation.{ViewControllerRegistry
 @Configuration
 class MvcConfig extends WebMvcConfigurer {
   override def addViewControllers(registry: ViewControllerRegistry): Unit = {
-    registry.addViewController("/login").setViewName("login")
     registry.addRedirectViewController("/logout", "/login")
   }
 }
+
+/*@Configuration
+class RequestLoggingFilterConfig {
+
+  @Bean
+  def logFilter(): CommonsRequestLoggingFilter = {
+    val filter = new CommonsRequestLoggingFilter()
+    filter.setIncludeQueryString(true)
+    filter.setIncludePayload(true)
+    filter.setMaxPayloadLength(10000)
+    filter.setIncludeHeaders(false)
+    filter.setAfterMessagePrefix("REQUEST DATA : ")
+    filter
+  }
+}*/
 
 @Configuration
 @EnableWebSecurity
@@ -46,10 +61,26 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .csrf().disable().cors().and()
       .authorizeRequests()
       .antMatchers(
+        "/book.css",
+        "/book.js",
+        "/bookNode.js",
+        "/comic.css",
+        "/comic.js",
+        "/favicon.ico",
+        "/fonts.css",
         "/form.css",
-        "/login.css",
+        "/gestures.js",
         "/gold_logo.png",
-        "/favicon.ico"
+        "/hammer.min.js",
+        "/library.css",
+        "/library.js",
+        "/login.css",
+        "/serviceworker.js",
+        "/settings.js",
+        "/tools.css",
+        "/util.js",
+        "/Merriweather/*",
+        "/Roboto/*"
       ).permitAll()
       .antMatchers(
         "/users",

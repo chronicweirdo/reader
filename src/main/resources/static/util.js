@@ -120,6 +120,20 @@ function saveProgress(bookId, position) {
     xhttp.send()
 }
 
+function loadProgress(callback) {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var currentPosition = parseInt(this.responseText)
+            if (callback != null) {
+                callback(currentPosition)
+            }
+        }
+    }
+    xhttp.open("GET", "loadProgress?id=" + getMeta("bookId"))
+    xhttp.send()
+}
+
 function removeProgress() {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
@@ -181,36 +195,162 @@ function addPositionInputTriggerListener(loadPositionFunction) {
     })
 }
 
-function toggleFullScreen() {
-    var doc = window.document;
-    var docEl = doc.documentElement;
-
-    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-    if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-        requestFullScreen.call(docEl);
-    }
-    else {
-        cancelFullScreen.call(doc);
+function toggleSettings() {
+    let settings = document.getElementById('ch_settings')
+    if (settings) {
+        if (window.getComputedStyle(settings).display == 'none') {
+            settings.style.display = 'grid'
+        } else {
+            settings.style.display = 'none'
+        }
     }
 }
-function makeFullScreen() {
-    var doc = window.document;
-    var docEl = doc.documentElement;
 
-    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-
-    requestFullScreen.call(docEl);
-}
-function unmakeFullScreen() {
-    var doc = window.document;
-
-    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-    cancelFullScreen.call(doc);
+function appendAll(parent, children) {
+    if (children) {
+        for (let i = 0; i < children.length; i++) {
+            parent.appendChild(children[i])
+        }
+    }
 }
 
-function isAutoFullScreenEnabled() {
-    return false;
+function reportError(message) {
+    let errorPanel = document.getElementById('ch_errorPanel')
+    errorPanel.innerHTML = message
+}
+
+function getRemoveProgressButton() {
+    let label = document.createElement('span')
+    label.innerHTML = ""
+    let button = document.createElement('a')
+    button.innerHTML = 'remove progress'
+
+    let removeProgressFunction = (event) => {
+        removeProgress()
+    }
+    let confirmationRequestFunction = (event) => {
+        console.log(event)
+        label.innerHTML = "are you sure?"
+        button.onclick = removeProgressFunction
+        button.classList.add('critical')
+        window.setTimeout(function() {
+            label.innerHTML = ""
+            button.onclick = confirmationRequestFunction
+            button.classList.remove('critical')
+        }, 2500)
+    }
+
+    button.onclick = confirmationRequestFunction
+    return [label, button]
+}
+
+function getBookId(bookPagesKey) {
+    let tokens = bookPagesKey.split("_")
+    if (tokens.length > 2) {
+        return parseInt(tokens[1])
+    } else {
+        return undefined
+    }
+}
+
+function cleanupBookPages(booksToKeep) {
+    let keysToDelete = Object.keys(window.localStorage).filter(k => k.startsWith("bookPages_")).filter(k => ! booksToKeep.includes(getBookId(k)))
+    for (let i = 0; i < keysToDelete.length; i++) {
+        window.localStorage.removeItem(keysToDelete[i])
+    }
+}
+
+function fullscreenAvailable() {
+    return document.fullscreen != undefined
+     || document.mozFullScreen != undefined
+     || document.webkitIsFullScreen != undefined
+     || document.msFullscreenElement != undefined
+}
+
+function toggleFullscreen() {
+    var d = document.documentElement
+    console.log(d)
+    if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        }
+        else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        }
+        else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    } else {
+        if (d.requestFullscreen) {
+            console.log("requestFullscreen")
+            d.requestFullscreen()
+        }
+        else if (d.mozRequestFullScreen) {
+            console.log("mozRequestFullscreen")
+            d.mozRequestFullScreen()
+        }
+        else if (d.webkitRequestFullScreen) {
+            console.log("webkitRequestFullscreen")
+            d.webkitRequestFullScreen()
+        }
+        else if (d.msRequestFullscreen) {
+            console.log("msRequestFullscreen")
+            d.msRequestFullscreen()
+        }
+    }
+}
+
+function initFullscreenButton() {
+    if (fullscreenAvailable()) {
+        let p = document.createElement('p')
+        let a = document.createElement('a')
+        a.innerHTML = 'fullscreen'
+        a.onclick = toggleFullscreen
+        p.appendChild(a)
+        let tools = document.getElementById('ch_tools')
+        let backButton = document.getElementById('ch_back')
+        if (backButton) {
+            tools.insertBefore(p, backButton)
+        } else {
+            tools.appendChild(p)
+        }
+    }
+}
+
+function triggerSearchBuildHrefFunction(currentSearch) {
+    return "javascript:triggerSearch('" + currentSearch + "')"
+}
+
+function searchLinkBuildHrefFunction(currentSearch) {
+    return "/?search=" + encodeURIComponent(currentSearch)
+}
+
+function addCollectionLinkTokens(parent, collection, searchSeparator, buildHrefFunction) {
+    let tokens = collection.split('\\')
+    let currentSearch = ""
+    for (let i = 0; i < tokens.length; i++) {
+        if (i > 0) {
+            let slash = document.createElement("span")
+            slash.innerHTML = "\\"
+            parent.appendChild(slash)
+            currentSearch += searchSeparator
+        }
+        let a = document.createElement("a")
+        currentSearch += tokens[i]
+        a.href = buildHrefFunction(currentSearch)
+        a.innerHTML = tokens[i]
+        parent.appendChild(a)
+    }
+}
+
+function initBookCollectionLinks() {
+    let collectionParagraph = document.getElementById('ch_collection')
+    if (collectionParagraph) {
+        let collection = collectionParagraph.firstChild.innerHTML
+        collectionParagraph.innerHTML = ''
+        addCollectionLinkTokens(collectionParagraph, collection, '\\', searchLinkBuildHrefFunction)
+    }
 }

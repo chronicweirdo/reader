@@ -188,6 +188,44 @@ class BookNode {
     }
   }
 
+  def getResources(): Seq[String] = {
+    if (this.name == "img") {
+      val srcMatch = "src=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val src = srcMatch.get.group(1)
+        Seq(src)
+      } else {
+        Seq()
+      }
+    } else if (this.name == "image") {
+      val srcMatch = "xlink:href=\"([^\"]+)\"".r findFirstMatchIn this.content
+      if (srcMatch.isDefined) {
+        val src = srcMatch.get.group(1)
+        Seq(src)
+      } else {
+        Seq()
+      }
+    } else if (this.name == "a") {
+        val hrefMatch = "href=\"([^\"]+)\"".r findFirstMatchIn this.content
+        if (hrefMatch.isDefined) {
+          val href = hrefMatch.get.group(1)
+          Seq(href)
+        } else {
+          Seq()
+        }
+    } else if (this.name == "tr") {
+      val srcPattern = "src=\"([^\"]+)\"".r
+      val srcMatches = srcPattern.findAllMatchIn(this.content)
+      val hrefPattern = "href=\"([^\"]+)\"".r
+      val hrefMatches = hrefPattern.findAllMatchIn(this.content)
+      srcMatches.toSeq.map(m => m.group(1)) ++ hrefMatches.toSeq.map(m => m.group(1))
+    } else if (children.nonEmpty) {
+      children.flatMap(c => c.getResources())
+    } else {
+      Seq()
+    }
+  }
+
   def srcTransform(transformFunction: String => String): Unit = {
     if (this.name == "img") {
       val srcMatch = "src=\"([^\"]+)\"".r findFirstMatchIn this.content
@@ -275,6 +313,37 @@ class BookNode {
       }
       this.end = this.children.last.end
     }
+  }
+
+  def nextNode(): BookNode = {
+    var current = this
+    if (current.children.isEmpty) {
+      // go up the parent line until we find next sibling
+      var parent = current.parent
+      while (parent != null && parent.children.indexOf(current) == parent.children.size - 1) {
+        current = parent
+        parent = current.parent
+      }
+      if (parent != null) {
+        // we have the next sibling in current, must find first leaf
+        val sibling = parent.children(parent.children.indexOf(current) + 1)
+        sibling
+      } else {
+        // we have reached root, this was the last leaf, there is no other
+        null
+      }
+    } else {
+      current.children.head
+    }
+  }
+
+  def nextNodeOfName(name: String): BookNode = {
+    var current = this.nextNode()
+    while (current != null) {
+      if (current.name == name) return current
+      current = current.nextNode()
+    }
+    null
   }
 
   def nextLeaf(): BookNode = {

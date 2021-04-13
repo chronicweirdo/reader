@@ -42,8 +42,11 @@ class BookService {
     progressRepository.findByUserAndBookId(account, id).asScala
   }
 
-  def loadProgress(book: Book): Option[Progress] = {
-    progressRepository.findByUserAndBook(SessionUtil.getUser(), book).asScala
+  def loadProgress(bookId: java.lang.Long): Option[Progress] = {
+    loadBook(bookId) match {
+      case Some(book) => progressRepository.findByUserAndBook(SessionUtil.getUser(), book).asScala
+      case None => None
+    }
   }
 
   def loadProgress(books: Seq[Book]): Seq[Progress] = {

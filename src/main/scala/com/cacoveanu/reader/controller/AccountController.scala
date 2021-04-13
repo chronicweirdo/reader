@@ -2,11 +2,13 @@ package com.cacoveanu.reader.controller
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-
 import com.cacoveanu.reader.service.{BookService, UserService}
 import com.cacoveanu.reader.util.SessionUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody}
@@ -21,6 +23,19 @@ class AccountController @Autowired()(private val accountService: UserService,
 
   @RequestMapping(value=Array("/password"), method = Array(RequestMethod.GET))
   def passwordResetPage(): String = "passwordReset"
+
+  @RequestMapping(
+    value=Array("/login"),
+    method=Array(RequestMethod.GET)
+  )
+  def showLoginForm(): String = {
+    val authentication: Authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || authentication.isInstanceOf[AnonymousAuthenticationToken]) {
+      "login"
+    } else {
+      "redirect:/";
+    }
+  }
 
   @RequestMapping(
     value=Array("/password"),
