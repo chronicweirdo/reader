@@ -104,10 +104,17 @@ object EpubUtil {
     }
   }
 
+  private def getIntOrDefault(s: String, d: Int): Int =
+    try {
+      s.toInt
+    } catch {
+      case e: Exception => d
+    }
+
   private def getRecursiveTocFromNcx2(ncxPath: String, n: Node, level: Int = 0): Seq[(Int, String, String, Int)] = {
     var result = Seq[(Int, String, String, Int)]()
     result = result :+ (
-      (n \ "@playOrder").text.toInt,
+      getIntOrDefault((n \ "@playOrder").text, -1),
       (n \ "navLabel" \ "text").text,
       getAbsoluteEpubPath(ncxPath, URLDecoder.decode((n \ "content" \ "@src").text, StandardCharsets.UTF_8.name())),
       level
