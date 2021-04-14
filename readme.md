@@ -36,7 +36,7 @@ _Book page_ | _Comic page_ | _Comic tools and settings_
 - continue reading from the latest position
 - keep track of read ebooks and comic books
 
-|![book page](src/main/resources/static/collection_Tree.png)|
+|![collections tree](src/main/resources/static/collection_tree.png)|
 | --- | 
 | _Collections tree_ |
 
