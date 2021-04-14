@@ -262,7 +262,7 @@ async function compute(section, start) {
     // we have a page
     if (end < section.end) {
         savePage(start, previousEnd)
-        compute(section, previousEnd + 1)
+        timeout(10).then(() => compute(section, previousEnd + 1))
     } else {
         savePage(start, end)
         saveCache()
@@ -453,11 +453,11 @@ function saveCache() {
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
     addSettingListener(SETTING_DARK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
@@ -496,9 +496,9 @@ window.onload = function() {
     setZoom(getSetting(SETTING_BOOK_ZOOM), false)
     loadCache()
 
-    loadProgress(function(currentPosition) {
+    timeout(100).then(() => {loadProgress(function(currentPosition) {
         displayPageFor(currentPosition)
-    })
+    })})
 
     downloadBookToDevice()
 }
