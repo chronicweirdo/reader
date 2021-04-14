@@ -26,13 +26,28 @@ and mobile devices.
 - supports reading CBR, CBZ, PDF and EPUB files
 - store latest read books on device for offline reading
 - scan and monitor a library folder for supported file types
+
+![book page](src/main/resources/static/book_page.png)|![comic page](src/main/resources/static/comic_page.png)|![comic settings](src/main/resources/static/comic_settings.png)
+--- | --- | ---
+_Book page_ | _Comic page_ | _Comic tools and settings_
+
 - open and display supported file types in browser
 - keep track of position user has reached in a comic book or ebook
 - continue reading from the latest position
 - keep track of read ebooks and comic books
+
+|![book page](src/main/resources/static/collection_Tree.png)|
+| --- | 
+| _Collections tree_ |
+
 - view books and comic books organized by collections (the subfolders they
 are stored in on disk)
 - search for comic books and ebooks
+
+![book settings](src/main/resources/static/book_settings.png)|![book dark mode](src/main/resources/static/book_dark_mode.png)|![application settings](src/main/resources/static/application_settings.png)
+--- | --- | ---
+_Book tools and settings_ | _Book dark mode_ | _Configuring number of books saved on device_
+
 - supports device specific settings for book background and foreground colors, book dark mode, number of books saved on device
 - add multiple users
 - import or export users and book progress information
