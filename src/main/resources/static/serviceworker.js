@@ -39,6 +39,24 @@ function getDb() {
     })
 }
 
+function deleteDb() {
+    return new Promise((resolve, reject) => {
+        var req = indexedDB.deleteDatabase(DATABASE_NAME)
+        req.onsuccess = function () {
+            console.log("Deleted database successfully")
+            resolve()
+        }
+        req.onerror = function () {
+            console.log("Couldn't delete database")
+            reject()
+        }
+        req.onblocked = function () {
+            console.log("Couldn't delete database due to the operation being blocked");
+            reject()
+        }
+    })
+}
+
 getDb()
 
 var downloadQueue = []
@@ -227,9 +245,10 @@ async function resetApplication() {
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
     await databaseDeleteAll(WORKER_TABLE)
+    //await deleteDb()
 
     // unregister service worker
-    self.registration.unregister()
+    await self.registration.unregister()
 }
 
 async function handleLoginLogout(request) {
