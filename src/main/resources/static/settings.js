@@ -8,6 +8,10 @@ var SETTING_BOOK_ZOOM = "book_zoom"
 var SETTING_COMIC_PAN_SPEED = "comic_pan_speed"
 var SETTING_COMIC_INVERT_SCROLL = "comic_invert_scroll"
 var SETTING_LATEST_READ_LIMIT = "latest_read_limit"
+var SETTING_COMIC_HORIZONTAL_JUMP = "comic_horizontal_jump"
+var SETTING_COMIC_VERTICAL_JUMP = "comic_vertical_jump"
+var SETTING_COMIC_ROW_THRESHOLD = "comic_row_threshold"
+var SETTING_COMIC_COLUMN_THRESHOLD = "comic_column_threshold"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -20,6 +24,10 @@ settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
 settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
 settingDefaults[SETTING_COMIC_INVERT_SCROLL] = "false"
 settingDefaults[SETTING_LATEST_READ_LIMIT] = "6"
+settingDefaults[SETTING_COMIC_HORIZONTAL_JUMP] = "0.9"
+settingDefaults[SETTING_COMIC_VERTICAL_JUMP] = "0.5"
+settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
+settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -32,6 +40,10 @@ settingParsers[SETTING_COMIC_PAN_SPEED] = parseInt
 settingParsers[SETTING_DARK_MODE] = parseBoolean
 settingParsers[SETTING_COMIC_INVERT_SCROLL] = parseBoolean
 settingParsers[SETTING_LATEST_READ_LIMIT] = parseInt
+settingParsers[SETTING_COMIC_HORIZONTAL_JUMP] = parseFloat
+settingParsers[SETTING_COMIC_VERTICAL_JUMP] = parseFloat
+settingParsers[SETTING_COMIC_ROW_THRESHOLD] = parseFloat
+settingParsers[SETTING_COMIC_COLUMN_THRESHOLD] = parseFloat
 
 var settingEncoders = {}
 
@@ -96,6 +108,13 @@ settingControllers[SETTING_COMIC_PAN_SPEED] = () => createNumberController(SETTI
 settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
 settingControllers[SETTING_COMIC_INVERT_SCROLL] = () => createBooleanController(SETTING_COMIC_INVERT_SCROLL, "invert scroll")
 settingControllers[SETTING_LATEST_READ_LIMIT] = () => createNumberController(SETTING_LATEST_READ_LIMIT, "latest read to load", 0, 12, 1)
+
+settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.9, 2.1, 0.2)
+settingControllers[SETTING_COMIC_HORIZONTAL_JUMP] = () => createNumberController(SETTING_COMIC_HORIZONTAL_JUMP, "horizontal jump", 0.1, 1, 0.1)
+settingControllers[SETTING_COMIC_VERTICAL_JUMP] = () => createNumberController(SETTING_COMIC_VERTICAL_JUMP, "vertical jump", 0.1, 1, 0.1)
+settingControllers[SETTING_COMIC_ROW_THRESHOLD] = () => createNumberController(SETTING_COMIC_ROW_THRESHOLD, "row threshold", 0.01, 0.1, 0.01)
+settingControllers[SETTING_COMIC_COLUMN_THRESHOLD] = () => createNumberController(SETTING_COMIC_COLUMN_THRESHOLD, "column threshold", 0.01, 0.1, 0.01)
+
 
 function updateSetting(element) {
     let value

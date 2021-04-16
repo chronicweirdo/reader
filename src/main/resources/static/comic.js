@@ -132,13 +132,11 @@ function getOriginalImageHeight() {
 }
 
 function getHorizontalJumpPercentage() {
-    if (getViewportHeight() > getViewportWidth()) return .9
-    else return .5
+    return getSetting(SETTING_COMIC_HORIZONTAL_JUMP)
 }
 
 function getVerticalJumpPercentage() {
-    if (getViewportHeight() > getViewportWidth()) return .5
-    else return .9
+    return getSetting(SETTING_COMIC_VERTICAL_JUMP)
 }
 
 function setImageLeft(left) {
@@ -246,11 +244,11 @@ function approx(val1, val2, threshold = 1) {
 }
 
 function getRowThreshold() {
-    return getImageWidth() * .1
+    return getImageWidth() * getSetting(SETTING_COMIC_ROW_THRESHOLD)
 }
 
 function getColumnThreshold() {
-    return getImageHeight() * .05
+    return getImageHeight() * getSetting(SETTING_COMIC_COLUMN_THRESHOLD)
 }
 
 function isEndOfRow() {
@@ -402,6 +400,10 @@ function getDownloadPageButton() {
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     appendAll(settingsWrapper, getDownloadPageButton())
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_HORIZONTAL_JUMP))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_VERTICAL_JUMP))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_ROW_THRESHOLD))
+    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_COLUMN_THRESHOLD))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
