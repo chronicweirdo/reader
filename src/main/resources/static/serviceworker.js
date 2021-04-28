@@ -340,16 +340,14 @@ async function handleRootRequest(request) {
         }
         return serverResponse
     } else {
-        let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/')
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
         return databaseEntityToResponse(databaseResponse)
     }
 }
 
 async function handleDataRequest(request) {
-    let url = new URL(request.url)
-    let key = url.pathname + url.search
     // always try to load from db first
-    let databaseResponse = await databaseLoad(REQUESTS_TABLE, key)
+    let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
 
     if (databaseResponse) {
         return databaseEntityToResponse(databaseResponse)
@@ -448,7 +446,7 @@ async function handleLatestReadRequest(request) {
         let blob = await serverResponse.blob()
         // cache response
         let savedEntity = await databaseSave(REQUESTS_TABLE, {
-            url: '/latestRead',
+            url: request.url,
             response: blob,
             headers: Object.fromEntries(serverResponse.headers.entries())
         })
@@ -498,7 +496,7 @@ async function handleLatestReadRequest(request) {
         }
         return new Response(responseText, {headers: new Headers(savedEntity.headers)})
     } else {
-        let databaseResponse = await databaseLoad(REQUESTS_TABLE, '/latestRead')
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
         let responseText = await databaseResponse.response.text()
         let responseJson = JSON.parse(responseText)
         let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
@@ -571,7 +569,7 @@ function getUnsyncedProgress() {
 function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {
         var url = new URL(response.url)
-        var key = url.pathname + url.search
+        var key = response.url
         var bookId = parseInt(url.searchParams.get("id"))
         var headers = Object.fromEntries(response.headers.entries())
         response.blob().then(responseBlob => {
@@ -623,7 +621,7 @@ async function downloadFromQueue() {
 async function downloadBook(o) {
     if (! o.kind === 'book') return
 
-    let url = '/book?id=' + o.id
+    let url = self.registration.scope + 'book?id=' + o.id
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
         let response = await fetch(url)
@@ -641,7 +639,7 @@ async function downloadBook(o) {
 async function downloadBookSection(o) {
     if (! o.kind === 'bookSection') return
 
-    let url = '/bookSection?id=' + o.id + "&position=" + o.position
+    let url = self.registration.scope + 'bookSection?id=' + o.id + "&position=" + o.position
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
         let response = await fetch(url)
@@ -688,7 +686,7 @@ async function downloadBookResource(o) {
 async function downloadComic(o) {
     if (! o.kind === 'comic')  return
 
-    let url = '/comic?id=' + o.id
+    let url = self.registration.scope + 'comic?id=' + o.id
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
         let response = await fetch(url)
@@ -705,7 +703,7 @@ async function downloadComic(o) {
 async function downloadImageData(o) {
     if (! o.kind === 'imageData') return
 
-    let url = '/imageData?id=' + o.id + '&page=' + o.position
+    let url = self.registration.scope + 'imageData?id=' + o.id + '&page=' + o.position
     let entity = await databaseLoad(REQUESTS_TABLE, url)
     if (! entity) {
         let response = await fetch(url)
