@@ -94,7 +94,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .anyRequest().authenticated()
 
       .and()
-      .rememberMe().key("uniqueAndSecret")
+      .rememberMe()
+      .key("uniqueAndSecret")
+      .tokenValiditySeconds(60*60*24*120) // 120 days
       .userDetailsService(userService)
 
       .and()
