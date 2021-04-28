@@ -396,7 +396,8 @@ async function handleLoadProgress(request) {
         return serverProgress
     } else {
         let databaseProgress = await databaseLoad(PROGRESS_TABLE, id)
-        return new Response(databaseProgress.position)
+        let databaseResponse = new Response(databaseProgress.position, {headers: {'Content-Type': 'application/json'}})
+        return databaseResponse
     }
 }
 
