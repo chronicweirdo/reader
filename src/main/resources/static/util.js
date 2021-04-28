@@ -116,6 +116,11 @@ function goHome() {
 
 function saveProgress(bookId, position) {
     var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status > 400 && this.status < 500) {
+            window.location.href = "/logout"
+        }
+    }
     xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position))
     xhttp.send()
 }
@@ -123,14 +128,25 @@ function saveProgress(bookId, position) {
 function loadProgress(callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var currentPosition = parseInt(this.responseText)
-            if (callback != null) {
-                callback(currentPosition)
+        if(this.readyState == this.HEADERS_RECEIVED) {
+            var contentType = this.getResponseHeader("Content-Type");
+            if (contentType != "application/json") {
+                this.abort();
+                window.location.href = "/logout"
+            }
+        } else if (this.readyState == this.DONE) {
+            if (this.status == 200) {
+                var currentPosition = parseInt(this.responseText)
+                if (callback != null) {
+                    callback(currentPosition)
+                }
+            } else if (this.status > 400 && this.status < 500) {
+                window.location.href = "/logout"
             }
         }
     }
     xhttp.open("GET", "loadProgress?id=" + getMeta("bookId"))
+    xhttp.setRequestHeader('Accept', 'application/json');
     xhttp.send()
 }
 
