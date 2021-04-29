@@ -34,10 +34,19 @@ function addProgress(image, page, totalPages, downloaded) {
     }
     image.parentElement.appendChild(span)
 }
+function addTitle(image, title) {
+    var span = document.createElement("span")
+    span.classList.add("title")
+    span.innerHTML = title
+    image.parentElement.appendChild(span)
+}
 
-function scaleImage(image, page, totalPages, downloaded) {
+function scaleImage(image, page, totalPages, downloaded, title) {
     if (page >= 0) {
         addProgress(image, page, totalPages, downloaded)
+    }
+    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
+        addTitle(image, title)
     }
     var imageContainer = document.getElementsByClassName("imgdiv")[0]
     var expectedHeight = imageContainer.offsetHeight
@@ -105,7 +114,7 @@ function getBookHtml(book) {
     a.setAttribute("bookid", book.id)
     var img = document.createElement("img")
     img.onload = function() {
-        scaleImage(img, book.progress, book.pages, book.downloaded)
+        scaleImage(img, book.progress, book.pages, book.downloaded, book.title)
     }
     img.src = book.cover
     img.title = book.title
