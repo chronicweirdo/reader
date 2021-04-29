@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>History - Chronic Reader</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" href="/gold_logo.png">
+    <link rel="apple-touch-icon" href="/gold_logo.png">
+    <link rel="stylesheet" type="text/css" href="fonts.css">
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+        }
+        a {
+            color: gold;
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            word-break: break-all;
+        }
+        table, th, td {
+            border: 1px solid gold;
+        }
+        td {
+            padding: 5px;
+        }
+        span {
+            margin-left: 3px;
+            margin-right: 3px;
+        }
+    </style>
+    <script src="util.js"></script>
+    <script>
+        function getTableRow(book) {
+            var tr = document.createElement("tr")
+            var collection = document.createElement("td")
+            addCollectionLinkTokens(collection, book.collection, '\\', searchLinkBuildHrefFunction)
+            tr.appendChild(collection)
+            var title = document.createElement("td")
+            var titleLink = document.createElement("a")
+            titleLink.href = book.type + "?id=" + book.id
+            titleLink.innerHTML = book.title
+            title.appendChild(titleLink)
+            tr.appendChild(title)
+            var progress = document.createElement("td")
+            var percent = ((book.progress + 1) / parseFloat(book.pages)) * 100
+            progress.innerHTML = Math.floor(percent) + "%"
+            tr.appendChild(progress)
+            var date = document.createElement("td")
+            var lastUpdate = new Date(book.lastUpdate)
+            date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
+            tr.appendChild(date)
+            return tr
+        }
+        function loadHistory() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        var books = JSON.parse(this.responseText)
+                        if (books.length > 0) {
+                            let bookIds = []
+                            for (var i = 0; i < books.length; i++) {
+                                var book = books[i]
+                                var collectionDiv = document.getElementById("ch_read_history")
+                                if (collectionDiv != null) {
+                                    collectionDiv.appendChild(getTableRow(book))
+                                }
+                            }
+                            cleanupBookPages(bookIds)
+                        }
+                    }
+                }
+            }
+            xhttp.open("GET", "latestRead")
+            xhttp.send()
+        }
+        window.onload = function() {
+            loadHistory()
+        }
+    </script>
+</head>
+<body>
+<p>This is a list of everything you read. <a href="/">Go back</a></p>
+<table id="ch_read_history">
+    <tr><th>collection</th><th>title</th><th>progress</th><th>read date</th></tr>
+</table>
+</body>
+</html>

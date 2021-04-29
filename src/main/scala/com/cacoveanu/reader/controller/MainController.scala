@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, R
 import org.springframework.web.servlet.view.RedirectView
 
 import java.util
-import java.util.Collections
+import java.util.{Collections, Date}
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
@@ -29,6 +29,9 @@ class MainController @Autowired()(
 
   @RequestMapping(Array("/help"))
   def loadHelp(): String = "help"
+
+  @RequestMapping(Array("/history"))
+  def loadHistory(): String = "history"
 
   @RequestMapping(Array("/more"))
   def morePage(model: Model): String = {
@@ -51,8 +54,9 @@ class MainController @Autowired()(
         p.book.title,
         WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
         p.position,
-        p.book.size
-      ))
+        p.book.size,
+        p.lastUpdate
+      )).sortBy(_.lastUpdate).reverse
 
     new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }
@@ -75,7 +79,8 @@ class MainController @Autowired()(
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
         progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
-        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1)
+        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1),
+        progressByBook.get(book.id).map(p => p.lastUpdate).getOrElse(null)
       ))
     new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
   }
@@ -136,5 +141,6 @@ case class UiBook(
                     @BeanProperty title: String,
                     @BeanProperty cover: String,
                     @BeanProperty progress: Int,
-                    @BeanProperty pages: Int
+                    @BeanProperty pages: Int,
+                    @BeanProperty lastUpdate: Date
                   )
