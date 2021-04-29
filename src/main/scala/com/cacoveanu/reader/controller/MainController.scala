@@ -38,21 +38,21 @@ class MainController @Autowired()(
 
   @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def loadLatestRead(@RequestParam("limit") limit: Int): ResponseEntity[java.util.List[UiBook]] = {
-    val latestRead = if (limit > 0) {
-      val progress: Seq[Progress] = bookService.loadTopProgress(limit)
+  def loadLatestRead(@RequestParam(name = "limit", required = false) limit: Integer): ResponseEntity[java.util.List[UiBook]] = {
+    val progress = if (limit != null && limit > 0) bookService.loadTopProgress(limit)
+      else if (limit == null) bookService.loadReadInformation()
+      else Seq()
 
-      progress
-        .map(p => UiBook(
-          p.book.id,
-          getType(p.book),
-          p.book.collection,
-          p.book.title,
-          WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-          p.position,
-          p.book.size
-        ))
-    } else Seq()
+    val latestRead = progress
+      .map(p => UiBook(
+        p.book.id,
+        getType(p.book),
+        p.book.collection,
+        p.book.title,
+        WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
+        p.position,
+        p.book.size
+      ))
 
     new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }
