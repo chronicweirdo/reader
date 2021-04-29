@@ -135,7 +135,7 @@ h1 a {
     background-color: #00000099;
     max-height: 70%;
     overflow: hidden;
-    border: 1px solid white;
+    border: 1px solid black;
 }
 .imgdiv .progressbar {
     position: absolute;

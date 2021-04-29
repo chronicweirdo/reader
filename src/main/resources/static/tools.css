@@ -278,6 +278,10 @@
 #ch_tools .ch_position_paragraph {
     text-align: center;
 }
+#ch_cover img {
+    max-height: 50vh;
+    position: relative;
+}
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

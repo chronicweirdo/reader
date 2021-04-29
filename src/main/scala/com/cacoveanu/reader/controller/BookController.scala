@@ -29,6 +29,7 @@ class BookController @Autowired()(private val contentService: ContentService,
         model.addAttribute("bookEnd", book.size - 1)
         val tocTree = TocNode.getTocTree(book.toc.asScala.toSeq)
         model.addAttribute("tableOfContents", tocTree)
+        model.addAttribute("cover", WebUtil.toBase64Image(book.mediaType, book.cover))
         "book"
       case None => "error"
     }

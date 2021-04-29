@@ -27,6 +27,7 @@ class ComicController @Autowired() (private val contentService: ContentService,
         model.addAttribute("pages", comic.size)
         model.addAttribute("title", comic.title)
         model.addAttribute("collection", comic.collection)
+        model.addAttribute("cover", WebUtil.toBase64Image(comic.mediaType, comic.cover))
         "comic"
       case None => "error"
     }
