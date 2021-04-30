@@ -122,9 +122,9 @@ class BookService {
     val collections = bookRepository.findAllCollections().asScala.toSeq
     val root = new CollectionNode(CollectionNode.EVERYTHING, "")
     collections.filter(_.nonEmpty).foreach(collection => {
-      val entries = collection.split("\\\\")
+      val entries = collection.split("/").filter(_.nonEmpty)
       var current = root
-      var currentSearch = ""
+      var currentSearch = "/"
       for (i <- entries.indices) {
         val col = entries(i)
         currentSearch += col
@@ -136,7 +136,7 @@ class BookService {
             current.children.add(newChild)
             current = newChild
         }
-        currentSearch += "\\"
+        currentSearch += "/"
       }
     })
     root

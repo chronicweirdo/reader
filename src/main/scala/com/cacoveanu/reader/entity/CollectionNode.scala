@@ -24,7 +24,7 @@ class CollectionNode() {
   def this(name: String, search: String) {
     this()
     this.name = name
-    this.search = URLEncoder.encode(search, StandardCharsets.UTF_8)
+    this.search = URLEncoder.encode(search, StandardCharsets.UTF_8).replace("+", "%20")
     this.children = new util.ArrayList[CollectionNode]()
   }
 }
