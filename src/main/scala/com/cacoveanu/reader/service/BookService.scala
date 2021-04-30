@@ -143,11 +143,16 @@ class BookService {
   }
 
   private def prepareSearchTerm(original: String): String = {
-    val lowercase = original.toLowerCase()
-    val pattern = "[A-Za-z0-9]+".r
-    val matches: Regex.MatchIterator = pattern.findAllIn(lowercase)
-    val result = "%" + matches.mkString("%") + "%"
-    result
+    if (original.contains("\\")) {
+        original.toLowerCase() + "%"
+    } else {
+      // this is a more general search for terms
+      val lowercase = original.toLowerCase()
+      val pattern = "[A-Za-z0-9]+".r
+      val matches: Regex.MatchIterator = pattern.findAllIn(lowercase)
+      val result = "%" + matches.mkString("%") + "%"
+      result
+    }
   }
 
   def search(term: String, page: Int): Seq[Book] = {
