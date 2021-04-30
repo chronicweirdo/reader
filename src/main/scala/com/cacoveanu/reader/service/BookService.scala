@@ -143,8 +143,12 @@ class BookService {
   }
 
   private def prepareSearchTerm(original: String): String = {
-    if (original.contains("/")) {
-        original.toLowerCase() + "%"
+    if (original.startsWith("/")) {
+      // very specific search that must start with this
+      original.toLowerCase() + "%"
+    } else if (original.contains("/")) {
+      // very specific search that must contain this path - allows searches for subpaths if search term starts with a space
+      "%" + original.toLowerCase().trim + "%"
     } else {
       // this is a more general search for terms
       val lowercase = original.toLowerCase()
