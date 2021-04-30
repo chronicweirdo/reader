@@ -173,9 +173,8 @@ class BookService {
   }
 
   def getCollectionPage(page: Int): Seq[Book] = {
-    val sort = Sort.by(Direction.ASC, "collection", "title")
-    val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
-    bookRepository.findAll(pageRequest).asScala.toSeq
+    val pageRequest = PageRequest.of(page, PAGE_SIZE)
+    bookRepository.search("%", pageRequest).asScala.toSeq
   }
 
   def loadBooks = {

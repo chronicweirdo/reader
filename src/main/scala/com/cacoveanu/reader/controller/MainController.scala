@@ -71,7 +71,7 @@ class MainController @Autowired()(
     val progress: Seq[Progress] = bookService.loadProgress(books)
     val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
 
-    val collections = books.map(c => c.collection).distinct.sorted
+    val collections = books.map(c => c.collection).distinct.sortBy(c => c.toLowerCase())
     val uiBooks = books
       .map(book => UiBook(
         book.id,
