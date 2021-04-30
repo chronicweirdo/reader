@@ -1,10 +1,10 @@
 package com.cacoveanu.reader.service
 
 import java.nio.file.Paths
-
-import com.cacoveanu.reader.entity.{Book, Progress}
+import com.cacoveanu.reader.entity.{Book, Content, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
-import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileTypes, FileUtil, PdfUtil}
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil}
+
 import javax.annotation.PostConstruct
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.beans.factory.annotation.{Autowired, Value}
@@ -69,6 +69,7 @@ class ScannerService {
         .toSeq
         .toBatches(DB_BATCH_SIZE)
         .flatMap(batch => {
+          log.debug(s"scanning batch of new books of size ${batch.size}")
           val books = batch.flatMap(path => scanFile(path))
           bookRepository.saveAll(books.asJava).asScala
         })
@@ -105,6 +106,7 @@ class ScannerService {
   }
 
   private def scanFile(path: String): Option[Book] = {
+    log.debug(s"scanning file $path")
     FileUtil.getExtension(path) match {
       case FileTypes.CBR => scanCbr(path)
       case FileTypes.CBZ => scanCbz(path)
@@ -117,10 +119,11 @@ class ScannerService {
   private def getCollection(path: String): String = {
     val pathObject = Paths.get(path)
     val collectionPath = Paths.get(libraryLocation).relativize(pathObject.getParent)
+    //collectionPath.toString.replaceAll("\\\\", "/")
     collectionPath.toString
   }
 
-  private def scanCbr(path: String): Option[Book] = {
+  private[service] def scanCbr(path: String): Option[Book] = {
     try {
       val title = FileUtil.getFileName(path)
       val author = ""
@@ -142,7 +145,7 @@ class ScannerService {
     }
   }
 
-  private def scanPdf(path: String): Option[Book] = {
+  private[service] def scanPdf(path: String): Option[Book] = {
     try {
       val title = FileUtil.getFileName(path)
       val author = ""
@@ -164,7 +167,7 @@ class ScannerService {
     }
   }
 
-  private def scanCbz(path: String): Option[Book] = {
+  private[service] def scanCbz(path: String): Option[Book] = {
     try {
       val title = FileUtil.getFileName(path)
       val author = ""
@@ -193,9 +196,14 @@ class ScannerService {
       val title = if (getTitleFromMetadata) EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path)) else FileUtil.getFileName(path)
       val author = EpubUtil.getAuthor(path).getOrElse("")
       val collection = getCollection(path)
-      val cover = EpubUtil.getCover(path)
-      //val toc = EpubUtil.getToc(path)
       val (resources, links, toc) = EpubUtil.scanContentMetadata(path)
+      var cover = EpubUtil.getCoverFromOpf(path)
+      if (! cover.isDefined) {
+        cover = EpubUtil.findCoverInResource(path, resources.head.path)
+      }
+      if (! cover.isDefined) {
+        cover = Some(Content(None, FileMediaTypes.IMAGE_JPEG_VALUE, imageService.generateCover(title)))
+      }
       val size = resources.map(_.end).maxOption.map(_.intValue()).getOrElse(0) - resources.map(_.start).minOption.map(_.intValue()).getOrElse(0) + 1
       cover match {
         case Some(c) =>
