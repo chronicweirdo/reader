@@ -22,6 +22,8 @@ import scala.beans.BeanProperty
 class AccountController @Autowired()(private val accountService: UserService,
                                      private val bookService: BookService) {
 
+  private val CSV_PARSING_REGEX = "(?!\\B[\"'][^\"']*),(?![^\"']*[\"']\\B)"
+
   @RequestMapping(value=Array("/password"), method = Array(RequestMethod.GET))
   def passwordResetPage(): String = "passwordReset"
 
@@ -64,9 +66,9 @@ class AccountController @Autowired()(private val accountService: UserService,
   def exportProgress() = {
     bookService.loadAllProgress().map(p =>
       p.user.username + ","
-        + p.book.author + ","
-        + p.book.title + ","
-        + p.book.collection + ","
+        + wrapInQuotes(p.book.author) + ","
+        + wrapInQuotes(p.book.title) + ","
+        + wrapInQuotes(p.book.collection) + ","
         + p.position + ","
         + p.finished + ","
         + DateUtil.format(p.lastUpdate)
@@ -92,6 +94,20 @@ class AccountController @Autowired()(private val accountService: UserService,
     "import"
   }
 
+  private def wrapInQuotes(s: String) = {
+    if (s.contains(",")) {
+      if (!s.contains("\"")) "\"" + s + "\""
+      else if (!s.contains("'")) "'" + s + "'"
+      else s
+    } else s
+  }
+
+  private def trimQuotes(s: String) = {
+    if (s.startsWith("\"") && s.endsWith("\"")) s.substring(1, s.length - 1)
+    else if (s.startsWith("'") && s.endsWith("'")) s.substring(1, s.length - 1)
+    else s
+  }
+
   @RequestMapping(
     value=Array("/import"),
     method=Array(RequestMethod.POST),
@@ -102,7 +118,7 @@ class AccountController @Autowired()(private val accountService: UserService,
       val linesToImport = body.data.split("\r?\n")
       val unsavedProgress = linesToImport
         .flatMap(line => {
-          val tokens = line.split(",").toSeq
+          val tokens = line.split(CSV_PARSING_REGEX).toSeq.map(trimQuotes)
           val result = if (tokens.size == 7) {
             bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6))
           } else if (tokens.size == 6) {
