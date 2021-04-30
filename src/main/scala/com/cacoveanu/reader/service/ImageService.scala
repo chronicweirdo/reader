@@ -3,6 +3,7 @@ package com.cacoveanu.reader.service
 import java.awt.image.BufferedImage
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import com.cacoveanu.reader.util.FileUtil
+import org.springframework.beans.factory.annotation.Value
 
 import javax.imageio.ImageIO
 import org.springframework.stereotype.Service
@@ -14,6 +15,7 @@ import java.awt.Font
 import java.awt.FontFormatException
 import java.awt.GraphicsEnvironment
 import java.io.IOException
+import scala.beans.BeanProperty
 import scala.util.Random
 
 @Service
@@ -37,10 +39,24 @@ class ImageService {
 
   private def toGraphicsColor(color: Color) = new awt.Color(color.red, color.green, color.blue)
 
+  @Value("${coverColors}")
+  @BeanProperty
+  var coverColors: String = _
+
+  private var coverColorOptions: Seq[Color] = _
+
+  private def getOptions() = {
+    if (coverColorOptions == null) {
+      coverColorOptions = coverColors
+        .split(",")
+        .map(c => if (c.startsWith("#")) c else "#" + c)
+        .map(hex2Rgb)
+    }
+    coverColorOptions
+  }
+
   private def pickAccentColor(): Color = {
-    val options = Seq(hex2Rgb("#FEC5BB"),
-      hex2Rgb("#9bf6ff"), hex2Rgb("#a0c4ff"), hex2Rgb("#caffbf"), hex2Rgb("#fdffb6"),
-      hex2Rgb("#ffadad"), hex2Rgb("#ccd5ae"), hex2Rgb("#d4a373"))
+    val options = getOptions()
     options(Random.nextInt(options.size))
   }
 
