@@ -57,17 +57,21 @@ class BookService {
     progressRepository.findAll().asScala.toSeq
   }
 
-  def importProgress(username: String, author: String, title: String, section: String, position: String, finished: String) = {
+  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String) = {
     try {
       val user = Option(accountRepository.findByUsername(username))
       val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
-      val matchingBook = if (matchingBooks.size == 1) matchingBooks.headOption else None
+      val matchingBook: Option[Book] = if (matchingBooks.size == 1) {
+        matchingBooks.headOption
+      } else if (matchingBooks.size > 1) {
+        // try to pick the one with the correct collection
+        matchingBooks.find(b => b.collection == collection)
+      } else None
       val positionParsed = position.toIntOption
       val finishedParsed = finished.toBooleanOption
       (user, matchingBook, positionParsed, finishedParsed) match {
         case (Some(u), Some(b), Some(p), Some(f)) =>
           Option(progressRepository.save(new Progress(u, b, p, new Date(), f)))
-
         case _ =>
           None
       }

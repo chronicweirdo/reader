@@ -65,6 +65,7 @@ class AccountController @Autowired()(private val accountService: UserService,
       p.user.username + ","
         + p.book.author + ","
         + p.book.title + ","
+        + p.book.collection + ","
         + p.position + ","
         + p.finished
     ).mkString("\n")
