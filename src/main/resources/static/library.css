@@ -36,6 +36,9 @@ h1 a {
     border-top: 2px solid white;
     border-bottom: 2px solid white;
 }
+#ch_latestRead {
+    display: none;
+}
 #collections {
     position: absolute;
     display: none;

@@ -209,14 +209,16 @@ function loadLatestRead() {
                 var books = JSON.parse(this.responseText)
                 if (books.length > 0) {
                     let bookIds = []
+                    var collectionDiv = document.getElementById("ch_latestRead")
                     for (var i = 0; i < books.length; i++) {
                         var book = books[i]
                         bookIds.push(book.id)
-                        var collectionDiv = document.getElementById("ch_latestRead")
+
                         if (collectionDiv != null) {
                             collectionDiv.appendChild(getBookHtml(book))
                         }
                     }
+                    collectionDiv.style.display = "block"
                     cleanupBookPages(bookIds)
                 }
             }
