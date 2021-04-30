@@ -278,6 +278,31 @@ function getRemoveProgressButton() {
     return [label, button]
 }
 
+function getMarkAsReadButton() {
+    let label = document.createElement('span')
+    label.innerHTML = ""
+    let button = document.createElement('a')
+    button.innerHTML = 'mark as read'
+
+    let markAsReadFunction = (event) => {
+        markAsRead()
+    }
+    let confirmationRequestFunction = (event) => {
+        console.log(event)
+        label.innerHTML = "are you sure?"
+        button.onclick = markAsReadFunction
+        button.classList.add('critical')
+        window.setTimeout(function() {
+            label.innerHTML = ""
+            button.onclick = confirmationRequestFunction
+            button.classList.remove('critical')
+        }, 2500)
+    }
+
+    button.onclick = confirmationRequestFunction
+    return [label, button]
+}
+
 function getBookId(bookPagesKey) {
     let tokens = bookPagesKey.split("_")
     if (tokens.length > 2) {

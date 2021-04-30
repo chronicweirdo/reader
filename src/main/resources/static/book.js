@@ -465,6 +465,7 @@ function initSettings() {
     addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_BOOK_ZOOM, setZoom)
     appendAll(settingsWrapper, getRemoveProgressButton())
+    appendAll(settingsWrapper, getMarkAsReadButton())
 }
 
 window.onload = function() {

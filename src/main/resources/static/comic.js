@@ -408,6 +408,7 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
     appendAll(settingsWrapper, getRemoveProgressButton())
+    appendAll(settingsWrapper, getMarkAsReadButton())
 }
 
 window.onload = function() {
