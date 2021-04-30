@@ -3,16 +3,16 @@ package com.cacoveanu.reader.service
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Date
-
 import com.cacoveanu.reader.entity.{Account, Book, CollectionNode, Progress}
 import com.cacoveanu.reader.repository.{AccountRepository, BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
-import com.cacoveanu.reader.util.SessionUtil
+import com.cacoveanu.reader.util.{DateUtil, SessionUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.stereotype.Service
 
+import java.text.SimpleDateFormat
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
@@ -57,7 +57,7 @@ class BookService {
     progressRepository.findAll().asScala.toSeq
   }
 
-  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String) = {
+  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String) = {
     try {
       val user = Option(accountRepository.findByUsername(username))
       val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
@@ -69,8 +69,11 @@ class BookService {
       } else None
       val positionParsed = position.toIntOption
       val finishedParsed = finished.toBooleanOption
-      (user, matchingBook, positionParsed, finishedParsed) match {
-        case (Some(u), Some(b), Some(p), Some(f)) =>
+      val lastUpdateDate = DateUtil.parse(lastUpdate)
+      (user, matchingBook, positionParsed, finishedParsed, lastUpdateDate) match {
+        case (Some(u), Some(b), Some(p), Some(f), Some(d)) =>
+          Option(progressRepository.save(new Progress(u, b, p, d, f)))
+        case (Some(u), Some(b), Some(p), Some(f), None) =>
           Option(progressRepository.save(new Progress(u, b, p, new Date(), f)))
         case _ =>
           None

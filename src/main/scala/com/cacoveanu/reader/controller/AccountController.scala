@@ -3,7 +3,7 @@ package com.cacoveanu.reader.controller
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import com.cacoveanu.reader.service.{BookService, UserService}
-import com.cacoveanu.reader.util.SessionUtil
+import com.cacoveanu.reader.util.{DateUtil, SessionUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.AnonymousAuthenticationToken
@@ -14,6 +14,7 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
+import java.text.SimpleDateFormat
 import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
 
@@ -67,7 +68,8 @@ class AccountController @Autowired()(private val accountService: UserService,
         + p.book.title + ","
         + p.book.collection + ","
         + p.position + ","
-        + p.finished
+        + p.finished + ","
+        + DateUtil.format(p.lastUpdate)
     ).mkString("\n")
   }
 
@@ -101,11 +103,13 @@ class AccountController @Autowired()(private val accountService: UserService,
       val unsavedProgress = linesToImport
         .flatMap(line => {
           val tokens = line.split(",").toSeq
-          val result = if (tokens.size == 6) {
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
+          val result = if (tokens.size == 7) {
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6))
+          } else if (tokens.size == 6) {
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), null)
           } else if (tokens.size == 5) {
             // section entry for progress is ignored
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4))
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4), null)
           } else None
           result match {
             case Some(data) => None
