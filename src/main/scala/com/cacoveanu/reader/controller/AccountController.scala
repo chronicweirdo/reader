@@ -94,20 +94,27 @@ class AccountController @Autowired()(private val accountService: UserService,
     method=Array(RequestMethod.POST),
     consumes=Array(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   )
-  @ResponseBody
-  def importData(body: ImportForm) = {
+  def importData(body: ImportForm, model: Model) = {
     val message = if (body.action == "progress") {
-      val savedProgress = body.data.split("\r?\n")
+      val linesToImport = body.data.split("\r?\n")
+      val unsavedProgress = linesToImport
         .flatMap(line => {
           val tokens = line.split(",").toSeq
-          if (tokens.size == 6) {
+          val result = if (tokens.size == 6) {
             bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5))
           } else if (tokens.size == 5) {
             // section entry for progress is ignored
             bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4))
           } else None
+          result match {
+            case Some(data) => None
+            case None => Some(line)
+          }
         })
-      s"successfully added ${savedProgress.size} progress"
+      s"successfully added ${linesToImport.size - unsavedProgress.size} progress" + (
+        if (unsavedProgress.size > 0) "<br>failed to import:<br><br>" + unsavedProgress.mkString("<br>")
+        else ""
+      )
     } else if (body.action == "addUsers") {
       val savedUsers = body.data
         .split("\r?\n")
@@ -145,7 +152,9 @@ class AccountController @Autowired()(private val accountService: UserService,
     } else {
       "nothing done"
     }
-    new RedirectView("/import?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8.name()))
+    //new RedirectView("/import?message=" + URLEncoder.encode(message, StandardCharsets.UTF_8.name()))
+    model.addAttribute("message", message)
+    "import"
   }
 
 }

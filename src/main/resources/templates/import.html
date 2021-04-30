@@ -57,7 +57,7 @@
 <body>
 <div class="container">
     <h1>Import</h1>
-    <p th:if="${message != null}" th:text="${message}">a message</p>
+    <p th:if="${message != null}" th:utext="${message}">a message</p>
     <form th:action="@{/import}" method="post" autocomplete="off">
         <input id="formAction" type="hidden" name="action" value="" />
         <p><textarea id="data" name="data" placeholder="csv data"></textarea></p>
