@@ -31,11 +31,11 @@ function getMeta(metaName) {
 
     for (let i = 0; i < metas.length; i++) {
         if (metas[i].getAttribute('name') === metaName) {
-        return metas[i].getAttribute('content');
+            return metas[i].getAttribute('content');
         }
     }
 
-    return '';
+    return undefined;
 }
 
 function getViewportWidth() {
@@ -114,11 +114,15 @@ function goHome() {
     window.location = "/"
 }
 
-function saveProgress(bookId, position) {
+function saveProgress(bookId, position, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status > 400 && this.status < 500) {
-            window.location.href = "/logout"
+        if (this.readyState == 4) {
+            if (this.status > 400 && this.status < 500) {
+                window.location.href = "/logout"
+            } else {
+                if (callback) callback()
+            }
         }
     }
     xhttp.open("PUT", "markProgress?id=" + bookId + "&position=" + (position))
@@ -161,6 +165,20 @@ function removeProgress() {
     }
     xhttp.open("DELETE", "removeProgress?id=" + getMeta("bookId"))
     xhttp.send()
+}
+
+function markAsRead() {
+    let endPosition = null
+    if (getMeta("bookEnd")) {
+        endPosition = getMeta("bookEnd")
+    } else if (getMeta("size")) {
+        endPosition = getMeta("size")
+    }
+    if (endPosition) {
+        saveProgress(getMeta("bookId"), endPosition, function() {
+            window.location = "/"
+        })
+    }
 }
 
 function updatePositionInput(position) {
