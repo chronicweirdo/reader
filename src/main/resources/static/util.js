@@ -337,7 +337,7 @@ function initFullscreenButton() {
 }
 
 function triggerSearchBuildHrefFunction(currentSearch) {
-    return "javascript:triggerSearch('" + currentSearch + "')"
+    return "javascript:triggerSearch('" + currentSearch.replaceAll("'", "\\'") + "')"
 }
 
 function searchLinkBuildHrefFunction(currentSearch) {
@@ -345,12 +345,12 @@ function searchLinkBuildHrefFunction(currentSearch) {
 }
 
 function addCollectionLinkTokens(parent, collection, searchSeparator, buildHrefFunction) {
-    let tokens = collection.split('\\')
+    let tokens = collection.split('/')
     let currentSearch = ""
     for (let i = 0; i < tokens.length; i++) {
         if (i > 0) {
             let slash = document.createElement("span")
-            slash.innerHTML = "\\"
+            slash.innerHTML = "/"
             parent.appendChild(slash)
             currentSearch += searchSeparator
         }
@@ -367,6 +367,6 @@ function initBookCollectionLinks() {
     if (collectionParagraph) {
         let collection = collectionParagraph.firstChild.innerHTML
         collectionParagraph.innerHTML = ''
-        addCollectionLinkTokens(collectionParagraph, collection, '\\', searchLinkBuildHrefFunction)
+        addCollectionLinkTokens(collectionParagraph, collection, '/', searchLinkBuildHrefFunction)
     }
 }

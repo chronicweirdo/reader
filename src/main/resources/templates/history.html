@@ -61,7 +61,7 @@
         function getTableRow(book) {
             var tr = document.createElement("tr")
             var collection = document.createElement("td")
-            addCollectionLinkTokens(collection, book.collection, '\\', searchLinkBuildHrefFunction)
+            addCollectionLinkTokens(collection, book.collection, '/', searchLinkBuildHrefFunction)
             tr.appendChild(collection)
             var title = document.createElement("td")
             var titleLink = document.createElement("a")

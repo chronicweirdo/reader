@@ -74,7 +74,7 @@ function getCollectionHtml(collection) {
     div.classList.add("collection-container")
     if (collection.length > 0) {
         var h1 = document.createElement("h1")
-        addCollectionLinkTokens(h1, collection, '\\\\', triggerSearchBuildHrefFunction)
+        addCollectionLinkTokens(h1, collection, '/', triggerSearchBuildHrefFunction)
         div.appendChild(h1)
     }
     return div

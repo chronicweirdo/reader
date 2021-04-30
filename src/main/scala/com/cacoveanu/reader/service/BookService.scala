@@ -143,7 +143,7 @@ class BookService {
   }
 
   private def prepareSearchTerm(original: String): String = {
-    if (original.contains("\\")) {
+    if (original.contains("/")) {
         original.toLowerCase() + "%"
     } else {
       // this is a more general search for terms

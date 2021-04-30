@@ -119,8 +119,7 @@ class ScannerService {
   private def getCollection(path: String): String = {
     val pathObject = Paths.get(path)
     val collectionPath = Paths.get(libraryLocation).relativize(pathObject.getParent)
-    //collectionPath.toString.replaceAll("\\\\", "/")
-    collectionPath.toString
+    "/" + collectionPath.toString.replaceAll("\\\\", "/")
   }
 
   private[service] def scanCbr(path: String): Option[Book] = {
