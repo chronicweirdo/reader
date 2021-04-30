@@ -225,12 +225,26 @@ object EpubUtil {
     coverResource
   }
 
-  def getCover(epubPath: String): Option[Content] =
+  def getCoverFromOpf(epubPath: String): Option[Content] =
     getOpf(epubPath).flatMap { case (opfPath, opf) => getCoverResource(opfPath, opf)}
     .flatMap { case (href, contentType) =>
       readResource(epubPath, href)
         .map(bytes => Content(None, contentType, bytes))
     }
+
+  def findCoverInResource(epubPath: String, resourcePath: String) = {
+    readResource(epubPath, resourcePath).flatMap(getXml)
+      .flatMap( xml => {
+        val fromImg = (xml \\ "img").headOption.map(imgNode => getAbsoluteEpubPath(resourcePath, (imgNode \ "@src").text))
+        if (fromImg.isDefined) {
+          fromImg
+        } else {
+          val fromImage = (xml \\ "image").headOption.map(imgNode => getAbsoluteEpubPath(resourcePath, (imgNode \ "@{http://www.w3.org/1999/xlink}href").text))
+          fromImage
+        }
+      })
+      .flatMap( coverResource => readResource(epubPath, coverResource).map(bytes => Content(None, FileUtil.getMediaType(coverResource).getOrElse(null), bytes)))
+  }
 
   def getAbsoluteEpubPath(povPath: String, currentPath: String): String = {
     // check if current path is absolute
