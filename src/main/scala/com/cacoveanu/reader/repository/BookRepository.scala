@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param
 trait BookRepository extends JpaRepository[Book, java.lang.Long] {
 
   @Query(
-    value="select * from book b where lower(b.collection) + '\\' + lower(b.title) like :term order by lower(b.collection) + '\\' + lower(b.title) asc",
-    countQuery = "select count(*) from book b where lower(b.collection) + '\\' + lower(b.title) like :term order by lower(b.collection) + '\\' + lower(b.title) asc",
+    value="select * from book b where lower(b.collection) + '/' + lower(b.title) like :term order by lower(b.collection) asc, lower(b.title) asc",
+    countQuery = "select count(*) from book b where lower(b.collection) + '/' + lower(b.title) like :term order by lower(b.collection) asc, lower(b.title) asc",
     nativeQuery = true
   )
   def search(@Param("term") term: String, pageable: Pageable): java.util.List[Book]

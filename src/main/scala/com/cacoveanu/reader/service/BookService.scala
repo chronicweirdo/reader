@@ -167,8 +167,7 @@ class BookService {
   }
 
   def search(term: String, page: Int): Seq[Book] = {
-    val sort = Sort.by(Direction.ASC, "collection", "title")
-    val pageRequest = PageRequest.of(page, PAGE_SIZE, sort)
+    val pageRequest = PageRequest.of(page, PAGE_SIZE)
     bookRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
   }
 
