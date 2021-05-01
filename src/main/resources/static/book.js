@@ -332,7 +332,7 @@ function getChapters() {
             })
         }
     }
-    return document.chapters
+    return document.chapters.sort((a, b) => parseFloat(a.start) - parseFloat(b.start));
 }
 
 function resetCurrentChapter() {

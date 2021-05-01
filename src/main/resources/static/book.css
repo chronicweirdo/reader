@@ -30,6 +30,8 @@ html {
 img, svg {
     max-height: 80vh !important;
     max-width: 80vw !important;
+    width: auto;
+    height: auto;
 }
 a {
     color: blue;
