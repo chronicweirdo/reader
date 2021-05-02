@@ -216,6 +216,16 @@ function computePagesForSection(position) {
     })
 }
 
+function resetPagesForSection() {
+    if (document.section) {
+        let start = document.section.start
+        let end = document.section.end
+        let remainingPages = document.savedPages.filter(page => page.end < start || end < page.start)
+        document.savedPages = remainingPages
+        saveCache()
+    }
+}
+
 function savePage(start, end) {
     if (document.savedPages == null) {
         document.savedPages = []
