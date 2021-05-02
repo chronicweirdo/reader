@@ -202,37 +202,45 @@ function getRgb(colorArray) {
 
 function displayPage(page, callback) {
     var timestamp = + new Date()
-
-    document.pageDisplayTimestamp = timestamp
-    var displayPageInternalCallback = function(data) {
-        if (document.pageDisplayTimestamp == timestamp) {
-            document.pageDisplayTimestamp = null
-            hideSpinner()
-            var img = getImage()
-            img.onload = function() {
-                document.body.style.background = getRgb(data.color)
-                setPage(page)
-                saveProgress(getBookId(), page-1)
-                setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
-                setImageWidth(getOriginalImageWidth())
-                setImageHeight(getOriginalImageHeight())
-                setImageLeft(0)
-                setImageTop(0)
-                updateMinimumZoom()
-                updateDownloadUrl()
-                if (callback != null) {
-                    callback()
-                }
-            }
-            img.src = data.image
-        }
+    if (document.lastPageChange == undefined) {
+        window.location.reload()
     }
-    downloadImageData(page, displayPageInternalCallback)
-    window.setTimeout(function() {
-        if (document.pageDisplayTimestamp == timestamp) {
-            showSpinner()
+    let difference = timestamp - document.lastPageChange
+    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
+        window.location.reload()
+    } else {
+        document.lastPageChange = timestamp
+        document.pageDisplayTimestamp = timestamp
+        var displayPageInternalCallback = function(data) {
+            if (document.pageDisplayTimestamp == timestamp) {
+                document.pageDisplayTimestamp = null
+                hideSpinner()
+                var img = getImage()
+                img.onload = function() {
+                    document.body.style.background = getRgb(data.color)
+                    setPage(page)
+                    saveProgress(getBookId(), page-1)
+                    setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
+                    setImageWidth(getOriginalImageWidth())
+                    setImageHeight(getOriginalImageHeight())
+                    setImageLeft(0)
+                    setImageTop(0)
+                    updateMinimumZoom()
+                    updateDownloadUrl()
+                    if (callback != null) {
+                        callback()
+                    }
+                }
+                img.src = data.image
+            }
         }
-    }, 100)
+        downloadImageData(page, displayPageInternalCallback)
+        window.setTimeout(function() {
+            if (document.pageDisplayTimestamp == timestamp) {
+                showSpinner()
+            }
+        }, 100)
+    }
 }
 
 function setPageTitle(title) {
@@ -463,6 +471,7 @@ window.onload = function() {
     initFullscreenButton()
     initBookCollectionLinks()
 
+    document.lastPageChange = new Date()
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
         displayPage(startPage, function() {

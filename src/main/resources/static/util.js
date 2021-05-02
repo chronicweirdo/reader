@@ -1,3 +1,5 @@
+var REFRESH_PAGE_TIME_DIFFERENCE = 15*60*1000
+
 function onMobile() {
     if (navigator.userAgent.match(/Android/i)
         || navigator.userAgent.match(/webOS/i)

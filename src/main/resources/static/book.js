@@ -86,36 +86,50 @@ function getContentFor(start, end, callback) {
     }
 }
 
-async function displayPageFor(position) {
-    showSpinner()
-    let page = getPageFor(position)
-    if (page == null) {
-        computePagesForSection(position)
-        page = await getPageForPromise(position)
-    }
 
-    getContentFor(page.start, page.end, function(text) {
-        var content = document.getElementById("ch_content")
-        content.innerHTML = text
-        document.currentPage = page
-        // if book end is displayed, we mark the book as read
-        if (page.end == parseInt(getMeta("bookEnd"))) {
-            saveProgress(getMeta("bookId"), page.end)
-        } else {
-            saveProgress(getMeta("bookId"), page.start)
+
+async function displayPageFor(position) {
+    let now = new Date()
+    if (document.lastPageChange == undefined) {
+        window.location.reload()
+    }
+    let difference = now - document.lastPageChange
+    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
+        window.location.reload()
+    } else {
+        document.lastPageChange = now
+
+        showSpinner()
+        let page = getPageFor(position)
+        if (page == null) {
+            computePagesForSection(position)
+            page = await getPageForPromise(position)
         }
-        updatePositionInput(getPositionPercentage(page.start, page.end))
-        updatePagesLeft()
-        // check if overflow is triggerred on every page display
-        scrollNecessaryPromise(content).then(scrollNecessary => {
-            if (scrollNecessary) {
-                resetPagesForSection()
-                displayPageFor(position)
+
+        getContentFor(page.start, page.end, function(text) {
+            var content = document.getElementById("ch_content")
+            content.innerHTML = text
+            document.currentPage = page
+            // if book end is displayed, we mark the book as read
+            if (page.end == parseInt(getMeta("bookEnd"))) {
+                saveProgress(getMeta("bookId"), page.end)
             } else {
-                hideSpinner()
+                saveProgress(getMeta("bookId"), page.start)
             }
+            updatePositionInput(getPositionPercentage(page.start, page.end))
+            updatePagesLeft()
+            // check if overflow is triggerred on every page display
+            scrollNecessaryPromise(content).then(scrollNecessary => {
+                if (scrollNecessary) {
+                    resetPagesForSection()
+                    displayPageFor(position)
+                } else {
+                    hideSpinner()
+                }
+            })
         })
-    })
+
+    }
 }
 
 function updatePagesLeft() {
@@ -515,6 +529,7 @@ window.onload = function() {
     setZoom(getSetting(SETTING_BOOK_ZOOM), false)
     loadCache()
 
+    document.lastPageChange = new Date()
     timeout(100).then(() => {loadProgress(function(currentPosition) {
         displayPageFor(currentPosition)
     })})
