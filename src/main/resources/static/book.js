@@ -106,7 +106,15 @@ async function displayPageFor(position) {
         }
         updatePositionInput(getPositionPercentage(page.start, page.end))
         updatePagesLeft()
-        hideSpinner()
+        // check if overflow is triggerred on every page display
+        scrollNecessaryPromise(content).then(scrollNecessary => {
+            if (scrollNecessary) {
+                resetPagesForSection()
+                displayPageFor(position)
+            } else {
+                hideSpinner()
+            }
+        })
     })
 }
 
