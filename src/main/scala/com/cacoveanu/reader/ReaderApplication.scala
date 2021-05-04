@@ -82,7 +82,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/Merriweather/*",
         "/Roboto/*",
         "/manifest.json",
-        "/shortcut.png"
+        "/shortcut*.png"
       ).permitAll()
       .antMatchers(
         "/users",
