@@ -15,6 +15,21 @@ function addPagenum(image, page, totalPages) {
     image.parentElement.appendChild(span)
 }
 
+function getSvgCheck() {
+    let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+    svg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    svg.setAttribute("style", "margin:auto;display:block;")
+    svg.setAttribute("viewBox", "0 0 12 10")
+    svg.setAttribute("preserveAspectRatio", "xMidYMid")
+
+    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute("d", "M 3 3 L 1 5 L 5 9 L 11 3 L 9 1 L 5 5 Z ")
+
+    svg.appendChild(path)
+    return svg
+}
+
 function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {
@@ -26,7 +41,8 @@ function addProgress(image, page, totalPages, downloaded) {
         prog.style.width = (page / (totalPages-1) * 100) + "%"
         span.appendChild(prog)
     } else {
-        span.innerText = "\u2713"
+        //span.innerText = '<path fill="#ffffff" stroke="#000000" d="M 3 3 L 1 5 L 5 9 L 11 3 L 9 1 L 5 5 Z " stroke-width="1"></path></svg>'
+        span.appendChild(getSvgCheck())
         span.classList.add("progresscheck")
     }
     if (downloaded) {
