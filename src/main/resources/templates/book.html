@@ -47,7 +47,7 @@
             </ul>
         </div>
         <p class="ch_toc_separator"></p>
-        <p id="ch_cover"><img th:src="${cover}"/></p>
+        <p id="ch_cover"><img th:src="${cover}"/><span>&#128428;</span></p>
         <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
         <h1 th:text="${title}">Book Title</h1>
         <p><span>progress:</span><span id="positionInput"></span></p>

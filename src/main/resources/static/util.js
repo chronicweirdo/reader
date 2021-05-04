@@ -123,6 +123,12 @@ function saveProgress(bookId, position, callback) {
             if (this.status > 400 && this.status < 500) {
                 window.location.href = "/logout"
             } else {
+                // mark on device
+                let onDeviceHeader = this.getResponseHeader("ondevice")
+                if (onDeviceHeader == "true") {
+                    let coverElement = document.getElementById("ch_cover")
+                    coverElement.classList.add("ondevice")
+                }
                 if (callback) callback()
             }
         }

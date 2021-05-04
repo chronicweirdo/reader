@@ -405,6 +405,9 @@ async function handleMarkProgress(request) {
     let position = parseInt(url.searchParams.get("position"))
     let dbProgress = await databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: true})
 
+    let savedBook = await databaseLoad(BOOKS_TABLE, id)
+    let bookOnDevice = savedBook != null && savedBook != undefined
+
     let markProgressResponse
     try {
         markProgressResponse = await fetch(request)
@@ -421,7 +424,20 @@ async function handleMarkProgress(request) {
         markProgressResponse = new Response()
     }
 
-    return markProgressResponse
+    let blob = await markProgressResponse.blob()
+    var newHeaders = new Headers();
+    for (var kv of markProgressResponse.headers.entries()) {
+        newHeaders.append(kv[0], kv[1]);
+    }
+    newHeaders.append('ondevice', bookOnDevice)
+
+    let annotatedResponse = new Response(blob, {
+        status: markProgressResponse.status,
+        statusText: markProgressResponse.statusText,
+        headers: newHeaders
+    })
+
+    return annotatedResponse
 }
 
 async function handleLatestReadRequest(request) {
