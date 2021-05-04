@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.domain.{PageRequest, Sort}
 import org.springframework.stereotype.Service
 
+import java.lang
 import java.text.SimpleDateFormat
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
@@ -70,11 +71,21 @@ class BookService {
       val positionParsed = position.toIntOption
       val finishedParsed = finished.toBooleanOption
       val lastUpdateDate = DateUtil.parse(lastUpdate)
+      // try to find existing progress
+      val existingProgressId: Option[lang.Long] = (user, matchingBook) match {
+        case (Some(u), Some(b)) => progressRepository.findByUserAndBookId(u, b.id).asScala.map(_.id)
+        case _ => None
+      }
+
       (user, matchingBook, positionParsed, finishedParsed, lastUpdateDate) match {
         case (Some(u), Some(b), Some(p), Some(f), Some(d)) =>
-          Option(progressRepository.save(new Progress(u, b, p, d, f)))
+          val progress = new Progress(u, b, p, d, f)
+          if (existingProgressId.isDefined) progress.id = existingProgressId.get
+          Option(progressRepository.save(progress))
         case (Some(u), Some(b), Some(p), Some(f), None) =>
-          Option(progressRepository.save(new Progress(u, b, p, new Date(), f)))
+          val progress = new Progress(u, b, p, new Date(), f)
+          if (existingProgressId.isDefined) progress.id = existingProgressId.get
+          Option(progressRepository.save(progress))
         case _ =>
           None
       }
