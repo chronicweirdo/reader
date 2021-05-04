@@ -29,6 +29,7 @@
         a {
             color: gold;
             text-decoration: underline;
+            cursor: pointer;
         }
         table {
             width: 100%;
@@ -60,6 +61,18 @@
     </style>
     <script src="util.js"></script>
     <script>
+        function deleteProgress(id, element) {
+            var xhttp = new XMLHttpRequest()
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        element.parentElement.parentElement.remove()
+                    }
+                }
+            }
+            xhttp.open("DELETE", "removeProgress?id=" + id)
+            xhttp.send()
+        }
         function showSpinner() {
             var spinner = document.getElementById("spinner")
             spinner.style.display = "block"
@@ -87,6 +100,16 @@
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
             tr.appendChild(date)
+
+            var actions = document.createElement("td")
+            var removeProgressButton = document.createElement("a")
+            removeProgressButton.onclick = function(event) {
+                deleteProgress(book.id, this)
+            }
+            removeProgressButton.innerHTML = "delete"
+            actions.appendChild(removeProgressButton)
+            tr.appendChild(actions)
+
             return tr
         }
         function loadHistory() {
@@ -122,7 +145,7 @@
 <body>
 <p>This is a list of everything you read. <a href="/">Go back</a></p>
 <table id="ch_read_history">
-    <tr><th>collection</th><th>title</th><th>progress</th><th>read date</th></tr>
+    <tr><th>collection</th><th>title</th><th>progress</th><th>read date</th><th>actions</th></tr>
 </table>
 <div id="spinner">
     <svg id="ch_spinner_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid">
