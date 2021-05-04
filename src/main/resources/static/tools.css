@@ -286,24 +286,10 @@
 #ch_cover img {
     max-height: 50vh;
     position: relative;
+    padding: 0
 }
-#ch_cover span {
-    display: none;
-}
-#ch_cover.ondevice span {
-    display: block;
-    position: absolute;
-    bottom: 0.1em;
-    font-size: 2em;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: black;
-    color: gold;
-}
-#ch_tools.right #ch_cover.ondevice span {
-    right: 0.1em;
-}
-#ch_tools.left #ch_cover.ondevice span {
-    left: 0.1em;
+#ch_cover.ondevice img {
+    border-bottom: .4em solid gold;
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
