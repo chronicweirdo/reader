@@ -1,12 +1,15 @@
 var startPan = true
 var panEnabled = true
+var pinching = false
 
 function pan(x, y) {
     if (getSetting(SETTING_SWIPE_PAGE)) {
-        if (startPan && x < 0 && isEndOfRow() && isEndOfColumn()) {
+        //let horizontalThreshold = getViewportWidth() * .1
+        //let verticalMoveValid = Math.abs(y) < (getViewportHeight() * .05)
+        if (startPan && !pinching && x < 0 && isEndOfRow() && isEndOfColumn()) {
             panEnabled = false
             goToNextView()
-        } else if (startPan && x > 0 && isBeginningOfRow() && isBeginningOfColumn()) {
+        } else if (startPan && !pinching && x > 0 && isBeginningOfRow() && isBeginningOfColumn()) {
             panEnabled = false
             goToPreviousView()
         } else if (panEnabled) {
@@ -398,11 +401,16 @@ function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
 }
 
 function touchGesturePinchStart(pinchCenterX, pinchCenterY) {
+    pinching = true
     document.originalZoom = getZoom()
 }
 
 function touchGesturePinchOngoing(currentZoom, pinchCenterX, pinchCenterY) {
     zoom(document.originalZoom * currentZoom, pinchCenterX, pinchCenterY)
+}
+
+function touchGesturePinchEnd() {
+    pinching = false
 }
 
 function touchGesturePan(deltaX, deltaY) {
@@ -458,6 +466,7 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
+        "pinchEndAction": touchGesturePinchEnd,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
@@ -467,6 +476,7 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
+        "pinchEndAction": touchGesturePinchEnd,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
@@ -476,6 +486,7 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
+        "pinchEndAction": touchGesturePinchEnd,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
