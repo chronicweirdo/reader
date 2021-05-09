@@ -1,15 +1,21 @@
-var startPan = true
 var panEnabled = true
 var pinching = false
+var panX = 0
+var panY = 0
+var swipeNextPossible = false
+var swipePreviousPossible = false
 
-function pan(x, y) {
+function pan(x, y, currentX, currentY) {
     if (getSetting(SETTING_SWIPE_PAGE)) {
-        //let horizontalThreshold = getViewportWidth() * .1
-        //let verticalMoveValid = Math.abs(y) < (getViewportHeight() * .05)
-        if (startPan && !pinching && x < 0 && isEndOfRow() && isEndOfColumn()) {
+        let horizontalThreshold = getViewportWidth() * .1
+        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * .05)
+        let deltaX = panX - currentX
+        if (swipeNextPossible && deltaX < 0) swipeNextPossible = false
+        if (swipePreviousPossible && deltaX > 0) swipePreviousPossible = false
+        if (panEnabled && !pinching && verticalMoveValid && deltaX > horizontalThreshold && swipeNextPossible) {
             panEnabled = false
             goToNextView()
-        } else if (startPan && !pinching && x > 0 && isBeginningOfRow() && isBeginningOfColumn()) {
+        } else if (panEnabled && !pinching && verticalMoveValid && deltaX < -horizontalThreshold && swipePreviousPossible) {
             panEnabled = false
             goToPreviousView()
         } else if (panEnabled) {
@@ -17,7 +23,6 @@ function pan(x, y) {
             setImageTop(getImageTop() + y)
             updateImage()
         }
-        startPan = false
     } else {
         setImageLeft(getImageLeft() + x)
         setImageTop(getImageTop() + y)
@@ -25,9 +30,19 @@ function pan(x, y) {
     }
 }
 
+function touchGestureStartPan(x, y) {
+    if (getSetting(SETTING_SWIPE_PAGE)) {
+        panX = x
+        panY = y
+        if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
+        if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
+    }
+}
+
 function touchGestureEndPan() {
-    startPan = true
     panEnabled = true
+    swipeNextPossible = false
+    swipePreviousPossible = false
 }
 
 function zoom(zoom, centerX, centerY) {
@@ -413,8 +428,8 @@ function touchGesturePinchEnd() {
     pinching = false
 }
 
-function touchGesturePan(deltaX, deltaY) {
-    pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
+function touchGesturePan(deltaX, deltaY, currentX, currentY) {
+    pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), currentX, currentY)
 }
 
 function downloadComicToDevice() {
@@ -467,6 +482,7 @@ window.onload = function() {
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "pinchEndAction": touchGesturePinchEnd,
+        "panStartAction": touchGestureStartPan,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
@@ -477,6 +493,7 @@ window.onload = function() {
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "pinchEndAction": touchGesturePinchEnd,
+        "panStartAction": touchGestureStartPan,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
@@ -487,6 +504,7 @@ window.onload = function() {
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
         "pinchEndAction": touchGesturePinchEnd,
+        "panStartAction": touchGestureStartPan,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })

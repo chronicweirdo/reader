@@ -15,7 +15,7 @@ function disableEventHandlers(el) {
     })
 }
 
-function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAction, panAction, panEndAction) {
+function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAction, panStartAction, panAction, panEndAction) {
     disableEventHandlers(element)
     var hammertime = new Hammer(element, {domEvents: true})
     hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
@@ -58,13 +58,14 @@ function enableTouchGestures(element, pinchStartAction, pinchAction, pinchEndAct
         if (! pinching) {
             panStartX = ev.center.x
             panStartY = ev.center.y
+            if (panStartAction) panStartAction(panStartX, panStartY)
         }
     })
     hammertime.on('pan', function(ev) {
         if (! pinching) {
             var currentDeltaX = ev.deltaX - panPreviousDeltaX
             var currentDeltaY = ev.deltaY - panPreviousDeltaY
-            if (panAction) panAction(currentDeltaX, currentDeltaY)
+            if (panAction) panAction(currentDeltaX, currentDeltaY, ev.center.x, ev.center.y)
             panPreviousDeltaX = ev.deltaX
             panPreviousDeltaY = ev.deltaY
         }
@@ -148,6 +149,7 @@ function enableGesturesOnElement(element, actions) {
         actions.pinchStartAction,
         actions.pinchAction,
         actions.pinchEndAction,
+        actions.panStartAction,
         actions.panAction,
         actions.panEndAction
     )
