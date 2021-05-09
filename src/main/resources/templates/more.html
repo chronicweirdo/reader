@@ -73,14 +73,6 @@
         window.onload = function() {
             let settingsWrapper = document.getElementById('ch_latestReadSetting')
             appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
-            let settingValue = getSetting(SETTING_LATEST_READ_LIMIT)
-            let settingValueDisplay = document.createElement('span')
-            settingValueDisplay.innerHTML = settingValue
-            settingsWrapper.appendChild(settingValueDisplay)
-            addSettingListener(SETTING_LATEST_READ_LIMIT, (value) => {
-                settingValueDisplay.innerHTML = value
-            })
-
             let displayTitleWrapper = document.getElementById('ch_displayTitles')
             appendAll(displayTitleWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
         }

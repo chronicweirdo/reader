@@ -227,14 +227,17 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
+    max-width: 100%;
     display: grid;
-    grid-template-columns: auto auto;
-    grid-gap:5px;
+    grid-template-columns: 34% 38% 24%;
+    row-gap: 15px;
+    column-gap: 2%;
     padding: 8px;
     display: none;
     align-items: center;
     justify-items: start;
     border: 4px dotted black;
+    font-size: 1rem;
 }
 
 #ch_tools.right #ch_settings {
@@ -247,10 +250,16 @@
 
 #ch_settings input {
     height: 3vh;
+    max-width: 100%;
 }
 
 #ch_settings input[type=checkbox] {
     width: 3vh;
+}
+
+#ch_settings span, #ch_settings label {
+    max-width: 100%;
+    overflow: hidden;
 }
 
 #ch_settings a {

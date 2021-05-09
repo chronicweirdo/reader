@@ -64,10 +64,13 @@ function createColorController(settingName, text) {
     input.name = settingName
     let value = getSetting(settingName)
     input.value = value
+    let textValue = document.createElement('span')
+    textValue.innerHTML = value
     input.onchange = function(event) {
         updateSetting(event.target)
+        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input]
+    return [label, input, textValue]
 }
 
 function createNumberController(settingName, text, min, max, step) {
@@ -82,10 +85,13 @@ function createNumberController(settingName, text, min, max, step) {
     input.step = step
     let value = getSetting(settingName)
     input.value = value
+    let textValue = document.createElement('span')
+    textValue.innerHTML = value
     input.onchange = function(event) {
         updateSetting(event.target)
+        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input]
+    return [label, input, textValue]
 }
 
 function createBooleanController(settingName, text) {
@@ -97,10 +103,13 @@ function createBooleanController(settingName, text) {
     input.name = settingName
     let value = getSetting(settingName)
     input.checked = value
+    let textValue = document.createElement('span')
+    textValue.innerHTML = value
     input.onchange = function(event) {
         updateSetting(event.target)
+        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input]
+    return [label, input, textValue]
 }
 
 var settingControllers = {}

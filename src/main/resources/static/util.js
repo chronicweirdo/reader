@@ -283,7 +283,7 @@ function getRemoveProgressButton() {
     }
 
     button.onclick = confirmationRequestFunction
-    return [label, button]
+    return [label, button, document.createElement('span')]
 }
 
 function getMarkAsReadButton() {
@@ -308,7 +308,7 @@ function getMarkAsReadButton() {
     }
 
     button.onclick = confirmationRequestFunction
-    return [label, button]
+    return [label, button, document.createElement('span')]
 }
 
 function getBookId(bookPagesKey) {

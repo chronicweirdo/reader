@@ -440,7 +440,6 @@ function downloadComicToDevice() {
     }
 }
 
-// <a id="downloadPageButton" href="">download</a><
 function getDownloadPageButton() {
     let label = document.createElement('span')
     label.innerHTML = ""
@@ -448,7 +447,7 @@ function getDownloadPageButton() {
     button.id = 'downloadPageButton'
     button.innerHTML = 'download'
 
-    return [label, button]
+    return [label, button, document.createElement('span')]
 }
 
 function initSettings() {
