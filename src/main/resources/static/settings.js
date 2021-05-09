@@ -13,6 +13,7 @@ var SETTING_COMIC_VERTICAL_JUMP = "comic_vertical_jump"
 var SETTING_COMIC_ROW_THRESHOLD = "comic_row_threshold"
 var SETTING_COMIC_COLUMN_THRESHOLD = "comic_column_threshold"
 var SETTING_LIBRARY_DISPLAY_TITLE = "library_display_title"
+var SETTING_SWIPE_PAGE = "swipe_page"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -30,6 +31,7 @@ settingDefaults[SETTING_COMIC_VERTICAL_JUMP] = "0.5"
 settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
 settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
 settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
+settingDefaults[SETTING_SWIPE_PAGE] = "true"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -47,6 +49,7 @@ settingParsers[SETTING_COMIC_VERTICAL_JUMP] = parseFloat
 settingParsers[SETTING_COMIC_ROW_THRESHOLD] = parseFloat
 settingParsers[SETTING_COMIC_COLUMN_THRESHOLD] = parseFloat
 settingParsers[SETTING_LIBRARY_DISPLAY_TITLE] = parseBoolean
+settingParsers[SETTING_SWIPE_PAGE] = parseBoolean
 
 var settingEncoders = {}
 
@@ -119,6 +122,7 @@ settingControllers[SETTING_COMIC_ROW_THRESHOLD] = () => createNumberController(S
 settingControllers[SETTING_COMIC_COLUMN_THRESHOLD] = () => createNumberController(SETTING_COMIC_COLUMN_THRESHOLD, "column threshold", 0.01, 0.1, 0.01)
 
 settingControllers[SETTING_LIBRARY_DISPLAY_TITLE] = () => createBooleanController(SETTING_LIBRARY_DISPLAY_TITLE, "display titles")
+settingControllers[SETTING_SWIPE_PAGE] = () => createBooleanController(SETTING_SWIPE_PAGE, "swipe pages")
 
 function updateSetting(element) {
     let value

@@ -1,7 +1,30 @@
+var startPan = true
+var panEnabled = true
+
 function pan(x, y) {
-    setImageLeft(getImageLeft() + x)
-    setImageTop(getImageTop() + y)
-    updateImage()
+    if (getSetting(SETTING_SWIPE_PAGE)) {
+        if (startPan && x < 0 && isEndOfRow() && isEndOfColumn()) {
+            panEnabled = false
+            goToNextView()
+        } else if (startPan && x > 0 && isBeginningOfRow() && isBeginningOfColumn()) {
+            panEnabled = false
+            goToPreviousView()
+        } else if (panEnabled) {
+            setImageLeft(getImageLeft() + x)
+            setImageTop(getImageTop() + y)
+            updateImage()
+        }
+        startPan = false
+    } else {
+        setImageLeft(getImageLeft() + x)
+        setImageTop(getImageTop() + y)
+        updateImage()
+    }
+}
+
+function touchGestureEndPan() {
+    startPan = true
+    panEnabled = true
 }
 
 function zoom(zoom, centerX, centerY) {
@@ -415,6 +438,7 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
 }
@@ -434,7 +458,8 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
-        "panAction": touchGesturePan
+        "panAction": touchGesturePan,
+        "panEndAction": touchGestureEndPan
     })
 
     enableGesturesOnElement(document.getElementById("ch_prev"), {
@@ -442,7 +467,8 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
-        "panAction": touchGesturePan
+        "panAction": touchGesturePan,
+        "panEndAction": touchGestureEndPan
     })
     document.getElementById("ch_prev").addEventListener("click", (event) => goToPreviousView())
     enableGesturesOnElement(document.getElementById("ch_next"), {
@@ -450,7 +476,8 @@ window.onload = function() {
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
         "pinchAction": touchGesturePinchOngoing,
-        "panAction": touchGesturePan
+        "panAction": touchGesturePan,
+        "panEndAction": touchGestureEndPan
     })
     document.getElementById("ch_next").addEventListener("click", (event) => goToNextView())
 
