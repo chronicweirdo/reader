@@ -1,3 +1,35 @@
+var panX = 0
+var panY = 0
+
+function touchGestureStartPan(event) {
+    console.log(event)
+    console.log(window.getSelection())
+    if (event.touches.length == 1 && window.getSelection().type != "Range") {
+        panX = event.touches[0].pageX
+        panY = event.touches[0].pageY
+    }
+}
+
+function touchGesturePan(event) {
+    console.log(event)
+    console.log(window.getSelection())
+    if (getSetting(SETTING_SWIPE_PAGE) && event.touches.length == 1 && window.getSelection().type != "Range") {
+        let newX = event.touches[0].pageX
+        let newY = event.touches[0].pageY
+        let deltaX = newX - panX
+        let horizontalThreshold = getViewportWidth() * .1
+        console.log(horizontalThreshold)
+        console.log(deltaX)
+        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * .05)
+        console.log(verticalMoveValid)
+        if (verticalMoveValid && deltaX < -horizontalThreshold) {
+            nextPage()
+        } else if (verticalMoveValid && deltaX > horizontalThreshold) {
+            previousPage()
+        }
+    }
+}
+
 function imageLoadedPromise(image) {
     return new Promise((resolve, reject) => {
         let imageResolveFunction = function() {
@@ -486,6 +518,7 @@ function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
     appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
@@ -513,6 +546,8 @@ window.onload = function() {
         "leftAction": previousPage,
         "rightAction": nextPage
     })
+    document.getElementById("ch_content").addEventListener('touchstart', touchGestureStartPan, false);
+    document.getElementById("ch_content").addEventListener('touchmove', touchGesturePan, false);
 
     enableGesturesOnElement(document.getElementById("ch_prev"), {
         "clickAction": (x, y) => previousPage()
