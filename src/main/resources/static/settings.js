@@ -14,6 +14,8 @@ var SETTING_COMIC_ROW_THRESHOLD = "comic_row_threshold"
 var SETTING_COMIC_COLUMN_THRESHOLD = "comic_column_threshold"
 var SETTING_LIBRARY_DISPLAY_TITLE = "library_display_title"
 var SETTING_SWIPE_PAGE = "swipe_page"
+var SETTING_SWIPE_VERTICAL_THRESHOLD = "swipe_vertical_threshold" // screen percentage for vertical finger move before swipe becomes invalid
+var SETTING_SWIPE_LENGTH = "swipe_length" // screen percentage for horizontal finger move for swipe action to register
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -32,6 +34,8 @@ settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
 settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
 settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
 settingDefaults[SETTING_SWIPE_PAGE] = "true"
+settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.05"
+settingDefaults[SETTING_SWIPE_LENGTH] = "0.1"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -50,6 +54,8 @@ settingParsers[SETTING_COMIC_ROW_THRESHOLD] = parseFloat
 settingParsers[SETTING_COMIC_COLUMN_THRESHOLD] = parseFloat
 settingParsers[SETTING_LIBRARY_DISPLAY_TITLE] = parseBoolean
 settingParsers[SETTING_SWIPE_PAGE] = parseBoolean
+settingParsers[SETTING_SWIPE_VERTICAL_THRESHOLD] = parseFloat
+settingParsers[SETTING_SWIPE_LENGTH] = parseFloat
 
 var settingEncoders = {}
 
@@ -132,6 +138,8 @@ settingControllers[SETTING_COMIC_COLUMN_THRESHOLD] = () => createNumberControlle
 
 settingControllers[SETTING_LIBRARY_DISPLAY_TITLE] = () => createBooleanController(SETTING_LIBRARY_DISPLAY_TITLE, "display titles")
 settingControllers[SETTING_SWIPE_PAGE] = () => createBooleanController(SETTING_SWIPE_PAGE, "swipe pages")
+settingControllers[SETTING_SWIPE_VERTICAL_THRESHOLD] = () => createNumberController(SETTING_SWIPE_VERTICAL_THRESHOLD, "y threshold", 0.05, 0.45, 0.1)
+settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_SWIPE_LENGTH, "swipe length", 0.05, 0.35, 0.05)
 
 function updateSetting(element) {
     let value

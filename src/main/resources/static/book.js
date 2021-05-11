@@ -17,10 +17,10 @@ function touchGesturePan(event) {
         let newX = event.touches[0].pageX
         let newY = event.touches[0].pageY
         let deltaX = newX - panX
-        let horizontalThreshold = getViewportWidth() * .1
+        let horizontalThreshold = getViewportWidth() * getSetting(SETTING_SWIPE_LENGTH)
         console.log(horizontalThreshold)
         console.log(deltaX)
-        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * .05)
+        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
         console.log(verticalMoveValid)
         if (verticalMoveValid && deltaX < -horizontalThreshold) {
             nextPage()
@@ -519,6 +519,8 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
     appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_LENGTH))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))

@@ -7,8 +7,8 @@ var swipePreviousPossible = false
 
 function pan(x, y, currentX, currentY) {
     if (getSetting(SETTING_SWIPE_PAGE)) {
-        let horizontalThreshold = getViewportWidth() * .1
-        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * .05)
+        let horizontalThreshold = getViewportWidth() * getSetting(SETTING_SWIPE_LENGTH)
+        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
         let deltaX = panX - currentX
         if (swipeNextPossible && deltaX < 0) swipeNextPossible = false
         if (swipePreviousPossible && deltaX > 0) swipePreviousPossible = false
@@ -461,6 +461,8 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
+    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_LENGTH))
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
 }
