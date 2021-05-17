@@ -34,8 +34,8 @@ settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
 settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
 settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
 settingDefaults[SETTING_SWIPE_PAGE] = "true"
-settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.05"
-settingDefaults[SETTING_SWIPE_LENGTH] = "0.1"
+settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.01"
+settingDefaults[SETTING_SWIPE_LENGTH] = "0.11"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -93,10 +93,10 @@ function createNumberController(settingName, text, min, max, step) {
     input.value = value
     let textValue = document.createElement('span')
     textValue.innerHTML = value
-    input.onchange = function(event) {
+    input.addEventListener('input', function(event) {
         updateSetting(event.target)
         textValue.innerHTML = getSetting(settingName)
-    }
+    }, false)
     return [label, input, textValue]
 }
 
