@@ -138,8 +138,8 @@ settingControllers[SETTING_COMIC_COLUMN_THRESHOLD] = () => createNumberControlle
 
 settingControllers[SETTING_LIBRARY_DISPLAY_TITLE] = () => createBooleanController(SETTING_LIBRARY_DISPLAY_TITLE, "display titles")
 settingControllers[SETTING_SWIPE_PAGE] = () => createBooleanController(SETTING_SWIPE_PAGE, "swipe pages")
-settingControllers[SETTING_SWIPE_VERTICAL_THRESHOLD] = () => createNumberController(SETTING_SWIPE_VERTICAL_THRESHOLD, "y threshold", 0.05, 0.45, 0.1)
-settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_SWIPE_LENGTH, "swipe length", 0.05, 0.35, 0.05)
+settingControllers[SETTING_SWIPE_VERTICAL_THRESHOLD] = () => createNumberController(SETTING_SWIPE_VERTICAL_THRESHOLD, "swipe y threshold", 0.01, 0.41, 0.1)
+settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_SWIPE_LENGTH, "swipe length", 0.01, 0.31, 0.05)
 
 function updateSetting(element) {
     let value
