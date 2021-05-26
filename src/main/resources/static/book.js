@@ -1,30 +1,27 @@
 var panX = 0
 var panY = 0
+var swipeStart = false
 
 function touchGestureStartPan(event) {
-    console.log(event)
-    console.log(window.getSelection())
     if (event.touches.length == 1 && window.getSelection().type != "Range") {
         panX = event.touches[0].pageX
         panY = event.touches[0].pageY
+        swipeStart = true
     }
 }
 
 function touchGesturePan(event) {
-    console.log(event)
-    console.log(window.getSelection())
-    if (getSetting(SETTING_SWIPE_PAGE) && event.touches.length == 1 && window.getSelection().type != "Range") {
+    if (getSetting(SETTING_SWIPE_PAGE) && event.touches.length == 1 && window.getSelection().type != "Range" && swipeStart) {
         let newX = event.touches[0].pageX
         let newY = event.touches[0].pageY
         let deltaX = newX - panX
         let horizontalThreshold = getViewportWidth() * getSetting(SETTING_SWIPE_LENGTH)
-        console.log(horizontalThreshold)
-        console.log(deltaX)
         let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
-        console.log(verticalMoveValid)
         if (verticalMoveValid && deltaX < -horizontalThreshold) {
+            swipeStart = false
             nextPage()
         } else if (verticalMoveValid && deltaX > horizontalThreshold) {
+            swipeStart = false
             previousPage()
         }
     }
