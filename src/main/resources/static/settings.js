@@ -34,8 +34,8 @@ settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
 settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
 settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
 settingDefaults[SETTING_SWIPE_PAGE] = "true"
-settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.01"
-settingDefaults[SETTING_SWIPE_LENGTH] = "0.11"
+settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.11"
+settingDefaults[SETTING_SWIPE_LENGTH] = "0.06"
 
 function parseBoolean(value) {
     return value == 'true'
