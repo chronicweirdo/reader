@@ -118,14 +118,7 @@ function getContentFor(start, end, callback) {
 
 
 async function displayPageFor(position) {
-    let now = new Date()
-    if (document.lastPageChange == undefined) {
-        window.location.reload()
-    }
-    let difference = now - document.lastPageChange
-    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
-        window.location.reload()
-    } else {
+    let displayPageForInternal = async function(position) {
         document.lastPageChange = now
 
         showSpinner()
@@ -157,7 +150,25 @@ async function displayPageFor(position) {
                 }
             })
         })
+    }
 
+    let now = new Date()
+    if (document.lastPageChange == undefined) {
+        window.location.reload()
+    }
+    let difference = now - document.lastPageChange
+    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
+        showSpinner()
+        loadProgress(function(currentPosition) {
+            if (currentPosition != document.currentPage.start) {
+                window.location.reload()
+            } else {
+                // continue as normal
+                displayPageForInternal(position)
+            }
+        })
+    } else {
+        displayPageForInternal(position)
     }
 }
 

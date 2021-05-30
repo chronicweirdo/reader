@@ -243,14 +243,7 @@ function getRgb(colorArray) {
 }
 
 function displayPage(page, callback) {
-    var timestamp = + new Date()
-    if (document.lastPageChange == undefined) {
-        window.location.reload()
-    }
-    let difference = timestamp - document.lastPageChange
-    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
-        window.location.reload()
-    } else {
+    let displayPageInternal = function(page, callback) {
         document.lastPageChange = timestamp
         document.pageDisplayTimestamp = timestamp
         var displayPageInternalCallback = function(data) {
@@ -282,6 +275,26 @@ function displayPage(page, callback) {
                 showSpinner()
             }
         }, 100)
+    }
+
+    var timestamp = + new Date()
+    if (document.lastPageChange == undefined) {
+        window.location.reload()
+    }
+    let difference = timestamp - document.lastPageChange
+    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
+        // load progress
+        // if progress is equal to current position, continue as normal, if not reload page
+        showSpinner()
+        loadProgress(currentPosition => {
+            if (currentPosition != getPositionInput() - 1) {
+                window.location.reload()
+            } else {
+                displayPageInternal(page, callback)
+            }
+        })
+    } else {
+        displayPageInternal(page, callback)
     }
 }
 
