@@ -565,20 +565,22 @@ function syncProgressInDatabase() {
 
 function getUnsyncedProgress() {
     return new Promise((resolve, reject) => {
-        var transaction = db.transaction(PROGRESS_TABLE, "readwrite")
-        var objectStore = transaction.objectStore(PROGRESS_TABLE)
-        var unsyncedProgress = []
-        objectStore.openCursor().onsuccess = event => {
-            var cursor = event.target.result
-            if (cursor) {
-                if (cursor.value.synced == false) {
-                    unsyncedProgress.push(cursor.value)
+        getDb().then(db => {
+            var transaction = db.transaction(PROGRESS_TABLE, "readwrite")
+            var objectStore = transaction.objectStore(PROGRESS_TABLE)
+            var unsyncedProgress = []
+            objectStore.openCursor().onsuccess = event => {
+                var cursor = event.target.result
+                if (cursor) {
+                    if (cursor.value.synced == false) {
+                        unsyncedProgress.push(cursor.value)
+                    }
+                    cursor.continue()
+                } else {
+                    resolve(unsyncedProgress)
                 }
-                cursor.continue()
-            } else {
-                resolve(unsyncedProgress)
             }
-        }
+        })
     })
 }
 

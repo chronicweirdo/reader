@@ -140,7 +140,7 @@ function saveProgress(bookId, position, callback) {
 function loadProgress(callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
-        if(this.readyState == this.HEADERS_RECEIVED) {
+        if (this.readyState == this.HEADERS_RECEIVED) {
             var contentType = this.getResponseHeader("Content-Type");
             if (contentType != "application/json") {
                 this.abort();
@@ -151,9 +151,13 @@ function loadProgress(callback) {
                 var currentPosition = parseInt(this.responseText)
                 if (callback != null) {
                     callback(currentPosition)
+                } else {
+                    callback(undefined)
                 }
             } else if (this.status > 400 && this.status < 500) {
                 window.location.href = "/logout"
+            } else {
+                callback(undefined)
             }
         }
     }
