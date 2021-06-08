@@ -420,7 +420,7 @@ function addCollectionLinkTokens(parent, collection, searchSeparator, buildHrefF
 function initBookCollectionLinks() {
     let collectionParagraph = document.getElementById('ch_collection')
     if (collectionParagraph) {
-        let collection = collectionParagraph.firstChild.innerHTML
+        let collection = collectionParagraph.firstChild.text
         collectionParagraph.innerHTML = ''
         addCollectionLinkTokens(collectionParagraph, collection, '/', searchLinkBuildHrefFunction)
     }
