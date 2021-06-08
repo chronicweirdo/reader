@@ -32,6 +32,9 @@ img, svg {
     max-width: 80vw !important;
     width: auto;
     height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 a {
     color: blue;
