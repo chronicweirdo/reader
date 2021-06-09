@@ -93,16 +93,6 @@
             appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
             let displayTitleWrapper = document.getElementById('ch_displayTitles')
             appendAll(displayTitleWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
-            let accentColorWrapper = document.getElementById('ch_accentColor')
-            appendAll(accentColorWrapper, getSettingController(SETTING_ACCENT_COLOR))
-            let foregroundColorWrapper = document.getElementById('ch_foregroundColor')
-            appendAll(foregroundColorWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
-            let backgroundColorWrapper = document.getElementById('ch_backgroundColor')
-            appendAll(backgroundColorWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
-
-            addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
-            addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
-            addSettingListener(SETTING_FOREGROUND_COLOR, updateForegroundColor)
         }
     </script>
 </head>
@@ -111,9 +101,6 @@
     <h1>Chronic Reader</h1>
     <p id="ch_latestReadSetting"></p>
     <p id="ch_displayTitles"></p>
-    <p id="ch_accentColor"></p>
-    <p id="ch_foregroundColor"></p>
-    <p id="ch_backgroundColor"></p>
     <p><a href="/collections">Collections</a></p>
     <p><a href="/history">History</a></p>
     <p><a href="/help">Help</a></p>
