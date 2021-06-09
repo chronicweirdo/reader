@@ -22,10 +22,15 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
+        :root {
+            --accent-color: gold;
+            --foreground-color: black;
+            --background-color: white;
+        }
         body {
             font-size: 3vh;
-            background-color: black;
-            color: gold;
+            background-color: var(--foreground-color, black);
+            color: var(--accent-color, gold);
             font-family: 'Roboto', sans-serif;
             margin: 5vh 10vw;
         }
@@ -33,7 +38,7 @@
             font-size: 1.2em;
         }
         a {
-            color: gold;
+            color: var(--accent-color, gold);
             text-decoration: underline;
         }
         input {
@@ -70,11 +75,34 @@
             }
             element.innerHTML = element.innerHTML + " - done!"
         }
+        function updateAccentColor() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+        }
+        function updateForegroundColor() {
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+        }
+        function updateBackgroundColor() {
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+        }
         window.onload = function() {
+            updateAccentColor()
+            updateForegroundColor()
+            updateBackgroundColor()
+
             let settingsWrapper = document.getElementById('ch_latestReadSetting')
             appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
             let displayTitleWrapper = document.getElementById('ch_displayTitles')
             appendAll(displayTitleWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
+            let accentColorWrapper = document.getElementById('ch_accentColor')
+            appendAll(accentColorWrapper, getSettingController(SETTING_ACCENT_COLOR))
+            let foregroundColorWrapper = document.getElementById('ch_foregroundColor')
+            appendAll(foregroundColorWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
+            let backgroundColorWrapper = document.getElementById('ch_backgroundColor')
+            appendAll(backgroundColorWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
+
+            addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
+            addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
+            addSettingListener(SETTING_FOREGROUND_COLOR, updateForegroundColor)
         }
     </script>
 </head>
@@ -83,6 +111,9 @@
     <h1>Chronic Reader</h1>
     <p id="ch_latestReadSetting"></p>
     <p id="ch_displayTitles"></p>
+    <p id="ch_accentColor"></p>
+    <p id="ch_foregroundColor"></p>
+    <p id="ch_backgroundColor"></p>
     <p><a href="/collections">Collections</a></p>
     <p><a href="/history">History</a></p>
     <p><a href="/help">Help</a></p>

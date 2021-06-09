@@ -22,10 +22,15 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
+        :root {
+            --accent-color: gold;
+            --foreground-color: black;
+            --background-color: white;
+        }
         body {
             font-size: 2em;
-            background-color: black;
-            color: gold;
+            background-color: var(--foreground-color, black);
+            color: var(--accent-color, gold);
             font-family: 'Merriweather', serif;
             padding: 10px;
             word-wrap: break-word;
@@ -35,12 +40,12 @@
             font-family: Roboto, sans-serif;
         }
         a {
-            color: gold;
+            color: var(--accent-color, gold);
         }
         .expand {
-          cursor: pointer;
-          font-family: sans-serif;
-          margin-left: .3em;
+            cursor: pointer;
+            font-family: sans-serif;
+            margin-left: .3em;
         }
         @media all and (max-width: 999px) {
             #container {
@@ -48,85 +53,88 @@
             }
         }
 
-      p.tree,
-      ul.tree,
-      ul.tree ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
+        p.tree,
+        ul.tree,
+        ul.tree ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-      ul.tree ul {
-        margin-left: .05em;
-      }
+        ul.tree ul {
+            margin-left: .05em;
+        }
 
-      ul.tree li {
-        margin-left: 0.35em;
-        padding-left: .5em;
-        text-indent: -.5em;
-        border-left: thin solid gold;
-      }
+        ul.tree li {
+            margin-left: 0.35em;
+            padding-left: .5em;
+            text-indent: -.5em;
+            border-left: thin solid var(--accent-color, gold);
+        }
 
-      ul.tree li:last-child {
-        border-left: none;
-      }
+        ul.tree li:last-child {
+            border-left: none;
+        }
 
-      ul.tree li:before {
-        width: 0.4em;
-        height: 0.6em;
-        margin-right: 0.1em;
-        vertical-align: top;
-        border-bottom: thin solid gold;
-        content: "";
-        display: inline-block;
-      }
+        ul.tree li:before {
+            width: 0.4em;
+            height: 0.6em;
+            margin-right: 0.1em;
+            vertical-align: top;
+            border-bottom: thin solid var(--accent-color, gold);
+            content: "";
+            display: inline-block;
+        }
 
-      ul.tree li:last-child:before {
-        border-left: thin solid gold;
-      }
-
+        ul.tree li:last-child:before {
+            border-left: thin solid var(--accent-color, gold);
+        }
     </style>
+    <script src="settings.js"></script>
     <script>
-      function toggle(el) {
-        var current = el
-        while (current && current.tagName != "LI") current = current.parentElement
-        var target = current.getElementsByTagName("UL")[0]
-        if (target) {
-          if (target.style.display != "none") {
-            target.style.display = "none"
-          } else {
-            target.style.display = "block"
-          }
+        function toggle(el) {
+            var current = el
+            while (current && current.tagName != "LI") current = current.parentElement
+            var target = current.getElementsByTagName("UL")[0]
+            if (target) {
+                if (target.style.display != "none") {
+                    target.style.display = "none"
+                } else {
+                    target.style.display = "block"
+                }
+            }
         }
-      }
-      function addExpandSymbol(item) {
-        var link = item.getElementsByTagName("A")[0]
-        var expand = document.createElement("span")
-        expand.classList.add("expand")
-        expand.innerHTML = "+"
-        link.after(expand)
-      }
-      function getLiWithChildren() {
-        var items = document.getElementsByTagName("LI")
-        var result = []
-        for (var i = 0; i < items.length; i++) {
-          if (items[i].getElementsByTagName("UL").length > 0) {
-            result.push(items[i])
-          }
+        function addExpandSymbol(item) {
+            var link = item.getElementsByTagName("A")[0]
+            var expand = document.createElement("span")
+            expand.classList.add("expand")
+            expand.innerHTML = "+"
+            link.after(expand)
         }
-        return result
-      }
-      window.onload = function() {
-        var expandable = getLiWithChildren()
-        for (var i = 0; i < expandable.length; i++) {
-          addExpandSymbol(expandable[i])
-          toggle(expandable[i])
-          expandable[i].addEventListener("click", (event) => {
-            event.stopPropagation()
-            toggle(event.target)
-          })
+        function getLiWithChildren() {
+            var items = document.getElementsByTagName("LI")
+            var result = []
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].getElementsByTagName("UL").length > 0) {
+                    result.push(items[i])
+                }
+            }
+            return result
         }
-      }
+        window.onload = function() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            var expandable = getLiWithChildren()
+            for (var i = 0; i < expandable.length; i++) {
+                addExpandSymbol(expandable[i])
+                toggle(expandable[i])
+                expandable[i].addEventListener("click", (event) => {
+                    event.stopPropagation()
+                    toggle(event.target)
+                })
+            }
+        }
     </script>
 </head>
 <body>

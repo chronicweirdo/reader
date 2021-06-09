@@ -21,13 +21,18 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
+        :root {
+            --accent-color: gold;
+            --foreground-color: black;
+            --background-color: white;
+        }
         body {
-            background-color: black;
-            color: white;
+            background-color: var(--foreground-color, black);
+            color: var(--background-color, white);
             font-family: 'Roboto', sans-serif;
         }
         a {
-            color: gold;
+            color: var(--accent-color, gold);
             text-decoration: underline;
             cursor: pointer;
         }
@@ -36,7 +41,7 @@
             word-break: break-all;
         }
         table, th, td {
-            border: 1px solid gold;
+            border: 1px solid var(--accent-color, gold);
         }
         td {
             padding: 5px;
@@ -59,6 +64,7 @@
             height: 100%
         }
     </style>
+    <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
         function deleteProgress(id, element) {
@@ -138,6 +144,9 @@
             xhttp.send()
         }
         window.onload = function() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
             loadHistory()
         }
     </script>

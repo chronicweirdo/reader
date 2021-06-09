@@ -1,3 +1,8 @@
+:root {
+    --accent-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
 /* --------------------------------------------------------- page tools start */
 #ch_tools_left {
     bottom: 0;
@@ -45,13 +50,13 @@
 #ch_spinner a {
     font-family: 'Roboto', sans-serif;
     font-size: 48px;
-    color: gold;
+    color: var(--accent-color, gold);
 }
 #ch_errorPanel {
     margin-top: 24px;
     font-family: 'Roboto', sans-serif;
     font-size: 24px;
-    color: gold;
+    color: var(--accent-color, gold);
 }
 /* -------------------------------------------------------------- spinner end */
 
@@ -68,7 +73,7 @@
     bottom: 0;
     font-size: 3vh;
     font-family: 'Roboto', sans-serif;
-    color: white;
+    color: var(--background-color, white);
     overflow-y: auto;
     margin-left: 10%;
     margin-right: 10%;
@@ -128,11 +133,11 @@
     margin-left: 0;
 }
 #ch_tools > p > span {
-    color: white;
+    color: var(--background-color, white);
     margin-left: 0;
 }
 #ch_tools > p > a {
-    color: gold;
+    color: var(--accent-color, gold);
     border: 0;
     text-decoration: underline;
     cursor: pointer;
@@ -144,7 +149,7 @@
 #ch_tools > p.ch_toc_separator {
     width: 100%;
     margin-top: 28px;
-    border-top: 4px dotted white;
+    border-top: 4px dotted var(--background-color, white);
     margin-bottom: 28px;
 }
 #ch_tools.left span.expand {
@@ -169,7 +174,7 @@
     word-wrap: break-word;
 }
 #ch_tools a.ch_chapter {
-    color: white;
+    color: var(--background-color, white);
     background-color: #1a1a1a00;
     border: 0;
     text-decoration: underline;
@@ -177,7 +182,7 @@
     font-weight: 300;
 }
 #ch_tools a.ch_current {
-    color: gold;
+    color: var(--accent-color, gold);
 }
 #ch_tools li {
     list-style-type: none;
@@ -236,7 +241,7 @@
     display: none;
     align-items: center;
     justify-items: start;
-    border: 4px dotted black;
+    border: 4px dotted var(--foreground-color, black);
     font-size: 1rem;
 }
 
@@ -263,7 +268,7 @@
 }
 
 #ch_settings a {
-    color: gold;
+    color: var(--accent-color, gold);
     text-decoration: none;
 }
 
@@ -275,9 +280,9 @@
 
 #ch_tools > p > input {
     font-size: 1em;
-    background-color: gold;
+    background-color: var(--accent-color, gold);
     width: 2em;
-    border: 2px solid rgb(255, 236, 133);
+    border: 2px solid var(--background-color, white);
     z-index: 1000;
     margin-right: 8px;
     margin-left: 8px;
@@ -298,7 +303,7 @@
     padding: 0
 }
 #ch_cover.ondevice img {
-    border-bottom: .4em solid gold;
+    border-bottom: .4em solid var(--accent-color, gold);
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -311,3 +316,12 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 /* ------------------------------------------------------------- position end */
+#ch_spinner_svg .background {
+    stroke: var(--background-color, white);
+}
+#ch_spinner_svg .foreground {
+    stroke: var(--foreground-color, black);
+}
+#ch_spinner_svg .accent {
+    stroke: var(--accent-color, gold);
+}

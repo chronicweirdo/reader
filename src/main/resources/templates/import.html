@@ -23,11 +23,11 @@
     <link rel="stylesheet" type="text/css" href="form.css">
     <style>
         * {
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
         }
-        html,body {
+        html, body {
             height:100%;
             width:100%;
             margin:0;
@@ -35,6 +35,8 @@
         body {
             font-size: 2em;
             font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color, white);
+            color: var(--foreground-color, black);
         }
         @media all and (max-width: 399px) {
             body {
@@ -44,6 +46,9 @@
         h1 {
             font-size: 1.1em;
             margin: .2em;
+        }
+        a {
+            color: var(--foreground-color, black);
         }
         p {
             margin-bottom: 0;
@@ -55,12 +60,18 @@
             height: 50vh;
         }
     </style>
+    <script src="settings.js"></script>
     <script>
         function importSubmit(action) {
             console.log("setting action to " + action)
             document.getElementById("formAction").value = action
             var form = document.forms[0]
             form.submit()
+        }
+        window.onload = function() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
         }
     </script>
 </head>

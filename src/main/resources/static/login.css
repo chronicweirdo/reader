@@ -1,3 +1,8 @@
+:root {
+    --accent-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
 * {
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -12,7 +17,7 @@ body {
     display:flex;
     font-size: 2em;
     font-family: 'Roboto', sans-serif;
-    background-color: black;
+    background-color: var(--foreground-color, black);
 }
 @media all and (max-width: 399px) {
     body {
@@ -22,8 +27,8 @@ body {
 .container {
     margin: auto;
     position: relative;
-    background-color: black;
-    color: gold;
+    background-color: var(--foreground-color, black);
+    color: var(--accent-color, gold);
     padding: 1em;
     position: relative;
     text-align: center;

@@ -22,17 +22,30 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
+        :root {
+            --accent-color: gold;
+            --foreground-color: black;
+            --background-color: white;
+        }
         body {
             font-size: 2em;
-            background-color: black;
-            color: gold;
+            background-color: var(--foreground-color, black);
+            color: var(--accent-color, gold);
             font-family: 'Roboto', sans-serif;
         }
         a {
-            color: gold;
+            color: var(--accent-color, gold);
             text-decoration: underline;
         }
     </style>
+    <script src="settings.js"></script>
+    <script>
+        window.onload = function() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+        }
+    </script>
 </head>
 <body>
 Something did not work. <a href="/">Go back.</a>

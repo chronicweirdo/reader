@@ -16,6 +16,9 @@ var SETTING_LIBRARY_DISPLAY_TITLE = "library_display_title"
 var SETTING_SWIPE_PAGE = "swipe_page"
 var SETTING_SWIPE_VERTICAL_THRESHOLD = "swipe_vertical_threshold" // screen percentage for vertical finger move before swipe becomes invalid
 var SETTING_SWIPE_LENGTH = "swipe_length" // screen percentage for horizontal finger move for swipe action to register
+var SETTING_ACCENT_COLOR = "accent_color"
+var SETTING_FOREGROUND_COLOR = "foreground_color"
+var SETTING_BACKGROUND_COLOR = "background_color"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -36,6 +39,9 @@ settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
 settingDefaults[SETTING_SWIPE_PAGE] = "true"
 settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.11"
 settingDefaults[SETTING_SWIPE_LENGTH] = "0.06"
+settingDefaults[SETTING_ACCENT_COLOR] = "#FFD700"
+settingDefaults[SETTING_FOREGROUND_COLOR] = "#000000"
+settingDefaults[SETTING_BACKGROUND_COLOR] = "#FFFFFF"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -140,6 +146,10 @@ settingControllers[SETTING_LIBRARY_DISPLAY_TITLE] = () => createBooleanControlle
 settingControllers[SETTING_SWIPE_PAGE] = () => createBooleanController(SETTING_SWIPE_PAGE, "swipe pages")
 settingControllers[SETTING_SWIPE_VERTICAL_THRESHOLD] = () => createNumberController(SETTING_SWIPE_VERTICAL_THRESHOLD, "swipe y threshold", 0.01, 0.41, 0.1)
 settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_SWIPE_LENGTH, "swipe length", 0.01, 0.31, 0.05)
+
+settingControllers[SETTING_ACCENT_COLOR] = () => createColorController(SETTING_ACCENT_COLOR, "accent color")
+settingControllers[SETTING_FOREGROUND_COLOR] = () => createColorController(SETTING_FOREGROUND_COLOR, "foreground color")
+settingControllers[SETTING_BACKGROUND_COLOR] = () => createColorController(SETTING_BACKGROUND_COLOR, "background color")
 
 function updateSetting(element) {
     let value

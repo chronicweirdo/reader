@@ -1,3 +1,8 @@
+:root {
+    --accent-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
 * {
     margin: 0;
     padding: 0;
@@ -6,35 +11,37 @@
 body {
     font-family: 'Roboto', sans-serif;
     word-wrap: break-word;
+    background-color: var(--background-color, white);
 }
 h1 {
     padding: 1vw;
     font-weight: bold;
     font-size: 1.6em;
-    background-color: gold;
+    background-color: var(--accent-color, gold);
 }
 .collection-container ~ .collection-container {
     margin-top: 1vw;
 }
 h1 > * {
     margin-right: .2em;
+    color: var(--foreground-color, black);
 }
 h1 a {
     text-decoration: underline;
-    color: black;
+    color: var(--foreground-color, black);
 }
 .tools {
     display: block;
     width: 100vw;
-    background-color: black;
-    color: gold;
+    background-color: var(--foreground-color, black);
+    color: var(--accent-color, gold);
     font-size: 2em;
     padding-top: 1em;
     padding-bottom: 1em;
     text-align: center;
     max-width: 100%;
-    border-top: 2px solid white;
-    border-bottom: 2px solid white;
+    border-top: 2px solid var(--background-color, white);
+    border-bottom: 2px solid var(--background-color, white);
 }
 #ch_latestRead {
     display: none;
@@ -44,8 +51,8 @@ h1 a {
     display: none;
     width: 100vw;
     width: 100%;
-    background-color: black;
-    color: white;
+    background-color: var(--foreground-color, black);
+    color: var(--background-color, white);
     top: 0;
     left: 0;
     z-index: 2000;
@@ -77,13 +84,13 @@ h1 a {
     margin-left: -40px;
     font-size: 1em;
     font-weight: bold;
-    color: black;
+    color: var(--foreground-color, black);
     border: none;
 }
 .tools a {
     margin-left: 2vw;
-    color: gold;
-    border: 2px solid gold;
+    color: var(--accent-color, gold);
+    border: 2px solid var(--accent-color, gold);
     text-decoration: none;
     padding: .1em;
 }
@@ -117,11 +124,11 @@ h1 a {
     position: absolute;
     right: 10px;
     bottom: 10px;
-    background-color: white;
+    background-color: var(--background-color, white);
     padding: .5em;
     font-size: 1.2em;
     font-weight: bold;
-    color: black;
+    color: var(--foreground-color, black);
 }
 .imgdiv .title {
     position: absolute;
@@ -130,13 +137,13 @@ h1 a {
     top: 4%;
     width: 82%;
     padding: 4%;
-    color: white;
+    color: var(--background-color, white);
     font-size: 2vw;
     font-weight: bold;
     background-color: #00000099;
     max-height: 76%;
     overflow: hidden;
-    border: 1px solid black;
+    border: 1px solid var(--foreground-color, black);
 }
 .imgdiv .progressbar {
     position: absolute;
@@ -145,8 +152,8 @@ h1 a {
     bottom: 4%;
     width: 88%;
     height: 4%;
-    background-color: white;
-    border: 1px solid black;
+    background-color: var(--background-color, white);
+    border: 1px solid var(--foreground-color, black);
     padding: 1%;
 }
 .imgdiv .progresscheck {
@@ -164,20 +171,20 @@ h1 a {
 
 .imgdiv .progresscheck svg path {
     stroke-width: .1px;
-    stroke: black;
-    fill: white;
+    stroke: var(--foreground-color, black);
+    fill: var(--background-color, white);
 }
 
 .imgdiv .progresscheck.downloaded svg path {
-    fill: gold;
+    fill: var(--accent-color, gold);
 }
 
 .imgdiv .progressbar.downloaded {
-    background-color: gold;
+    background-color: var(--accent-color, gold);
 }
 .imgdiv .progressbar .read {
     display: block;
-    background-color: black;
+    background-color: var(--foreground-color, black);
     height: 98%;
 }
 #fin {
@@ -185,7 +192,7 @@ h1 a {
     font-style: italic;
     text-align: center;
     border: 0;
-    background-color: white;
+    background-color: var(--background-color, white);
 }
 /*@media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
 only screen and (-o-min-device-pixel-ratio: 13/10),
@@ -210,4 +217,14 @@ only screen and (min-resolution: 120dpi)*/
     .imgdiv .title {
         font-size: 4vw;
     }
+}
+
+#ch_spinner_svg .background {
+    stroke: var(--background-color, white);
+}
+#ch_spinner_svg .foreground {
+    stroke: var(--foreground-color, black);
+}
+#ch_spinner_svg .accent {
+    stroke: var(--accent-color, gold);
 }

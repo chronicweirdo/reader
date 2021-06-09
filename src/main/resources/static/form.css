@@ -1,3 +1,8 @@
+:root {
+    --accent-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
 textarea, input, p {
     font-family: 'Roboto', sans-serif;
 }
@@ -5,13 +10,13 @@ textarea, input[type="text"], input[type="password"] {
     display: inline-block;
     font-size: 1em;
     height: 1.5em;
-    background-color: gold;
-    border: 2px solid white;
-    color: black;
+    background-color: var(--accent-color, gold);
+    border: 2px solid var(--background-color, white);
+    color: var(--foreground-color, black);
 }
 
 input::placeholder, textarea::placeholder {
-    color: white;
+    color: var(--background-color, white);
     font-style: italic;
     opacity: 1;
 }
@@ -20,8 +25,8 @@ input[type="submit"], input[type="button"] {
     display: inline-block;
     font-size: 1em;
     height: 1.5em;
-    background-color: gold;
-    border: 2px solid white;
-    color: black;
+    background-color: var(--accent-color, gold);
+    border: 2px solid var(--background-color, white);
+    color: var(--foreground-color, black);
     cursor: pointer;
 }

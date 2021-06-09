@@ -22,10 +22,15 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <style>
+        :root {
+            --accent-color: gold;
+            --foreground-color: black;
+            --background-color: white;
+        }
         body {
             font-size: 1.5em;
-            background-color: white;
-            color: black;
+            background-color: var(--background-color, white);
+            color: var(--foreground-color, black);
             font-family: 'Merriweather', serif;
         }
         h1 {
@@ -35,6 +40,9 @@
         h2 {
             font-size: 1.1em;
             font-family: 'Roboto', sans-serif;
+        }
+        a {
+            color: var(--foreground-color, black);
         }
         #container {
             width: 1000px;
@@ -64,6 +72,14 @@
             width: 1em;
         }
     </style>
+    <script src="settings.js"></script>
+    <script>
+        window.onload = function() {
+            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+        }
+    </script>
 </head>
 <body>
 <div id="container">
