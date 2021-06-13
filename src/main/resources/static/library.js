@@ -369,7 +369,6 @@ var scrollThreshold = 20
 window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
-            let noServiceWorker = registrations.length == 0
             navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
                 registration.update().then(() => {
                     loadLatestRead()
