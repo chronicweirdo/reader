@@ -472,18 +472,12 @@ async function handleLatestReadRequest(request) {
         let json
         if (text && text.length > 0) {
             json = JSON.parse(text)
+            // trigger download of next book
+            await queueNextDownload()
 
-            // trigger download of everything in latest read, including progress
+            // save progress
             for (let i = 0; i < json.length; i++) {
                 let book = json[i]
-                let savedBook = await databaseLoad(BOOKS_TABLE, book.id)
-                if (! savedBook) {
-                    appendToDownloadQueue({
-                        'kind': book.type,
-                        'id': book.id,
-                        'size': parseInt(book.pages)
-                    })
-                }
                 await databaseSave(PROGRESS_TABLE, {id: book.id, position: book.progress, synced: true})
             }
             singleFunctionRunning()
@@ -673,8 +667,6 @@ async function downloadBookSection(o) {
             'size': o.size,
             'position': nextPosition
         })
-    } else {
-        let savedBook = await databaseSave(BOOKS_TABLE, {'id': o.id})
     }
 
     // add resources download, if they exist
@@ -688,6 +680,11 @@ async function downloadBookSection(o) {
             'kind': 'bookResource',
             'url': resource
         })
+    }
+
+    if (nextPosition >= o.size) {
+        let savedBook = await databaseSave(BOOKS_TABLE, {'id': o.id})
+        await queueNextDownload()
     }
 }
 
@@ -738,6 +735,29 @@ async function downloadImageData(o) {
         })
     } else {
         let savedBook = await databaseSave(BOOKS_TABLE, {'id': o.id})
+        await queueNextDownload()
+    }
+}
+
+async function queueNextDownload() {
+    // load books in latest read
+    let latestReadMatchFunction = (response) => {
+        return response.url.includes(self.registration.scope + "latestRead")
+    }
+    let databaseResponse = await databaseFindFirst(latestReadMatchFunction, REQUESTS_TABLE)
+    if (databaseResponse) {
+        let responseText = await databaseResponse.response.text()
+        let responseJson = JSON.parse(responseText)
+        // load books table
+        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+        // find first book id that is not in books table
+        for (var i = 0; i < responseJson.length; i++) {
+            let book = responseJson[i]
+            if (! completelyDownloadedBooks.has(book.id)) {
+                await triggerStoreBook(book.id, book.type, parseInt(book.pages))
+                return
+            }
+        }
     }
 }
 
