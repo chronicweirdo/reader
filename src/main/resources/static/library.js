@@ -368,11 +368,19 @@ var scrollThreshold = 20
 
 window.onload = function() {
     if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
-            registration.update()
-        }, function(error) {
-            console.log("service worker registration failed: ", error)
-        })
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            let noServiceWorker = registrations.length == 0
+            navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+                registration.update().then(() => {
+                    if (noServiceWorker) {
+                        // service worker just installed, reload page
+                        location.reload()
+                    }
+                })
+            }, function(error) {
+                console.log("service worker registration failed: ", error)
+            })
+        });
     }
 
     loadLatestRead()
