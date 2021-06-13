@@ -372,18 +372,15 @@ window.onload = function() {
             let noServiceWorker = registrations.length == 0
             navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
                 registration.update().then(() => {
-                    if (noServiceWorker) {
-                        // service worker just installed, reload page
-                        location.reload()
-                    }
+                    loadLatestRead()
                 })
             }, function(error) {
                 console.log("service worker registration failed: ", error)
             })
         });
+    } else {
+        loadLatestRead()
     }
-
-    loadLatestRead()
 
     var searchParameter = getSearchUrlParameter()
     if (searchParameter != null) {
