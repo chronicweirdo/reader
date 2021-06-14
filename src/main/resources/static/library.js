@@ -389,6 +389,7 @@ window.onload = function() {
     searchForTerm()
 
     document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+    setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
     document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
     document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
 }

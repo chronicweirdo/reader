@@ -40,6 +40,14 @@ function getMeta(metaName) {
     return undefined;
 }
 
+function setMeta(metaName, value) {
+    document.querySelector('meta[name="' + metaName + '"]').setAttribute("content", value);
+}
+
+function setStatusBarColor(color) {
+    setMeta('theme-color', color)
+}
+
 function getViewportWidth() {
     return Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 }

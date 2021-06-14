@@ -381,6 +381,7 @@ function setUiColors(foreground, background) {
         bookStyleSheet.insertRule('body { color: ' + foreground + '; background-color: ' + background + '; }', 0)
         bookStyleSheet.insertRule('a { color: ' + foreground + '; }', 0)
         bookStyleSheet.insertRule('table, th, td { border-color: ' + foreground + '; }', 0)
+        setStatusBarColor(background)
     }
 }
 

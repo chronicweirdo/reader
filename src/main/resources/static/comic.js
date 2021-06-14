@@ -253,6 +253,7 @@ function displayPage(page, callback) {
                 var img = getImage()
                 img.onload = function() {
                     document.body.style.background = getRgb(data.color)
+                    setStatusBarColor(getRgb(data.color))
                     setPage(page)
                     saveProgress(getBookId(), page-1)
                     setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)

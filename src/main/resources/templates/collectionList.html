@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#000000">
     <title>Collections - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -91,6 +92,7 @@
         }
     </style>
     <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
         function toggle(el) {
             var current = el
@@ -125,6 +127,7 @@
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            setStatusBarColor(getSetting(SETTING_FOREGROUND_COLOR));
             var expandable = getLiWithChildren()
             for (var i = 0; i < expandable.length; i++) {
                 addExpandSymbol(expandable[i])
