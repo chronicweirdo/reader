@@ -49,6 +49,39 @@ function getSvgCross() {
     return svg
 }
 
+function applyTitles() {
+
+    /*let titleDisplay = getComputedStyle(document.documentElement).getPropertyValue('--title-display')
+    console.log(titleDisplay)*/
+
+    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
+        // we show titles
+        document.documentElement.style.setProperty('--title-display', 'inline-block')
+        document.getElementById("toggleTitles").classList.add("selected")
+    } else {
+        // we hide titles
+        document.documentElement.style.setProperty('--title-display', 'none')
+        document.getElementById("toggleTitles").classList.remove("selected")
+    }
+
+    /*if (titleDisplay == "none") {
+        document.documentElement.style.setProperty('--title-display', 'inline-block')
+        document.getElementById("toggleTitles").classList.add("selected")
+    } else {
+        document.documentElement.style.setProperty('--title-display', 'none')
+        document.getElementById("toggleTitles").classList.remove("selected")
+    }*/
+}
+
+function toggleTitles() {
+    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
+        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, false)
+    } else {
+        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, true)
+    }
+    applyTitles()
+}
+
 /*function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {
@@ -528,6 +561,7 @@ window.onload = function() {
     addSearchTriggerListener()
     searchForTerm()
 
+    applyTitles()
     document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
     setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
     document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));

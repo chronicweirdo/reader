@@ -2,6 +2,7 @@
     --accent-color: gold;
     --foreground-color: black;
     --background-color: white;
+    --title-display:none;
 }
 * {
     margin: 0;
@@ -93,6 +94,9 @@ span.progresscheck.downloaded svg path {
 span.progressbar.downloaded {
     background-color: var(--accent-color, gold);
 }
+span.title {
+    display: var(--title-display, none);
+}
 
 @media (orientation: portrait)
 {
@@ -173,11 +177,11 @@ h1 a {
     position: relative;
     display: inline-block;
 }
-/*@media all and (max-width: 399px) {
-    #search {
-        width: 40vw;
+@media all and (max-width: 399px) {
+    ul {
+        font-size: .8em;
     }
-}*/
+}
 #clearsearch, #toggleTitles {
     position: relative;
     /*height: 2em;*/
