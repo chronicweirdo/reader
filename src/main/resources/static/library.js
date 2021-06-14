@@ -34,6 +34,21 @@ function getSvgCheck() {
     return svg
 }
 
+function getSvgCross() {
+    let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+    svg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    svg.setAttribute("style", "margin:auto;display:block;")
+    svg.setAttribute("viewBox", "0 0 12 10")
+    svg.setAttribute("preserveAspectRatio", "xMidYMid")
+
+    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute("d", "M 0 1 L 1 2 L 0 3 L 1 4 L 2 3 L 3 4 L 4 3 L 3 2 L 4 1 L 3 0 L 2 1 L 1 0 Z")
+
+    svg.appendChild(path)
+    return svg
+}
+
 /*function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {

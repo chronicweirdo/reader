@@ -35,9 +35,21 @@
 <h1 id="ch_latestReadTitle">Latest Read</h1>
 <ul id="ch_latestRead"></ul>
 <div class="tools" id="tools">
-    <input name="search" id="search" type="text" placeholder="Search" autocomplete="off" autofocus/>
-    <input id="clearsearch" type="button" value="&#10006;" onclick="clearTerm()"/>
-    <a href="/more" title="more">&nbsp;&#8226;&nbsp;&#8226;&nbsp;&#8226;&nbsp;</a>
+    <input name="search" id="search" type="text" placeholder="Search" autocomplete="off" autofocus />
+    <button id="clearsearch" onclick="clearTerm()">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 4 4" preserveAspectRatio="xMidYMid"><path d="M 0 1 L 1 2 L 0 3 L 1 4 L 2 3 L 3 4 L 4 3 L 3 2 L 4 1 L 3 0 L 2 1 L 1 0 Z"></path></svg>
+    </button>
+    <button id="toggleTitles"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="-0.2 0 12 8.2" preserveAspectRatio="xMidYMid">
+        <path
+                d="M 2.889249,0.560917 1.068916,0.624417 0.6985,2.836333 H 0 L 0.179916,0 h 6.593417 l 0.127,2.836333 H 6.233583 L 5.884333,0.624417 4.053416,0.560917 V 7.239 L 5.556249,7.344833 V 7.863417 H 1.513416 V 7.344833 L 2.889249,7.239 Z"
+        />
+        <path d="m 9.423466,7.96925 q -0.60325,0 -0.899584,-0.275167 Q 8.227549,7.418917 8.227549,6.752167 v -4.064 h -0.762 v -0.47625 q 0.05292,-0.01058 0.296333,-0.07408 0.243417,-0.0635 0.328084,-0.116416 0.169333,-0.09525 0.264583,-0.381 0.08467,-0.201083 0.201083,-0.645583 0.116417,-0.4445 0.137584,-0.529167 h 0.624416 l 0.02117,1.524 h 1.767417 v 0.6985 H 9.338802 v 3.249083 q 0,0.60325 0.03175,0.846667 0.04233,0.243416 0.15875,0.3175 0.127,0.07408 0.423333,0.07408 0.28575,0 0.624417,-0.07408 0.34925,-0.07408 0.53975,-0.15875 l 0.15875,0.47625 q -0.254,0.1905 -0.8255,0.370416 -0.560917,0.179917 -1.026583,0.179917 z"/>
+    </svg></button>
+    <a id="more" href="/more" title="more">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 5 5" preserveAspectRatio="xMidYMid">
+            <path d="M 0 0 L 5 0 L 5 1 L 0 1 Z M 0 2 L 5 2 L 5 3 L 0 3 Z M 0 4 L 5 4 L 5 5 L 0 5 Z"></path>
+        </svg>
+    </a>
 </div>
 <div id="spinner">
     <svg id="ch_spinner_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid">
