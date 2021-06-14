@@ -1,3 +1,7 @@
+var FIN_ID = "fin"
+var COLLECTION_CONTAINER_CLASS = "collection-container"
+var COLLECTION_TITLE_CLASS = "collection-title"
+
 function showSpinner() {
     var spinner = document.getElementById("spinner")
     spinner.style.display = "block"
@@ -30,7 +34,7 @@ function getSvgCheck() {
     return svg
 }
 
-function addProgress(image, page, totalPages, downloaded) {
+/*function addProgress(image, page, totalPages, downloaded) {
     var span = document.createElement("span")
     if (page < totalPages - 1) {
         span.classList.add("progressbar")
@@ -49,15 +53,15 @@ function addProgress(image, page, totalPages, downloaded) {
         span.classList.add("downloaded")
     }
     image.parentElement.appendChild(span)
-}
-function addTitle(image, title) {
+}*/
+/*function addTitle(image, title) {
     var span = document.createElement("span")
     span.classList.add("title")
     span.innerHTML = title
     image.parentElement.appendChild(span)
-}
+}*/
 
-function scaleImage(image, page, totalPages, downloaded, title) {
+/*function scaleImage(image, page, totalPages, downloaded, title) {
     if (page >= 0) {
         addProgress(image, page, totalPages, downloaded)
     }
@@ -76,14 +80,14 @@ function scaleImage(image, page, totalPages, downloaded, title) {
     var differenceHeight = image.offsetHeight - expectedHeight
     image.style.left = (- differenceWidth / 2) + "px"
     image.style.top = (- differenceHeight / 2) + "px"
-}
+}*/
 
 function getCollectionId(collection) {
     if (collection.length == 0) return "default"
     else return encodeURIComponent(collection)
 }
 
-function getCollectionHtml(collection) {
+/*function getCollectionHtml(collection) {
     var collectionId = getCollectionId(collection)
     var div = document.createElement("div")
     div.id = collectionId
@@ -94,37 +98,53 @@ function getCollectionHtml(collection) {
         div.appendChild(h1)
     }
     return div
-}
+}*/
 
-function insertCollectionHtml(collectionHtml) {
-    var fin = document.getElementById("fin")
-    if (fin != null) {
-        document.body.insertBefore(collectionHtml, fin)
-    } else {
-        document.body.appendChild(collectionHtml)
+
+
+function insertCollectionHtml(collection) {
+    if (collection.length > 0) {
+        let collectionId = getCollectionId(collection)
+
+        let title = document.createElement("h1")
+        title.classList.add(COLLECTION_TITLE_CLASS)
+        addCollectionLinkTokens(title, collection, '/', triggerSearchBuildHrefFunction)
+
+        let container = document.createElement("ul")
+        container.classList.add(COLLECTION_CONTAINER_CLASS)
+        container.id = collectionId
+
+        let fin = document.getElementById(FIN_ID)
+        if (fin != null) {
+            document.body.insertBefore(title, fin)
+            document.body.insertBefore(container, fin)
+        } else {
+            document.body.appendChild(title)
+            document.body.appendChild(container)
+        }
     }
 }
 
-function insertOfflineMessage() {
+/*function insertOfflineMessage() {
     var tools = document.getElementById("tools")
     var offlineMessageHtml = document.createElement("h1")
     offlineMessageHtml.id = 'fin'
     offlineMessageHtml.innerHTML = "~ The application is in offline mode, only the latest read books are available. ~"
     document.body.insertBefore(offlineMessageHtml, tools)
     tools.remove()
-}
+}*/
 
 function addCollections(collections) {
     for (var i = 0; i < collections.length; i++) {
         var collectionId = getCollectionId(collections[i])
         if (document.getElementById(collectionId) == null) {
-            insertCollectionHtml(getCollectionHtml(collections[i]))
+            insertCollectionHtml(collections[i])
         }
     }
 }
 
 function getBookHtml(book) {
-    var a = document.createElement("a")
+    /*var a = document.createElement("a")
     a.classList.add("imgdiv")
     a.href = book.type + "?id=" + book.id
     a.setAttribute("bookid", book.id)
@@ -135,16 +155,48 @@ function getBookHtml(book) {
     img.src = book.cover
     img.title = book.title
     a.appendChild(img)
-    return a
+    return a*/
+
+    // <li bookid="1" size="10" progress="3" downloaded="true"><a><span class="cover"><img src="01 - Warp Tour (2017).jpg" onload="formatImage(this)"></span><span class="title">01 - Warp Tour (2017)</span></a></li>
+    let li = document.createElement("li")
+    li.setAttribute("bookid", book.id)
+    li.setAttribute("size", book.pages)
+    li.setAttribute("progress", book.progress)
+    li.setAttribute("downloaded", book.downloaded)
+
+    let a = document.createElement("a")
+    a.href = book.type + "?id=" + book.id
+
+    let cover = document.createElement("span")
+    cover.classList.add("cover")
+
+    let img = document.createElement("img")
+    img.onload = function() {
+        formatImage(this)
+    }
+    img.src = book.cover
+    img.title = book.title
+
+    cover.appendChild(img)
+    a.appendChild(cover)
+
+    let title = document.createElement("span")
+    title.classList.add("title")
+    title.innerHTML = book.title
+
+    a.appendChild(title)
+
+    li.appendChild(a)
+    return li
 }
 
 function addBooks(books) {
-    for (var i = 0; i < books.length; i++) {
-        var book = books[i]
-        var collectionId = getCollectionId(book.collection)
-        var collectionDiv = document.getElementById(collectionId)
-        if (collectionDiv != null) {
-            collectionDiv.appendChild(getBookHtml(book))
+    for (let i = 0; i < books.length; i++) {
+        let book = books[i]
+        let collectionId = getCollectionId(book.collection)
+        let container = document.getElementById(collectionId)
+        if (container != null) {
+            container.appendChild(getBookHtml(book))
         }
     }
 }
@@ -165,22 +217,28 @@ function getCurrentPage() {
 function setEndOfCollection() {
     if (! getEndOfCollection()) {
         var fin = document.createElement("h1")
-        fin.id = "fin"
+        fin.id = FIN_ID
         fin.innerHTML = "~ Fin ~"
         document.body.appendChild(fin)
     }
 }
 
 function getEndOfCollection() {
-    return document.getElementById("fin") != null
+    return document.getElementById(FIN_ID) != null
 }
 
+
+
 function removeExistingBooks() {
-    var collections = document.getElementsByClassName("collection-container")
+    let collections = document.getElementsByClassName(COLLECTION_CONTAINER_CLASS)
     while (collections.length > 0) {
         document.body.removeChild(collections.item(0))
     }
-    var fin = document.getElementById("fin")
+    let collectionTitles = document.getElementsByClassName(COLLECTION_TITLE_CLASS)
+    while (collectionTitles.length > 0) {
+        document.body.removeChild(collectionTitles.item(0))
+    }
+    let fin = document.getElementById(FIN_ID)
     if (fin != null) {
         document.body.removeChild(fin)
     }
@@ -217,6 +275,73 @@ function searchForTerm() {
     loadNextPage(loadUntilPageFull)
 }
 
+function addProgress(image, progress, size, downloaded) {
+    var span = document.createElement("span")
+    if (progress < size - 1) {
+        span.classList.add("progressbar")
+        var percent = ((progress + 1) / parseFloat(size)) * 100
+        span.title = "read " + Math.floor(percent) + "%"
+        var prog = document.createElement("span")
+        prog.classList.add("read")
+        prog.style.width = (progress / (size-1) * 100) + "%"
+        span.appendChild(prog)
+    } else {
+        span.appendChild(getSvgCheck())
+        span.classList.add("progresscheck")
+    }
+    if (downloaded) {
+        span.classList.add("downloaded")
+    }
+    image.parentElement.appendChild(span)
+    /*let title = image.closest('a').querySelector('.title')
+    console.log(title)
+    image.closest('a').insertBefore(span, title)*/
+}
+
+function formatImage(img) {
+    /*console.log(img)
+    console.log("natural height: " + img.naturalHeight)
+    console.log("natural width: " + img.naturalWidth)
+    console.log("container height: " + img.offsetHeight)
+    console.log("container width: " + img.offsetWidth)*/
+    let parent = img.parentElement
+    //console.log("parent: " + parent)
+
+
+    if (img.naturalWidth / img.naturalHeight > parent.offsetWidth / parent.offsetHeight) {
+        let newWidth = img.naturalWidth * (parent.offsetHeight / img.naturalHeight)
+        //console.log("new width: " + newWidth)
+        let differenceWidth = parent.offsetWidth - newWidth
+        //console.log("width difference: " + differenceWidth)
+        let differencePercentage = (differenceWidth / parent.offsetWidth) * 100
+        //console.log("width difference percentage: " + differencePercentage)
+
+        img.style.height = "100%"
+        //img.style.width = newWidth
+        img.style.left = (differencePercentage / 2) + "%"
+    } else {
+        let newHeight = img.naturalHeight * (parent.offsetWidth / img.naturalWidth)
+        //console.log("new height: " + newHeight)
+        let differenceHeight = parent.offsetHeight - newHeight
+        //console.log("height difference: " + differenceHeight)
+        let differencePercentage = (differenceHeight / parent.offsetHeight) * 100
+
+        //img.style.height = newHeight
+        img.style.width = "100%"
+        img.style.top = (differencePercentage / 2) + "%"
+    }
+    let bookElement = img.closest('li')
+    let size = parseInt(bookElement.getAttribute("size"))
+    //console.log("size: " + size)
+    let progress = parseInt(bookElement.getAttribute("progress"))
+    //console.log("progress: " + progress)
+    let downloaded = bookElement.getAttribute("downloaded") == "true"
+    //console.log("downloaded: " + downloaded)
+    if (size != NaN && size > 0 && progress != NaN) {
+        addProgress(img, progress, size, downloaded)
+    }
+}
+
 function loadLatestRead() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -225,16 +350,16 @@ function loadLatestRead() {
                 var books = JSON.parse(this.responseText)
                 if (books.length > 0) {
                     let bookIds = []
-                    var collectionDiv = document.getElementById("ch_latestRead")
+                    var collectionContainer = document.getElementById("ch_latestRead")
                     for (var i = 0; i < books.length; i++) {
                         var book = books[i]
                         bookIds.push(book.id)
 
-                        if (collectionDiv != null) {
-                            collectionDiv.appendChild(getBookHtml(book))
+                        if (collectionContainer != null) {
+                            collectionContainer.appendChild(getBookHtml(book))
                         }
                     }
-                    collectionDiv.style.display = "block"
+                    collectionContainer.style.display = "grid"
                     cleanupBookPages(bookIds)
                 }
             }

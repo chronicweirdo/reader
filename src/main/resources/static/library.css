@@ -9,6 +9,113 @@
     border: 0;
 }
 body {
+    background-color: var(--accent-color, gold);
+    font-family: 'Roboto', sans-serif;
+    word-wrap: break-word;
+}
+body > * {
+    background-color: var(--background-color, white);
+    color: var(--foreground-color, black);
+}
+h1 {
+    padding: 15px 1.4285%;
+    background-color: var(--accent-color, gold);
+}
+ul {
+    display: grid;
+    row-gap: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: 1.5em;
+    list-style-type: none;
+
+    padding-left: 1.4285%;
+    width: 98.5714%;
+    grid-template-columns: 15.2173% 15.2173% 15.2173% 15.2173% 15.2173% 15.2173%;
+    column-gap: 1.4492%;
+}
+li {
+    overflow: hidden;
+    position: relative;
+}
+li a {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    text-decoration: none;
+    color: var(--foreground-color, black);
+}
+span.cover {
+    position: relative;
+    display: inline-block;
+    height: 25vw;
+    width: 100%;
+    overflow: hidden;
+}
+span.cover img {
+    position: relative;
+}
+span.progressbar {
+    position: absolute;
+    display: block;
+    left: 4%;
+    bottom: 4%;
+    width: 88%;
+    height: 4%;
+    background-color: var(--background-color, white);
+    border: 1px solid var(--foreground-color, black);
+    padding: 1%;
+}
+span.read {
+    display: block;
+    background-color: var(--foreground-color, black);
+    height: 98%;
+}
+span.progresscheck {
+    position: absolute;
+    display: block;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    font-weight: bold;
+    height: 16%
+}
+span.progresscheck svg {
+    height: 100%
+}
+span.progresscheck svg path {
+    stroke-width: .1px;
+    stroke: var(--foreground-color, black);
+    fill: var(--background-color, white);
+}
+span.progresscheck.downloaded svg path {
+    fill: var(--accent-color, gold);
+}
+span.progressbar.downloaded {
+    background-color: var(--accent-color, gold);
+}
+
+@media (orientation: portrait)
+{
+    h1 {
+        padding: 15px 2.5%;
+    }
+    ul {
+        padding-left: 2.5%;
+        width: 97.5%;
+        grid-template-columns: 30.76% 30.76% 30.76%;
+        column-gap: 2.56%;
+    }
+    span.cover {
+        height: 50vw;
+    }
+}
+/** {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+body {
     font-family: 'Roboto', sans-serif;
     word-wrap: break-word;
     background-color: var(--background-color, white);
@@ -21,7 +128,7 @@ h1 {
 }
 .collection-container ~ .collection-container {
     margin-top: 1vw;
-}
+}*/
 h1 > * {
     margin-right: .2em;
     color: var(--foreground-color, black);
@@ -46,7 +153,7 @@ h1 a {
 #ch_latestRead {
     display: none;
 }
-#collections {
+/*#collections {
     position: absolute;
     display: none;
     width: 100vw;
@@ -67,7 +174,7 @@ h1 a {
 }
 #collections ul {
     margin-left: 30px;
-}
+}*/
 #search {
     font-size: 1em;
     padding: .1em;
@@ -94,7 +201,7 @@ h1 a {
     text-decoration: none;
     padding: .1em;
 }
-.imgdiv {
+/*.imgdiv {
     position: relative;
     display: inline-block;
     width: 15vw;
@@ -102,7 +209,7 @@ h1 a {
     overflow: hidden;
     text-decoration: none;
     margin: 1vw 0 0 1vw;
-}
+}*/
 #spinner {
     position: fixed;
     bottom: 0;
@@ -111,12 +218,13 @@ h1 a {
     height: 8vw;
     display: none;
     z-index: 1000;
+    background: transparent;
 }
 #spinner svg {
     width: 100%;
     height: 100%
 }
-
+/*
 .imgdiv img {
     position: relative;
 }
@@ -186,7 +294,7 @@ h1 a {
     display: block;
     background-color: var(--foreground-color, black);
     height: 98%;
-}
+}*/
 #fin {
     font-weight: normal;
     font-style: italic;
@@ -194,6 +302,7 @@ h1 a {
     border: 0;
     background-color: var(--background-color, white);
 }
+
 /*@media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
 only screen and (-o-min-device-pixel-ratio: 13/10),
 only screen and (min-resolution: 120dpi)*/
@@ -203,7 +312,7 @@ only screen and (min-resolution: 120dpi)*/
         width: 15vw;
         height: 25vw;
     }
-    .imgdiv {
+    /*.imgdiv {
         width: 30vw;
         height: 50vw;
         margin: 2vw 0 0 2vw;
@@ -216,7 +325,7 @@ only screen and (min-resolution: 120dpi)*/
     }
     .imgdiv .title {
         font-size: 4vw;
-    }
+    }*/
 }
 
 #ch_spinner_svg .background {
