@@ -165,8 +165,8 @@ h1 a {
 .tools svg {
     height: 100%;
 }
-.tools path {
-    stroke-width: .2px;
+.tools path, .tools rect {
+    stroke-width: 1px;
     fill: var(--foreground-color, black);
     stroke: var(--background-color, white);
 }
