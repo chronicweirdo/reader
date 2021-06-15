@@ -143,7 +143,7 @@
 </head>
 <body>
 <h1>A list of collections, so you know what to choose</h1>
-<a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
+<p><a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a></p>
 <div th:fragment="fragment_node" th:remove="tag">
     <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
         <li th:each="child : ${tree.children}"
