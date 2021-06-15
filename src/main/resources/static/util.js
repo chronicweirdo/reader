@@ -45,7 +45,9 @@ function setMeta(metaName, value) {
 }
 
 function setStatusBarColor(color) {
+    let appropriateColor = getAppropriateStatusBarColor(color)
     setMeta('theme-color', color)
+    document.documentElement.style.setProperty('--status-bar-color', appropriateColor);
 }
 
 function getViewportWidth() {
@@ -96,6 +98,11 @@ function fixComponentHeights() {
     var width = getViewportWidth()
     var contentTop = height * .05
     var contentHeight = height * .9
+    if (document.getElementById("content") != null) {
+        document.getElementById("content").style.top = 0 + "px"
+        document.getElementById("content").style.height = height + "px"
+        document.getElementById("content").style.width = width + "px"
+    }
     if (document.getElementById("ch_content") != null) {
         document.getElementById("ch_content").style.top = contentTop + "px"
         document.getElementById("ch_content").style.height = contentHeight + "px"
@@ -448,4 +455,54 @@ function getDocumentHeight() {
 
     let height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
     return height
+}
+
+function getRGB(hexCode) {
+    if (hexCode.startsWith("#")) {
+        hexCode = hexCode.substring(1)
+    }
+    let components = hexCode.match(/.{1,2}/g)
+    let rgb = [
+        parseInt(components[0], 16),
+        parseInt(components[1], 16),
+        parseInt(components[2], 16)
+    ]
+    return rgb
+}
+
+function intToHex(i) {
+    let h = i.toString(16)
+    if (h.length < 2) {
+        h = "0" + h
+    }
+    return h
+}
+
+function getHexCode(rgb) {
+    return "#" + intToHex(rgb[0]) + intToHex(rgb[1]) + intToHex(rgb[2])
+}
+
+function computeLuminance(rgb) {
+    let R = rgb[0]
+    let G = rgb[1]
+    let B = rgb[2]
+    return Math.sqrt(0.299*R*R + 0.587*G*G + 0.114*B*B)
+}
+
+function reduceLuminanceTo(rgb, luminanceThreshold) {
+    let currentLuminance = computeLuminance(rgb)
+    while (currentLuminance > luminanceThreshold && (rgb[0] > 0 || rgb[1] > 0 || rgb[2] > 0)) {
+        if (rgb[0] > 0) rgb[0] = rgb[0] - 1
+        if (rgb[1] > 0) rgb[1] = rgb[1] - 1
+        if (rgb[2] > 0) rgb[2] = rgb[2] - 1
+        currentLuminance = computeLuminance(rgb)
+    }
+    return rgb
+}
+
+function getAppropriateStatusBarColor(originalColor) {
+    let rgb = getRGB(originalColor)
+    let newColor = reduceLuminanceTo(rgb, 150)
+    let newColorHex = getHexCode(newColor)
+    return newColorHex
 }

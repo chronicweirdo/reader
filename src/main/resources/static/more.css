@@ -1,5 +1,6 @@
 :root {
     --accent-color: gold;
+    --status-bar-color: gold;
     --foreground-color: black;
     --background-color: white;
 }
@@ -10,7 +11,7 @@
 }
 body {
     /*font-size: 3vh;*/
-    background-color: var(--accent-color, gold);
+    background-color: var(--status-bar-color, gold);
     color: var(--foreground-color, black);
     font-family: 'Roboto', sans-serif;
     font-size: 1.5em;

@@ -238,9 +238,9 @@ function updateDownloadUrl() {
     downloadLink.href = url
 }
 
-function getRgb(colorArray) {
+/*function getRgb(colorArray) {
     return "rgb(" + colorArray[0] + "," + colorArray[1] + "," + colorArray[2] + ")"
-}
+}*/
 
 function displayPage(page, callback) {
     let displayPageInternal = function(page, callback) {
@@ -252,8 +252,8 @@ function displayPage(page, callback) {
                 hideSpinner()
                 var img = getImage()
                 img.onload = function() {
-                    document.body.style.background = getRgb(data.color)
-                    setStatusBarColor(getRgb(data.color))
+                    document.getElementById("content").style.background = getHexCode(data.color)
+                    setStatusBarColor(getHexCode(data.color))
                     setPage(page)
                     saveProgress(getBookId(), page-1)
                     setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
