@@ -433,3 +433,11 @@ function initBookCollectionLinks() {
         addCollectionLinkTokens(collectionParagraph, collection, '/', searchLinkBuildHrefFunction)
     }
 }
+
+function getCssProperty(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name)
+}
+
+function setCssProperty(name, value) {
+    document.documentElement.style.setProperty(name, value)
+}

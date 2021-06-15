@@ -1,23 +1,36 @@
 var FIN_ID = "fin"
+var CLEAR_SEARCH_ID = "clearsearch"
+var SEARCH_ID = "search"
+var SPINNER_ID = "spinner"
+var TOGGLE_TITLES_ID = "toggletitles"
 var COLLECTION_CONTAINER_CLASS = "collection-container"
 var COLLECTION_TITLE_CLASS = "collection-title"
+var ACTIVE_CLASS = "active"
+var ENTER_KEY_CODE = 13
+var SCROLL_THRESHOLD = 20
+
+function getSpinner() {
+    return document.getElementById(SPINNER_ID)
+}
 
 function showSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "block"
+    getSpinner().style.display = "block"
 }
 
 function hideSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "none"
+    getSpinner().style.display = "none"
 }
 
-function addPagenum(image, page, totalPages) {
+function getToggleTitles() {
+    return document.getElementById(TOGGLE_TITLES_ID)
+}
+
+/*function addPagenum(image, page, totalPages) {
     var span = document.createElement("span")
     span.innerText = page + " / " + totalPages
     span.classList.add("pagenum")
     image.parentElement.appendChild(span)
-}
+}*/
 
 function getSvgCheck() {
     let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -34,7 +47,7 @@ function getSvgCheck() {
     return svg
 }
 
-function getSvgCross() {
+/*function getSvgCross() {
     let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
     svg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink")
@@ -47,7 +60,7 @@ function getSvgCross() {
 
     svg.appendChild(path)
     return svg
-}
+}*/
 
 function applyTitles() {
 
@@ -56,12 +69,12 @@ function applyTitles() {
 
     if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
         // we show titles
-        document.documentElement.style.setProperty('--title-display', 'inline-block')
-        document.getElementById("toggleTitles").classList.add("selected")
+        setCssProperty('--title-display', 'inline-block')
+        getToggleTitles().classList.add(ACTIVE_CLASS)
     } else {
         // we hide titles
-        document.documentElement.style.setProperty('--title-display', 'none')
-        document.getElementById("toggleTitles").classList.remove("selected")
+        setCssProperty('--title-display', 'none')
+        getToggleTitles().classList.remove(ACTIVE_CLASS)
     }
 
     /*if (titleDisplay == "none") {
@@ -293,7 +306,11 @@ function removeExistingBooks() {
 }
 
 function getSearch() {
-    return document.getElementById("search")
+    return document.getElementById(SEARCH_ID)
+}
+
+function getClearSearch() {
+    return document.getElementById(CLEAR_SEARCH_ID)
 }
 
 function getTerm() {
@@ -512,15 +529,21 @@ function loadUntilPageFull() {
     }
 }
 
+
+
 function addSearchTriggerListener() {
-    var search = document.getElementById("search")
+    var search = getSearch()
     search.addEventListener('keyup', function (e) {
+        if (search.value.length > 0) {
+            getClearSearch().classList.add(ACTIVE_CLASS)
+        } else {
+            getClearSearch().classList.remove(ACTIVE_CLASS)
+        }
         if (document.searchTimeout && document.searchTimeout != null) {
             window.clearTimeout(document.searchTimeout)
             document.searchTimeout = null
         }
-        if (e.keyCode === 13) {
-            // if enter, search
+        if (e.keyCode === ENTER_KEY_CODE) {
             searchForTerm()
         } else {
             // if other key, wait to see if finished typing
@@ -530,14 +553,14 @@ function addSearchTriggerListener() {
 }
 
 function getSearchUrlParameter() {
-    var urlString = window.location.href
-    var url = new URL(urlString)
-    var search = url.searchParams.get("search")
+    let urlString = window.location.href
+    let url = new URL(urlString)
+    let search = url.searchParams.get(SEARCH_ID)
     if (search == null) return null
     else return decodeURIComponent(search)
 }
 
-var scrollThreshold = 20
+
 
 window.onload = function() {
     if('serviceWorker' in navigator) {
@@ -562,14 +585,14 @@ window.onload = function() {
     searchForTerm()
 
     applyTitles()
-    document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
-    setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
-    document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
-    document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+    setCssProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR))
+    setStatusBarColor(getSetting(SETTING_ACCENT_COLOR))
+    setCssProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+    setCssProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
 }
 
 window.onscroll = function(ev) {
-    if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
+    if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - SCROLL_THRESHOLD) {
         if (! getEndOfCollection()) {
             loadNextPage(null)
         }

@@ -182,7 +182,7 @@ h1 a {
         font-size: .8em;
     }
 }
-#clearsearch, #toggleTitles {
+#clearsearch, #toggletitles {
     position: relative;
     /*height: 2em;*/
     display: block;
@@ -201,11 +201,11 @@ h1 a {
     fill: var(--accent-color, gold);
     stroke: var(--background-color, white);
 }
-#toggleTitles path {
+#clearsearch path, #toggletitles path {
     fill: var(--foreground-color, black);
     stroke: var(--background-color, white);
 }
-#toggleTitles.selected path {
+#clearsearch.active path, #toggletitles.active path {
     fill: var(--accent-color, gold);
     stroke: var(--background-color, white);
 }
