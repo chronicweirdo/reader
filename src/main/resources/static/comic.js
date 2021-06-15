@@ -492,7 +492,8 @@ window.onload = function() {
         "upAction": () => pan(0, getViewportHeight() / 2),
         "downAction": () => pan(0, - (getViewportHeight() / 2)),
         "leftAction": goToPreviousView,
-        "rightAction": goToNextView
+        "rightAction": goToNextView,
+        "escapeAction": () => toggleTools(true)
     })
 
     enableGesturesOnElement(document.getElementById("ch_canv"), {

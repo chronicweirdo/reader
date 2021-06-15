@@ -559,7 +559,8 @@ window.onload = function() {
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({
         "leftAction": previousPage,
-        "rightAction": nextPage
+        "rightAction": nextPage,
+        "escapeAction": () => toggleTools(true, prepareBookTools)
     })
     document.getElementById("ch_content").addEventListener('touchstart', touchGestureStartPan, false);
     document.getElementById("ch_content").addEventListener('touchmove', touchGesturePan, false);

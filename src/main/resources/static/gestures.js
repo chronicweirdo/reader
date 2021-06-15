@@ -178,5 +178,9 @@ function enableKeyboardGestures(actions) {
             // right arrow or d
             if (actions.rightAction) actions.rightAction()
         }
+        else if (e.keyCode == '27') {
+            // escape
+            if (actions.escapeAction) actions.escapeAction()
+        }
     }
 }
