@@ -142,19 +142,17 @@
     </script>
 </head>
 <body>
-<div id="container">
-    <h1>A list of collections, so you know what to choose</h1>
-    <a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
-    <div th:fragment="fragment_node" th:remove="tag">
-        <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
-            <li th:each="child : ${tree.children}"
-                th:inline="text"
-                th:with="tree = ${child}">
-                <a th:href="@{/(search=${child.search})}" th:text="${child.name}">collection name</a>
-                <ul th:replace="this::fragment_node">List Item</ul>
-            </li>
-        </ul>
-    </div>
+<h1>A list of collections, so you know what to choose</h1>
+<a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
+<div th:fragment="fragment_node" th:remove="tag">
+    <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
+        <li th:each="child : ${tree.children}"
+            th:inline="text"
+            th:with="tree = ${child}">
+            <a th:href="@{/(search=${child.search})}" th:text="${child.name}">collection name</a>
+            <ul th:replace="this::fragment_node">List Item</ul>
+        </li>
+    </ul>
 </div>
 </body>
 </html>

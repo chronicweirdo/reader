@@ -23,50 +23,6 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <link rel="stylesheet" type="text/css" href="more.css">
-    <!--style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
-        body {
-            font-size: 3vh;
-            background-color: var(--foreground-color, black);
-            color: var(--accent-color, gold);
-            font-family: 'Roboto', sans-serif;
-            margin: 5vh 10vw;
-        }
-        h1 {
-            font-size: 1.2em;
-        }
-        a {
-            color: var(--accent-color, gold);
-            text-decoration: underline;
-        }
-        input {
-            margin-left: 1em;
-            margin-right: 1em;
-        }
-        label:after {
-            content: ": "
-        }
-        #container {
-            width: 1000px;
-            margin: auto;
-        }
-        @media all and (max-width: 999px) {
-            #container {
-                width: 100%;
-            }
-        }
-        input {
-            height: 3vh;
-            vertical-align: middle;
-        }
-        input[type=checkbox] {
-            width: 3vh;
-        }
-    </style-->
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
@@ -95,16 +51,12 @@
             updateForegroundColor()
             updateBackgroundColor()
 
-            let settingsWrapper = document.getElementById('ch_latestReadSetting')
+            let settingsWrapper = document.getElementById('settings')
             appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
-            let displayTitleWrapper = document.getElementById('ch_displayTitles')
-            appendAll(displayTitleWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
-            let accentColorWrapper = document.getElementById('ch_accentColor')
-            appendAll(accentColorWrapper, getSettingController(SETTING_ACCENT_COLOR))
-            let foregroundColorWrapper = document.getElementById('ch_foregroundColor')
-            appendAll(foregroundColorWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
-            let backgroundColorWrapper = document.getElementById('ch_backgroundColor')
-            appendAll(backgroundColorWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
+            appendAll(settingsWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
+            appendAll(settingsWrapper, getSettingController(SETTING_ACCENT_COLOR))
+            appendAll(settingsWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
+            appendAll(settingsWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
 
             addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
             addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
@@ -113,21 +65,15 @@
     </script>
 </head>
 <body>
-<div id="container">
-    <h1>Chronic Reader</h1>
-    <p id="ch_latestReadSetting"></p>
-    <p id="ch_displayTitles"></p>
-    <p id="ch_accentColor"></p>
-    <p id="ch_foregroundColor"></p>
-    <p id="ch_backgroundColor"></p>
-    <p><a href="/collections">Collections</a></p>
-    <p><a href="/history">History</a></p>
-    <p><a href="/help">Help</a></p>
-    <p><a href="/password">Change password</a></p>
-    <p th:if="${admin}"><a href="/import">Import data</a></p>
-    <p><a onclick="clearStorage(this)">Clear local cache</a></p>
-    <p><a href="/">Go back</a></p>
-    <p><a href="/logout">Logout</a></p>
-</div>
+<h1>Chronic Reader</h1>
+<p id="settings"></p>
+<p><a href="/collections">Collections</a></p>
+<p><a href="/history">History</a></p>
+<p><a href="/help">Help</a></p>
+<p><a href="/password">Change password</a></p>
+<p th:if="${admin}"><a href="/import">Import data</a></p>
+<p><a onclick="clearStorage(this)">Clear local cache</a></p>
+<p><a href="/">Go back</a></p>
+<p><a href="/logout">Logout</a></p>
 </body>
 </html>
