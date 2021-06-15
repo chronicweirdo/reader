@@ -32,6 +32,10 @@
                 navigator.serviceWorker.controller.postMessage({type: 'reset'})
             }
             element.innerHTML = element.innerHTML + " - done!"
+            loadSettings()
+            updateAccentColor()
+            updateBackgroundColor()
+            updateForegroundColor()
         }
         function updateAccentColor() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
@@ -46,21 +50,29 @@
         function updateBackgroundColor() {
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
         }
-        window.onload = function() {
-            updateAccentColor()
-            updateForegroundColor()
-            updateBackgroundColor()
-
+        function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
+            settingsWrapper.innerHTML = ""
             appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
             appendAll(settingsWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
             appendAll(settingsWrapper, getSettingController(SETTING_ACCENT_COLOR))
             appendAll(settingsWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
             appendAll(settingsWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
+            if (onIOS()) {
+                appendAll(settingsWrapper, getSettingController(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
+            }
+        }
+        window.onload = function() {
+            updateAccentColor()
+            updateForegroundColor()
+            updateBackgroundColor()
+
+            loadSettings()
 
             addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
             addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
             addSettingListener(SETTING_FOREGROUND_COLOR, updateForegroundColor)
+            addSettingListener(SETTING_DESIRED_STATUS_BAR_LUMINANCE, updateAccentColor)
         }
     </script>
 </head>

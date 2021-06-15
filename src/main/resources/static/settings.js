@@ -19,6 +19,7 @@ var SETTING_SWIPE_LENGTH = "swipe_length" // screen percentage for horizontal fi
 var SETTING_ACCENT_COLOR = "accent_color"
 var SETTING_FOREGROUND_COLOR = "foreground_color"
 var SETTING_BACKGROUND_COLOR = "background_color"
+var SETTING_DESIRED_STATUS_BAR_LUMINANCE = "desired_status_bar_luminance"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -42,6 +43,7 @@ settingDefaults[SETTING_SWIPE_LENGTH] = "0.06"
 settingDefaults[SETTING_ACCENT_COLOR] = "#FFD700"
 settingDefaults[SETTING_FOREGROUND_COLOR] = "#000000"
 settingDefaults[SETTING_BACKGROUND_COLOR] = "#FFFFFF"
+settingDefaults[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = "180"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -62,6 +64,7 @@ settingParsers[SETTING_LIBRARY_DISPLAY_TITLE] = parseBoolean
 settingParsers[SETTING_SWIPE_PAGE] = parseBoolean
 settingParsers[SETTING_SWIPE_VERTICAL_THRESHOLD] = parseFloat
 settingParsers[SETTING_SWIPE_LENGTH] = parseFloat
+settingParsers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = parseInt
 
 var settingEncoders = {}
 
@@ -150,6 +153,8 @@ settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_
 settingControllers[SETTING_ACCENT_COLOR] = () => createColorController(SETTING_ACCENT_COLOR, "accent color")
 settingControllers[SETTING_FOREGROUND_COLOR] = () => createColorController(SETTING_FOREGROUND_COLOR, "foreground color")
 settingControllers[SETTING_BACKGROUND_COLOR] = () => createColorController(SETTING_BACKGROUND_COLOR, "background color")
+
+settingControllers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = () => createNumberController(SETTING_DESIRED_STATUS_BAR_LUMINANCE, "status bar luminance", 150, 255, 5)
 
 function updateSetting(element) {
     let value

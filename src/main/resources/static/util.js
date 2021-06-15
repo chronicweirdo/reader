@@ -14,6 +14,11 @@ function onMobile() {
     }
 }
 
+function onIOS() {
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+    return isIOS
+}
+
 function num(s, def) {
     var patt = /[\-]?[0-9\.]+/
     var match = patt.exec(s)
@@ -502,7 +507,7 @@ function reduceLuminanceTo(rgb, luminanceThreshold) {
 
 function getAppropriateStatusBarColor(originalColor) {
     let rgb = getRGB(originalColor)
-    let newColor = reduceLuminanceTo(rgb, 150)
+    let newColor = reduceLuminanceTo(rgb, getSetting(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
     let newColorHex = getHexCode(newColor)
     return newColorHex
 }
