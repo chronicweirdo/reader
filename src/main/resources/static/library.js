@@ -440,6 +440,7 @@ window.onload = function() {
     }
     addSearchTriggerListener()
     searchForTerm()
+    updateClearSearch()
 
     applyTitles()
     setCssProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR))
