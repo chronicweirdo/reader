@@ -44,7 +44,7 @@
     <div id="ch_canv"></div>
     <div id="ch_tools_container">
         <div id="ch_tools">
-            <p id="ch_cover"><img th:src="${cover}"/></p>
+            <p id="ch_cover"><span><img th:src="${cover}"/><svg id="saved" version="1.1" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 22.031)"><path transform="matrix(.26458 0 0 .26458 0 -22.031)" d="m3.7793 3.7793v105.83h105.83v-75.592l-30.236-30.234h-15.117v34.016h-45.354v-34.016h-15.119zm15.119 52.914h75.59v37.795h-75.59v-37.795z" fill="#070202"/></g></svg></span></p>
             <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
             <h1 th:text="${title}">Comic Title</h1>
             <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
