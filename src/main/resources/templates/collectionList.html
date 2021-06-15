@@ -22,7 +22,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
-    <style>
+    <link rel="stylesheet" type="text/css" href="more.css">
+    <!--style>
         :root {
             --accent-color: gold;
             --foreground-color: black;
@@ -90,7 +91,7 @@
         ul.tree li:last-child:before {
             border-left: thin solid var(--accent-color, gold);
         }
-    </style>
+    </style-->
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
@@ -141,17 +142,19 @@
     </script>
 </head>
 <body>
-<h1>A list of collections, so you know what to choose</h1>
-<a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
-<div th:fragment="fragment_node" th:remove="tag">
-    <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
-        <li th:each="child : ${tree.children}"
-            th:inline="text"
-            th:with="tree = ${child}">
-            <a th:href="@{/(search=${child.search})}" th:text="${child.name}">collection name</a>
-            <ul th:replace="this::fragment_node">List Item</ul>
-        </li>
-    </ul>
+<div id="container">
+    <h1>A list of collections, so you know what to choose</h1>
+    <a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
+    <div th:fragment="fragment_node" th:remove="tag">
+        <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
+            <li th:each="child : ${tree.children}"
+                th:inline="text"
+                th:with="tree = ${child}">
+                <a th:href="@{/(search=${child.search})}" th:text="${child.name}">collection name</a>
+                <ul th:replace="this::fragment_node">List Item</ul>
+            </li>
+        </ul>
+    </div>
 </div>
 </body>
 </html>

@@ -441,3 +441,11 @@ function getCssProperty(name) {
 function setCssProperty(name, value) {
     document.documentElement.style.setProperty(name, value)
 }
+
+function getDocumentHeight() {
+    let body = document.body
+    let html = document.documentElement
+
+    let height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight)
+    return height
+}
