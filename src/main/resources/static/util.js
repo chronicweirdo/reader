@@ -50,9 +50,13 @@ function setMeta(metaName, value) {
 }
 
 function setStatusBarColor(color) {
-    let appropriateColor = getAppropriateStatusBarColor(color)
     setMeta('theme-color', color)
-    document.documentElement.style.setProperty('--status-bar-color', appropriateColor);
+    if (onIOS()) {
+        let appropriateColor = getAppropriateStatusBarColor(color)
+        document.documentElement.style.setProperty('--status-bar-color', appropriateColor)
+    } else {
+        document.documentElement.style.setProperty('--status-bar-color', getSetting(SETTING_BACKGROUND_COLOR))
+    }
 }
 
 function getViewportWidth() {

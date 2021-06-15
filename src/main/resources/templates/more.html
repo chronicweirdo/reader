@@ -49,6 +49,7 @@
         }
         function updateBackgroundColor() {
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
