@@ -113,25 +113,6 @@ span.title {
         height: 50vw;
     }
 }
-/** {
-    margin: 0;
-    padding: 0;
-    border: 0;
-}
-body {
-    font-family: 'Roboto', sans-serif;
-    word-wrap: break-word;
-    background-color: var(--background-color, white);
-}
-h1 {
-    padding: 1vw;
-    font-weight: bold;
-    font-size: 1.6em;
-    background-color: var(--accent-color, gold);
-}
-.collection-container ~ .collection-container {
-    margin-top: 1vw;
-}*/
 h1 > * {
     margin-right: .2em;
     color: var(--foreground-color, black);
@@ -142,27 +123,20 @@ h1 a {
 }
 .tools {
     display: grid;
-
     background-color: var(--foreground-color, black);
     color: var(--accent-color, gold);
     font-size: 2em;
     padding-top: 1em;
     padding-bottom: 1em;
     text-align: center;
-    /*max-width: 100%;*/
     border-top: 2px solid var(--background-color, white);
     border-bottom: 2px solid var(--background-color, white);
-
     align-items: center;
     justify-items: middle;
-
-    /*padding-left: 2%;*/
     padding-left: 2%;
     padding-right: 2%;
     width: 96%;
-
     grid-template-columns: 9fr 1fr 1fr 1fr;
-    /*column-gap: 2%;*/
 }
 .tools > * {
     height: 1em;
@@ -182,50 +156,22 @@ h1 a {
         font-size: .8em;
     }
 }
-#clearsearch, #toggletitles {
-    position: relative;
-    /*height: 2em;*/
-    display: block;
+.tools button {
     background: none;
-    /*margin-left: -40px;*/
     font-size: 1em;
-    font-weight: bold;
-    color: var(--background-color, white);
-    border: none;
 }
 .tools svg {
     height: 100%;
 }
 .tools path {
     stroke-width: .2px;
-    fill: var(--accent-color, gold);
-    stroke: var(--background-color, white);
-}
-#clearsearch path, #toggletitles path {
     fill: var(--foreground-color, black);
     stroke: var(--background-color, white);
 }
-#clearsearch.active path, #toggletitles.active path {
+.tools .active path {
     fill: var(--accent-color, gold);
-    stroke: var(--background-color, white);
 }
 
-.tools a {
-    /*margin-left: 2vw;*/
-    color: var(--accent-color, gold);
-    /*border: 2px solid var(--accent-color, gold);*/
-    text-decoration: none;
-    padding: .1em;
-}
-/*.imgdiv {
-    position: relative;
-    display: inline-block;
-    width: 15vw;
-    height: 25vw;
-    overflow: hidden;
-    text-decoration: none;
-    margin: 1vw 0 0 1vw;
-}*/
 #spinner {
     position: fixed;
     bottom: 0;
@@ -240,77 +186,6 @@ h1 a {
     width: 100%;
     height: 100%
 }
-/*
-.imgdiv img {
-    position: relative;
-}
-.imgdiv .pagenum {
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    background-color: var(--background-color, white);
-    padding: .5em;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--foreground-color, black);
-}
-.imgdiv .title {
-    position: absolute;
-    display: block;
-    left: 4%;
-    top: 4%;
-    width: 82%;
-    padding: 4%;
-    color: var(--background-color, white);
-    font-size: 2vw;
-    font-weight: bold;
-    background-color: #00000099;
-    max-height: 76%;
-    overflow: hidden;
-    border: 1px solid var(--foreground-color, black);
-}
-.imgdiv .progressbar {
-    position: absolute;
-    display: block;
-    left: 4%;
-    bottom: 4%;
-    width: 88%;
-    height: 4%;
-    background-color: var(--background-color, white);
-    border: 1px solid var(--foreground-color, black);
-    padding: 1%;
-}
-.imgdiv .progresscheck {
-    position: absolute;
-    display: block;
-    right: 0;
-    bottom: 0;
-    padding: 0;
-    font-weight: bold;
-    height: 16%
-}
-.imgdiv .progresscheck svg {
-    height: 100%
-}
-
-.imgdiv .progresscheck svg path {
-    stroke-width: .1px;
-    stroke: var(--foreground-color, black);
-    fill: var(--background-color, white);
-}
-
-.imgdiv .progresscheck.downloaded svg path {
-    fill: var(--accent-color, gold);
-}
-
-.imgdiv .progressbar.downloaded {
-    background-color: var(--accent-color, gold);
-}
-.imgdiv .progressbar .read {
-    display: block;
-    background-color: var(--foreground-color, black);
-    height: 98%;
-}*/
 #fin {
     font-weight: normal;
     font-style: italic;
@@ -319,29 +194,12 @@ h1 a {
     background-color: var(--background-color, white);
 }
 
-/*@media	only screen and (-webkit-min-device-pixel-ratio: 1.3),
-only screen and (-o-min-device-pixel-ratio: 13/10),
-only screen and (min-resolution: 120dpi)*/
 @media (orientation: portrait)
 {
     #spinner {
         width: 15vw;
         height: 25vw;
     }
-    /*.imgdiv {
-        width: 30vw;
-        height: 50vw;
-        margin: 2vw 0 0 2vw;
-    }
-    h1 {
-        padding: 2vw;
-    }
-    .collection-container ~ .collection-container {
-        margin-top: 2vw;
-    }
-    .imgdiv .title {
-        font-size: 4vw;
-    }*/
     .tools {
         grid-template-columns: repeat(5, 1fr);
         grid-template-rows: 1fr 1fr;
@@ -355,7 +213,7 @@ only screen and (min-resolution: 120dpi)*/
         grid-column: 2;
         grid-row: 2;
     }
-    #toggleTitles {
+    #toggletitles {
         grid-column: 3;
         grid-row: 2;
     }
