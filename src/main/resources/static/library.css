@@ -140,9 +140,6 @@ h1 a {
     width: 96%;
     grid-template-columns: 9fr 1fr 1fr 1fr;
 }
-.tools > * {
-    height: 1em;
-}
 #ch_latestRead {
     display: none;
 }
@@ -159,9 +156,11 @@ h1 a {
         font-size: .8em;
     }
 }
-.tools button {
+.tools button, .tools a {
     background: none;
     font-size: 1em;
+    height: 1em;
+    cursor: pointer;
 }
 .tools svg {
     height: 100%;
@@ -171,8 +170,11 @@ h1 a {
     fill: var(--foreground-color, black);
     stroke: var(--background-color, white);
 }
-.tools .active path {
+.tools .active path, .tools .active rect {
     fill: var(--accent-color, gold);
+}
+.offline-message {
+    color: var(--background-color, white);
 }
 
 #spinner {

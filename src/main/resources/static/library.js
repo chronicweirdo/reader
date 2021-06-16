@@ -8,6 +8,7 @@ var COLLECTION_TITLE_CLASS = "collection-title"
 var ACTIVE_CLASS = "active"
 var ENTER_KEY_CODE = 13
 var SCROLL_THRESHOLD = 20
+var RELOAD_LIBRARY_MESSAGE = "Reload Library"
 
 function getSpinner() {
     return document.getElementById(SPINNER_ID)
@@ -198,12 +199,16 @@ function getTerm() {
 
 function clearTerm() {
     var search = getSearch()
-    if (search.value === "") {
-        window.location = "/"
+    if (search) {
+        if (search.value === "") {
+            window.location = "/"
+        } else {
+            search.value = ""
+            search.dispatchEvent(new Event('keyup'))
+            search.focus()
+        }
     } else {
-        search.value = ""
-        search.dispatchEvent(new Event('keyup'))
-        search.focus()
+        window.location = "/"
     }
 }
 
@@ -292,6 +297,18 @@ function loadLatestRead() {
     xhttp.send()
 }
 
+function setToOfflineMode() {
+    let offlineMessage = document.createElement("span")
+    offlineMessage.classList.add("offline-message")
+    offlineMessage.innerHTML = "The application is in offline mode, only the latest read books are available."
+    document.getElementById("search").replaceWith(offlineMessage)
+
+    let moreElement = document.getElementById("more")
+    moreElement.classList.remove(ACTIVE_CLASS)
+    moreElement.href = "/"
+    moreElement.title = RELOAD_LIBRARY_MESSAGE
+}
+
 function loadNextPage(callback) {
     if (document.searchTimestamp === undefined || document.searchTimestamp == null) {
         var pagenum = getCurrentPage() + 1
@@ -306,7 +323,7 @@ function loadNextPage(callback) {
                     setCurrentPage(pagenum)
                     var response = JSON.parse(this.responseText)
                     if (response.offline && response.offline == true) {
-                        insertOfflineMessage()
+                        setToOfflineMode()
                     } else if (response.books.length > 0) {
                         addCollections(response.collections)
                         addBooks(response.books)
@@ -394,7 +411,7 @@ function updateClearSearch() {
         clearSearch.title = "Clear Search Field"
     } else {
         clearSearch.classList.remove(ACTIVE_CLASS)
-        clearSearch.title="Reload Library"
+        clearSearch.title = RELOAD_LIBRARY_MESSAGE
     }
 }
 
