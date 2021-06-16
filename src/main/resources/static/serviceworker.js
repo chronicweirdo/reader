@@ -8,7 +8,6 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
-//var MAXIMUM_DOWNLOAD_RETRIES = 5
 
 var downloadingBook = new Set()
 
@@ -245,7 +244,6 @@ async function resetApplication() {
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
     await databaseDeleteAll(WORKER_TABLE)
-    //await deleteDb()
 
     // unregister service worker
     await self.registration.unregister()

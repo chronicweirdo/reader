@@ -27,19 +27,13 @@ body > *:last-child {
 h1 {
     font-size: 1.2em;
     background-color: var(--accent-color, gold);
-    /*padding-top: 0.5em;*/
     padding-bottom: 1em;
 }
 h2 {
     font-size: 1em;
     background-color: var(--accent-color, gold);
-    /*padding-top: 0.5em;*/
     padding-bottom: 1em;
 }
-/*p, ul {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}*/
 p.settings {
     display: grid;
     align-items: top;
@@ -58,7 +52,6 @@ p.history {
 span.header {
     font-weight: bold;
 }
-/*@media all and (max-width: 399px) {*/
 @media (orientation: portrait) {
     #settings {
         grid-template-columns: 1fr 1fr;
@@ -71,11 +64,6 @@ a {
     color: var(--foreground-color, black);
     text-decoration: underline;
 }
-/*input {
-    margin-left: 1em;
-    margin-right: 1em;
-    border: 1px solid var(--foreground-color, black);
-}*/
 label:after {
     content: ": "
 }
@@ -133,19 +121,6 @@ ul.tree li:last-child:before {
     font-family: sans-serif;
     margin-left: .3em;
 }
-
-/*table {
-    display: inline-block;
-    word-break: break-all;
-    padding-left: 0;
-    padding-right: 0;
-}
-table, th, td {
-    border: 1px solid var(--foreground-color, black);
-}
-td {
-    padding: 5px;
-}*/
 
 .toc {
     padding-bottom: 1em;

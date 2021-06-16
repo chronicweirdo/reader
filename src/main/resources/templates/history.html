@@ -22,50 +22,6 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <link rel="stylesheet" type="text/css" href="more.css">
-    <!--style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
-        body {
-            background-color: var(--foreground-color, black);
-            color: var(--background-color, white);
-            font-family: 'Roboto', sans-serif;
-        }
-        a {
-            color: var(--accent-color, gold);
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            word-break: break-all;
-        }
-        table, th, td {
-            border: 1px solid var(--accent-color, gold);
-        }
-        td {
-            padding: 5px;
-        }
-        span {
-            margin-left: 3px;
-            margin-right: 3px;
-        }
-        #spinner {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 5vw;
-            height: 8vw;
-            display: none;
-            z-index: 1000;
-        }
-        #spinner svg {
-            width: 100%;
-            height: 100%
-        }
-    </style-->
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
@@ -90,32 +46,27 @@
             spinner.style.display = "none"
         }
         function getTableRow(book) {
-            //var tr = document.createElement("tr")
             let elements = []
 
             var collection = document.createElement("span")
             addCollectionLinkTokens(collection, book.collection, '/', searchLinkBuildHrefFunction)
             elements.push(collection)
-            //tr.appendChild(collection)
 
             var title = document.createElement("span")
             var titleLink = document.createElement("a")
             titleLink.href = book.type + "?id=" + book.id
             titleLink.innerHTML = book.title
             title.appendChild(titleLink)
-            //tr.appendChild(title)
             elements.push(title)
 
             var progress = document.createElement("span")
             var percent = ((book.progress + 1) / parseFloat(book.pages)) * 100
             progress.innerHTML = Math.floor(percent) + "%"
-            //tr.appendChild(progress)
             elements.push(progress)
 
             var date = document.createElement("span")
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
-            //tr.appendChild(date)
             elements.push(date)
 
             var actions = document.createElement("span")
@@ -125,10 +76,8 @@
             }
             removeProgressButton.innerHTML = "delete"
             actions.appendChild(removeProgressButton)
-            //tr.appendChild(actions)
             elements.push(actions)
 
-            //return tr
             return elements
         }
         function loadHistory() {

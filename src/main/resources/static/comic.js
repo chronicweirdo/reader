@@ -238,10 +238,6 @@ function updateDownloadUrl() {
     downloadLink.href = url
 }
 
-/*function getRgb(colorArray) {
-    return "rgb(" + colorArray[0] + "," + colorArray[1] + "," + colorArray[2] + ")"
-}*/
-
 function displayPage(page, callback) {
     let displayPageInternal = function(page, callback) {
         document.lastPageChange = timestamp
