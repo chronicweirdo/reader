@@ -417,8 +417,6 @@ function getSearchUrlParameter() {
     else return decodeURIComponent(search)
 }
 
-
-
 window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
