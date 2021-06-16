@@ -52,6 +52,40 @@ p.history {
 span.header {
     font-weight: bold;
 }
+@media all and (max-width: 799px) {
+    p.history {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+    span.header {
+        display: none;
+    }
+    .history-collection:before {
+        content: "collection: ";
+        font-weight: bold;
+    }
+    .history-title:before {
+        content: "title: ";
+        font-weight: bold;
+    }
+    .history-progress:before {
+        content: "progress: ";
+        font-weight: bold;
+    }
+    .history-date:before {
+        content: "date: ";
+        font-weight: bold;
+    }
+    .history-actions:before {
+        content: "actions: ";
+        font-weight: bold;
+    }
+    .history-actions {
+        padding-bottom: 1em;
+        border-bottom: 2px solid var(--accent-color, gold);
+        margin-bottom: 1em;
+    }
+}
 @media (orientation: portrait) {
     #settings {
         grid-template-columns: 1fr 1fr;
