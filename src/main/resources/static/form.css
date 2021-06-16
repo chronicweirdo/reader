@@ -6,6 +6,7 @@
 textarea, input, p {
     font-family: 'Roboto', sans-serif;
 }
+
 textarea, input[type="text"], input[type="password"] {
     display: inline-block;
     font-size: 1em;
@@ -13,6 +14,10 @@ textarea, input[type="text"], input[type="password"] {
     background-color: var(--accent-color, gold);
     border: 2px solid var(--background-color, white);
     color: var(--foreground-color, black);
+}
+textarea {
+    width: 100%;
+    height: 50vh;
 }
 
 input::placeholder, textarea::placeholder {
