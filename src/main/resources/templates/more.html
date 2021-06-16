@@ -37,20 +37,25 @@
             updateBackgroundColor()
             updateForegroundColor()
         }
+
         function updateAccentColor() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
+
         function updateStatusBarForMorePage() {
             setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
         }
+
         function updateForegroundColor() {
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
         }
+
         function updateBackgroundColor() {
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
             if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
+
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
@@ -62,6 +67,7 @@
                 appendAll(settingsWrapper, getSettingController(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
             }
         }
+
         window.onload = function() {
             updateAccentColor()
             updateForegroundColor()
@@ -77,15 +83,17 @@
     </script>
 </head>
 <body>
-<h1>Chronic Reader</h1>
-<p id="settings" class="settings"></p>
+<h1>Chronic Reader Pages</h1>
+<p><a href="/">Library</a></p>
 <p><a href="/collections">Collections</a></p>
 <p><a href="/history">History</a></p>
-<p><a href="/help">Help</a></p>
-<p><a href="/password">Change password</a></p>
-<p th:if="${admin}"><a href="/import">Import data</a></p>
-<p><a onclick="clearStorage(this)">Clear local cache</a></p>
-<p><a href="/">Go back</a></p>
-<p><a href="/logout">Logout</a></p>
+<p class="end"><a href="/help">Help</a></p>
+<h2>Settings and Tools</h2>
+<p id="settings" class="settings"></p>
+<p><a href="/password">Change Password</a></p>
+<p th:if="${admin}"><a href="/import">Import Data</a></p>
+<p class="end"><a onclick="clearStorage(this)">Clear Local Cache</a></p>
+<h2>Exit</h2>
+<p class="end"><a href="/logout">Logout</a></p>
 </body>
 </html>

@@ -116,13 +116,19 @@ ul.tree li:last-child:before {
     height: 1.1em;
     margin-top: -0.5em;
 }
-.expand {
+span.expand {
     cursor: pointer;
     font-family: sans-serif;
+    font-weight: bold;
     margin-left: .3em;
+    color: var(--foreground-color, black);
+    background-color:  var(--accent-color, gold);
+    padding-left: .3em;
+    padding-right: .3em;
+    width: .3em;
 }
 
-.toc {
+.end {
     padding-bottom: 1em;
 }
 

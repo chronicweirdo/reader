@@ -41,25 +41,25 @@
     </script>
 </head>
 <body>
-<h1>Import</h1>
+<h1>Import Data</h1>
 <p th:if="${message != null}" th:utext="${message}">a message</p>
 <form th:action="@{/import}" method="post" autocomplete="off">
     <input id="formAction" type="hidden" name="action" value="" />
     <p><textarea id="data" name="data" placeholder="csv data"></textarea></p>
     <p class="submit">
-        <input type="button" value="Import progress" onclick="importSubmit('progress')"/>
-        <input type="button" value="Import users" onclick="importSubmit('importUsers')"/>
-        <input type="button" value="Add users" onclick="importSubmit('addUsers')"/>
-        <input type="button" value="Delete users" onclick="importSubmit('deleteUsers')"/>
+        <input type="button" value="Import Progress" onclick="importSubmit('progress')"/>
+        <input type="button" value="Import Users" onclick="importSubmit('importUsers')"/>
+        <input type="button" value="Add Users" onclick="importSubmit('addUsers')"/>
+        <input type="button" value="Delete Users" onclick="importSubmit('deleteUsers')"/>
     </p>
 </form>
-<p><a href="/exportProgress" download="progress.csv">Export progress</a></p>
-<p><a href="/exportUsers" download="users.csv">Export users</a></p>
+<p><a href="/exportProgress" download="progress.csv">Export Progress</a></p>
+<p><a href="/exportUsers" download="users.csv">Export Users</a></p>
 <p>The following formats can be used to import data into to system. Format describes each line in the CSV data that must be written in the text area above.</p>
 <p>Import progress format: username, author, title, section, position, finished.</p>
 <p>Import users format: username, encoded password.</p>
 <p>Add users format: username, password.</p>
 <p>Delete users format: username.</p>
-<p><a href="/">Go back</a></p>
+<p><a href="/">Library</a></p>
 </body>
 </html>

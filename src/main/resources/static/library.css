@@ -97,6 +97,7 @@ span.progressbar.downloaded {
 }
 span.title {
     display: var(--title-display, none);
+    font-family: 'Merriweather', serif;
 }
 
 @media (orientation: portrait)

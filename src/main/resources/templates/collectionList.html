@@ -26,6 +26,12 @@
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
+        var EXPAND_CLASS = "expand"
+        var EXPAND_HTML = "+"
+        var COLLAPSE_HTML = "-"
+        var EXPAND_TITLE = "expand"
+        var COLLAPSE_TITLE = "collapse"
+
         function toggle(el) {
             var current = el
             while (current && current.tagName != "LI") current = current.parentElement
@@ -33,18 +39,31 @@
             if (target) {
                 if (target.style.display != "none") {
                     target.style.display = "none"
+                    let sign = target.previousElementSibling
+                    if (sign && sign.classList.contains(EXPAND_CLASS)) {
+                        sign.innerHTML = EXPAND_HTML
+                        sign.title = EXPAND_TITLE
+                    }
                 } else {
                     target.style.display = "block"
+                    let sign = target.previousElementSibling
+                    if (sign && sign.classList.contains(EXPAND_CLASS)) {
+                        sign.innerHTML = COLLAPSE_HTML
+                        sign.title = COLLAPSE_TITLE
+                    }
                 }
             }
         }
+
         function addExpandSymbol(item) {
             var link = item.getElementsByTagName("A")[0]
             var expand = document.createElement("span")
-            expand.classList.add("expand")
-            expand.innerHTML = "+"
+            expand.classList.add(EXPAND_CLASS)
+            expand.innerHTML = EXPAND_HTML
+            expand.title = EXPAND_TITLE
             link.after(expand)
         }
+
         function getLiWithChildren() {
             var items = document.getElementsByTagName("LI")
             var result = []
@@ -55,6 +74,7 @@
             }
             return result
         }
+
         window.onload = function() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));

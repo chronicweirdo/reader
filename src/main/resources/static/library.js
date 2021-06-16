@@ -41,12 +41,15 @@ function getSvgCheck() {
 }
 
 function applyTitles() {
+    let toggleTitles = getToggleTitles()
     if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
         setCssProperty('--title-display', 'inline-block')
-        getToggleTitles().classList.add(ACTIVE_CLASS)
+        toggleTitles.classList.add(ACTIVE_CLASS)
+        toggleTitles.title = "Hide Book Titles"
     } else {
         setCssProperty('--title-display', 'none')
-        getToggleTitles().classList.remove(ACTIVE_CLASS)
+        toggleTitles.classList.remove(ACTIVE_CLASS)
+        toggleTitles.title = "Show Book Titles"
     }
 }
 
@@ -385,10 +388,13 @@ function loadUntilPageFull() {
 }
 
 function updateClearSearch() {
+    let clearSearch = getClearSearch()
     if (getSearch().value.length > 0) {
-        getClearSearch().classList.add(ACTIVE_CLASS)
+        clearSearch.classList.add(ACTIVE_CLASS)
+        clearSearch.title = "Clear Search Field"
     } else {
-        getClearSearch().classList.remove(ACTIVE_CLASS)
+        clearSearch.classList.remove(ACTIVE_CLASS)
+        clearSearch.title="Reload Library"
     }
 }
 
