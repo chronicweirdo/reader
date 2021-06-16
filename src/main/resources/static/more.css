@@ -18,24 +18,28 @@ body {
 body > * {
     padding-left: 1em;
     padding-right: 1em;
+    padding-top: 1em;
     background-color: var(--background-color, white);
+}
+body > *:last-child {
+    padding-bottom: 1em;
 }
 h1 {
     font-size: 1.2em;
     background-color: var(--accent-color, gold);
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    /*padding-top: 0.5em;*/
+    padding-bottom: 1em;
 }
 h2 {
     font-size: 1em;
     background-color: var(--accent-color, gold);
-    padding-top: 0.3em;
-    padding-bottom: 0.3em;
+    /*padding-top: 0.5em;*/
+    padding-bottom: 1em;
 }
-p, ul {
-    padding-top: 0.2em;
+/*p, ul {
+    padding-top: 0.5em;
     padding-bottom: 0.5em;
-}
+}*/
 p.settings {
     display: grid;
     align-items: top;
@@ -83,6 +87,9 @@ input[type=checkbox] {
     width: 3vh;
 }
 
+ul.tree {
+    padding-top: 0;
+}
 p.tree,
 ul.tree,
 ul.tree ul {
@@ -139,6 +146,10 @@ table, th, td {
 td {
     padding: 5px;
 }*/
+
+.toc {
+    padding-bottom: 1em;
+}
 
 p.images {
     text-align: center;
