@@ -307,21 +307,21 @@
 }
 #ch_cover #saved {
     position: absolute;
-    bottom: 5%;
+    bottom: 2%;
     height: 2em;
 }
 #ch_tools.left #saved {
-    left: 5%;
+    left: 1%;
 }
 #ch_tools.right #saved {
-    right: 5%;
+    right: 1%;
 }
-#ch_cover #saved path {
-    stroke-width: 3px;
+#ch_cover #saved path, #ch_cover #saved rect {
+    stroke-width: 1px;
     fill: none;
     stroke: var(--foreground-color, black);
 }
-#ch_cover.ondevice #saved path {
+#ch_cover.ondevice #saved path, #ch_cover.ondevice #saved rect {
     fill: var(--accent-color, gold);
 }
 /* Chrome, Safari, Edge, Opera */
