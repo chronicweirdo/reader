@@ -131,8 +131,6 @@ h1 a {
     padding-top: 1em;
     padding-bottom: 1em;
     text-align: center;
-    border-top: 2px solid var(--background-color, white);
-    border-bottom: 2px solid var(--background-color, white);
     align-items: center;
     justify-items: center;
     padding-left: 2%;
