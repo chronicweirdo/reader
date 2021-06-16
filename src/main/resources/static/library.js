@@ -444,9 +444,8 @@ window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
             navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
-                registration.update().then(() => {
-                    loadLatestRead()
-                })
+                // we load latest read both on success and on failure (when offline)
+                registration.update().then(loadLatestRead,loadLatestRead)
             }, function(error) {
                 console.log("service worker registration failed: ", error)
             })

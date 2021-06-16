@@ -210,7 +210,7 @@ h1 a {
         grid-template-rows: 1fr 1fr;
         row-gap: 15px;
     }
-    #search {
+    #search, .offline-message {
         grid-column: 1 / 6;
         grid-row: 1;
     }
