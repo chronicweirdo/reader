@@ -17,7 +17,6 @@ function getSpinner() {
 function showSpinner() {
     let collections = document.getElementsByTagName("ul")
     let lastCollection = collections[collections.length-1]
-    console.log(lastCollection)
     if (lastCollection.id != "ch_latestRead") {
         let spinner = getSpinner().cloneNode(true)
         spinner.classList.add("active-spinner")
