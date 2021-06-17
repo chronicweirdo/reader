@@ -378,9 +378,10 @@ function setUiColors(foreground, background) {
     let bookStyleSheet = document.dynamicStyleSheet
     if (bookStyleSheet) {
         while (bookStyleSheet.cssRules.length > 0) bookStyleSheet.deleteRule(0)
-        bookStyleSheet.insertRule('body { color: ' + foreground + '; background-color: ' + background + '; }', 0)
+        bookStyleSheet.insertRule('#content { color: ' + foreground + '; background-color: ' + background + '; }', 0)
         bookStyleSheet.insertRule('a { color: ' + foreground + '; }', 0)
         bookStyleSheet.insertRule('table, th, td { border-color: ' + foreground + '; }', 0)
+        setStatusBarColor(background)
     }
 }
 
@@ -558,7 +559,8 @@ window.onload = function() {
     // other page controls heights need to be fixed like this too
     enableKeyboardGestures({
         "leftAction": previousPage,
-        "rightAction": nextPage
+        "rightAction": nextPage,
+        "escapeAction": () => toggleTools(true, prepareBookTools)
     })
     document.getElementById("ch_content").addEventListener('touchstart', touchGestureStartPan, false);
     document.getElementById("ch_content").addEventListener('touchmove', touchGesturePan, false);

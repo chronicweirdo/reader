@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <title>History - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -20,59 +21,28 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
-    <style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
-        body {
-            background-color: var(--foreground-color, black);
-            color: var(--background-color, white);
-            font-family: 'Roboto', sans-serif;
-        }
-        a {
-            color: var(--accent-color, gold);
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            word-break: break-all;
-        }
-        table, th, td {
-            border: 1px solid var(--accent-color, gold);
-        }
-        td {
-            padding: 5px;
-        }
-        span {
-            margin-left: 3px;
-            margin-right: 3px;
-        }
-        #spinner {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 5vw;
-            height: 8vw;
-            display: none;
-            z-index: 1000;
-        }
-        #spinner svg {
-            width: 100%;
-            height: 100%
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="more.css">
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
+        var COLLECTION_CLASS = "history-collection"
+        var TITLE_CLASS = "history-title"
+        var PROGRESS_CLASS = "history-progress"
+        var DATE_CLASS = "history-date"
+        var ACTIONS_CLASS = "history-actions"
+        var BOOK_ID_ATTRIBUTE = "bookId"
+
+        function deleteElementsForBookId(bookId) {
+            let sel = Array.from(document.getElementById("ch_read_history").childNodes).filter(e => e.getAttribute).filter(e => e.getAttribute("bookId") == bookId)
+            sel.forEach(e => e.remove())
+        }
+
         function deleteProgress(id, element) {
             var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4) {
                     if (this.status == 200) {
-                        element.parentElement.parentElement.remove()
+                        deleteElementsForBookId(id)
                     }
                 }
             }
@@ -88,35 +58,49 @@
             spinner.style.display = "none"
         }
         function getTableRow(book) {
-            var tr = document.createElement("tr")
-            var collection = document.createElement("td")
+            let elements = []
+
+            var collection = document.createElement("span")
+            collection.classList.add(COLLECTION_CLASS)
+            collection.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             addCollectionLinkTokens(collection, book.collection, '/', searchLinkBuildHrefFunction)
-            tr.appendChild(collection)
-            var title = document.createElement("td")
+            elements.push(collection)
+
+            var title = document.createElement("span")
+            title.classList.add(TITLE_CLASS)
+            title.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var titleLink = document.createElement("a")
             titleLink.href = book.type + "?id=" + book.id
             titleLink.innerHTML = book.title
             title.appendChild(titleLink)
-            tr.appendChild(title)
-            var progress = document.createElement("td")
+            elements.push(title)
+
+            var progress = document.createElement("span")
+            progress.classList.add(PROGRESS_CLASS)
+            progress.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var percent = ((book.progress + 1) / parseFloat(book.pages)) * 100
             progress.innerHTML = Math.floor(percent) + "%"
-            tr.appendChild(progress)
-            var date = document.createElement("td")
+            elements.push(progress)
+
+            var date = document.createElement("span")
+            date.classList.add(DATE_CLASS)
+            date.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
-            tr.appendChild(date)
+            elements.push(date)
 
-            var actions = document.createElement("td")
+            var actions = document.createElement("span")
+            actions.classList.add(ACTIONS_CLASS)
+            actions.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var removeProgressButton = document.createElement("a")
             removeProgressButton.onclick = function(event) {
                 deleteProgress(book.id, this)
             }
             removeProgressButton.innerHTML = "delete"
             actions.appendChild(removeProgressButton)
-            tr.appendChild(actions)
+            elements.push(actions)
 
-            return tr
+            return elements
         }
         function loadHistory() {
             var xhttp = new XMLHttpRequest();
@@ -129,9 +113,12 @@
                             let bookIds = []
                             for (var i = 0; i < books.length; i++) {
                                 var book = books[i]
-                                var collectionDiv = document.getElementById("ch_read_history")
-                                if (collectionDiv != null) {
-                                    collectionDiv.appendChild(getTableRow(book))
+                                var history = document.getElementById("ch_read_history")
+                                if (history != null) {
+                                    let row = getTableRow(book)
+                                    for (let i = 0; i < row.length; i++) {
+                                        history.appendChild(row[i])
+                                    }
                                 }
                             }
 
@@ -147,20 +134,24 @@
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
             loadHistory()
         }
     </script>
 </head>
 <body>
-<p>This is a list of everything you read. <a href="/">Go back</a></p>
-<table id="ch_read_history">
-    <tr><th>collection</th><th>title</th><th>progress</th><th>read date</th><th>actions</th></tr>
-</table>
+<h1>This is a list of everything you read.</h1>
+<p>Go to <a href="/">Library</a></p>
+<p>
+<p id="ch_read_history" class="history">
+    <span class="header">collection</span><span class="header">title</span><span class="header">progress</span><span class="header">read date</span><span class="header">actions</span>
+    </table>
+</p>
 <div id="spinner">
     <svg id="ch_spinner_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid">
-        <rect x="20" y="20" width="60" height="100" stroke="#ffffff" stroke-width="22" fill="none"></rect>
-        <rect x="20" y="20" width="60" height="100" stroke="#000000" stroke-width="20" fill="none"></rect>
-        <rect x="20" y="20" width="60" height="100" stroke="#ffd700" stroke-width="20" stroke-linecap="square" fill="none" stroke-dasharray="160 160">
+        <rect class="background" x="20" y="20" width="60" height="100" stroke="#ffffff" stroke-width="22" fill="none"></rect>
+        <rect class="foreground" x="20" y="20" width="60" height="100" stroke="#000000" stroke-width="20" fill="none"></rect>
+        <rect class="accent" x="20" y="20" width="60" height="100" stroke="#ffd700" stroke-width="20" stroke-linecap="square" fill="none" stroke-dasharray="160 160">
             <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="3s" keyTimes="0;0.5;1" values="0;-160;-320"></animate>
         </rect>
     </svg>

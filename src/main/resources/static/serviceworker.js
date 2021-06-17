@@ -8,7 +8,6 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
-//var MAXIMUM_DOWNLOAD_RETRIES = 5
 
 var downloadingBook = new Set()
 
@@ -130,7 +129,18 @@ var filesToCache = [
     '/Roboto/Roboto-MediumItalic.ttf',
     '/Roboto/Roboto-Regular.ttf',
     '/Roboto/Roboto-Thin.ttf',
-    '/Roboto/Roboto-ThinItalic.ttf'
+    '/Roboto/Roboto-ThinItalic.ttf',
+    '/shortcut.png',
+    '/shortcut16.png',
+    '/shortcut24.png',
+    '/shortcut32.png',
+    '/shortcut48.png',
+    '/shortcut64.png',
+    '/shortcut152.png',
+    '/shortcut167.png',
+    '/shortcut180.png',
+    '/shortcut192.png',
+    '/manifest.json'
 ]
 
 self.addEventListener('install', e => {
@@ -245,7 +255,6 @@ async function resetApplication() {
     await databaseDeleteAll(BOOKS_TABLE)
     await databaseDeleteAll(PROGRESS_TABLE)
     await databaseDeleteAll(WORKER_TABLE)
-    //await deleteDb()
 
     // unregister service worker
     await self.registration.unregister()

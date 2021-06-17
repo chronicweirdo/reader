@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <title>More - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -21,50 +22,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
-    <style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
-        body {
-            font-size: 3vh;
-            background-color: var(--foreground-color, black);
-            color: var(--accent-color, gold);
-            font-family: 'Roboto', sans-serif;
-            margin: 5vh 10vw;
-        }
-        h1 {
-            font-size: 1.2em;
-        }
-        a {
-            color: var(--accent-color, gold);
-            text-decoration: underline;
-        }
-        input {
-            margin-left: 1em;
-            margin-right: 1em;
-        }
-        label:after {
-            content: ": "
-        }
-        #container {
-            width: 1000px;
-            margin: auto;
-        }
-        @media all and (max-width: 999px) {
-            #container {
-                width: 100%;
-            }
-        }
-        input {
-            height: 3vh;
-            vertical-align: middle;
-        }
-        input[type=checkbox] {
-            width: 3vh;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="more.css">
     <script src="settings.js"></script>
     <script src="util.js"></script>
     <script>
@@ -74,41 +32,68 @@
                 navigator.serviceWorker.controller.postMessage({type: 'reset'})
             }
             element.innerHTML = element.innerHTML + " - done!"
+            loadSettings()
+            updateAccentColor()
+            updateBackgroundColor()
+            updateForegroundColor()
         }
+
         function updateAccentColor() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
+
+        function updateStatusBarForMorePage() {
+            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
+        }
+
         function updateForegroundColor() {
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
         }
+
         function updateBackgroundColor() {
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
+
+        function loadSettings() {
+            let settingsWrapper = document.getElementById('settings')
+            settingsWrapper.innerHTML = ""
+            appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
+            appendAll(settingsWrapper, getSettingController(SETTING_ACCENT_COLOR))
+            appendAll(settingsWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
+            appendAll(settingsWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
+            if (onIOS()) {
+                appendAll(settingsWrapper, getSettingController(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
+            }
+        }
+
         window.onload = function() {
             updateAccentColor()
             updateForegroundColor()
             updateBackgroundColor()
 
-            let settingsWrapper = document.getElementById('ch_latestReadSetting')
-            appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
-            let displayTitleWrapper = document.getElementById('ch_displayTitles')
-            appendAll(displayTitleWrapper, getSettingController(SETTING_LIBRARY_DISPLAY_TITLE))
+            loadSettings()
+
+            addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
+            addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
+            addSettingListener(SETTING_FOREGROUND_COLOR, updateForegroundColor)
+            addSettingListener(SETTING_DESIRED_STATUS_BAR_LUMINANCE, updateAccentColor)
         }
     </script>
 </head>
 <body>
-<div id="container">
-    <h1>Chronic Reader</h1>
-    <p id="ch_latestReadSetting"></p>
-    <p id="ch_displayTitles"></p>
-    <p><a href="/collections">Collections</a></p>
-    <p><a href="/history">History</a></p>
-    <p><a href="/help">Help</a></p>
-    <p><a href="/password">Change password</a></p>
-    <p th:if="${admin}"><a href="/import">Import data</a></p>
-    <p><a onclick="clearStorage(this)">Clear local cache</a></p>
-    <p><a href="/">Go back</a></p>
-    <p><a href="/logout">Logout</a></p>
-</div>
+<h1>Chronic Reader Pages</h1>
+<p><a href="/">Library</a></p>
+<p><a href="/collections">Collections</a></p>
+<p><a href="/history">History</a></p>
+<p class="end"><a href="/help">Help</a></p>
+<h2>Settings and Tools</h2>
+<p id="settings" class="settings"></p>
+<p><a href="/password">Change Password</a></p>
+<p th:if="${admin}"><a href="/import">Import Data</a></p>
+<p class="end"><a onclick="clearStorage(this)">Clear Local Cache</a></p>
+<h2>Exit</h2>
+<p class="end"><a href="/logout">Logout</a></p>
 </body>
 </html>

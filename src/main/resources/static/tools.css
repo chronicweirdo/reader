@@ -294,16 +294,35 @@
 #ch_tools .ch_position_paragraph {
     text-align: center;
 }
-#ch_cover {
+#ch_cover span {
     position: relative;
+    padding: 0;
+    display: inline-block;
 }
 #ch_cover img {
     max-height: 50vh;
     position: relative;
-    padding: 0
+    padding: 0;
+    display: inline-block;
 }
-#ch_cover.ondevice img {
-    border-bottom: .4em solid var(--accent-color, gold);
+#ch_cover #saved {
+    position: absolute;
+    bottom: 2%;
+    height: 2em;
+}
+#ch_tools.left #saved {
+    left: 1%;
+}
+#ch_tools.right #saved {
+    right: 1%;
+}
+#ch_cover #saved path, #ch_cover #saved rect {
+    stroke-width: 1px;
+    fill: none;
+    stroke: var(--foreground-color, black);
+}
+#ch_cover.ondevice #saved path, #ch_cover.ondevice #saved rect {
+    fill: var(--accent-color, gold);
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,

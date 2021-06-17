@@ -1,6 +1,12 @@
+:root {
+    --accent-color: gold;
+    --status-bar-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
 body {
     overflow: hidden;
-    background-color: white;
+    background-color: var(--status-bar-color, gold);
     color: black;
     padding: 0;
     margin: 0;

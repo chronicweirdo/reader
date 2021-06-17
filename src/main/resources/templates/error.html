@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <title>Error - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -21,33 +22,26 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
+    <link rel="stylesheet" type="text/css" href="more.css">
     <style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
         body {
+            text-align: center;
             font-size: 2em;
-            background-color: var(--foreground-color, black);
-            color: var(--accent-color, gold);
-            font-family: 'Roboto', sans-serif;
-        }
-        a {
-            color: var(--accent-color, gold);
-            text-decoration: underline;
         }
     </style>
     <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
         window.onload = function() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
         }
     </script>
 </head>
 <body>
-Something did not work. <a href="/">Go back.</a>
+<p>Something did not work.</p>
+<p><a href="/">Go back.</a></p>
 </body>
 </html>

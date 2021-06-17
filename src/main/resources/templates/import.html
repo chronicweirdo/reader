@@ -4,7 +4,8 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
     <title>Import Data - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -21,46 +22,9 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <link rel="stylesheet" type="text/css" href="form.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            -webkit-box-sizing: border-box;
-        }
-        html, body {
-            height:100%;
-            width:100%;
-            margin:0;
-        }
-        body {
-            font-size: 2em;
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color, white);
-            color: var(--foreground-color, black);
-        }
-        @media all and (max-width: 399px) {
-            body {
-                font-size: 1em;
-            }
-        }
-        h1 {
-            font-size: 1.1em;
-            margin: .2em;
-        }
-        a {
-            color: var(--foreground-color, black);
-        }
-        p {
-            margin-bottom: 0;
-            margin-top: 0;
-            padding: .2em;
-        }
-        textarea {
-            width: 100%;
-            height: 50vh;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="more.css">
     <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
         function importSubmit(action) {
             console.log("setting action to " + action)
@@ -72,31 +36,30 @@
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
         }
     </script>
 </head>
 <body>
-<div class="container">
-    <h1>Import</h1>
-    <p th:if="${message != null}" th:utext="${message}">a message</p>
-    <form th:action="@{/import}" method="post" autocomplete="off">
-        <input id="formAction" type="hidden" name="action" value="" />
-        <p><textarea id="data" name="data" placeholder="csv data"></textarea></p>
-        <p class="submit">
-            <input type="button" value="Import progress" onclick="importSubmit('progress')"/>
-            <input type="button" value="Import users" onclick="importSubmit('importUsers')"/>
-            <input type="button" value="Add users" onclick="importSubmit('addUsers')"/>
-            <input type="button" value="Delete users" onclick="importSubmit('deleteUsers')"/>
-        </p>
-    </form>
-    <p><a href="/exportProgress" download="progress.csv">Export progress</a></p>
-    <p><a href="/exportUsers" download="users.csv">Export users</a></p>
-    <p>The following formats can be used to import data into to system. Format describes each line in the CSV data that must be written in the text area above.</p>
-    <p>Import progress format: username, author, title, section, position, finished.</p>
-    <p>Import users format: username, encoded password.</p>
-    <p>Add users format: username, password.</p>
-    <p>Delete users format: username.</p>
-    <p><a href="/">Go back</a></p>
-</div>
+<h1>Import Data</h1>
+<p th:if="${message != null}" th:utext="${message}">a message</p>
+<form th:action="@{/import}" method="post" autocomplete="off">
+    <input id="formAction" type="hidden" name="action" value="" />
+    <p><textarea id="data" name="data" placeholder="csv data"></textarea></p>
+    <p class="submit">
+        <input type="button" value="Import Progress" onclick="importSubmit('progress')"/>
+        <input type="button" value="Import Users" onclick="importSubmit('importUsers')"/>
+        <input type="button" value="Add Users" onclick="importSubmit('addUsers')"/>
+        <input type="button" value="Delete Users" onclick="importSubmit('deleteUsers')"/>
+    </p>
+</form>
+<p><a href="/exportProgress" download="progress.csv">Export Progress</a></p>
+<p><a href="/exportUsers" download="users.csv">Export Users</a></p>
+<p>The following formats can be used to import data into to system. Format describes each line in the CSV data that must be written in the text area above.</p>
+<p>Import progress format: username, author, title, section, position, finished.</p>
+<p>Import users format: username, encoded password.</p>
+<p>Add users format: username, password.</p>
+<p>Delete users format: username.</p>
+<p><a href="/">Library</a></p>
 </body>
 </html>

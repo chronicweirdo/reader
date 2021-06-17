@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
     <title>Collections - Chronic Reader</title>
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="/shortcut.png">
@@ -21,77 +22,16 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
-    <style>
-        :root {
-            --accent-color: gold;
-            --foreground-color: black;
-            --background-color: white;
-        }
-        body {
-            font-size: 2em;
-            background-color: var(--foreground-color, black);
-            color: var(--accent-color, gold);
-            font-family: 'Merriweather', serif;
-            padding: 10px;
-            word-wrap: break-word;
-        }
-        h1 {
-            font-size: 1.2em;
-            font-family: Roboto, sans-serif;
-        }
-        a {
-            color: var(--accent-color, gold);
-        }
-        .expand {
-            cursor: pointer;
-            font-family: sans-serif;
-            margin-left: .3em;
-        }
-        @media all and (max-width: 999px) {
-            #container {
-                width: 100%;
-            }
-        }
-
-        p.tree,
-        ul.tree,
-        ul.tree ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        ul.tree ul {
-            margin-left: .05em;
-        }
-
-        ul.tree li {
-            margin-left: 0.35em;
-            padding-left: .5em;
-            text-indent: -.5em;
-            border-left: thin solid var(--accent-color, gold);
-        }
-
-        ul.tree li:last-child {
-            border-left: none;
-        }
-
-        ul.tree li:before {
-            width: 0.4em;
-            height: 0.6em;
-            margin-right: 0.1em;
-            vertical-align: top;
-            border-bottom: thin solid var(--accent-color, gold);
-            content: "";
-            display: inline-block;
-        }
-
-        ul.tree li:last-child:before {
-            border-left: thin solid var(--accent-color, gold);
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="more.css">
     <script src="settings.js"></script>
+    <script src="util.js"></script>
     <script>
+        var EXPAND_CLASS = "expand"
+        var EXPAND_HTML = "+"
+        var COLLAPSE_HTML = "-"
+        var EXPAND_TITLE = "expand"
+        var COLLAPSE_TITLE = "collapse"
+
         function toggle(el) {
             var current = el
             while (current && current.tagName != "LI") current = current.parentElement
@@ -99,18 +39,31 @@
             if (target) {
                 if (target.style.display != "none") {
                     target.style.display = "none"
+                    let sign = target.previousElementSibling
+                    if (sign && sign.classList.contains(EXPAND_CLASS)) {
+                        sign.innerHTML = EXPAND_HTML
+                        sign.title = EXPAND_TITLE
+                    }
                 } else {
                     target.style.display = "block"
+                    let sign = target.previousElementSibling
+                    if (sign && sign.classList.contains(EXPAND_CLASS)) {
+                        sign.innerHTML = COLLAPSE_HTML
+                        sign.title = COLLAPSE_TITLE
+                    }
                 }
             }
         }
+
         function addExpandSymbol(item) {
             var link = item.getElementsByTagName("A")[0]
             var expand = document.createElement("span")
-            expand.classList.add("expand")
-            expand.innerHTML = "+"
+            expand.classList.add(EXPAND_CLASS)
+            expand.innerHTML = EXPAND_HTML
+            expand.title = EXPAND_TITLE
             link.after(expand)
         }
+
         function getLiWithChildren() {
             var items = document.getElementsByTagName("LI")
             var result = []
@@ -121,10 +74,12 @@
             }
             return result
         }
+
         window.onload = function() {
             document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
             document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
             document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
             var expandable = getLiWithChildren()
             for (var i = 0; i < expandable.length; i++) {
                 addExpandSymbol(expandable[i])
@@ -139,7 +94,7 @@
 </head>
 <body>
 <h1>A list of collections, so you know what to choose</h1>
-<a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a>
+<p><a th:href="@{/(search=${tree.search})}" th:text="${tree.name}">collection name</a></p>
 <div th:fragment="fragment_node" th:remove="tag">
     <ul class="tree" th:if="${not #lists.isEmpty(tree.children)}" >
         <li th:each="child : ${tree.children}"

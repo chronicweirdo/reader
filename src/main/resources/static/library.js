@@ -1,18 +1,41 @@
+var FIN_ID = "fin"
+var CLEAR_SEARCH_ID = "clearsearch"
+var SEARCH_ID = "search"
+var SPINNER_ID = "spinner"
+var TOGGLE_TITLES_ID = "toggletitles"
+var COLLECTION_CONTAINER_CLASS = "collection-container"
+var COLLECTION_TITLE_CLASS = "collection-title"
+var ACTIVE_CLASS = "active"
+var ENTER_KEY_CODE = 13
+var SCROLL_THRESHOLD = 20
+var RELOAD_LIBRARY_MESSAGE = "Reload Library"
+
+function getSpinner() {
+    return document.getElementsByClassName("spinner")[0]
+}
+
 function showSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "block"
+    let collections = document.getElementsByTagName("ul")
+    let lastCollection = collections[collections.length-1]
+    if (lastCollection.id != "ch_latestRead") {
+        let spinner = getSpinner().cloneNode(true)
+        spinner.classList.add("active-spinner")
+        spinner.style.display = "inline-block"
+        let li = document.createElement("li")
+        li.appendChild(spinner)
+        lastCollection.appendChild(li)
+    }
 }
 
 function hideSpinner() {
-    var spinner = document.getElementById("spinner")
-    spinner.style.display = "none"
+    let spinners = document.getElementsByClassName("active-spinner")
+    while (spinners.length > 0) {
+        spinners[0].parentElement.remove()
+    }
 }
 
-function addPagenum(image, page, totalPages) {
-    var span = document.createElement("span")
-    span.innerText = page + " / " + totalPages
-    span.classList.add("pagenum")
-    image.parentElement.appendChild(span)
+function getToggleTitles() {
+    return document.getElementById(TOGGLE_TITLES_ID)
 }
 
 function getSvgCheck() {
@@ -30,52 +53,26 @@ function getSvgCheck() {
     return svg
 }
 
-function addProgress(image, page, totalPages, downloaded) {
-    var span = document.createElement("span")
-    if (page < totalPages - 1) {
-        span.classList.add("progressbar")
-        var percent = ((page + 1) / parseFloat(totalPages)) * 100
-        span.title = "read " + Math.floor(percent) + "%"
-        var prog = document.createElement("span")
-        prog.classList.add("read")
-        prog.style.width = (page / (totalPages-1) * 100) + "%"
-        span.appendChild(prog)
+function applyTitles() {
+    let toggleTitles = getToggleTitles()
+    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
+        setCssProperty('--title-display', 'inline-block')
+        toggleTitles.classList.add(ACTIVE_CLASS)
+        toggleTitles.title = "Hide Book Titles"
     } else {
-        //span.innerText = '<path fill="#ffffff" stroke="#000000" d="M 3 3 L 1 5 L 5 9 L 11 3 L 9 1 L 5 5 Z " stroke-width="1"></path></svg>'
-        span.appendChild(getSvgCheck())
-        span.classList.add("progresscheck")
+        setCssProperty('--title-display', 'none')
+        toggleTitles.classList.remove(ACTIVE_CLASS)
+        toggleTitles.title = "Show Book Titles"
     }
-    if (downloaded) {
-        span.classList.add("downloaded")
-    }
-    image.parentElement.appendChild(span)
-}
-function addTitle(image, title) {
-    var span = document.createElement("span")
-    span.classList.add("title")
-    span.innerHTML = title
-    image.parentElement.appendChild(span)
 }
 
-function scaleImage(image, page, totalPages, downloaded, title) {
-    if (page >= 0) {
-        addProgress(image, page, totalPages, downloaded)
-    }
+function toggleTitles() {
     if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
-        addTitle(image, title)
-    }
-    var imageContainer = document.getElementsByClassName("imgdiv")[0]
-    var expectedHeight = imageContainer.offsetHeight
-    var expectedWidth = imageContainer.offsetWidth
-    if (image.naturalWidth / image.naturalHeight > expectedWidth / expectedHeight) {
-        image.style.height = "100%"
+        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, false)
     } else {
-        image.style.width = "100%"
+        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, true)
     }
-    var differenceWidth = image.offsetWidth - expectedWidth
-    var differenceHeight = image.offsetHeight - expectedHeight
-    image.style.left = (- differenceWidth / 2) + "px"
-    image.style.top = (- differenceHeight / 2) + "px"
+    applyTitles()
 }
 
 function getCollectionId(collection) {
@@ -83,68 +80,78 @@ function getCollectionId(collection) {
     else return encodeURIComponent(collection)
 }
 
-function getCollectionHtml(collection) {
-    var collectionId = getCollectionId(collection)
-    var div = document.createElement("div")
-    div.id = collectionId
-    div.classList.add("collection-container")
+function insertCollectionHtml(collection) {
     if (collection.length > 0) {
-        var h1 = document.createElement("h1")
-        addCollectionLinkTokens(h1, collection, '/', triggerSearchBuildHrefFunction)
-        div.appendChild(h1)
-    }
-    return div
-}
+        let collectionId = getCollectionId(collection)
 
-function insertCollectionHtml(collectionHtml) {
-    var fin = document.getElementById("fin")
-    if (fin != null) {
-        document.body.insertBefore(collectionHtml, fin)
-    } else {
-        document.body.appendChild(collectionHtml)
-    }
-}
+        let title = document.createElement("h1")
+        title.classList.add(COLLECTION_TITLE_CLASS)
+        addCollectionLinkTokens(title, collection, '/', triggerSearchBuildHrefFunction)
 
-function insertOfflineMessage() {
-    var tools = document.getElementById("tools")
-    var offlineMessageHtml = document.createElement("h1")
-    offlineMessageHtml.id = 'fin'
-    offlineMessageHtml.innerHTML = "~ The application is in offline mode, only the latest read books are available. ~"
-    document.body.insertBefore(offlineMessageHtml, tools)
-    tools.remove()
+        let container = document.createElement("ul")
+        container.classList.add(COLLECTION_CONTAINER_CLASS)
+        container.id = collectionId
+
+        let fin = document.getElementById(FIN_ID)
+        if (fin != null) {
+            document.body.insertBefore(title, fin)
+            document.body.insertBefore(container, fin)
+        } else {
+            document.body.appendChild(title)
+            document.body.appendChild(container)
+        }
+    }
 }
 
 function addCollections(collections) {
     for (var i = 0; i < collections.length; i++) {
         var collectionId = getCollectionId(collections[i])
         if (document.getElementById(collectionId) == null) {
-            insertCollectionHtml(getCollectionHtml(collections[i]))
+            insertCollectionHtml(collections[i])
         }
     }
 }
 
 function getBookHtml(book) {
-    var a = document.createElement("a")
-    a.classList.add("imgdiv")
+    let li = document.createElement("li")
+    li.setAttribute("bookid", book.id)
+    li.setAttribute("size", book.pages)
+    li.setAttribute("progress", book.progress)
+    li.setAttribute("downloaded", book.downloaded)
+
+    let a = document.createElement("a")
     a.href = book.type + "?id=" + book.id
-    a.setAttribute("bookid", book.id)
-    var img = document.createElement("img")
+
+    let cover = document.createElement("span")
+    cover.classList.add("cover")
+
+    let img = document.createElement("img")
     img.onload = function() {
-        scaleImage(img, book.progress, book.pages, book.downloaded, book.title)
+        formatImage(this)
     }
     img.src = book.cover
     img.title = book.title
-    a.appendChild(img)
-    return a
+
+    cover.appendChild(img)
+    a.appendChild(cover)
+
+    let title = document.createElement("span")
+    title.classList.add("title")
+    title.innerHTML = book.title
+
+    a.appendChild(title)
+
+    li.appendChild(a)
+    return li
 }
 
 function addBooks(books) {
-    for (var i = 0; i < books.length; i++) {
-        var book = books[i]
-        var collectionId = getCollectionId(book.collection)
-        var collectionDiv = document.getElementById(collectionId)
-        if (collectionDiv != null) {
-            collectionDiv.appendChild(getBookHtml(book))
+    for (let i = 0; i < books.length; i++) {
+        let book = books[i]
+        let collectionId = getCollectionId(book.collection)
+        let container = document.getElementById(collectionId)
+        if (container != null) {
+            container.appendChild(getBookHtml(book))
         }
     }
 }
@@ -165,49 +172,66 @@ function getCurrentPage() {
 function setEndOfCollection() {
     if (! getEndOfCollection()) {
         var fin = document.createElement("h1")
-        fin.id = "fin"
+        fin.id = FIN_ID
         fin.innerHTML = "~ Fin ~"
         document.body.appendChild(fin)
     }
 }
 
 function getEndOfCollection() {
-    return document.getElementById("fin") != null
+    return document.getElementById(FIN_ID) != null
 }
 
 function removeExistingBooks() {
-    var collections = document.getElementsByClassName("collection-container")
+    let collections = document.getElementsByClassName(COLLECTION_CONTAINER_CLASS)
     while (collections.length > 0) {
         document.body.removeChild(collections.item(0))
     }
-    var fin = document.getElementById("fin")
+    let collectionTitles = document.getElementsByClassName(COLLECTION_TITLE_CLASS)
+    while (collectionTitles.length > 0) {
+        document.body.removeChild(collectionTitles.item(0))
+    }
+    let fin = document.getElementById(FIN_ID)
     if (fin != null) {
         document.body.removeChild(fin)
     }
 }
 
 function getSearch() {
-    return document.getElementById("search")
+    return document.getElementById(SEARCH_ID)
+}
+
+function getClearSearch() {
+    return document.getElementById(CLEAR_SEARCH_ID)
 }
 
 function getTerm() {
-    return getSearch().value
+    let search = getSearch()
+    if (search) {
+        return search.value
+    }
+    return null
 }
 
 function clearTerm() {
     var search = getSearch()
-    if (search.value === "") {
-        window.location = "/"
+    if (search) {
+        if (search.value === "") {
+            window.location = "/"
+        } else {
+            search.value = ""
+            search.dispatchEvent(new Event('keyup'))
+            search.focus()
+        }
     } else {
-        search.value = ""
-        search.dispatchEvent(new Event('keyup'))
-        search.focus()
+        window.location = "/"
     }
 }
 
 function triggerSearch(text) {
     let search = getSearch()
     search.value = text
+    updateClearSearch()
     searchForTerm()
 }
 
@@ -215,6 +239,51 @@ function searchForTerm() {
     removeExistingBooks()
     setCurrentPage(-1)
     loadNextPage(loadUntilPageFull)
+}
+
+function addProgress(image, progress, size, downloaded) {
+    var span = document.createElement("span")
+    if (progress < size - 1) {
+        span.classList.add("progressbar")
+        var percent = ((progress + 1) / parseFloat(size)) * 100
+        span.title = "read " + Math.floor(percent) + "%"
+        var prog = document.createElement("span")
+        prog.classList.add("read")
+        prog.style.width = (progress / (size-1) * 100) + "%"
+        span.appendChild(prog)
+    } else {
+        span.appendChild(getSvgCheck())
+        span.classList.add("progresscheck")
+    }
+    if (downloaded) {
+        span.classList.add("downloaded")
+    }
+    image.parentElement.appendChild(span)
+}
+
+function formatImage(img) {
+    let parent = img.parentElement
+
+    if (img.naturalWidth / img.naturalHeight > parent.offsetWidth / parent.offsetHeight) {
+        let newWidth = img.naturalWidth * (parent.offsetHeight / img.naturalHeight)
+        let differenceWidth = parent.offsetWidth - newWidth
+        let differencePercentage = (differenceWidth / parent.offsetWidth) * 100
+        img.style.height = "100%"
+        img.style.left = (differencePercentage / 2) + "%"
+    } else {
+        let newHeight = img.naturalHeight * (parent.offsetWidth / img.naturalWidth)
+        let differenceHeight = parent.offsetHeight - newHeight
+        let differencePercentage = (differenceHeight / parent.offsetHeight) * 100
+        img.style.width = "100%"
+        img.style.top = (differencePercentage / 2) + "%"
+    }
+    let bookElement = img.closest('li')
+    let size = parseInt(bookElement.getAttribute("size"))
+    let progress = parseInt(bookElement.getAttribute("progress"))
+    let downloaded = bookElement.getAttribute("downloaded") == "true"
+    if (size != NaN && size > 0 && progress != NaN) {
+        addProgress(img, progress, size, downloaded)
+    }
 }
 
 function loadLatestRead() {
@@ -225,17 +294,21 @@ function loadLatestRead() {
                 var books = JSON.parse(this.responseText)
                 if (books.length > 0) {
                     let bookIds = []
-                    var collectionDiv = document.getElementById("ch_latestRead")
+                    var collectionContainer = document.getElementById("ch_latestRead")
                     for (var i = 0; i < books.length; i++) {
                         var book = books[i]
                         bookIds.push(book.id)
 
-                        if (collectionDiv != null) {
-                            collectionDiv.appendChild(getBookHtml(book))
+                        if (collectionContainer != null) {
+                            collectionContainer.appendChild(getBookHtml(book))
                         }
                     }
-                    collectionDiv.style.display = "block"
+                    document.getElementById("ch_latestReadTitle").style.display = "block"
+                    collectionContainer.style.display = "grid"
                     cleanupBookPages(bookIds)
+                } else {
+                    document.getElementById("ch_latestRead").style.display = "none"
+                    document.getElementById("ch_latestReadTitle").style.display = "none"
                 }
             }
         }
@@ -244,26 +317,42 @@ function loadLatestRead() {
     xhttp.send()
 }
 
+function setToOfflineMode() {
+    let search = getSearch()
+    if (search) {
+        let offlineMessage = document.createElement("span")
+        offlineMessage.classList.add("offline-message")
+        offlineMessage.innerHTML = "The application is in offline mode, only the latest read books are available."
+        document.getElementById("search").replaceWith(offlineMessage)
+
+        let moreElement = document.getElementById("more")
+        moreElement.classList.remove(ACTIVE_CLASS)
+        moreElement.href = "/"
+        moreElement.title = RELOAD_LIBRARY_MESSAGE
+    }
+}
+
 function loadNextPage(callback) {
-    if (document.searchTimestamp === undefined || document.searchTimestamp == null) {
+    if (getSearch() && (document.searchTimestamp === undefined || document.searchTimestamp == null)) {
         var pagenum = getCurrentPage() + 1
         var term = getTerm()
         var xhttp = new XMLHttpRequest();
         var timestamp = + new Date()
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && document.searchTimestamp == timestamp) {
-                hideSpinner()
                 document.searchTimestamp = null
                 if (this.status == 200) {
                     setCurrentPage(pagenum)
                     var response = JSON.parse(this.responseText)
                     if (response.offline && response.offline == true) {
-                        insertOfflineMessage()
+                        setToOfflineMode()
                     } else if (response.books.length > 0) {
+                        hideSpinner()
                         addCollections(response.collections)
                         addBooks(response.books)
                         if (callback != null) callback()
                     } else {
+                        hideSpinner()
                         setEndOfCollection()
                         if (callback != null) callback()
                     }
@@ -339,15 +428,26 @@ function loadUntilPageFull() {
     }
 }
 
+function updateClearSearch() {
+    let clearSearch = getClearSearch()
+    if (getSearch().value.length > 0) {
+        clearSearch.classList.add(ACTIVE_CLASS)
+        clearSearch.title = "Clear Search Field"
+    } else {
+        clearSearch.classList.remove(ACTIVE_CLASS)
+        clearSearch.title = RELOAD_LIBRARY_MESSAGE
+    }
+}
+
 function addSearchTriggerListener() {
-    var search = document.getElementById("search")
+    var search = getSearch()
     search.addEventListener('keyup', function (e) {
+        updateClearSearch()
         if (document.searchTimeout && document.searchTimeout != null) {
             window.clearTimeout(document.searchTimeout)
             document.searchTimeout = null
         }
-        if (e.keyCode === 13) {
-            // if enter, search
+        if (e.keyCode === ENTER_KEY_CODE) {
             searchForTerm()
         } else {
             // if other key, wait to see if finished typing
@@ -357,22 +457,19 @@ function addSearchTriggerListener() {
 }
 
 function getSearchUrlParameter() {
-    var urlString = window.location.href
-    var url = new URL(urlString)
-    var search = url.searchParams.get("search")
+    let urlString = window.location.href
+    let url = new URL(urlString)
+    let search = url.searchParams.get(SEARCH_ID)
     if (search == null) return null
     else return decodeURIComponent(search)
 }
-
-var scrollThreshold = 20
 
 window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
             navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
-                registration.update().then(() => {
-                    loadLatestRead()
-                })
+                // we load latest read both on success and on failure (when offline)
+                registration.update().then(loadLatestRead,loadLatestRead)
             }, function(error) {
                 console.log("service worker registration failed: ", error)
             })
@@ -387,14 +484,17 @@ window.onload = function() {
     }
     addSearchTriggerListener()
     searchForTerm()
+    updateClearSearch()
 
-    document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
-    document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
-    document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+    applyTitles()
+    setCssProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR))
+    setStatusBarColor(getSetting(SETTING_ACCENT_COLOR))
+    setCssProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+    setCssProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
 }
 
 window.onscroll = function(ev) {
-    if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - scrollThreshold) {
+    if ((getViewportHeight() + getScrollTop()) >= getDocumentHeight() - SCROLL_THRESHOLD) {
         if (! getEndOfCollection()) {
             loadNextPage(null)
         }

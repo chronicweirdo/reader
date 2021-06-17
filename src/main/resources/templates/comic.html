@@ -5,7 +5,8 @@
     <meta name="viewport"
           content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
     <meta name="bookId" content="1" th:content="${id}">
     <meta name="bookTitle" content="1" th:content="${title}">
     <meta name="size" content="20" th:content=${pages}>
@@ -34,33 +35,35 @@
     <script src="comic.js"></script>
 </head>
 <body onresize="handleResize()">
-<img src="" />
-<div id="ch_prev"></div>
-<div id="ch_next"></div>
-<div id="ch_tools_left"></div>
-<div id="ch_tools_right"></div>
-<div id="ch_canv"></div>
-<div id="ch_tools_container">
-    <div id="ch_tools">
-        <p id="ch_cover"><img th:src="${cover}"/></p>
-        <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
-        <h1 th:text="${title}">Comic Title</h1>
-        <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
-        <p><a onclick="toggleSettings()">settings</a></p>
-        <div id="ch_settings"></div>
-        <p id="ch_back"><a onclick="goHome()">library</a></p>
+<div id="content">
+    <img src="" />
+    <div id="ch_prev"></div>
+    <div id="ch_next"></div>
+    <div id="ch_tools_left"></div>
+    <div id="ch_tools_right"></div>
+    <div id="ch_canv"></div>
+    <div id="ch_tools_container">
+        <div id="ch_tools">
+            <p id="ch_cover"><span><img th:src="${cover}"/><svg id="saved" version="1.1" viewBox="5 0 20 30" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,-267)" fill="#91e092"><rect x="6" y="289.5" width="18" height="6" rx="2" ry="2"/><path d="m12.585 269.08c-0.3615 0.3615-0.58465 0.86159-0.58465 1.4156l-1e-6 6.3457-1.2428-1.2428c-0.78348-0.78348-2.0448-0.78348-2.8283 0l-1.4141 1.4141c-0.78347 0.78347-0.78347 2.0448 1e-6 2.8282l7.071 7.071c0.78347 0.78348 2.0451 0.78384 2.8286 3.7e-4l7.071-7.071c0.78347-0.78347 0.78311-2.0451-3.65e-4 -2.8286l-1.4141-1.4141c-0.78347-0.78347-2.0448-0.78347-2.8283 0l-1.2424 1.2424-3.65e-4 -6.3453c-2e-6 -1.108-0.89188-1.9999-1.9999-1.9999l-1.9999-3.7e-4c-0.554 0-1.0541 0.22315-1.4156 0.58465z"/></g></svg></span></p>
+            <p id="ch_collection" th:if="${collection != ''}"><a th:href="@{/(search=${collection})}" th:text="${collection}">collection</a></p>
+            <h1 th:text="${title}">Comic Title</h1>
+            <p><span>page</span><input id="positionInput" type="number"  min="1" th:max="${pages}"/><span>of</span><span th:text="${pages}">20</span></p>
+            <p><a onclick="toggleSettings()">settings</a></p>
+            <div id="ch_settings"></div>
+            <p id="ch_back"><a onclick="goHome()">library</a></p>
+        </div>
     </div>
-</div>
-<div id="ch_spinner">
-    <svg id="ch_spinner_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid">
-        <rect class="background" x="20" y="20" width="60" height="100" stroke="#ffffff" stroke-width="22" fill="none"></rect>
-        <rect class="foreground" x="20" y="20" width="60" height="100" stroke="#000000" stroke-width="20" fill="none"></rect>
-        <rect class="accent" x="20" y="20" width="60" height="100" stroke="#ffd700" stroke-width="20" stroke-linecap="square" fill="none" stroke-dasharray="160 160">
-            <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="3s" keyTimes="0;0.5;1" values="0;-160;-320"></animate>
-        </rect>
-    </svg>
-    <a href="/">cancel</a>
-    <p id="ch_errorPanel"></p>
+    <div id="ch_spinner">
+        <svg id="ch_spinner_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;display:block;" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid">
+            <rect class="background" x="20" y="20" width="60" height="100" stroke="#ffffff" stroke-width="22" fill="none"></rect>
+            <rect class="foreground" x="20" y="20" width="60" height="100" stroke="#000000" stroke-width="20" fill="none"></rect>
+            <rect class="accent" x="20" y="20" width="60" height="100" stroke="#ffd700" stroke-width="20" stroke-linecap="square" fill="none" stroke-dasharray="160 160">
+                <animate attributeName="stroke-dashoffset" repeatCount="indefinite" dur="3s" keyTimes="0;0.5;1" values="0;-160;-320"></animate>
+            </rect>
+        </svg>
+        <a href="/">cancel</a>
+        <p id="ch_errorPanel"></p>
+    </div>
 </div>
 </body>
 </html>

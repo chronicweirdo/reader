@@ -1,0 +1,208 @@
+:root {
+    --accent-color: gold;
+    --status-bar-color: gold;
+    --foreground-color: black;
+    --background-color: white;
+}
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+body {
+    background-color: var(--status-bar-color, gold);
+    color: var(--foreground-color, black);
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.5em;
+}
+body > * {
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 1em;
+    background-color: var(--background-color, white);
+}
+body > *:last-child {
+    padding-bottom: 1em;
+}
+h1 {
+    font-size: 1.2em;
+    background-color: var(--accent-color, gold);
+    padding-bottom: 1em;
+}
+h2 {
+    font-size: 1em;
+    background-color: var(--accent-color, gold);
+    padding-bottom: 1em;
+}
+p.settings {
+    display: grid;
+    align-items: top;
+    justify-items: left;
+    row-gap: .5em;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+p.history {
+    display: grid;
+    align-items: top;
+    justify-items: left;
+    row-gap: .5em;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    overflow: hidden;
+}
+span.header {
+    font-weight: bold;
+}
+@media all and (max-width: 799px) {
+    p.history {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+    span.header {
+        display: none;
+    }
+    .history-collection:before {
+        content: "collection: ";
+        font-weight: bold;
+    }
+    .history-title:before {
+        content: "title: ";
+        font-weight: bold;
+    }
+    .history-progress:before {
+        content: "progress: ";
+        font-weight: bold;
+    }
+    .history-date:before {
+        content: "date: ";
+        font-weight: bold;
+    }
+    .history-actions:before {
+        content: "actions: ";
+        font-weight: bold;
+    }
+    .history-actions {
+        padding-bottom: 1em;
+        border-bottom: 2px solid var(--accent-color, gold);
+        margin-bottom: 1em;
+    }
+}
+@media (orientation: portrait) {
+    #settings {
+        grid-template-columns: 1fr 1fr;
+    }
+    label {
+        grid-column: 1 / 3;
+    }
+}
+a {
+    color: var(--foreground-color, black);
+    text-decoration: underline;
+}
+label:after {
+    content: ": "
+}
+input {
+    height: 3vh;
+    vertical-align: middle;
+}
+input[type=checkbox] {
+    width: 3vh;
+}
+
+ul.tree {
+    padding-top: 0;
+}
+p.tree,
+ul.tree,
+ul.tree ul {
+    list-style: none;
+}
+
+ul.tree ul {
+    margin-left: .05em;
+}
+
+ul.tree li {
+    padding-bottom: .5em;
+    padding-top: .5em;
+    margin-left: 0.35em;
+    padding-left: .5em;
+    text-indent: -.5em;
+    border-left: 2px solid var(--foreground-color, black);
+}
+
+ul.tree li:last-child {
+    border-left: none;
+}
+
+ul.tree li:before {
+    width: 0.4em;
+    height: 0.6em;
+    margin-right: 0.1em;
+    vertical-align: top;
+    border-bottom: 2px solid var(--foreground-color, black);
+    content: "";
+    display: inline-block;
+}
+
+ul.tree li:last-child:before {
+    border-left: 2px solid var(--foreground-color, black);
+    height: 1.1em;
+    margin-top: -0.5em;
+}
+span.expand {
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: bold;
+    margin-left: .3em;
+    color: var(--foreground-color, black);
+    background-color:  var(--accent-color, gold);
+    padding-left: .3em;
+    padding-right: .3em;
+    width: .3em;
+}
+
+.end {
+    padding-bottom: 1em;
+}
+
+p.images {
+    text-align: center;
+    display: grid;
+    grid-gap: 5px;
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
+    justify-items: center;
+}
+img {
+    max-width: 100%;
+    max-height: 50vh;
+    border: 1px dotted #1a1a1a;
+}
+.space {
+    display: inline-block;
+    width: 1em;
+}
+
+#spinner {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 5vw;
+    height: 8vw;
+    display: none;
+    z-index: 1000;
+}
+#spinner svg {
+    width: 100%;
+    height: 100%
+}
+#ch_spinner_svg .background {
+    stroke: var(--background-color, white);
+}
+#ch_spinner_svg .foreground {
+    stroke: var(--foreground-color, black);
+}
+#ch_spinner_svg .accent {
+    stroke: var(--accent-color, gold);
+}

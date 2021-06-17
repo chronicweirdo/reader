@@ -238,10 +238,6 @@ function updateDownloadUrl() {
     downloadLink.href = url
 }
 
-function getRgb(colorArray) {
-    return "rgb(" + colorArray[0] + "," + colorArray[1] + "," + colorArray[2] + ")"
-}
-
 function displayPage(page, callback) {
     let displayPageInternal = function(page, callback) {
         document.lastPageChange = timestamp
@@ -252,7 +248,8 @@ function displayPage(page, callback) {
                 hideSpinner()
                 var img = getImage()
                 img.onload = function() {
-                    document.body.style.background = getRgb(data.color)
+                    document.getElementById("content").style.background = getHexCode(data.color)
+                    setStatusBarColor(getHexCode(data.color))
                     setPage(page)
                     saveProgress(getBookId(), page-1)
                     setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
@@ -491,7 +488,8 @@ window.onload = function() {
         "upAction": () => pan(0, getViewportHeight() / 2),
         "downAction": () => pan(0, - (getViewportHeight() / 2)),
         "leftAction": goToPreviousView,
-        "rightAction": goToNextView
+        "rightAction": goToNextView,
+        "escapeAction": () => toggleTools(true)
     })
 
     enableGesturesOnElement(document.getElementById("ch_canv"), {
