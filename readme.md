@@ -90,7 +90,7 @@ you configured in the properties file.
 
 ![create first users](create_first_users.png)
 
-On the main page, click the settings button. In the settings screen, click on "Import data". This is the administration
+On the main page, click the "More" button. In the settings screen, click on "Import Data". This takes you to the administration
 functions screen. Only the admin user has access to this screen. You can create the users
 you need for your app in this screen by writing a username, a comma and a password for each user you want to create,
 on different lines. Then press "Add users". The users will have the option to change their password to what they prefer.
