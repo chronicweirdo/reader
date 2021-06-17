@@ -171,7 +171,6 @@ p.images {
     display: grid;
     grid-gap: 5px;
     font-size: 1em;
-    color: #1a1a1a;
     font-family: 'Roboto', sans-serif;
     justify-items: center;
 }

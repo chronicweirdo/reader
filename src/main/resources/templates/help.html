@@ -45,16 +45,30 @@
     <li>Go back to <a href="/">Library</a></li>
 </ul>
 <h2><a name="library_page">About the Library Page</a></h2>
-<p class="images" style="grid-template-columns: auto;"><img src="/library.png" /><span>library page</span></p>
+<p class="images" style="grid-template-columns: 1fr;">
+    <img src="/library.png" />
+    <span>library page</span>
+</p>
 <p>This page lets you navigate the available collections of books and comics, search, view progress of books you have opened and read. New books are loaded as you scroll, with their corresponding collections. You can click on parts of collection names to search for all comics in that specific collection, or you can use the search field directly to look for available books. Click on a book or comic to start reading it. At the top of the page, the most recent books you read are displayed. Books that are in progress have a progress bar displayed on top of their cover. Books that have been read (cover to cover) have a checkmark displayed on top of their cover.</p>
 <p>Books that are stored on the device have a golden progress bar, while those that are not available offline have a white progress bar. For each device the latest read books are downloaded on the device to be accessible offline. This process may take a while, depending on the size of those books, so not all boooks in the latest read section will have a golden progress bar immediately.</p>
-<p>On the library page you also have an elipsis button that will take you to the <em>application settings</em> page.</p>
+<p>On the library page you also have three buttons/controls. The <em>clear search</em> button will clear the search field and reload the entire library from the beginning. If the search field is empty, you can click the clear search button to refresh the entire page. This option is useful on iOS when you install the application as a <em>Progressive Web App</em> and you need to refresh the library page. The next button is <em>toggle titles</em> which will show or hide the titles of each book on the library page. This button has a device-specific setting behind it, and its state will be remembered between refreshes. The last button is a link to the <em>Application Settings</em> page.</p>
 <p class="end"><a href="#top">top</a><span class="space"></span><a href="/">library</a></p>
 
 <h2><a name="application_settings_page">About the Application Settings Page</a></h2>
-<p class="images" style="grid-template-columns: auto;"><img src="/application_settings.png" /><span>application settings</span></p>
-<p>On this page you have access to other parts of the application, containing configuration settings. You can open the <em>Collections</em> or the <em>Help</em> pages. You can change your password from this page. If you are logged in with the administrator account, you can open the <em>Import Data</em> page. There is one setting on this page that will allow you to change the number of <em>latest read</em> books you load in the <em>Library page</em>. This setting is device specific and this is the way you can control the number of books that will be saved on your device, thus controlling the space taken up by the application on your device. You can have a smaller number of <em>latest read</em> on mobile devices and a larger number on you computers.</p>
-<p>Another option on this page is to <em>Clear local cache</em>, which will delete all the data and settings stored on your device. Use this if something is not working well on your device to <em>reset</em> it.</p>
+<p class="images" style="grid-template-columns: 1fr 1fr;">
+    <img src="/application_settings.png" /><img src="/other_colors.png"/>
+    <span>application settings</span><span>customized UI colors</span>
+</p>
+<p>On this page you have access to other parts of the application and to some global configuration settings.</p>
+
+<p>The links here will take you back to the <em>Library</em> page, or you can visit the <em>Collections</em> page, the <em>History</em> page and this <em>Help</em> page.</p>
+
+<p>In the <em>settings</em> section you can change the number of <em>latest read</em> books to load in the library. Since the latest read books are also downloaded on your device, this is where you can control how much data to store on your device. This setting is device specific, you can store a different number of books on your mobile phone than you store on your tablet. Here you can also change the user interface colors. These settings are also device specific, so you can have different color schemes for different devices on the same account.</p>
+
+<p>On this page you also have links to change your password or to clear the local cache. Clearing the cache will delete all data stored on the device, books and settings. Use this if something is not working well and you need to <em>reset</em> the application.</p>
+
+<p>The last option on this page is to log out of the application. Logging out will also clear all books and settings stored on the device.</p>
+
 <p class="end"><a href="#top">top</a><span class="space"></span><a href="/">library</a></p>
 
 <h2><a name="collections_page">About the Collections Page</a></h2>
@@ -93,7 +107,7 @@
     <span>comic page</span><span>comic tools</span><span>comic settings</span></p>
 <p>You can pinch-zoom or use the mouse wheel to adjust the zoom of the comic page. Press left mouse and drag or touch screen and drag to adjust the position of the comic page. A double left click or a double tap on the center of the screen zooms you in or out on the comic page.</p>
 <p>You can move between <em>positions</em> in a comic by tapping the left and right sides of the screen. If the comic is zoomed out and the whole page is visible on your screen, the next position will be the next page. If the comic is zoomed in, tapping the right side of the screen will jump to then next part of the current comic page. The same functionality works with moving to previous positions, and if you are on the last segment of a page, the next position will automatically move you to the next page. If you have a keyboard, you can use the arrow keys or W/A/S/D to navigate.</p>
-<p>On the comic tools page, accessed by clicking/tapping the lower left or right sides of the screen, you can jump to any page of the comic. You can also open the settings that allow you to change the scroll and pan speeds, or invert the mouse scroll. Also inside settings you can toggle full screen, if your device permits it (this does not work on iOS devices), download the current comic book page as an image or delete the progress for the current comic.</p>
+<p>On the comic tools page, accessed by clicking/tapping the lower left or right sides of the screen, you can jump to any page of the comic. You can also open the settings that allow you to change the scroll and pan speeds, or invert the mouse scroll. Also inside settings you can download the current comic book page as an image or delete the progress for the current comic.</p>
 <p class="end"><a href="#top">top</a><span class="space"></span><a href="/">library</a></p>
 </body>
 </html>
