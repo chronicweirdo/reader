@@ -11,15 +11,28 @@ var SCROLL_THRESHOLD = 20
 var RELOAD_LIBRARY_MESSAGE = "Reload Library"
 
 function getSpinner() {
-    return document.getElementById(SPINNER_ID)
+    return document.getElementsByClassName("spinner")[0]
 }
 
 function showSpinner() {
-    getSpinner().style.display = "block"
+    let collections = document.getElementsByTagName("ul")
+    let lastCollection = collections[collections.length-1]
+    console.log(lastCollection)
+    if (lastCollection.id != "ch_latestRead") {
+        let spinner = getSpinner().cloneNode(true)
+        spinner.classList.add("active-spinner")
+        spinner.style.display = "inline-block"
+        let li = document.createElement("li")
+        li.appendChild(spinner)
+        lastCollection.appendChild(li)
+    }
 }
 
 function hideSpinner() {
-    getSpinner().style.display = "none"
+    let spinners = document.getElementsByClassName("active-spinner")
+    while (spinners.length > 0) {
+        spinners[0].parentElement.remove()
+    }
 }
 
 function getToggleTitles() {
@@ -194,7 +207,11 @@ function getClearSearch() {
 }
 
 function getTerm() {
-    return getSearch().value
+    let search = getSearch()
+    if (search) {
+        return search.value
+    }
+    return null
 }
 
 function clearTerm() {
@@ -287,8 +304,12 @@ function loadLatestRead() {
                             collectionContainer.appendChild(getBookHtml(book))
                         }
                     }
+                    document.getElementById("ch_latestReadTitle").style.display = "block"
                     collectionContainer.style.display = "grid"
                     cleanupBookPages(bookIds)
+                } else {
+                    document.getElementById("ch_latestRead").style.display = "none"
+                    document.getElementById("ch_latestReadTitle").style.display = "none"
                 }
             }
         }
@@ -298,26 +319,28 @@ function loadLatestRead() {
 }
 
 function setToOfflineMode() {
-    let offlineMessage = document.createElement("span")
-    offlineMessage.classList.add("offline-message")
-    offlineMessage.innerHTML = "The application is in offline mode, only the latest read books are available."
-    document.getElementById("search").replaceWith(offlineMessage)
+    let search = getSearch()
+    if (search) {
+        let offlineMessage = document.createElement("span")
+        offlineMessage.classList.add("offline-message")
+        offlineMessage.innerHTML = "The application is in offline mode, only the latest read books are available."
+        document.getElementById("search").replaceWith(offlineMessage)
 
-    let moreElement = document.getElementById("more")
-    moreElement.classList.remove(ACTIVE_CLASS)
-    moreElement.href = "/"
-    moreElement.title = RELOAD_LIBRARY_MESSAGE
+        let moreElement = document.getElementById("more")
+        moreElement.classList.remove(ACTIVE_CLASS)
+        moreElement.href = "/"
+        moreElement.title = RELOAD_LIBRARY_MESSAGE
+    }
 }
 
 function loadNextPage(callback) {
-    if (document.searchTimestamp === undefined || document.searchTimestamp == null) {
+    if (getSearch() && (document.searchTimestamp === undefined || document.searchTimestamp == null)) {
         var pagenum = getCurrentPage() + 1
         var term = getTerm()
         var xhttp = new XMLHttpRequest();
         var timestamp = + new Date()
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && document.searchTimestamp == timestamp) {
-                hideSpinner()
                 document.searchTimestamp = null
                 if (this.status == 200) {
                     setCurrentPage(pagenum)
@@ -325,10 +348,12 @@ function loadNextPage(callback) {
                     if (response.offline && response.offline == true) {
                         setToOfflineMode()
                     } else if (response.books.length > 0) {
+                        hideSpinner()
                         addCollections(response.collections)
                         addBooks(response.books)
                         if (callback != null) callback()
                     } else {
+                        hideSpinner()
                         setEndOfCollection()
                         if (callback != null) callback()
                     }

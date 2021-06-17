@@ -138,10 +138,9 @@ h1 a {
     width: 96%;
     grid-template-columns: 9fr 1fr 1fr 1fr;
 }
-#ch_latestRead {
+#ch_latestRead, #ch_latestReadTitle {
     display: none;
 }
-
 #search {
     font-size: 1em;
     padding: .1em;
@@ -174,18 +173,8 @@ h1 a {
 .offline-message {
     color: var(--background-color, white);
 }
-
-#spinner {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 5vw;
-    height: 8vw;
+.spinner {
     display: none;
-    z-index: 1000;
-    background: transparent;
-}
-#spinner svg {
     width: 100%;
     height: 100%
 }
@@ -226,12 +215,12 @@ h1 a {
     }
 }
 
-#ch_spinner_svg .background {
+.spinner .background {
     stroke: var(--background-color, white);
 }
-#ch_spinner_svg .foreground {
+.spinner .foreground {
     stroke: var(--foreground-color, black);
 }
-#ch_spinner_svg .accent {
+.spinner .accent {
     stroke: var(--accent-color, gold);
 }
