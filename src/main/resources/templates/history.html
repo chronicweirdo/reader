@@ -30,12 +30,19 @@
         var PROGRESS_CLASS = "history-progress"
         var DATE_CLASS = "history-date"
         var ACTIONS_CLASS = "history-actions"
+        var BOOK_ID_ATTRIBUTE = "bookId"
+
+        function deleteElementsForBookId(bookId) {
+            let sel = Array.from(document.getElementById("ch_read_history").childNodes).filter(e => e.getAttribute).filter(e => e.getAttribute("bookId") == bookId)
+            sel.forEach(e => e.remove())
+        }
+
         function deleteProgress(id, element) {
             var xhttp = new XMLHttpRequest()
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4) {
                     if (this.status == 200) {
-                        element.parentElement.parentElement.remove()
+                        deleteElementsForBookId(id)
                     }
                 }
             }
@@ -55,11 +62,13 @@
 
             var collection = document.createElement("span")
             collection.classList.add(COLLECTION_CLASS)
+            collection.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             addCollectionLinkTokens(collection, book.collection, '/', searchLinkBuildHrefFunction)
             elements.push(collection)
 
             var title = document.createElement("span")
             title.classList.add(TITLE_CLASS)
+            title.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var titleLink = document.createElement("a")
             titleLink.href = book.type + "?id=" + book.id
             titleLink.innerHTML = book.title
@@ -68,18 +77,21 @@
 
             var progress = document.createElement("span")
             progress.classList.add(PROGRESS_CLASS)
+            progress.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var percent = ((book.progress + 1) / parseFloat(book.pages)) * 100
             progress.innerHTML = Math.floor(percent) + "%"
             elements.push(progress)
 
             var date = document.createElement("span")
             date.classList.add(DATE_CLASS)
+            date.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
             elements.push(date)
 
             var actions = document.createElement("span")
             actions.classList.add(ACTIONS_CLASS)
+            actions.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var removeProgressButton = document.createElement("a")
             removeProgressButton.onclick = function(event) {
                 deleteProgress(book.id, this)
