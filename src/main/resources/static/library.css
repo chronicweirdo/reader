@@ -13,7 +13,7 @@
 body {
     background-color: var(--status-bar-color, gold);
     font-family: 'Roboto', sans-serif;
-    word-wrap: break-word;
+    word-wrap: anywhere;
 }
 body > * {
     background-color: var(--background-color, white);
