@@ -136,7 +136,10 @@ async function displayPageFor(position) {
             if (page.end == parseInt(getMeta("bookEnd"))) {
                 saveProgress(getMeta("bookId"), page.end)
             } else {
-                saveProgress(getMeta("bookId"), page.start)
+                // don't save progress again if the current progress is on this page
+                if (document.currentPosition == undefined || document.currentPosition < page.start || page.end < document.currentPosition) {
+                    saveProgress(getMeta("bookId"), page.start)
+                }
             }
             updatePositionInput(getPositionPercentage(page.start, page.end))
             updatePagesLeft()
@@ -160,7 +163,8 @@ async function displayPageFor(position) {
     if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
         showSpinner()
         loadProgress(function(currentPosition) {
-            if (currentPosition != document.currentPage.start) {
+            document.currentPosition = currentPosition
+            if (currentPosition < document.currentPage.start || document.currentPage.end < currentPosition) {
                 window.location.reload()
             } else {
                 // continue as normal
@@ -582,6 +586,7 @@ window.onload = function() {
 
     document.lastPageChange = new Date()
     timeout(100).then(() => {loadProgress(function(currentPosition) {
+        document.currentPosition = currentPosition
         displayPageFor(currentPosition)
     })})
 
