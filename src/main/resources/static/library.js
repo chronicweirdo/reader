@@ -21,8 +21,11 @@ function showSpinner() {
         let spinner = getSpinner().cloneNode(true)
         spinner.classList.add("active-spinner")
         spinner.style.display = "inline-block"
+        let cover = document.createElement("span")
+        cover.classList.add("cover")
+        cover.appendChild(spinner)
         let li = document.createElement("li")
-        li.appendChild(spinner)
+        li.appendChild(cover)
         lastCollection.appendChild(li)
     }
 }
@@ -30,7 +33,7 @@ function showSpinner() {
 function hideSpinner() {
     let spinners = document.getElementsByClassName("active-spinner")
     while (spinners.length > 0) {
-        spinners[0].parentElement.remove()
+        spinners[0].closest("li").remove()
     }
 }
 
