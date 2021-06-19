@@ -137,7 +137,7 @@ async function displayPageFor(position) {
                 saveProgress(getMeta("bookId"), page.end)
             } else {
                 // don't save progress again if the current progress is on this page
-                if (document.currentPosition == undefined || document.currentPosition < page.start || page.end < document.currentPosition) {
+                if (document.currentPosition == undefined || document.currentPosition == 0 || document.currentPosition < page.start || page.end < document.currentPosition) {
                     saveProgress(getMeta("bookId"), page.start)
                 }
             }
