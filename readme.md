@@ -147,4 +147,4 @@ All comic books used for testing and illustration purposes are from
 the [Digital Comic Museum](https://digitalcomicmuseum.com).
 
 All ebooks used for testing and illustration purposes are from
-[Project Gutenberg](https://www.gutenberg.org).
+[Project Gutenberg](https://www.gutenberg.org) and [Standard Ebooks](https://standardebooks.org).
