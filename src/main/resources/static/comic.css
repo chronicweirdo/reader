@@ -29,3 +29,6 @@ body {
 img {
     position: fixed;
 }
+.spinner {
+    display: block;
+}

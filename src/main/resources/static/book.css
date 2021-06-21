@@ -50,3 +50,6 @@ a {
 table, th, td {
     border: 1px solid black;
 }
+.spinner {
+    display: block;
+}
