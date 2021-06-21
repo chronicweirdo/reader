@@ -61,6 +61,10 @@
             expand.classList.add(EXPAND_CLASS)
             expand.innerHTML = EXPAND_HTML
             expand.title = EXPAND_TITLE
+            expand.addEventListener("click", (event) => {
+                event.stopPropagation()
+                toggle(event.target)
+            })
             link.after(expand)
         }
 
@@ -84,10 +88,6 @@
             for (var i = 0; i < expandable.length; i++) {
                 addExpandSymbol(expandable[i])
                 toggle(expandable[i])
-                expandable[i].addEventListener("click", (event) => {
-                    event.stopPropagation()
-                    toggle(event.target)
-                })
             }
         }
     </script>
