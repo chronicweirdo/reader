@@ -44,10 +44,13 @@ p.settings {
 p.history {
     display: grid;
     align-items: top;
-    justify-items: left;
-    row-gap: .5em;
+    justify-items: stretch;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     overflow: hidden;
+}
+p.history > * {
+    padding: 5px;
+    border: 1px solid var(--accent-color, gold);
 }
 span.header {
     font-weight: bold;
@@ -81,8 +84,6 @@ span.header {
         font-weight: bold;
     }
     .history-actions {
-        padding-bottom: 1em;
-        border-bottom: 2px solid var(--accent-color, gold);
         margin-bottom: 1em;
     }
 }
@@ -192,7 +193,7 @@ img {
 }
 #spinner svg {
     width: 100%;
-    height: 100%
+    height: 100%;
     display: block;
 }
 #ch_spinner_svg .background {
