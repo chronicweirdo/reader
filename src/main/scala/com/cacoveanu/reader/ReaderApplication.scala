@@ -8,8 +8,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.{EnableWebSecurity, WebSecurityConfigurerAdapter}
+import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.filter.CommonsRequestLoggingFilter
 
@@ -59,6 +62,8 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   override def configure(http: HttpSecurity): Unit = {
     http
       .csrf().disable().cors().and()
+      //.headers(headers => headers.frameOptions(frameOptions => frameOptions.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
+      .headers(customizer => customizer.frameOptions(frameOptionsCustomizer => frameOptionsCustomizer.sameOrigin()))
       .authorizeRequests()
       .antMatchers(
         "/book.css",
@@ -116,4 +121,11 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Bean def passwordEncoder = new BCryptPasswordEncoder
 
+  /*@Bean
+  def springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = {
+    http.headers(headers =>
+        headers.frameOptions(frameOptions => frameOptions.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN))
+    )
+    return http.build()
+  }*/
 }
