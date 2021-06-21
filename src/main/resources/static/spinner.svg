@@ -1,4 +1,4 @@
-<svg class="spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;" viewBox="0 0 30 50" preserveAspectRatio="xMidYMid">
+<svg id="spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin:auto;" viewBox="0 0 30 50" preserveAspectRatio="xMidYMid">
     <style type="text/css" media="screen">
         <![CDATA[
         :root {

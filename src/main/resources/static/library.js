@@ -20,7 +20,12 @@ function showSpinner() {
     if (lastCollection.id != "ch_latestRead") {
         let spinner = getSpinner().cloneNode(true)
         spinner.classList.add("active-spinner")
-        spinner.style.display = "inline-block"
+        spinner.onload = function() {
+            console.log("setting styles")
+            spinner.contentDocument.getElementById("spinner").style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR))
+            spinner.style.display = "inline-block"
+        }
+
         let cover = document.createElement("span")
         cover.classList.add("cover")
         cover.appendChild(spinner)
