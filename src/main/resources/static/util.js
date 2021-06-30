@@ -130,7 +130,7 @@ function fixComponentHeights() {
     document.getElementById("ch_tools_left").style.height = toolsControlsHeight + "px"
     document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
 
-    var spinnerDimension = Math.min(height * .2, width * .2)
+    var spinnerDimension = Math.min(height * .4, width * .4)
     document.getElementById("ch_spinner_svg").style.width = spinnerDimension + "px"
     document.getElementById("ch_spinner_svg").style.height = spinnerDimension + "px"
     document.getElementById("ch_spinner").style.paddingTop = ((height - spinnerDimension) / 2) + "px"
