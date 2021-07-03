@@ -58,36 +58,26 @@ function deleteDb() {
 
 getDb()
 
-var downloadQueue = []
+var downloadStack = []
 
-function appendToDownloadQueue(o) {
-    let existingIndex = downloadQueue.findIndex(u => {
-        return u.id == o.id && u.kind == o.kind && u.position == o.position && u.size == o.size && u.url == o.url
-    })
-    if (existingIndex < 0) {
-        // only add to queue if it does not exist there
-        downloadQueue.push(o)
-    }
-}
-
-function pushToDownloadQueue(o) {
-    let existingIndex = downloadQueue.findIndex(u => {
+function pushToDownloadStack(o) {
+    let existingIndex = downloadStack.findIndex(u => {
         return u.id == o.id && u.kind == o.kind && u.position == o.position && u.size == o.size && u.url == o.url
     })
     if (existingIndex >= 0) {
-        downloadQueue.splice(existingIndex, 1)
+        downloadStack.splice(existingIndex, 1)
     }
-    downloadQueue.unshift(o)
+    downloadStack.unshift(o)
 }
 
-function popFromDownloadQueue() {
-    let prioIndex = downloadQueue.findIndex(e => e.prioritary)
+function popFromDownloadStack() {
+    let prioIndex = downloadStack.findIndex(e => e.prioritary)
     if (prioIndex >= 0) {
-        let result = downloadQueue[prioIndex]
-        downloadQueue.splice(prioIndex, 1)
+        let result = downloadStack[prioIndex]
+        downloadStack.splice(prioIndex, 1)
         return result
     } else {
-        return downloadQueue.shift()
+        return downloadStack.shift()
     }
 }
 
@@ -188,7 +178,7 @@ async function singleFunctionRunning() {
     await databaseSave(WORKER_TABLE, {'id': methodId})
     let running = true
     while (running) {
-        running = await downloadFromQueue()
+        running = await downloadFromStack()
         await databaseSave(WORKER_TABLE, {'id': methodId})
     }
     await databaseDeleteAll(WORKER_TABLE)
@@ -236,13 +226,12 @@ self.addEventListener('message', event => {
 async function triggerStoreBook(id, kind, size) {
     let storedBook = await databaseLoad(BOOKS_TABLE, id)
     if (! storedBook) {
-        pushToDownloadQueue({
+        pushToDownloadStack({
             'kind': kind,
             'id': id,
             'size': size,
             'prioritary': true
         })
-    } else {
     }
 }
 
@@ -616,8 +605,8 @@ function saveResponseToDatabase(url, bookId) {
 
 
 
-async function downloadFromQueue() {
-    let o = popFromDownloadQueue()
+async function downloadFromStack() {
+    let o = popFromDownloadStack()
     if (o) {
         try {
             if (o.kind === 'book') await downloadBook(o)
@@ -627,7 +616,7 @@ async function downloadFromQueue() {
             else if (o.kind === 'imageData') await downloadImageData(o)
         } catch (error) {
             if (o.kind === 'book' || o.kind === 'bookSection' || o.kind === 'comic' || o.kind === 'imageData') {
-                pushToDownloadQueue(o)
+                pushToDownloadStack(o)
                 return false
             } else {
                 // just ignore issue and continue
@@ -649,7 +638,7 @@ async function downloadBook(o) {
         let savedResponse = await saveActualResponseToDatabase(response)
     }
 
-    pushToDownloadQueue({
+    pushToDownloadStack({
         'kind': 'bookSection',
         'id': o.id,
         'size': o.size,
@@ -670,7 +659,7 @@ async function downloadBookSection(o) {
     // add next section, if exists
     let nextPosition = parseInt(entity.headers['sectionend']) + 1
     if (nextPosition < o.size) {
-        pushToDownloadQueue({
+        pushToDownloadStack({
             'kind': 'bookSection',
             'id': o.id,
             'size': o.size,
@@ -685,7 +674,7 @@ async function downloadBookSection(o) {
     let resources = node.getResources()
     for (let i = 0; i < resources.length; i++) {
         let resource = resources[i]
-        pushToDownloadQueue({
+        pushToDownloadStack({
             'kind': 'bookResource',
             'url': resource
         })
@@ -716,7 +705,7 @@ async function downloadComic(o) {
         let response = await fetch(url)
         let savedResponse = await saveActualResponseToDatabase(response)
     }
-    pushToDownloadQueue({
+    pushToDownloadStack({
         'kind': 'imageData',
         'id': o.id,
         'size': o.size,
@@ -736,7 +725,7 @@ async function downloadImageData(o) {
 
     let nextPosition = o.position + 1
     if (nextPosition < o.size) {
-        pushToDownloadQueue({
+        pushToDownloadStack({
             'kind': 'imageData',
             'id': o.id,
             'size': o.size,
