@@ -15,6 +15,7 @@ import scala.beans.BeanProperty
 import com.cacoveanu.reader.util.SeqUtil.AugmentedSeq
 import org.springframework.scheduling.annotation.Scheduled
 
+import java.util.Date
 import scala.concurrent.{ExecutionContext, Future}
 
 @Service
@@ -52,6 +53,16 @@ class ScannerService {
 
   private implicit val executionContext = ExecutionContext.global
 
+  private var lastScanDate: Date = _
+
+  private def setLastScanDate() = synchronized {
+    lastScanDate = new Date()
+  }
+
+  def getLastScanDate(): Date = {
+    lastScanDate.clone().asInstanceOf[Date]
+  }
+
   def scan() = Future {
     try {
       log.info("scanning library")
@@ -86,6 +97,7 @@ class ScannerService {
       val t4 = System.currentTimeMillis()
       log.info(s"deleting missing files took ${t4 - t3} milliseconds")
       log.info(s"full scan done, took ${t4 - t1} milliseconds")
+      setLastScanDate()
     } catch {
       case t: Throwable =>
         t.printStackTrace()

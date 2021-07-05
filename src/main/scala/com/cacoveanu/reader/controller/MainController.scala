@@ -36,6 +36,7 @@ class MainController @Autowired()(
   @RequestMapping(Array("/more"))
   def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
+    model.addAttribute("lastScanDate", scannerService.getLastScanDate())
     "more"
   }
 

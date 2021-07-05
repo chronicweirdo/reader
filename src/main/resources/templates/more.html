@@ -68,6 +68,13 @@
             }
         }
 
+        function rescan() {
+            var xhttp = new XMLHttpRequest()
+            xhttp.open("get", "scan")
+            xhttp.send()
+            document.getElementById("rescanning_message").innerHTML = " (rescanning...)"
+        }
+
         window.onload = function() {
             updateAccentColor()
             updateForegroundColor()
@@ -91,6 +98,7 @@
 <h2>Settings and Tools</h2>
 <p id="settings" class="settings"></p>
 <p><a href="/password">Change Password</a></p>
+<p th:if="${admin}"><a onclick="rescan()">Scan library</a><span id="rescanning_message" th:if="${lastScanDate}"> (last scanned at <span th:text="${lastScanDate}">last scan date</span>)</span></p>
 <p th:if="${admin}"><a href="/import">Import Data</a></p>
 <p class="end"><a onclick="clearStorage(this)">Clear Local Cache</a></p>
 <h2>Exit</h2>

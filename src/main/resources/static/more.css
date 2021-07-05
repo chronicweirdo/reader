@@ -98,6 +98,7 @@ span.header {
 a {
     color: var(--foreground-color, black);
     text-decoration: underline;
+    cursor: pointer;
 }
 label:after {
     content: ": "
