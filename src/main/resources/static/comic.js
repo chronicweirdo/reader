@@ -11,8 +11,8 @@ function pan(x, y, currentX, currentY) {
         let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
         let deltaX = panX - currentX
         let deltaY = panY - currentY
-        if (swipeNextPossible && (deltaX < 0 || deltaY < 0)) swipeNextPossible = false
-        if (swipePreviousPossible && (deltaX > 0 || deltaY > 0)) swipePreviousPossible = false
+        if (swipeNextPossible && deltaX < 0 ) swipeNextPossible = false
+        if (swipePreviousPossible && deltaX > 0 ) swipePreviousPossible = false
         if (panEnabled && !pinching && verticalMoveValid && deltaX > horizontalThreshold && swipeNextPossible) {
             panEnabled = false
             goToNextView()
