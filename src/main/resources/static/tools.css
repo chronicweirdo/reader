@@ -81,6 +81,7 @@
     max-height: 100%;
     position: fixed;
     width: 80%;
+    line-break: anywhere;
 }
 /* Hide scrollbar for Chrome, Safari and Opera */
 #ch_tools::-webkit-scrollbar {
@@ -234,7 +235,7 @@
 #ch_settings {
     max-width: 100%;
     display: grid;
-    grid-template-columns: 34% 38% 24%;
+    grid-template-columns: 58% 40%;
     row-gap: 15px;
     column-gap: 2%;
     padding: 8px;
@@ -242,20 +243,21 @@
     align-items: center;
     justify-items: start;
     border: 4px dotted var(--foreground-color, black);
-    font-size: 1rem;
+    font-size: 1.5rem;
 }
 
-#ch_tools.right #ch_settings {
+/*#ch_tools.right #ch_settings {
     justify-items: end;
-}
+}*/
 
-#ch_settings label:after {
+/*#ch_settings label:after {
     content: ": "
-}
+}*/
 
 #ch_settings input {
     height: 3vh;
     max-width: 100%;
+    justify-self: right;
 }
 
 #ch_settings input[type=checkbox] {
@@ -270,6 +272,7 @@
 #ch_settings a {
     color: var(--accent-color, gold);
     text-decoration: none;
+    justify-self: right;
 }
 
 #ch_settings a.critical {

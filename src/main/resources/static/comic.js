@@ -458,7 +458,7 @@ function getDownloadPageButton() {
     button.id = 'downloadPageButton'
     button.innerHTML = 'download'
 
-    return [label, button, document.createElement('span')]
+    return [label, button]
 }
 
 function initSettings() {

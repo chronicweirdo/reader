@@ -109,25 +109,34 @@ settingTextValueConverters[SETTING_BOOK_MODE] = bookModeToString
 function createColorController(settingName, text) {
     let label = document.createElement('label')
     label.htmlFor = settingName
-    label.innerHTML = text
+    label.innerHTML = text + ":"
+
     let input = document.createElement('input')
     input.type = 'color'
     input.name = settingName
     let value = getSetting(settingName)
     input.value = value
-    let textValue = document.createElement('span')
-    textValue.innerHTML = value
+
     input.onchange = function(event) {
         updateSetting(event.target)
-        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input, textValue]
+    return [label, input]
+}
+
+function getSettingTextValue(settingName) {
+    let value = getSetting(settingName)
+    if (settingTextValueConverters[settingName]) {
+        return settingTextValueConverters[settingName](value)
+    } else {
+        return value
+    }
 }
 
 function createNumberController(settingName, text, min, max, step) {
     let label = document.createElement('label')
     label.htmlFor = settingName
-    label.innerHTML = text
+    label.innerHTML = text + ": " + getSettingTextValue(settingName)
+
     let input = document.createElement('input')
     input.type = 'range'
     input.name = settingName
@@ -136,39 +145,28 @@ function createNumberController(settingName, text, min, max, step) {
     input.step = step
     let value = getSetting(settingName)
     input.value = value
-    let textValue = document.createElement('span')
-    if (settingTextValueConverters[settingName]) {
-        textValue.innerHTML = settingTextValueConverters[settingName](value)
-    } else {
-        textValue.innerHTML = value
-    }
+
     input.addEventListener('input', function(event) {
         updateSetting(event.target)
-        if (settingTextValueConverters[settingName]) {
-            textValue.innerHTML = settingTextValueConverters[settingName](getSetting(settingName))
-        } else {
-            textValue.innerHTML = getSetting(settingName)
-        }
+        label.innerHTML = text + ": " + getSettingTextValue(settingName)
     }, false)
-    return [label, input, textValue]
+    return [label, input]
 }
 
 function createBooleanController(settingName, text) {
     let label = document.createElement('label')
     label.htmlFor = settingName
-    label.innerHTML = text
+    label.innerHTML = text + ":"
+
     let input = document.createElement('input')
     input.type = 'checkbox'
     input.name = settingName
     let value = getSetting(settingName)
     input.checked = value
-    let textValue = document.createElement('span')
-    textValue.innerHTML = value
     input.onchange = function(event) {
         updateSetting(event.target)
-        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input, textValue]
+    return [label, input]
 }
 
 function createTimeController(settingName, text) {
@@ -182,14 +180,10 @@ function createTimeController(settingName, text) {
     let value = getSetting(settingName)
     input.value = value
 
-    let textValue = document.createElement('span')
-    textValue.innerHTML = value
-
     input.onchange = function(event) {
         updateSetting(event.target)
-        textValue.innerHTML = getSetting(settingName)
     }
-    return [label, input, textValue]
+    return [label, input]
 }
 
 var settingControllers = {}
