@@ -228,7 +228,7 @@ function previousPage() {
 }
 
 function handleResize() {
-    fixComponentHeights()
+    fixControlSizes()
     if (document.currentPage != null) {
         var position = document.currentPage.start
         loadCache()
@@ -518,7 +518,7 @@ function setZoom(zoom, withResize = true) {
 }
 
 function getBookPagesCacheKey() {
-    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM)
+    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) + "_" + getSetting(SETTING_BOOK_EDGE_HORIZONTAL) + "_" + getSetting(SETTING_BOOK_EDGE_VERTICAL)
     return pagesKey
 }
 
@@ -548,11 +548,17 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_HORIZONTAL))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_VERTICAL))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_TOOLS_HEIGHT))
     addSettingListener(SETTING_BOOK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
+    addSettingListener(SETTING_BOOK_EDGE_HORIZONTAL, () => setTimeout(handleResize, 1000))
+    addSettingListener(SETTING_BOOK_EDGE_VERTICAL, () => setTimeout(handleResize, 1000))
+    addSettingListener(SETTING_BOOK_TOOLS_HEIGHT, handleResize)
     addSettingListener(SETTING_BOOK_ZOOM, setZoom)
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
@@ -564,7 +570,7 @@ window.onload = function() {
     document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
 
     createDynamicStyleSheet()
-    fixComponentHeights()
+    fixControlSizes()
     initTableOfContents()
     initSettings()
     initFullscreenButton()

@@ -22,6 +22,9 @@ var SETTING_DESIRED_STATUS_BAR_LUMINANCE = "desired_status_bar_luminance"
 var SETTING_DAY_START = "day_start"
 var SETTING_DAY_END = "day_end"
 var SETTING_BOOK_MODE = "book_mode"
+var SETTING_BOOK_EDGE_HORIZONTAL = "book_edge_horizontal"
+var SETTING_BOOK_EDGE_VERTICAL = "book_edge_vertical"
+var SETTING_BOOK_TOOLS_HEIGHT = "book_tools_height"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
@@ -48,6 +51,9 @@ settingDefaults[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = "180"
 settingDefaults[SETTING_DAY_START] = "07:00"
 settingDefaults[SETTING_DAY_END] = "22:00"
 settingDefaults[SETTING_BOOK_MODE] = "1"
+settingDefaults[SETTING_BOOK_EDGE_HORIZONTAL] = "0.1"
+settingDefaults[SETTING_BOOK_EDGE_VERTICAL] = "0.05"
+settingDefaults[SETTING_BOOK_TOOLS_HEIGHT] = "0.1"
 
 function parseBoolean(value) {
     return value == 'true'
@@ -88,6 +94,9 @@ settingParsers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = parseInt
 settingParsers[SETTING_DAY_START] = parseTime
 settingParsers[SETTING_DAY_END] = parseTime
 settingParsers[SETTING_BOOK_MODE] = parseInt
+settingParsers[SETTING_BOOK_EDGE_HORIZONTAL] = parseFloat
+settingParsers[SETTING_BOOK_EDGE_VERTICAL] = parseFloat
+settingParsers[SETTING_BOOK_TOOLS_HEIGHT] = parseFloat
 
 var settingEncoders = {}
 
@@ -217,6 +226,10 @@ settingControllers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = () => createNumberCon
 settingControllers[SETTING_DAY_START] = () => createTimeController(SETTING_DAY_START, "day start")
 settingControllers[SETTING_DAY_END] = () => createTimeController(SETTING_DAY_END, "day end")
 settingControllers[SETTING_BOOK_MODE] = () => createNumberController(SETTING_BOOK_MODE, "book mode", 0, 2, 1)
+
+settingControllers[SETTING_BOOK_EDGE_HORIZONTAL] = () => createNumberController(SETTING_BOOK_EDGE_HORIZONTAL, "book edge horizontal", 0.05, 0.2, 0.05)
+settingControllers[SETTING_BOOK_EDGE_VERTICAL] = () => createNumberController(SETTING_BOOK_EDGE_VERTICAL, "book edge vertical", 0.03, 0.11, 0.02)
+settingControllers[SETTING_BOOK_TOOLS_HEIGHT] = () => createNumberController(SETTING_BOOK_TOOLS_HEIGHT, "book tools height", 0.05, 0.3, 0.05)
 
 function updateSetting(element) {
     let value

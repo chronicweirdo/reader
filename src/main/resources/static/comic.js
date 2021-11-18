@@ -399,7 +399,7 @@ function goToPreviousView() {
 }
 
 function handleResize() {
-    fixComponentHeights()
+    fixControlSizes()
     updateMinimumZoom()
     updateImage()
 }
@@ -474,6 +474,10 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_LENGTH))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_HORIZONTAL))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_TOOLS_HEIGHT))
+    addSettingListener(SETTING_BOOK_EDGE_HORIZONTAL, () => setTimeout(fixControlSizes, 1000))
+    addSettingListener(SETTING_BOOK_TOOLS_HEIGHT, fixControlSizes)
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
 }
@@ -483,7 +487,7 @@ window.onload = function() {
     document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
     document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
 
-    fixComponentHeights()
+    fixControlSizes()
     enableKeyboardGestures({
         "upAction": () => pan(0, getViewportHeight() / 2),
         "downAction": () => pan(0, - (getViewportHeight() / 2)),

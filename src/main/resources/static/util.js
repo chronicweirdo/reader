@@ -102,11 +102,17 @@ function toggleTools(left, prepareToolsView) {
     tools.scrollTop = tools.scrollHeight
 }
 
-function fixComponentHeights() {
+function fixControlSizes() {
+    let bookEdgeHorizontal = getSetting(SETTING_BOOK_EDGE_HORIZONTAL)
+    let bookEdgeVertical = getSetting(SETTING_BOOK_EDGE_VERTICAL)
+    let bookToolsHeight = getSetting(SETTING_BOOK_TOOLS_HEIGHT)
+
     var height = getViewportHeight()
     var width = getViewportWidth()
-    var contentTop = height * .05
-    var contentHeight = height * .9
+    var contentTop = height * bookEdgeVertical
+    var contentHeight = height - (2 * contentTop)
+    var toolWidth = bookEdgeHorizontal * width
+    var chContentWidth = width - (2 * toolWidth)
     if (document.getElementById("content") != null) {
         document.getElementById("content").style.top = 0 + "px"
         document.getElementById("content").style.height = height + "px"
@@ -115,20 +121,32 @@ function fixComponentHeights() {
     if (document.getElementById("ch_content") != null) {
         document.getElementById("ch_content").style.top = contentTop + "px"
         document.getElementById("ch_content").style.height = contentHeight + "px"
+        document.getElementById("ch_content").style.width = chContentWidth + "px"
+        document.getElementById("ch_content").style.left = toolWidth + "px"
         document.getElementById("ch_shadow_content").style.top = contentTop + "px"
         document.getElementById("ch_shadow_content").style.height = contentHeight + "px"
+        document.getElementById("ch_shadow_content").style.width = chContentWidth + "px"
+        document.getElementById("ch_shadow_content").style.left = toolWidth + "px"
     }
 
     var pageControlsTop = 0
-    var pageControlsHeight = height * .9
+    var pageControlsHeight = height - height * bookToolsHeight
     document.getElementById("ch_prev").style.top = pageControlsTop + "px"
     document.getElementById("ch_prev").style.height = pageControlsHeight + "px"
+    document.getElementById("ch_prev").style.width = toolWidth + "px"
     document.getElementById("ch_next").style.top = pageControlsTop + "px"
     document.getElementById("ch_next").style.height = pageControlsHeight + "px"
+    document.getElementById("ch_next").style.width = toolWidth + "px"
 
-    var toolsControlsHeight = height - pageControlsHeight
+    var toolsControlsHeight = height * bookToolsHeight
     document.getElementById("ch_tools_left").style.height = toolsControlsHeight + "px"
+    document.getElementById("ch_tools_left").style.width = toolWidth + "px"
     document.getElementById("ch_tools_right").style.height = toolsControlsHeight + "px"
+    document.getElementById("ch_tools_right").style.width = toolWidth + "px"
+
+    document.getElementById("ch_tools").style.width = chContentWidth + "px"
+    document.getElementById("ch_tools").style.marginLeft = toolWidth + "px"
+    document.getElementById("ch_tools").style.marginRight = toolWidth + "px"
 
     var spinnerDimension = Math.min(height * .4, width * .4)
     document.getElementById("ch_spinner_svg").style.width = spinnerDimension + "px"
