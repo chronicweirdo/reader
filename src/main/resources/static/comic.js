@@ -6,9 +6,9 @@ var swipeNextPossible = false
 var swipePreviousPossible = false
 
 function pan(x, y, currentX, currentY) {
-    if (getSetting(SETTING_SWIPE_PAGE)) {
-        let horizontalThreshold = getViewportWidth() * getSetting(SETTING_SWIPE_LENGTH)
-        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
+    if (SETTING_SWIPE_PAGE.get()) {
+        let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
+        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * SETTING_SWIPE_VERTICAL_THRESHOLD.get())
         let deltaX = panX - currentX
         let deltaY = panY - currentY
         if (swipeNextPossible && deltaX < 0 ) swipeNextPossible = false
@@ -32,7 +32,7 @@ function pan(x, y, currentX, currentY) {
 }
 
 function touchGestureStartPan(x, y) {
-    if (getSetting(SETTING_SWIPE_PAGE)) {
+    if (SETTING_SWIPE_PAGE.get()) {
         panX = x
         panY = y
         if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
@@ -88,15 +88,15 @@ function getImage() {
 }
 
 function getRevertScrollZoom() {
-    return getSetting(SETTING_COMIC_INVERT_SCROLL)
+    return SETTING_COMIC_INVERT_SCROLL.get()
 }
 
 function getScrollSpeed() {
-    return getSetting(SETTING_COMIC_SCROLL_SPEED)
+    return SETTING_COMIC_SCROLL_SPEED.get()
 }
 
 function getPanSpeed() {
-    return getSetting(SETTING_COMIC_PAN_SPEED)
+    return SETTING_COMIC_PAN_SPEED.get()
 }
 
 function getZoomJumpValue() {
@@ -174,11 +174,11 @@ function getOriginalImageHeight() {
 }
 
 function getHorizontalJumpPercentage() {
-    return getSetting(SETTING_COMIC_HORIZONTAL_JUMP)
+    return SETTING_COMIC_HORIZONTAL_JUMP.get()
 }
 
 function getVerticalJumpPercentage() {
-    return getSetting(SETTING_COMIC_VERTICAL_JUMP)
+    return SETTING_COMIC_VERTICAL_JUMP.get()
 }
 
 function setImageLeft(left) {
@@ -304,11 +304,11 @@ function approx(val1, val2, threshold = 1) {
 }
 
 function getRowThreshold() {
-    return getImageWidth() * getSetting(SETTING_COMIC_ROW_THRESHOLD)
+    return getImageWidth() * SETTING_COMIC_ROW_THRESHOLD.get()
 }
 
 function getColumnThreshold() {
-    return getImageHeight() * getSetting(SETTING_COMIC_COLUMN_THRESHOLD)
+    return getImageHeight() * SETTING_COMIC_COLUMN_THRESHOLD.get()
 }
 
 function isEndOfRow() {
@@ -464,28 +464,28 @@ function getDownloadPageButton() {
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     appendAll(settingsWrapper, getDownloadPageButton())
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_HORIZONTAL_JUMP))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_VERTICAL_JUMP))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_ROW_THRESHOLD))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_COLUMN_THRESHOLD))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_INVERT_SCROLL))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_SCROLL_SPEED))
-    appendAll(settingsWrapper, getSettingController(SETTING_COMIC_PAN_SPEED))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_LENGTH))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_HORIZONTAL))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_TOOLS_HEIGHT))
-    addSettingListener(SETTING_BOOK_EDGE_HORIZONTAL, () => setTimeout(fixControlSizes, 1000))
-    addSettingListener(SETTING_BOOK_TOOLS_HEIGHT, fixControlSizes)
+    appendAll(settingsWrapper, SETTING_COMIC_HORIZONTAL_JUMP)
+    appendAll(settingsWrapper, SETTING_COMIC_VERTICAL_JUMP)
+    appendAll(settingsWrapper, SETTING_COMIC_ROW_THRESHOLD)
+    appendAll(settingsWrapper, SETTING_COMIC_COLUMN_THRESHOLD)
+    appendAll(settingsWrapper, SETTING_COMIC_INVERT_SCROLL)
+    appendAll(settingsWrapper, SETTING_COMIC_SCROLL_SPEED)
+    appendAll(settingsWrapper, SETTING_COMIC_PAN_SPEED)
+    appendAll(settingsWrapper, SETTING_SWIPE_PAGE)
+    appendAll(settingsWrapper, SETTING_SWIPE_VERTICAL_THRESHOLD)
+    appendAll(settingsWrapper, SETTING_SWIPE_LENGTH)
+    appendAll(settingsWrapper, SETTING_BOOK_EDGE_HORIZONTAL)
+    appendAll(settingsWrapper, SETTING_BOOK_TOOLS_HEIGHT)
+    SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(fixControlSizes, 1000))
+    SETTING_BOOK_TOOLS_HEIGHT.addListener(fixControlSizes)
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
 }
 
 window.onload = function() {
-    document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
-    document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
-    document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+    document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
+    document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
+    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
 
     fixControlSizes()
     enableKeyboardGestures({

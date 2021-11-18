@@ -55,7 +55,7 @@ function setStatusBarColor(color) {
         let appropriateColor = getAppropriateStatusBarColor(color)
         document.documentElement.style.setProperty('--status-bar-color', appropriateColor)
     } else {
-        document.documentElement.style.setProperty('--status-bar-color', getSetting(SETTING_BACKGROUND_COLOR))
+        document.documentElement.style.setProperty('--status-bar-color', SETTING_BACKGROUND_COLOR.get())
     }
 }
 
@@ -103,9 +103,9 @@ function toggleTools(left, prepareToolsView) {
 }
 
 function fixControlSizes() {
-    let bookEdgeHorizontal = getSetting(SETTING_BOOK_EDGE_HORIZONTAL)
-    let bookEdgeVertical = getSetting(SETTING_BOOK_EDGE_VERTICAL)
-    let bookToolsHeight = getSetting(SETTING_BOOK_TOOLS_HEIGHT)
+    let bookEdgeHorizontal = SETTING_BOOK_EDGE_HORIZONTAL.get()
+    let bookEdgeVertical = SETTING_BOOK_EDGE_VERTICAL.get()
+    let bookToolsHeight = SETTING_BOOK_TOOLS_HEIGHT.get()
 
     var height = getViewportHeight()
     var width = getViewportWidth()
@@ -295,7 +295,10 @@ function toggleSettings() {
 }
 
 function appendAll(parent, children) {
-    if (children) {
+    if (children instanceof Setting) {
+        parent.appendChild(children.label)
+        parent.appendChild(children.controller)
+    } else if (children) {
         for (let i = 0; i < children.length; i++) {
             parent.appendChild(children[i])
         }
@@ -529,7 +532,7 @@ function reduceLuminanceTo(rgb, luminanceThreshold) {
 
 function getAppropriateStatusBarColor(originalColor) {
     let rgb = getRGB(originalColor)
-    let newColor = reduceLuminanceTo(rgb, getSetting(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
+    let newColor = reduceLuminanceTo(rgb, SETTING_DESIRED_STATUS_BAR_LUMINANCE.get())
     let newColorHex = getHexCode(newColor)
     return newColorHex
 }

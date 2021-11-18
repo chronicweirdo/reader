@@ -11,12 +11,12 @@ function touchGestureStartPan(event) {
 }
 
 function touchGesturePan(event) {
-    if (getSetting(SETTING_SWIPE_PAGE) && event.touches.length == 1 && window.getSelection().type != "Range" && swipeStart) {
+    if (SETTING_SWIPE_PAGE.get() && event.touches.length == 1 && window.getSelection().type != "Range" && swipeStart) {
         let newX = event.touches[0].pageX
         let newY = event.touches[0].pageY
         let deltaX = newX - panX
-        let horizontalThreshold = getViewportWidth() * getSetting(SETTING_SWIPE_LENGTH)
-        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * getSetting(SETTING_SWIPE_VERTICAL_THRESHOLD))
+        let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
+        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * SETTING_SWIPE_VERTICAL_THRESHOLD.get())
         if (verticalMoveValid && deltaX < -horizontalThreshold) {
             swipeStart = false
             nextPage()
@@ -357,8 +357,8 @@ function getBookStyleSheet() {
 }
 
 function setDarkMode() {
-    let background = getSetting(SETTING_DARK_MODE_BACKGROUND)
-    let foreground = getSetting(SETTING_DARK_MODE_FOREGROUND)
+    let background = SETTING_DARK_MODE_BACKGROUND.get()
+    let foreground = SETTING_DARK_MODE_FOREGROUND.get()
     setUiColors(foreground, background)
 }
 
@@ -374,8 +374,8 @@ function createDynamicStyleSheet() {
 }
 
 function setLightMode() {
-    let background = getSetting(SETTING_LIGHT_MODE_BACKGROUND)
-    let foreground = getSetting(SETTING_LIGHT_MODE_FOREGROUND)
+    let background = SETTING_LIGHT_MODE_BACKGROUND.get()
+    let foreground = SETTING_LIGHT_MODE_FOREGROUND.get()
     setUiColors(foreground, background)
 }
 
@@ -391,14 +391,14 @@ function setUiColors(foreground, background) {
 }
 
 function initializeMode() {
-    let bookMode = getSetting(SETTING_BOOK_MODE)
+    let bookMode = SETTING_BOOK_MODE.get()
     if (bookMode == 0) {
         setDarkMode()
     } else if (bookMode == 2) {
         setLightMode()
     } else {
-        let dayStart = timeStringToDate(getSetting(SETTING_DAY_START))
-        let dayEnd = timeStringToDate(getSetting(SETTING_DAY_END))
+        let dayStart = timeStringToDate(SETTING_DAY_START.get())
+        let dayEnd = timeStringToDate(SETTING_DAY_END.get())
         let now = new Date()
         if (now < dayStart || dayEnd < now) {
             setDarkMode()
@@ -518,7 +518,7 @@ function setZoom(zoom, withResize = true) {
 }
 
 function getBookPagesCacheKey() {
-    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + getSetting(SETTING_BOOK_ZOOM) + "_" + getSetting(SETTING_BOOK_EDGE_HORIZONTAL) + "_" + getSetting(SETTING_BOOK_EDGE_VERTICAL)
+    var pagesKey = "bookPages_" + getMeta("bookId") + "_" + getViewportWidth() + "_" + getViewportHeight() + "_" + SETTING_BOOK_ZOOM.get() + "_" + SETTING_BOOK_EDGE_HORIZONTAL.get() + "_" + SETTING_BOOK_EDGE_VERTICAL.get()
     return pagesKey
 }
 
@@ -539,35 +539,35 @@ function saveCache() {
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_MODE))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
-    appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_LENGTH))
-    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_BACKGROUND))
-    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
-    appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
-    appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_HORIZONTAL))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_EDGE_VERTICAL))
-    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_TOOLS_HEIGHT))
-    addSettingListener(SETTING_BOOK_MODE, initializeMode)
-    addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
-    addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
-    addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
-    addSettingListener(SETTING_LIGHT_MODE_FOREGROUND, initializeMode)
-    addSettingListener(SETTING_BOOK_EDGE_HORIZONTAL, () => setTimeout(handleResize, 1000))
-    addSettingListener(SETTING_BOOK_EDGE_VERTICAL, () => setTimeout(handleResize, 1000))
-    addSettingListener(SETTING_BOOK_TOOLS_HEIGHT, handleResize)
-    addSettingListener(SETTING_BOOK_ZOOM, setZoom)
+    appendAll(settingsWrapper, SETTING_BOOK_MODE)
+    appendAll(settingsWrapper, SETTING_BOOK_ZOOM)
+    appendAll(settingsWrapper, SETTING_SWIPE_PAGE)
+    appendAll(settingsWrapper, SETTING_SWIPE_VERTICAL_THRESHOLD)
+    appendAll(settingsWrapper, SETTING_SWIPE_LENGTH)
+    appendAll(settingsWrapper, SETTING_DARK_MODE_BACKGROUND)
+    appendAll(settingsWrapper, SETTING_DARK_MODE_FOREGROUND)
+    appendAll(settingsWrapper, SETTING_LIGHT_MODE_BACKGROUND)
+    appendAll(settingsWrapper, SETTING_LIGHT_MODE_FOREGROUND)
+    appendAll(settingsWrapper, SETTING_BOOK_EDGE_HORIZONTAL)
+    appendAll(settingsWrapper, SETTING_BOOK_EDGE_VERTICAL)
+    appendAll(settingsWrapper, SETTING_BOOK_TOOLS_HEIGHT)
+    SETTING_BOOK_MODE.addListener(initializeMode)
+    SETTING_DARK_MODE_BACKGROUND.addListener(initializeMode)
+    SETTING_DARK_MODE_FOREGROUND.addListener(initializeMode)
+    SETTING_LIGHT_MODE_BACKGROUND.addListener(initializeMode)
+    SETTING_LIGHT_MODE_FOREGROUND.addListener(initializeMode)
+    SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(handleResize, 1000))
+    SETTING_BOOK_EDGE_VERTICAL.addListener(() => setTimeout(handleResize, 1000))
+    SETTING_BOOK_TOOLS_HEIGHT.addListener(handleResize)
+    SETTING_BOOK_ZOOM.addListener(setZoom)
     appendAll(settingsWrapper, getRemoveProgressButton())
     appendAll(settingsWrapper, getMarkAsReadButton())
 }
 
 window.onload = function() {
-    document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
-    document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
-    document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+    document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get());
+    document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get());
+    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get());
 
     createDynamicStyleSheet()
     fixControlSizes()
@@ -600,7 +600,7 @@ window.onload = function() {
     window.addEventListener("focus", function(event) {
         initializeMode()
     }, false)
-    setZoom(getSetting(SETTING_BOOK_ZOOM), false)
+    setZoom(SETTING_BOOK_ZOOM.get(), false)
     loadCache()
 
     document.lastPageChange = new Date()

@@ -58,7 +58,7 @@ function getSvgCheck() {
 
 function applyTitles() {
     let toggleTitles = getToggleTitles()
-    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
+    if (SETTING_LIBRARY_DISPLAY_TITLE.get()) {
         setCssProperty('--title-display', 'inline-block')
         toggleTitles.classList.add(ACTIVE_CLASS)
         toggleTitles.title = "Hide Book Titles"
@@ -70,10 +70,10 @@ function applyTitles() {
 }
 
 function toggleTitles() {
-    if (getSetting(SETTING_LIBRARY_DISPLAY_TITLE)) {
-        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, false)
+    if (SETTING_LIBRARY_DISPLAY_TITLE.get()) {
+        SETTING_LIBRARY_DISPLAY_TITLE.put(false)
     } else {
-        putSetting(SETTING_LIBRARY_DISPLAY_TITLE, true)
+        SETTING_LIBRARY_DISPLAY_TITLE.put(true)
     }
     applyTitles()
 }
@@ -316,7 +316,7 @@ function loadLatestRead() {
             }
         }
     }
-    xhttp.open("GET", "latestRead?limit=" + getSetting(SETTING_LATEST_READ_LIMIT))
+    xhttp.open("GET", "latestRead?limit=" + SETTING_LATEST_READ_LIMIT.get())
     xhttp.send()
 }
 
@@ -490,10 +490,10 @@ window.onload = function() {
     updateClearSearch()
 
     applyTitles()
-    setCssProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR))
-    setStatusBarColor(getSetting(SETTING_ACCENT_COLOR))
-    setCssProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
-    setCssProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+    setCssProperty('--accent-color', SETTING_ACCENT_COLOR.get())
+    setStatusBarColor(SETTING_ACCENT_COLOR.get())
+    setCssProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get());
+    setCssProperty('--background-color', SETTING_BACKGROUND_COLOR.get());
 }
 
 window.onscroll = function(ev) {

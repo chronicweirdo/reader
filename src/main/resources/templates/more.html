@@ -39,48 +39,48 @@
         }
 
         function updateAccentColor() {
-            document.documentElement.style.setProperty('--accent-color', getSetting(SETTING_ACCENT_COLOR));
+            document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
             if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
 
         function updateStatusBarForMorePage() {
-            setStatusBarColor(getSetting(SETTING_ACCENT_COLOR));
+            setStatusBarColor(SETTING_ACCENT_COLOR.get())
         }
 
         function updateForegroundColor() {
-            document.documentElement.style.setProperty('--foreground-color', getSetting(SETTING_FOREGROUND_COLOR));
+            document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
         }
 
         function updateBackgroundColor() {
-            document.documentElement.style.setProperty('--background-color', getSetting(SETTING_BACKGROUND_COLOR));
+            document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
             if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
 
         function setDaySettingsStatus() {
-            let bookMode = getSetting(SETTING_BOOK_MODE)
+            let bookMode = SETTING_BOOK_MODE.get()
             if (bookMode == 1) {
-                document.getElementsByName(SETTING_DAY_START)[0].disabled = false
-                document.getElementsByName(SETTING_DAY_END)[0].disabled = false
+                document.getElementsByName(SETTING_DAY_START.name)[0].disabled = false
+                document.getElementsByName(SETTING_DAY_END.name)[0].disabled = false
             } else {
-                document.getElementsByName(SETTING_DAY_START)[0].disabled = true
-                document.getElementsByName(SETTING_DAY_END)[0].disabled = true
+                document.getElementsByName(SETTING_DAY_START.name)[0].disabled = true
+                document.getElementsByName(SETTING_DAY_END.name)[0].disabled = true
             }
         }
 
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
-            appendAll(settingsWrapper, getSettingController(SETTING_LATEST_READ_LIMIT))
-            appendAll(settingsWrapper, getSettingController(SETTING_ACCENT_COLOR))
-            appendAll(settingsWrapper, getSettingController(SETTING_FOREGROUND_COLOR))
-            appendAll(settingsWrapper, getSettingController(SETTING_BACKGROUND_COLOR))
+            appendAll(settingsWrapper, [SETTING_LATEST_READ_LIMIT.label, SETTING_LATEST_READ_LIMIT.controller])
+            appendAll(settingsWrapper, [SETTING_ACCENT_COLOR.label, SETTING_ACCENT_COLOR.controller])
+            appendAll(settingsWrapper, [SETTING_FOREGROUND_COLOR.label, SETTING_FOREGROUND_COLOR.controller])
+            appendAll(settingsWrapper, [SETTING_BACKGROUND_COLOR.label, SETTING_BACKGROUND_COLOR.controller])
             if (onIOS()) {
-                appendAll(settingsWrapper, getSettingController(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
+                appendAll(settingsWrapper, [SETTING_DESIRED_STATUS_BAR_LUMINANCE.label, SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller])
             }
-            appendAll(settingsWrapper, getSettingController(SETTING_BOOK_MODE))
-            addSettingListener(SETTING_BOOK_MODE, setDaySettingsStatus)
-            appendAll(settingsWrapper, getSettingController(SETTING_DAY_START))
-            appendAll(settingsWrapper, getSettingController(SETTING_DAY_END))
+            appendAll(settingsWrapper, [SETTING_BOOK_MODE.label, SETTING_BOOK_MODE.controller])
+            SETTING_BOOK_MODE.addListener(setDaySettingsStatus)
+            appendAll(settingsWrapper, [SETTING_DAY_START.label, SETTING_DAY_START.controller])
+            appendAll(settingsWrapper, [SETTING_DAY_END.label, SETTING_DAY_END.controller])
             setDaySettingsStatus()
         }
 
@@ -98,10 +98,10 @@
 
             loadSettings()
 
-            addSettingListener(SETTING_ACCENT_COLOR, updateAccentColor)
-            addSettingListener(SETTING_BACKGROUND_COLOR, updateBackgroundColor)
-            addSettingListener(SETTING_FOREGROUND_COLOR, updateForegroundColor)
-            addSettingListener(SETTING_DESIRED_STATUS_BAR_LUMINANCE, updateAccentColor)
+            SETTING_ACCENT_COLOR.addListener(updateAccentColor)
+            SETTING_BACKGROUND_COLOR.addListener(updateBackgroundColor)
+            SETTING_FOREGROUND_COLOR.addListener(updateForegroundColor)
+            SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(updateAccentColor)
         }
     </script>
 </head>

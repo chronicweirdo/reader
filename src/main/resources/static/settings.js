@@ -1,59 +1,23 @@
-var SETTING_DARK_MODE_BACKGROUND = "dark_mode_background"
-var SETTING_DARK_MODE_FOREGROUND = "dark_mode_foreground"
-var SETTING_COMIC_SCROLL_SPEED = "comic_scroll_speed"
-var SETTING_LIGHT_MODE_BACKGROUND = "light_mode_background"
-var SETTING_LIGHT_MODE_FOREGROUND = "light_mode_foreground"
-var SETTING_BOOK_ZOOM = "book_zoom"
-var SETTING_COMIC_PAN_SPEED = "comic_pan_speed"
-var SETTING_COMIC_INVERT_SCROLL = "comic_invert_scroll"
-var SETTING_LATEST_READ_LIMIT = "latest_read_limit"
-var SETTING_COMIC_HORIZONTAL_JUMP = "comic_horizontal_jump"
-var SETTING_COMIC_VERTICAL_JUMP = "comic_vertical_jump"
-var SETTING_COMIC_ROW_THRESHOLD = "comic_row_threshold"
-var SETTING_COMIC_COLUMN_THRESHOLD = "comic_column_threshold"
-var SETTING_LIBRARY_DISPLAY_TITLE = "library_display_title"
-var SETTING_SWIPE_PAGE = "swipe_page"
-var SETTING_SWIPE_VERTICAL_THRESHOLD = "swipe_vertical_threshold" // screen percentage for vertical finger move before swipe becomes invalid
-var SETTING_SWIPE_LENGTH = "swipe_length" // screen percentage for horizontal finger move for swipe action to register
-var SETTING_ACCENT_COLOR = "accent_color"
-var SETTING_FOREGROUND_COLOR = "foreground_color"
-var SETTING_BACKGROUND_COLOR = "background_color"
-var SETTING_DESIRED_STATUS_BAR_LUMINANCE = "desired_status_bar_luminance"
-var SETTING_DAY_START = "day_start"
-var SETTING_DAY_END = "day_end"
-var SETTING_BOOK_MODE = "book_mode"
-var SETTING_BOOK_EDGE_HORIZONTAL = "book_edge_horizontal"
-var SETTING_BOOK_EDGE_VERTICAL = "book_edge_vertical"
-var SETTING_BOOK_TOOLS_HEIGHT = "book_tools_height"
+// setting object containing
+/*
+{
+    "name": // how it's saved in local storage
+    "default": // default value as string
+    "parser": // function that transforms the string representation of the setting to its actual value
+    "textValue": // function converting the setting to a string that can be shown in UI
+    "textName": // the name of the setting as shown in UI
+    "controller": // function that gives us the UI element for controlling this setting
+    "listeners": // a list of objects to which we send the new value when the setting is updated
+}
 
-var settingDefaults = {}
-settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
-settingDefaults[SETTING_COMIC_PAN_SPEED] = "3"
-settingDefaults[SETTING_DARK_MODE_BACKGROUND] = "#000000"
-settingDefaults[SETTING_DARK_MODE_FOREGROUND] = "#ffffff"
-settingDefaults[SETTING_LIGHT_MODE_BACKGROUND] = "#ffffff"
-settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
-settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
-settingDefaults[SETTING_COMIC_INVERT_SCROLL] = "false"
-settingDefaults[SETTING_LATEST_READ_LIMIT] = "6"
-settingDefaults[SETTING_COMIC_HORIZONTAL_JUMP] = "0.9"
-settingDefaults[SETTING_COMIC_VERTICAL_JUMP] = "0.5"
-settingDefaults[SETTING_COMIC_ROW_THRESHOLD] = "0.02"
-settingDefaults[SETTING_COMIC_COLUMN_THRESHOLD] = "0.05"
-settingDefaults[SETTING_LIBRARY_DISPLAY_TITLE] = "false"
-settingDefaults[SETTING_SWIPE_PAGE] = "true"
-settingDefaults[SETTING_SWIPE_VERTICAL_THRESHOLD] = "0.11"
-settingDefaults[SETTING_SWIPE_LENGTH] = "0.06"
-settingDefaults[SETTING_ACCENT_COLOR] = "#FFD700"
-settingDefaults[SETTING_FOREGROUND_COLOR] = "#000000"
-settingDefaults[SETTING_BACKGROUND_COLOR] = "#FFFFFF"
-settingDefaults[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = "180"
-settingDefaults[SETTING_DAY_START] = "07:00"
-settingDefaults[SETTING_DAY_END] = "22:00"
-settingDefaults[SETTING_BOOK_MODE] = "1"
-settingDefaults[SETTING_BOOK_EDGE_HORIZONTAL] = "0.1"
-settingDefaults[SETTING_BOOK_EDGE_VERTICAL] = "0.05"
-settingDefaults[SETTING_BOOK_TOOLS_HEIGHT] = "0.1"
+then, in the UI we grab the textValue, the textName and the controller, we register listeners
+*/
+
+
+
+
+
+
 
 function parseBoolean(value) {
     return value == 'true'
@@ -76,32 +40,6 @@ function convertDateToTimeString(date) {
     return hourString + ":" + minuteString
 }
 
-var settingParsers = {}
-settingParsers[SETTING_COMIC_SCROLL_SPEED] = parseFloat
-settingParsers[SETTING_BOOK_ZOOM] = parseFloat
-settingParsers[SETTING_COMIC_PAN_SPEED] = parseInt
-settingParsers[SETTING_COMIC_INVERT_SCROLL] = parseBoolean
-settingParsers[SETTING_LATEST_READ_LIMIT] = parseInt
-settingParsers[SETTING_COMIC_HORIZONTAL_JUMP] = parseFloat
-settingParsers[SETTING_COMIC_VERTICAL_JUMP] = parseFloat
-settingParsers[SETTING_COMIC_ROW_THRESHOLD] = parseFloat
-settingParsers[SETTING_COMIC_COLUMN_THRESHOLD] = parseFloat
-settingParsers[SETTING_LIBRARY_DISPLAY_TITLE] = parseBoolean
-settingParsers[SETTING_SWIPE_PAGE] = parseBoolean
-settingParsers[SETTING_SWIPE_VERTICAL_THRESHOLD] = parseFloat
-settingParsers[SETTING_SWIPE_LENGTH] = parseFloat
-settingParsers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = parseInt
-settingParsers[SETTING_DAY_START] = parseTime
-settingParsers[SETTING_DAY_END] = parseTime
-settingParsers[SETTING_BOOK_MODE] = parseInt
-settingParsers[SETTING_BOOK_EDGE_HORIZONTAL] = parseFloat
-settingParsers[SETTING_BOOK_EDGE_VERTICAL] = parseFloat
-settingParsers[SETTING_BOOK_TOOLS_HEIGHT] = parseFloat
-
-var settingEncoders = {}
-
-var settingListeners = {}
-
 function bookModeToString(mode) {
     if (mode == 0) {
         return "dark"
@@ -112,28 +50,25 @@ function bookModeToString(mode) {
     }
 }
 
-var settingTextValueConverters = {}
-settingTextValueConverters[SETTING_BOOK_MODE] = bookModeToString
+function percentageToString(percentage) {
+    return Math.floor(percentage * 100) + "%"
+}
 
-function createColorController(settingName, text) {
-    let label = document.createElement('label')
-    label.htmlFor = settingName
-    label.innerHTML = text + ":"
-
+function createColorController(setting) {
     let input = document.createElement('input')
     input.type = 'color'
-    input.name = settingName
-    let value = getSetting(settingName)
+    input.name = setting.name
+    let value = setting.get()
     input.value = value
 
     input.onchange = function(event) {
-        updateSetting(event.target)
+        setting.put(event.target.value)
     }
-    return [label, input]
+    return input
 }
 
 function getSettingTextValue(settingName) {
-    let value = getSetting(settingName)
+    let value = get(settingName)
     if (settingTextValueConverters[settingName]) {
         return settingTextValueConverters[settingName](value)
     } else {
@@ -141,140 +76,148 @@ function getSettingTextValue(settingName) {
     }
 }
 
-function createNumberController(settingName, text, min, max, step) {
-    let label = document.createElement('label')
-    label.htmlFor = settingName
-    label.innerHTML = text + ": " + getSettingTextValue(settingName)
+function createNumberController(min, max, step) {
+    function styleOutput(input, output) {
+        let val = input.value
+        let min = input.min ? input.min : 0
+        let max = input.max ? input.max : 100
+        let newVal = Number(((val - min) * 100) / (max - min))
 
-    let input = document.createElement('input')
-    input.type = 'range'
-    input.name = settingName
-    input.min = min
-    input.max = max
-    input.step = step
-    let value = getSetting(settingName)
-    input.value = value
+        output.style.left = newVal + "%"
+        output.style.transform = "translate(-" + newVal + "%, -50%)"
+    }
 
-    input.addEventListener('input', function(event) {
-        updateSetting(event.target)
-        label.innerHTML = text + ": " + getSettingTextValue(settingName)
-    }, false)
-    return [label, input]
+    return function(setting) {
+        let input = document.createElement('input')
+        input.type = 'range'
+        input.name = setting.name
+        input.min = min
+        input.max = max
+        input.step = step
+        input.value = setting.get()
+
+        // <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
+        let output = document.createElement('output')
+        output.style.position = "absolute"
+        output.style.lineBreak = "strict"
+        output.htmlFor = setting.name
+        output.value = setting.getTextValue()
+        styleOutput(input, output)
+
+        input.addEventListener('input', function(event) {
+            setting.put(event.target.value)
+            output.value = setting.getTextValue()
+            styleOutput(input, output)
+        }, false)
+
+        let span = document.createElement('span')
+        span.style.position = "relative"
+        span.appendChild(input)
+        span.appendChild(output)
+        return span
+    }
 }
 
-function createBooleanController(settingName, text) {
-    let label = document.createElement('label')
-    label.htmlFor = settingName
-    label.innerHTML = text + ":"
-
+function createBooleanController(setting) {
     let input = document.createElement('input')
     input.type = 'checkbox'
-    input.name = settingName
-    let value = getSetting(settingName)
-    input.checked = value
+    input.name = setting.name
+    input.checked = setting.get()
     input.onchange = function(event) {
-        updateSetting(event.target)
+        setting.put(event.target.value)
     }
-    return [label, input]
+    return input
 }
 
-function createTimeController(settingName, text) {
-    let label = document.createElement('label')
-    label.htmlFor = settingName
-    label.innerHTML = text
-
+function createTimeController(setting) {
     let input = document.createElement('input')
     input.type = 'time'
-    input.name = settingName
-    let value = getSetting(settingName)
-    input.value = value
+    input.name = setting.name
+    input.value = setting.get()
 
     input.onchange = function(event) {
-        updateSetting(event.target)
+        setting.put(event.target.value)
     }
-    return [label, input]
+    return input
 }
 
-var settingControllers = {}
-settingControllers[SETTING_DARK_MODE_BACKGROUND] = () => createColorController(SETTING_DARK_MODE_BACKGROUND, "dark background")
-settingControllers[SETTING_DARK_MODE_FOREGROUND] = () => createColorController(SETTING_DARK_MODE_FOREGROUND, "dark text")
-settingControllers[SETTING_LIGHT_MODE_BACKGROUND] = () => createColorController(SETTING_LIGHT_MODE_BACKGROUND, "light background")
-settingControllers[SETTING_LIGHT_MODE_FOREGROUND] = () => createColorController(SETTING_LIGHT_MODE_FOREGROUND, "light text",)
-settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.9, 2.1, 0.2)
-settingControllers[SETTING_COMIC_SCROLL_SPEED] = () => createNumberController(SETTING_COMIC_SCROLL_SPEED, "scroll speed", 0.0005, 0.005, 0.0001)
-settingControllers[SETTING_COMIC_PAN_SPEED] = () => createNumberController(SETTING_COMIC_PAN_SPEED, "pan speed", 1, 10, 1)
-settingControllers[SETTING_COMIC_INVERT_SCROLL] = () => createBooleanController(SETTING_COMIC_INVERT_SCROLL, "invert scroll")
-settingControllers[SETTING_LATEST_READ_LIMIT] = () => createNumberController(SETTING_LATEST_READ_LIMIT, "latest read to load", 0, 12, 1)
-
-settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.9, 2.1, 0.2)
-settingControllers[SETTING_COMIC_HORIZONTAL_JUMP] = () => createNumberController(SETTING_COMIC_HORIZONTAL_JUMP, "horizontal jump", 0.1, 1, 0.1)
-settingControllers[SETTING_COMIC_VERTICAL_JUMP] = () => createNumberController(SETTING_COMIC_VERTICAL_JUMP, "vertical jump", 0.1, 1, 0.1)
-settingControllers[SETTING_COMIC_ROW_THRESHOLD] = () => createNumberController(SETTING_COMIC_ROW_THRESHOLD, "row threshold", 0.01, 0.1, 0.01)
-settingControllers[SETTING_COMIC_COLUMN_THRESHOLD] = () => createNumberController(SETTING_COMIC_COLUMN_THRESHOLD, "column threshold", 0.01, 0.1, 0.01)
-
-settingControllers[SETTING_LIBRARY_DISPLAY_TITLE] = () => createBooleanController(SETTING_LIBRARY_DISPLAY_TITLE, "display titles")
-settingControllers[SETTING_SWIPE_PAGE] = () => createBooleanController(SETTING_SWIPE_PAGE, "swipe pages")
-settingControllers[SETTING_SWIPE_VERTICAL_THRESHOLD] = () => createNumberController(SETTING_SWIPE_VERTICAL_THRESHOLD, "swipe y threshold", 0.01, 0.41, 0.1)
-settingControllers[SETTING_SWIPE_LENGTH] = () => createNumberController(SETTING_SWIPE_LENGTH, "swipe length", 0.01, 0.31, 0.05)
-
-settingControllers[SETTING_ACCENT_COLOR] = () => createColorController(SETTING_ACCENT_COLOR, "accent color")
-settingControllers[SETTING_FOREGROUND_COLOR] = () => createColorController(SETTING_FOREGROUND_COLOR, "foreground color")
-settingControllers[SETTING_BACKGROUND_COLOR] = () => createColorController(SETTING_BACKGROUND_COLOR, "background color")
-
-settingControllers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = () => createNumberController(SETTING_DESIRED_STATUS_BAR_LUMINANCE, "status bar luminance", 150, 255, 5)
-
-settingControllers[SETTING_DAY_START] = () => createTimeController(SETTING_DAY_START, "day start")
-settingControllers[SETTING_DAY_END] = () => createTimeController(SETTING_DAY_END, "day end")
-settingControllers[SETTING_BOOK_MODE] = () => createNumberController(SETTING_BOOK_MODE, "book mode", 0, 2, 1)
-
-settingControllers[SETTING_BOOK_EDGE_HORIZONTAL] = () => createNumberController(SETTING_BOOK_EDGE_HORIZONTAL, "book edge horizontal", 0.05, 0.2, 0.05)
-settingControllers[SETTING_BOOK_EDGE_VERTICAL] = () => createNumberController(SETTING_BOOK_EDGE_VERTICAL, "book edge vertical", 0.03, 0.11, 0.02)
-settingControllers[SETTING_BOOK_TOOLS_HEIGHT] = () => createNumberController(SETTING_BOOK_TOOLS_HEIGHT, "book tools height", 0.05, 0.3, 0.05)
-
-function updateSetting(element) {
-    let value
-    if (element.type == 'checkbox') {
-        value = element.checked
-    } else {
-        value = element.value
-    }
-    putSetting(element.name, value)
+function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
+    this.name = name
+    this.defaultValue = defaultValue
+    this.parser = parser
+    this.textValueFunction = textValueFunction
+    this.textName = textName
+    this.controller = createControllerFunction(this)
+    this.label = this.createLabel()
 }
 
-function getSettingController(name) {
-    let settingControllerConstructor = settingControllers[name]
-    if (settingControllerConstructor) {
-        return settingControllerConstructor()
-    }
-    return undefined
-}
-
-function getSetting(name) {
-    let stringValue = window.localStorage.getItem(name)
+Setting.prototype.get = function() {
+    let stringValue = window.localStorage.getItem(this.name)
     if (! stringValue) {
-        stringValue = settingDefaults[name]
+        stringValue = this.defaultValue
     }
-    if (settingParsers[name]) {
-        return settingParsers[name](stringValue)
+    if (this.parser) {
+        return this.parser(stringValue)
     } else {
         return stringValue
     }
 }
 
-function putSetting(name, value) {
-    if (settingEncoders[name]) {
-        window.localStorage.setItem(name, settingEncoders[name](value))
+Setting.prototype.getTextValue = function() {
+    if (this.textValueFunction) return this.textValueFunction(this.get())
+    else return this.get()
+}
+
+Setting.prototype.put = function(value) {
+    if (this.encoder) {
+        window.localStorage.setItem(this.name, this.encoder(value))
     } else {
-        window.localStorage.setItem(name, value)
+        window.localStorage.setItem(this.name, value)
     }
-    if (settingListeners[name]) {
-        settingListeners[name].forEach(listener => listener(value))
+    if (this.listeners) {
+        this.listeners.forEach(listener => listener(value))
     }
 }
 
-function addSettingListener(name, listener) {
-    if (! settingListeners[name]) {
-        settingListeners[name] = []
+Setting.prototype.addListener = function(listener) {
+    if (! this.listeners) {
+        this.listeners = []
     }
-    settingListeners[name].push(listener)
+    this.listeners.push(listener)
 }
+
+Setting.prototype.createLabel = function() {
+    let label = document.createElement('label')
+    label.htmlFor = this.name
+    label.innerHTML = this.textName
+    return label
+}
+
+// function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
+var SETTING_DARK_MODE_BACKGROUND = new Setting("dark_mode_background", "dark mode background", "#000000", null, null, createColorController)
+var SETTING_DARK_MODE_FOREGROUND = new Setting("dark_mode_foreground", "dark mode foreground", "#ffffff", null, null, createColorController)
+var SETTING_COMIC_SCROLL_SPEED = new Setting("comic_scroll_speed", "comic scroll speed", "0.001", parseFloat, null, createNumberController(0.0005, 0.005, 0.0001))
+var SETTING_LIGHT_MODE_BACKGROUND = new Setting("light_mode_background", "light mode background", "#ffffff", null, null, createColorController)
+var SETTING_LIGHT_MODE_FOREGROUND = new Setting("light_mode_foreground", "light mode foreground", "#000000", null, null, createColorController)
+var SETTING_BOOK_ZOOM = new Setting("book_zoom", "book zoom", "1.5", parseFloat, null, createNumberController(0.9, 2.1, 0.2))
+var SETTING_COMIC_PAN_SPEED = new Setting("comic_pan_speed", "comic pan speed", "3", parseInt, null, createNumberController(1, 10, 1))
+var SETTING_COMIC_INVERT_SCROLL = new Setting("comic_invert_scroll", "comic invert scroll", "false", parseBoolean, null, createBooleanController)
+var SETTING_LATEST_READ_LIMIT = new Setting("latest_read_limit", "latest read limit", "6", parseInt, null, createNumberController(0, 12, 1))
+var SETTING_COMIC_HORIZONTAL_JUMP = new Setting("comic_horizontal_jump", "horizontal jump", "0.9", parseFloat, percentageToString, createNumberController(0.1, 1, 0.1))
+var SETTING_COMIC_VERTICAL_JUMP = new Setting("comic_vertical_jump", "vertical jump", "0.5", parseFloat, percentageToString, createNumberController(0.1, 1, 0.1))
+var SETTING_COMIC_ROW_THRESHOLD = new Setting("comic_row_threshold", "comic row threshold", "0.02", parseFloat, percentageToString, createNumberController(0.01, 0.1, 0.01))
+var SETTING_COMIC_COLUMN_THRESHOLD = new Setting("comic_column_threshold", "comic column threshold", "0.05", parseFloat, percentageToString, createNumberController(0.01, 0.1, 0.01))
+var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "library display title", "false", parseBoolean, null, createBooleanController)
+var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe page", "true", parseBoolean, null, createBooleanController)
+var SETTING_SWIPE_VERTICAL_THRESHOLD = new Setting("swipe_vertical_threshold", "swipe vertical threshold", "0.11", parseFloat, percentageToString, createNumberController(0.01, 0.41, 0.1)) // screen percentage for vertical finger move before swipe becomes invalid
+var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "swipe length", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
+var SETTING_ACCENT_COLOR = new Setting("accent_color", "accent color", "#FFD700", null, null, createColorController)
+var SETTING_FOREGROUND_COLOR = new Setting("foreground_color", "foreground color", "#000000", null, null, createColorController)
+var SETTING_BACKGROUND_COLOR = new Setting("background_color", "background color", "#FFFFFF", null, null, createColorController)
+var SETTING_DESIRED_STATUS_BAR_LUMINANCE = new Setting("desired_status_bar_luminance", "desired status bar luminance", "180", parseInt, null, createNumberController(150, 255, 5))
+var SETTING_DAY_START = new Setting("day_start", "day start", "07:00", parseTime, null, createTimeController)
+var SETTING_DAY_END = new Setting("day_end", "day end", "22:00", parseTime, null, createTimeController)
+var SETTING_BOOK_MODE = new Setting("book_mode", "book mode", "1", parseInt, bookModeToString, createNumberController(0, 2, 1))
+var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "book edge horizontal", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.2, 0.05))
+var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "book edge horizontal", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
+var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "book tools height", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))
