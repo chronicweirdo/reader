@@ -1,7 +1,6 @@
 var SETTING_DARK_MODE_BACKGROUND = "dark_mode_background"
 var SETTING_DARK_MODE_FOREGROUND = "dark_mode_foreground"
 var SETTING_COMIC_SCROLL_SPEED = "comic_scroll_speed"
-var SETTING_DARK_MODE = "dark_mode"
 var SETTING_LIGHT_MODE_BACKGROUND = "light_mode_background"
 var SETTING_LIGHT_MODE_FOREGROUND = "light_mode_foreground"
 var SETTING_BOOK_ZOOM = "book_zoom"
@@ -20,13 +19,15 @@ var SETTING_ACCENT_COLOR = "accent_color"
 var SETTING_FOREGROUND_COLOR = "foreground_color"
 var SETTING_BACKGROUND_COLOR = "background_color"
 var SETTING_DESIRED_STATUS_BAR_LUMINANCE = "desired_status_bar_luminance"
+var SETTING_DAY_START = "day_start"
+var SETTING_DAY_END = "day_end"
+var SETTING_BOOK_MODE = "book_mode"
 
 var settingDefaults = {}
 settingDefaults[SETTING_COMIC_SCROLL_SPEED] = "0.001"
 settingDefaults[SETTING_COMIC_PAN_SPEED] = "3"
 settingDefaults[SETTING_DARK_MODE_BACKGROUND] = "#000000"
 settingDefaults[SETTING_DARK_MODE_FOREGROUND] = "#ffffff"
-settingDefaults[SETTING_DARK_MODE] = "false"
 settingDefaults[SETTING_LIGHT_MODE_BACKGROUND] = "#ffffff"
 settingDefaults[SETTING_LIGHT_MODE_FOREGROUND] = "#000000"
 settingDefaults[SETTING_BOOK_ZOOM] = "1.5"
@@ -44,16 +45,35 @@ settingDefaults[SETTING_ACCENT_COLOR] = "#FFD700"
 settingDefaults[SETTING_FOREGROUND_COLOR] = "#000000"
 settingDefaults[SETTING_BACKGROUND_COLOR] = "#FFFFFF"
 settingDefaults[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = "180"
+settingDefaults[SETTING_DAY_START] = "07:00"
+settingDefaults[SETTING_DAY_END] = "22:00"
+settingDefaults[SETTING_BOOK_MODE] = "1"
 
 function parseBoolean(value) {
     return value == 'true'
+}
+
+function timeStringToDate(value) {
+    return new Date((new Date()).toDateString() + " " + value)
+}
+
+function parseTime(value) {
+    let date = timeStringToDate(value)
+    return convertDateToTimeString(date)
+}
+
+function convertDateToTimeString(date) {
+    let hour = date.getHours()
+    let minute = date.getMinutes()
+    let hourString = hour < 10 ? "0" + hour : hour
+    let minuteString = minute < 10 ? "0" + minute : minute
+    return hourString + ":" + minuteString
 }
 
 var settingParsers = {}
 settingParsers[SETTING_COMIC_SCROLL_SPEED] = parseFloat
 settingParsers[SETTING_BOOK_ZOOM] = parseFloat
 settingParsers[SETTING_COMIC_PAN_SPEED] = parseInt
-settingParsers[SETTING_DARK_MODE] = parseBoolean
 settingParsers[SETTING_COMIC_INVERT_SCROLL] = parseBoolean
 settingParsers[SETTING_LATEST_READ_LIMIT] = parseInt
 settingParsers[SETTING_COMIC_HORIZONTAL_JUMP] = parseFloat
@@ -65,10 +85,26 @@ settingParsers[SETTING_SWIPE_PAGE] = parseBoolean
 settingParsers[SETTING_SWIPE_VERTICAL_THRESHOLD] = parseFloat
 settingParsers[SETTING_SWIPE_LENGTH] = parseFloat
 settingParsers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = parseInt
+settingParsers[SETTING_DAY_START] = parseTime
+settingParsers[SETTING_DAY_END] = parseTime
+settingParsers[SETTING_BOOK_MODE] = parseInt
 
 var settingEncoders = {}
 
 var settingListeners = {}
+
+function bookModeToString(mode) {
+    if (mode == 0) {
+        return "dark"
+    } else if (mode == 2) {
+        return "light"
+    } else {
+        return "auto"
+    }
+}
+
+var settingTextValueConverters = {}
+settingTextValueConverters[SETTING_BOOK_MODE] = bookModeToString
 
 function createColorController(settingName, text) {
     let label = document.createElement('label')
@@ -101,10 +137,18 @@ function createNumberController(settingName, text, min, max, step) {
     let value = getSetting(settingName)
     input.value = value
     let textValue = document.createElement('span')
-    textValue.innerHTML = value
+    if (settingTextValueConverters[settingName]) {
+        textValue.innerHTML = settingTextValueConverters[settingName](value)
+    } else {
+        textValue.innerHTML = value
+    }
     input.addEventListener('input', function(event) {
         updateSetting(event.target)
-        textValue.innerHTML = getSetting(settingName)
+        if (settingTextValueConverters[settingName]) {
+            textValue.innerHTML = settingTextValueConverters[settingName](getSetting(settingName))
+        } else {
+            textValue.innerHTML = getSetting(settingName)
+        }
     }, false)
     return [label, input, textValue]
 }
@@ -127,6 +171,27 @@ function createBooleanController(settingName, text) {
     return [label, input, textValue]
 }
 
+function createTimeController(settingName, text) {
+    let label = document.createElement('label')
+    label.htmlFor = settingName
+    label.innerHTML = text
+
+    let input = document.createElement('input')
+    input.type = 'time'
+    input.name = settingName
+    let value = getSetting(settingName)
+    input.value = value
+
+    let textValue = document.createElement('span')
+    textValue.innerHTML = value
+
+    input.onchange = function(event) {
+        updateSetting(event.target)
+        textValue.innerHTML = getSetting(settingName)
+    }
+    return [label, input, textValue]
+}
+
 var settingControllers = {}
 settingControllers[SETTING_DARK_MODE_BACKGROUND] = () => createColorController(SETTING_DARK_MODE_BACKGROUND, "dark background")
 settingControllers[SETTING_DARK_MODE_FOREGROUND] = () => createColorController(SETTING_DARK_MODE_FOREGROUND, "dark text")
@@ -135,7 +200,6 @@ settingControllers[SETTING_LIGHT_MODE_FOREGROUND] = () => createColorController(
 settingControllers[SETTING_BOOK_ZOOM] = () => createNumberController(SETTING_BOOK_ZOOM, "book zoom", 0.9, 2.1, 0.2)
 settingControllers[SETTING_COMIC_SCROLL_SPEED] = () => createNumberController(SETTING_COMIC_SCROLL_SPEED, "scroll speed", 0.0005, 0.005, 0.0001)
 settingControllers[SETTING_COMIC_PAN_SPEED] = () => createNumberController(SETTING_COMIC_PAN_SPEED, "pan speed", 1, 10, 1)
-settingControllers[SETTING_DARK_MODE] = () => createBooleanController(SETTING_DARK_MODE, "dark mode")
 settingControllers[SETTING_COMIC_INVERT_SCROLL] = () => createBooleanController(SETTING_COMIC_INVERT_SCROLL, "invert scroll")
 settingControllers[SETTING_LATEST_READ_LIMIT] = () => createNumberController(SETTING_LATEST_READ_LIMIT, "latest read to load", 0, 12, 1)
 
@@ -155,6 +219,10 @@ settingControllers[SETTING_FOREGROUND_COLOR] = () => createColorController(SETTI
 settingControllers[SETTING_BACKGROUND_COLOR] = () => createColorController(SETTING_BACKGROUND_COLOR, "background color")
 
 settingControllers[SETTING_DESIRED_STATUS_BAR_LUMINANCE] = () => createNumberController(SETTING_DESIRED_STATUS_BAR_LUMINANCE, "status bar luminance", 150, 255, 5)
+
+settingControllers[SETTING_DAY_START] = () => createTimeController(SETTING_DAY_START, "day start")
+settingControllers[SETTING_DAY_END] = () => createTimeController(SETTING_DAY_END, "day end")
+settingControllers[SETTING_BOOK_MODE] = () => createNumberController(SETTING_BOOK_MODE, "book mode", 0, 2, 1)
 
 function updateSetting(element) {
     let value

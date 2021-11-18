@@ -143,6 +143,7 @@ async function displayPageFor(position) {
             }
             updatePositionInput(getPositionPercentage(page.start, page.end))
             updatePagesLeft()
+            initializeMode()
             // check if overflow is triggerred on every page display
             scrollNecessaryPromise(content).then(scrollNecessary => {
                 if (scrollNecessary) {
@@ -390,11 +391,20 @@ function setUiColors(foreground, background) {
 }
 
 function initializeMode() {
-    let darkModeOn = getSetting(SETTING_DARK_MODE)
-    if (darkModeOn) {
+    let bookMode = getSetting(SETTING_BOOK_MODE)
+    if (bookMode == 0) {
         setDarkMode()
-    } else {
+    } else if (bookMode == 2) {
         setLightMode()
+    } else {
+        let dayStart = timeStringToDate(getSetting(SETTING_DAY_START))
+        let dayEnd = timeStringToDate(getSetting(SETTING_DAY_END))
+        let now = new Date()
+        if (now < dayStart || dayEnd < now) {
+            setDarkMode()
+        } else {
+            setLightMode()
+        }
     }
 }
 
@@ -529,7 +539,7 @@ function saveCache() {
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE))
+    appendAll(settingsWrapper, getSettingController(SETTING_BOOK_MODE))
     appendAll(settingsWrapper, getSettingController(SETTING_BOOK_ZOOM))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_PAGE))
     appendAll(settingsWrapper, getSettingController(SETTING_SWIPE_VERTICAL_THRESHOLD))
@@ -538,7 +548,7 @@ function initSettings() {
     appendAll(settingsWrapper, getSettingController(SETTING_DARK_MODE_FOREGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_BACKGROUND))
     appendAll(settingsWrapper, getSettingController(SETTING_LIGHT_MODE_FOREGROUND))
-    addSettingListener(SETTING_DARK_MODE, initializeMode)
+    addSettingListener(SETTING_BOOK_MODE, initializeMode)
     addSettingListener(SETTING_DARK_MODE_BACKGROUND, initializeMode)
     addSettingListener(SETTING_DARK_MODE_FOREGROUND, initializeMode)
     addSettingListener(SETTING_LIGHT_MODE_BACKGROUND, initializeMode)
@@ -581,6 +591,9 @@ window.onload = function() {
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
     initializeMode()
+    window.addEventListener("focus", function(event) {
+        initializeMode()
+    }, false)
     setZoom(getSetting(SETTING_BOOK_ZOOM), false)
     loadCache()
 

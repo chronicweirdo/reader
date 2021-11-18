@@ -56,6 +56,17 @@
             if (updateStatusBarForMorePage) updateStatusBarForMorePage()
         }
 
+        function setDaySettingsStatus() {
+            let bookMode = getSetting(SETTING_BOOK_MODE)
+            if (bookMode == 1) {
+                document.getElementsByName(SETTING_DAY_START)[0].disabled = false
+                document.getElementsByName(SETTING_DAY_END)[0].disabled = false
+            } else {
+                document.getElementsByName(SETTING_DAY_START)[0].disabled = true
+                document.getElementsByName(SETTING_DAY_END)[0].disabled = true
+            }
+        }
+
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
@@ -66,6 +77,11 @@
             if (onIOS()) {
                 appendAll(settingsWrapper, getSettingController(SETTING_DESIRED_STATUS_BAR_LUMINANCE))
             }
+            appendAll(settingsWrapper, getSettingController(SETTING_BOOK_MODE))
+            addSettingListener(SETTING_BOOK_MODE, setDaySettingsStatus)
+            appendAll(settingsWrapper, getSettingController(SETTING_DAY_START))
+            appendAll(settingsWrapper, getSettingController(SETTING_DAY_END))
+            setDaySettingsStatus()
         }
 
         function rescan() {
