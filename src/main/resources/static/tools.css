@@ -233,8 +233,8 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
-    max-width: 100%;
-    display: grid;
+    max-width: 500px;
+    display: inline-grid;
     grid-template-columns: 58% 40%;
     row-gap: 15px;
     column-gap: 2%;
@@ -246,13 +246,9 @@
     font-size: 1.5rem;
 }
 
-/*#ch_tools.right #ch_settings {
-    justify-items: end;
-}*/
-
-/*#ch_settings label:after {
-    content: ": "
-}*/
+#ch_tools.right #ch_settings {
+    text-align: right;
+}
 
 #ch_settings input {
     height: 3vh;

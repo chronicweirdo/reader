@@ -269,7 +269,7 @@ function toggleSettings() {
     let settings = document.getElementById('ch_settings')
     if (settings) {
         if (window.getComputedStyle(settings).display == 'none') {
-            settings.style.display = 'grid'
+            settings.style.display = 'inline-grid'
         } else {
             settings.style.display = 'none'
         }
