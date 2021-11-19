@@ -320,6 +320,40 @@ function loadLatestRead() {
     xhttp.send()
 }
 
+function loadLatestAdded() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var books = JSON.parse(this.responseText)
+                if (books.length > 0) {
+                    let bookIds = []
+                    var collectionContainer = document.getElementById("ch_latestAdded")
+                    for (var i = 0; i < books.length; i++) {
+                        var book = books[i]
+                        bookIds.push(book.id)
+
+                        if (collectionContainer != null) {
+                            collectionContainer.appendChild(getBookHtml(book))
+                        }
+                    }
+                    document.getElementById("ch_latestAddedTitle").style.display = "block"
+                    collectionContainer.style.display = "grid"
+                    cleanupBookPages(bookIds)
+                } else {
+                    document.getElementById("ch_latestAdded").style.display = "none"
+                    document.getElementById("ch_latestAddedTitle").style.display = "none"
+                }
+            }
+        }
+    }
+    let latestAddedLimit = SETTING_LATEST_ADDED_LIMIT.get()
+    if (latestAddedLimit > 0) {
+        xhttp.open("GET", "latestAdded?limit=" + latestAddedLimit)
+        xhttp.send()
+    }
+}
+
 function setToOfflineMode() {
     let search = getSearch()
     if (search) {
@@ -480,6 +514,7 @@ window.onload = function() {
     } else {
         loadLatestRead()
     }
+    loadLatestAdded()
 
     var searchParameter = getSearchUrlParameter()
     if (searchParameter != null) {

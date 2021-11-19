@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.service
 
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 import com.cacoveanu.reader.entity.{Book, Content, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil}
@@ -15,6 +15,7 @@ import scala.beans.BeanProperty
 import com.cacoveanu.reader.util.SeqUtil.AugmentedSeq
 import org.springframework.scheduling.annotation.Scheduled
 
+import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 import java.util.Date
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -134,6 +135,17 @@ class ScannerService {
     "/" + collectionPath.toString.replaceAll("\\\\", "/")
   }
 
+  private def getFileCreationDate(path: String): Date = {
+    try {
+      val pathObject = Paths.get(path)
+      val attributes: BasicFileAttributes = Files.readAttributes(pathObject, classOf[BasicFileAttributes])
+      val creationTime: FileTime = attributes.creationTime()
+      new Date(creationTime.toMillis)
+    } catch {
+      case _: Throwable => new Date()
+    }
+  }
+
   private[service] def scanCbr(path: String): Option[Book] = {
     try {
       val title = FileUtil.getFileName(path)
@@ -144,7 +156,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -166,7 +178,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -188,7 +200,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -219,7 +231,7 @@ class ScannerService {
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size)
+          val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava

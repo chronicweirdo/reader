@@ -2,6 +2,7 @@ package com.cacoveanu.reader.entity
 
 import com.cacoveanu.reader.util.EpubUtil
 
+import java.util.Date
 import scala.jdk.CollectionConverters._
 import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, OneToMany, Transient}
 
@@ -28,14 +29,7 @@ class Book {
 
   var size: Int = _
 
-  //var tocLink: String = _
-
-  /*@OneToMany(fetch = FetchType.EAGER, cascade = Array(CascadeType.ALL))
-  @JoinColumn(name = "book_id")
-  var toc: java.util.List[TocEntry] = _*/
-
-  /*@Transient
-  def getSections(): Seq[TocEntry] = EpubUtil.getSections(toc.asScala.toSeq)*/
+  var added: Date = _
 
   @OneToMany(fetch = FetchType.LAZY, cascade = Array(CascadeType.ALL))
   @JoinColumn(name = "book_id")
@@ -49,7 +43,7 @@ class Book {
   @JoinColumn(name = "book_id")
   var toc: java.util.List[BookTocEntry] = _
 
-  def this(path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int) = {
+  def this(path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
     this()
     this.path = path
     this.title = title
@@ -58,5 +52,6 @@ class Book {
     this.mediaType = mediaType
     this.cover = cover
     this.size = size
+    this.added = added
   }
 }
