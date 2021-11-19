@@ -70,18 +70,21 @@
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
-            appendAll(settingsWrapper, SETTING_LATEST_READ_LIMIT)
-            appendAll(settingsWrapper, SETTING_ACCENT_COLOR)
-            appendAll(settingsWrapper, SETTING_FOREGROUND_COLOR)
-            appendAll(settingsWrapper, SETTING_BACKGROUND_COLOR)
+            settingsWrapper.appendChild(SETTING_LATEST_READ_LIMIT.controller)
+            settingsWrapper.appendChild(SETTING_ACCENT_COLOR.controller)
+            settingsWrapper.appendChild(SETTING_FOREGROUND_COLOR.controller)
+            settingsWrapper.appendChild(SETTING_BACKGROUND_COLOR.controller)
             if (onIOS()) {
-                appendAll(settingsWrapper, SETTING_DESIRED_STATUS_BAR_LUMINANCE)
+                settingsWrapper.appendChild(SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller)
             }
-            appendAll(settingsWrapper, SETTING_BOOK_MODE)
+            settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
             SETTING_BOOK_MODE.addListener(setDaySettingsStatus)
-            appendAll(settingsWrapper, SETTING_DAY_START)
-            appendAll(settingsWrapper, SETTING_DAY_END)
+            settingsWrapper.appendChild(SETTING_DAY_START.controller)
+            settingsWrapper.appendChild(SETTING_DAY_END.controller)
             setDaySettingsStatus()
+            let settingsInPage = Array.from(document.getElementsByClassName('setting'))
+            let maxWidth = Math.max(...settingsInPage.map(s => s.offsetWidth))
+            settingsInPage.forEach(s => s.style.width = maxWidth + "px")
         }
 
         function rescan() {

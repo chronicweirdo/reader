@@ -55,6 +55,11 @@ function percentageToString(percentage) {
 }
 
 function createColorController(setting) {
+    let label = document.createElement('label')
+    label.htmlFor = setting.name
+    label.innerHTML = setting.textName
+    setting.label = label
+
     let input = document.createElement('input')
     input.type = 'color'
     input.name = setting.name
@@ -64,21 +69,27 @@ function createColorController(setting) {
     input.onchange = function(event) {
         setting.put(event.target.value)
     }
-    return input
-}
+    setting.input = input
 
-function getSettingTextValue(settingName) {
-    let value = get(settingName)
-    if (settingTextValueConverters[settingName]) {
-        return settingTextValueConverters[settingName](value)
-    } else {
-        return value
-    }
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    /*controller.style.display = 'grid'
+    controller.style.width = 'fit-content'
+    controller.style.gridTemplateColumns = 'auto auto'*/
+    /*input.style.justifySelf = 'right'*/
+    controller.appendChild(label)
+    controller.appendChild(input)
+    return controller
 }
 
 function createNumberController(min, max, step) {
 
     return function(setting) {
+        let label = document.createElement('label')
+        label.htmlFor = setting.name
+        label.innerHTML = setting.textName
+        setting.label = label
+
         let input = document.createElement('input')
         input.type = 'range'
         input.name = setting.name
@@ -86,6 +97,7 @@ function createNumberController(min, max, step) {
         input.max = max
         input.step = step
         input.value = setting.get()
+        setting.input = input
 
         // <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
         let output = document.createElement('output')
@@ -99,16 +111,33 @@ function createNumberController(min, max, step) {
             setting.output.value = setting.getTextValue()
         }, false)
 
-        //let span = document.createElement('span')
-        //span.style.position = "relative"
-        //span.appendChild(input)
-        //span.appendChild(output)
-        //return span
-        return input
+        let controller = document.createElement('div')
+        controller.classList.add('setting')
+        /*controller.style.display = 'grid'
+        controller.style.width = 'fit-content'
+        controller.style.gridTemplateColumns = 'auto auto'*/
+
+        /*
+        grid-column-start: 1;
+        grid-column-end: 3;
+        */
+        input.style.gridColumnStart = '1'
+        input.style.gridColumnEnd = '3'
+        input.style.justifySelf = 'auto'
+        /*output.style.justifySelf = 'right'*/
+        controller.appendChild(label)
+        controller.appendChild(output)
+        controller.appendChild(input)
+        return controller
     }
 }
 
 function createBooleanController(setting) {
+    let label = document.createElement('label')
+    label.htmlFor = setting.name
+    label.innerHTML = setting.textName
+    setting.label = label
+
     let input = document.createElement('input')
     input.type = 'checkbox'
     input.name = setting.name
@@ -116,10 +145,25 @@ function createBooleanController(setting) {
     input.onchange = function(event) {
         setting.put(event.target.value)
     }
-    return input
+    setting.input = input
+
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    /*controller.style.display = 'grid'
+    controller.style.width = 'fit-content'
+    controller.style.gridTemplateColumns = 'auto auto'*/
+    /*input.style.justifySelf = 'right'*/
+    controller.appendChild(label)
+    controller.appendChild(input)
+    return controller
 }
 
 function createTimeController(setting) {
+    let label = document.createElement('label')
+    label.htmlFor = setting.name
+    label.innerHTML = setting.textName
+    setting.label = label
+
     let input = document.createElement('input')
     input.type = 'time'
     input.name = setting.name
@@ -128,7 +172,17 @@ function createTimeController(setting) {
     input.onchange = function(event) {
         setting.put(event.target.value)
     }
-    return input
+    setting.input = input
+
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    /*controller.style.display = 'grid'
+    controller.style.width = 'fit-content'
+    controller.style.gridTemplateColumns = 'auto auto'*/
+    /*input.style.justifySelf = 'right'*/
+    controller.appendChild(label)
+    controller.appendChild(input)
+    return controller
 }
 
 function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
@@ -138,7 +192,6 @@ function Setting(name, textName, defaultValue, parser, textValueFunction, create
     this.textValueFunction = textValueFunction
     this.textName = textName
     this.controller = createControllerFunction(this)
-    this.label = this.createLabel()
 }
 
 Setting.prototype.get = function() {
@@ -176,12 +229,12 @@ Setting.prototype.addListener = function(listener) {
     this.listeners.push(listener)
 }
 
-Setting.prototype.createLabel = function() {
+/*Setting.prototype.createLabel = function() {
     let label = document.createElement('label')
     label.htmlFor = this.name
     label.innerHTML = this.textName
     return label
-}
+}*/
 
 // function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
 var SETTING_DARK_MODE_BACKGROUND = new Setting("dark_mode_background", "dark mode background", "#000000", null, null, createColorController)

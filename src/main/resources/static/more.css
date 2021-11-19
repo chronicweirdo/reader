@@ -34,13 +34,23 @@ h2 {
     background-color: var(--accent-color, gold);
     padding-bottom: 1em;
 }
-.settings {
+.setting {
     display: grid;
-    align-items: top;
-    justify-items: left;
-    row-gap: .5em;
-    grid-template-columns: 4fr 2fr 1fr;
-    max-width: fit-content;
+    width: fit-content;
+    grid-template-columns: auto auto;
+    margin-bottom: .5em;
+    /*border-bottom: 1px solid var(--foreground-color, black);*/
+    padding: .5em;
+    align-items: center;
+}
+/*.setting:last-child {
+    border: none;
+}*/
+.setting label {
+    margin-right: 1em;
+}
+.setting input, .setting output {
+    justify-self: right;
 }
 p.history {
     display: grid;

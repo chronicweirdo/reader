@@ -294,6 +294,7 @@ function toggleSettings() {
     }
 }
 
+// to remove?
 function appendAll(parent, children) {
     if (children instanceof Setting) {
         parent.appendChild(children.label)
