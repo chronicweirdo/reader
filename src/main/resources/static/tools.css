@@ -325,6 +325,7 @@
     position: relative;
     padding: 0;
     display: inline-block;
+    max-width: 100%;
 }
 #ch_cover #saved {
     position: absolute;
