@@ -185,7 +185,7 @@ function getEndOfCollection() {
     return document.getElementById(FIN_ID) != null
 }
 
-function removeExistingBooks() {
+function removeExistingBooks(hideLatestAdded) {
     let collections = document.getElementsByClassName(COLLECTION_CONTAINER_CLASS)
     while (collections.length > 0) {
         document.body.removeChild(collections.item(0))
@@ -197,6 +197,13 @@ function removeExistingBooks() {
     let fin = document.getElementById(FIN_ID)
     if (fin != null) {
         document.body.removeChild(fin)
+    }
+    if (hideLatestAdded || document.getElementById("ch_latestAdded").childNodes.length == 0) {
+        document.getElementById("ch_latestAdded").style.display = "none"
+        document.getElementById("ch_latestAddedTitle").style.display = "none"
+    } else {
+        document.getElementById("ch_latestAdded").style.display = "grid"
+        document.getElementById("ch_latestAddedTitle").style.display = "block"
     }
 }
 
@@ -239,7 +246,7 @@ function triggerSearch(text) {
 }
 
 function searchForTerm() {
-    removeExistingBooks()
+    removeExistingBooks(getTerm() != "")
     setCurrentPage(-1)
     loadNextPage(loadUntilPageFull)
 }
