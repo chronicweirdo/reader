@@ -82,9 +82,7 @@
             settingsWrapper.appendChild(SETTING_DAY_START.controller)
             settingsWrapper.appendChild(SETTING_DAY_END.controller)
             setDaySettingsStatus()
-            let settingsInPage = Array.from(document.getElementsByClassName('setting'))
-            let maxWidth = Math.max(...settingsInPage.map(s => s.offsetWidth))
-            settingsInPage.forEach(s => s.style.width = maxWidth + "px")
+            alignSettingWidths()
         }
 
         function rescan() {

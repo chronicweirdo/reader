@@ -287,7 +287,8 @@ function toggleSettings() {
     let settings = document.getElementById('ch_settings')
     if (settings) {
         if (window.getComputedStyle(settings).display == 'none') {
-            settings.style.display = 'inline-grid'
+            settings.style.display = 'inline-block'
+            //alignSettingWidths()
         } else {
             settings.style.display = 'none'
         }
@@ -338,7 +339,12 @@ function getRemoveProgressButton() {
     }
 
     button.onclick = confirmationRequestFunction
-    return [label, button]
+
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    controller.appendChild(label)
+    controller.appendChild(button)
+    return controller
 }
 
 function getMarkAsReadButton() {
@@ -363,7 +369,11 @@ function getMarkAsReadButton() {
     }
 
     button.onclick = confirmationRequestFunction
-    return [label, button]
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    controller.appendChild(label)
+    controller.appendChild(button)
+    return controller
 }
 
 function getBookId(bookPagesKey) {

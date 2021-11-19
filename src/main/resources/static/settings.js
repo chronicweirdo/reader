@@ -17,7 +17,11 @@ then, in the UI we grab the textValue, the textName and the controller, we regis
 
 
 
-
+function alignSettingWidths() {
+    let settingsInPage = Array.from(document.getElementsByClassName('setting'))
+    let maxWidth = Math.max(...settingsInPage.map(s => s.offsetWidth))
+    settingsInPage.forEach(s => s.style.width = maxWidth + "px")
+}
 
 function parseBoolean(value) {
     return value == 'true'
@@ -262,5 +266,5 @@ var SETTING_DAY_START = new Setting("day_start", "day start", "07:00", parseTime
 var SETTING_DAY_END = new Setting("day_end", "day end", "22:00", parseTime, null, createTimeController)
 var SETTING_BOOK_MODE = new Setting("book_mode", "book mode", "1", parseInt, bookModeToString, createNumberController(0, 2, 1))
 var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "book edge horizontal", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.2, 0.05))
-var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "book edge horizontal", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
+var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "book edge vertical", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
 var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "book tools height", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))

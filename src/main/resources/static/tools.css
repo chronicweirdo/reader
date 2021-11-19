@@ -232,8 +232,8 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
-    display: inline-grid;
-    grid-template-columns: 4fr 2fr 1fr;
+    display: inline-block;
+    grid-template-columns: auto;
     row-gap: 15px;
     column-gap: 2%;
     padding: 8px;
@@ -259,9 +259,9 @@
     width: 3vh;
 }
 
-#ch_settings input[type=range] {
+/*#ch_settings input[type=range] {
     width: 20vw;
-}
+}*/
 
 #ch_settings span, #ch_settings label {
     max-width: 100%;
@@ -280,6 +280,23 @@
     color: orangered;
     padding-top: 1em;
     padding-bottom: 1em;
+}
+
+.setting {
+    display: grid;
+    width: fit-content;
+    grid-template-columns: auto auto;
+    margin-bottom: .5em;
+    padding: .5em;
+    align-items: center;
+    max-width: 90%;
+}
+.setting label {
+    margin-right: 1em;
+    text-align: left;
+}
+.setting input, .setting output {
+    justify-self: right;
 }
 
 #ch_tools > p > input {

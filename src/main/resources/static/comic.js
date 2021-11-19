@@ -458,28 +458,32 @@ function getDownloadPageButton() {
     button.id = 'downloadPageButton'
     button.innerHTML = 'download'
 
-    return [label, button]
+    let controller = document.createElement('div')
+    controller.classList.add('setting')
+    controller.appendChild(label)
+    controller.appendChild(button)
+    return controller
 }
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    appendAll(settingsWrapper, getDownloadPageButton())
-    appendAll(settingsWrapper, SETTING_COMIC_HORIZONTAL_JUMP)
-    appendAll(settingsWrapper, SETTING_COMIC_VERTICAL_JUMP)
-    appendAll(settingsWrapper, SETTING_COMIC_ROW_THRESHOLD)
-    appendAll(settingsWrapper, SETTING_COMIC_COLUMN_THRESHOLD)
-    appendAll(settingsWrapper, SETTING_COMIC_INVERT_SCROLL)
-    appendAll(settingsWrapper, SETTING_COMIC_SCROLL_SPEED)
-    appendAll(settingsWrapper, SETTING_COMIC_PAN_SPEED)
-    appendAll(settingsWrapper, SETTING_SWIPE_PAGE)
-    appendAll(settingsWrapper, SETTING_SWIPE_VERTICAL_THRESHOLD)
-    appendAll(settingsWrapper, SETTING_SWIPE_LENGTH)
-    appendAll(settingsWrapper, SETTING_BOOK_EDGE_HORIZONTAL)
-    appendAll(settingsWrapper, SETTING_BOOK_TOOLS_HEIGHT)
+    settingsWrapper.appendChild(getDownloadPageButton())
+    settingsWrapper.appendChild(SETTING_COMIC_HORIZONTAL_JUMP.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_VERTICAL_JUMP.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_ROW_THRESHOLD.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_COLUMN_THRESHOLD.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_INVERT_SCROLL.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_SCROLL_SPEED.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_PAN_SPEED.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_VERTICAL_THRESHOLD.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
+    settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
+    settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
     SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(fixControlSizes, 1000))
     SETTING_BOOK_TOOLS_HEIGHT.addListener(fixControlSizes)
-    appendAll(settingsWrapper, getRemoveProgressButton())
-    appendAll(settingsWrapper, getMarkAsReadButton())
+    settingsWrapper.appendChild(getRemoveProgressButton())
+    settingsWrapper.appendChild(getMarkAsReadButton())
 }
 
 window.onload = function() {

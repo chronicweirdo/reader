@@ -540,18 +540,22 @@ function saveCache() {
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    appendAll(settingsWrapper, SETTING_BOOK_MODE)
-    appendAll(settingsWrapper, SETTING_BOOK_ZOOM)
-    appendAll(settingsWrapper, SETTING_SWIPE_PAGE)
-    appendAll(settingsWrapper, SETTING_SWIPE_VERTICAL_THRESHOLD)
-    appendAll(settingsWrapper, SETTING_SWIPE_LENGTH)
-    appendAll(settingsWrapper, SETTING_DARK_MODE_BACKGROUND)
-    appendAll(settingsWrapper, SETTING_DARK_MODE_FOREGROUND)
-    appendAll(settingsWrapper, SETTING_LIGHT_MODE_BACKGROUND)
-    appendAll(settingsWrapper, SETTING_LIGHT_MODE_FOREGROUND)
-    appendAll(settingsWrapper, SETTING_BOOK_EDGE_HORIZONTAL)
-    appendAll(settingsWrapper, SETTING_BOOK_EDGE_VERTICAL)
-    appendAll(settingsWrapper, SETTING_BOOK_TOOLS_HEIGHT)
+    settingsWrapper.appendChild(SETTING_BOOK_ZOOM.controller)
+
+    settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
+    settingsWrapper.appendChild(SETTING_DARK_MODE_BACKGROUND.controller)
+    settingsWrapper.appendChild(SETTING_DARK_MODE_FOREGROUND.controller)
+    settingsWrapper.appendChild(SETTING_LIGHT_MODE_BACKGROUND.controller)
+    settingsWrapper.appendChild(SETTING_LIGHT_MODE_FOREGROUND.controller)
+
+    settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
+    settingsWrapper.appendChild(SETTING_BOOK_EDGE_VERTICAL.controller)
+    settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
+
+    settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_VERTICAL_THRESHOLD.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
+
     SETTING_BOOK_MODE.addListener(initializeMode)
     SETTING_DARK_MODE_BACKGROUND.addListener(initializeMode)
     SETTING_DARK_MODE_FOREGROUND.addListener(initializeMode)
@@ -561,8 +565,9 @@ function initSettings() {
     SETTING_BOOK_EDGE_VERTICAL.addListener(() => setTimeout(handleResize, 1000))
     SETTING_BOOK_TOOLS_HEIGHT.addListener(handleResize)
     SETTING_BOOK_ZOOM.addListener(setZoom)
-    appendAll(settingsWrapper, getRemoveProgressButton())
-    appendAll(settingsWrapper, getMarkAsReadButton())
+
+    settingsWrapper.appendChild(getRemoveProgressButton())
+    settingsWrapper.appendChild(getMarkAsReadButton())
 }
 
 window.onload = function() {
