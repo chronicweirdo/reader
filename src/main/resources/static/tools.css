@@ -232,8 +232,8 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
-    display: inline-block;
-    grid-template-columns: auto;
+    display: inline-flex;
+    flex-direction: column;
     row-gap: 15px;
     column-gap: 2%;
     padding: 8px;
@@ -284,7 +284,7 @@
 
 .setting {
     display: grid;
-    width: fit-content;
+    /*width: fit-content;*/
     grid-template-columns: auto auto;
     margin-bottom: .5em;
     padding: .5em;

@@ -34,9 +34,13 @@ h2 {
     background-color: var(--accent-color, gold);
     padding-bottom: 1em;
 }
+.settings {
+    display: inline-flex;
+    flex-direction: column;
+}
 .setting {
     display: grid;
-    width: fit-content;
+    /*width: fit-content;*/
     grid-template-columns: auto auto;
     margin-bottom: .5em;
     /*border-bottom: 1px solid var(--foreground-color, black);*/
