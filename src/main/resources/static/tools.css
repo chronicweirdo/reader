@@ -109,7 +109,8 @@
 #ch_tools > h1 {
     font-weight: bold;
     font-size: 1.2em;
-    padding: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
 }
 #ch_tools > *:first-child {
     margin-top: 0.2em;
@@ -131,6 +132,11 @@
 }
 #ch_tools > p > *:first-child {
     margin-left: 0;
+    padding-left: 0;
+}
+#ch_tools > p > *:last-child {
+    margin-right: 0;
+    padding-right: 0;
 }
 #ch_tools > p > span {
     color: var(--background-color, white);
@@ -232,21 +238,10 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
-    display: inline-block;
+    align-items: stretch;
     flex-direction: column;
-    row-gap: 15px;
-    column-gap: 2%;
-    padding: 8px;
     display: none;
     align-items: center;
-    justify-items: left;
-    font-size: 0.8em;
-    max-width: fit-content;
-}
-
-#ch_tools.right #ch_settings {
-    text-align: right;
-    justify-items: right;
 }
 
 #ch_settings input {
@@ -257,10 +252,6 @@
 #ch_settings input[type=checkbox] {
     width: 3vh;
 }
-
-/*#ch_settings input[type=range] {
-    width: 20vw;
-}*/
 
 #ch_settings span, #ch_settings label {
     max-width: 100%;
@@ -283,9 +274,7 @@
     display: grid;
     grid-template-columns: auto auto;
     margin-bottom: .5em;
-    padding: .5em;
     align-items: center;
-    max-width: 90%;
 }
 .setting label {
     margin-right: 1em;

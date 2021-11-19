@@ -283,13 +283,16 @@ function addPositionInputTriggerListener(loadPositionFunction) {
     })
 }
 
-function toggleSettings() {
+function toggleSettings(button) {
     let settings = document.getElementById('ch_settings')
     if (settings) {
         if (window.getComputedStyle(settings).display == 'none') {
-            settings.style.display = 'inline-block'
+            settings.style.display = 'inline-flex'
+            settings.style.alignItems = 'stretch'
+            button.innerHTML = "hide settings"
         } else {
             settings.style.display = 'none'
+            button.innerHTML = "show settings"
         }
     }
 }
