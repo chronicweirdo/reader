@@ -70,17 +70,17 @@
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
-            appendAll(settingsWrapper, [SETTING_LATEST_READ_LIMIT.label, SETTING_LATEST_READ_LIMIT.controller])
-            appendAll(settingsWrapper, [SETTING_ACCENT_COLOR.label, SETTING_ACCENT_COLOR.controller])
-            appendAll(settingsWrapper, [SETTING_FOREGROUND_COLOR.label, SETTING_FOREGROUND_COLOR.controller])
-            appendAll(settingsWrapper, [SETTING_BACKGROUND_COLOR.label, SETTING_BACKGROUND_COLOR.controller])
+            appendAll(settingsWrapper, SETTING_LATEST_READ_LIMIT)
+            appendAll(settingsWrapper, SETTING_ACCENT_COLOR)
+            appendAll(settingsWrapper, SETTING_FOREGROUND_COLOR)
+            appendAll(settingsWrapper, SETTING_BACKGROUND_COLOR)
             if (onIOS()) {
-                appendAll(settingsWrapper, [SETTING_DESIRED_STATUS_BAR_LUMINANCE.label, SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller])
+                appendAll(settingsWrapper, SETTING_DESIRED_STATUS_BAR_LUMINANCE)
             }
-            appendAll(settingsWrapper, [SETTING_BOOK_MODE.label, SETTING_BOOK_MODE.controller])
+            appendAll(settingsWrapper, SETTING_BOOK_MODE)
             SETTING_BOOK_MODE.addListener(setDaySettingsStatus)
-            appendAll(settingsWrapper, [SETTING_DAY_START.label, SETTING_DAY_START.controller])
-            appendAll(settingsWrapper, [SETTING_DAY_END.label, SETTING_DAY_END.controller])
+            appendAll(settingsWrapper, SETTING_DAY_START)
+            appendAll(settingsWrapper, SETTING_DAY_END)
             setDaySettingsStatus()
         }
 

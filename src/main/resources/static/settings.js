@@ -77,15 +77,6 @@ function getSettingTextValue(settingName) {
 }
 
 function createNumberController(min, max, step) {
-    function styleOutput(input, output) {
-        let val = input.value
-        let min = input.min ? input.min : 0
-        let max = input.max ? input.max : 100
-        let newVal = Number(((val - min) * 100) / (max - min))
-
-        output.style.left = newVal + "%"
-        output.style.transform = "translate(-" + newVal + "%, -50%)"
-    }
 
     return function(setting) {
         let input = document.createElement('input')
@@ -98,23 +89,22 @@ function createNumberController(min, max, step) {
 
         // <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
         let output = document.createElement('output')
-        output.style.position = "absolute"
-        output.style.lineBreak = "strict"
+        output.style.marginLeft = "10px"
         output.htmlFor = setting.name
         output.value = setting.getTextValue()
-        styleOutput(input, output)
+        setting.output = output
 
         input.addEventListener('input', function(event) {
             setting.put(event.target.value)
-            output.value = setting.getTextValue()
-            styleOutput(input, output)
+            setting.output.value = setting.getTextValue()
         }, false)
 
-        let span = document.createElement('span')
-        span.style.position = "relative"
-        span.appendChild(input)
-        span.appendChild(output)
-        return span
+        //let span = document.createElement('span')
+        //span.style.position = "relative"
+        //span.appendChild(input)
+        //span.appendChild(output)
+        //return span
+        return input
     }
 }
 

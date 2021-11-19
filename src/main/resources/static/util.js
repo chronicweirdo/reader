@@ -298,6 +298,11 @@ function appendAll(parent, children) {
     if (children instanceof Setting) {
         parent.appendChild(children.label)
         parent.appendChild(children.controller)
+        if (children.output) {
+            parent.appendChild(children.output)
+        } else {
+            parent.appendChild(document.createElement('span'))
+        }
     } else if (children) {
         for (let i = 0; i < children.length; i++) {
             parent.appendChild(children[i])

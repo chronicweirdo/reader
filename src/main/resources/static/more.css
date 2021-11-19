@@ -34,16 +34,13 @@ h2 {
     background-color: var(--accent-color, gold);
     padding-bottom: 1em;
 }
-p.settings {
+.settings {
     display: grid;
     align-items: top;
     justify-items: left;
     row-gap: .5em;
-    grid-template-columns: 1fr 1fr;
-    width: 750px;
-}
-p.settings input {
-    justify-self: right;
+    grid-template-columns: 4fr 2fr 1fr;
+    max-width: fit-content;
 }
 p.history {
     display: grid;
@@ -60,9 +57,6 @@ span.header {
     font-weight: bold;
 }
 @media all and (max-width: 799px) {
-    p.settings {
-        width: auto;
-    }
     p.history {
         grid-template-columns: 1fr;
         justify-items: stretch;
@@ -107,15 +101,20 @@ a {
     text-decoration: underline;
     cursor: pointer;
 }
-/*label:after {
+label:after {
     content: ": "
-}*/
+}
 input {
     height: 3vh;
     vertical-align: middle;
+    border: 2px solid var(--foreground-color, white);
 }
 input[type=checkbox] {
     width: 3vh;
+}
+input[type=time] {
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
 }
 
 ul.tree {

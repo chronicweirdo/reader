@@ -71,7 +71,7 @@
 #ch_tools {
     display: block;
     bottom: 0;
-    font-size: 3vh;
+    font-size: 2rem;
     font-family: 'Roboto', sans-serif;
     color: var(--background-color, white);
     overflow-y: auto;
@@ -81,7 +81,6 @@
     max-height: 100%;
     position: fixed;
     width: 80%;
-    line-break: anywhere;
 }
 /* Hide scrollbar for Chrome, Safari and Opera */
 #ch_tools::-webkit-scrollbar {
@@ -233,41 +232,48 @@
 
 /* ----------------------------------------------------------- position start */
 #ch_settings {
-    max-width: 500px;
     display: inline-grid;
-    grid-template-columns: 58% 40%;
+    grid-template-columns: 4fr 2fr 1fr;
     row-gap: 15px;
     column-gap: 2%;
     padding: 8px;
     display: none;
     align-items: center;
-    justify-items: start;
+    justify-items: left;
     border: 4px dotted var(--foreground-color, black);
-    font-size: 1.5rem;
+    font-size: 0.8em;
+    max-width: fit-content;
 }
 
 #ch_tools.right #ch_settings {
     text-align: right;
+    justify-items: right;
 }
 
 #ch_settings input {
     height: 3vh;
     max-width: 100%;
-    justify-self: right;
 }
 
 #ch_settings input[type=checkbox] {
     width: 3vh;
 }
 
+#ch_settings input[type=range] {
+    width: 20vw;
+}
+
 #ch_settings span, #ch_settings label {
     max-width: 100%;
+}
+
+#ch_settings label:after {
+    content: ": "
 }
 
 #ch_settings a {
     color: var(--accent-color, gold);
     text-decoration: none;
-    justify-self: right;
 }
 
 #ch_settings a.critical {

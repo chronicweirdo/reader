@@ -513,7 +513,8 @@ function displayPageForTocEntry(entry) {
 }
 
 function setZoom(zoom, withResize = true) {
-    document.body.style["font-size"] = zoom + "em"
+    document.getElementById("content").style["font-size"] = zoom + "rem"
+    //document.body.style["font-size"] = zoom + "em"
     if (withResize) handleResize()
 }
 
