@@ -268,3 +268,4 @@ var SETTING_BOOK_MODE = new Setting("book_mode", "book mode", "1", parseInt, boo
 var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "book edge horizontal", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.2, 0.05))
 var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "book edge vertical", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
 var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "book tools height", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))
+var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "overlay transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))

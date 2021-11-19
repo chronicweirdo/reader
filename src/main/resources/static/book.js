@@ -551,6 +551,7 @@ function initSettings() {
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_VERTICAL.controller)
     settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
+    settingsWrapper.appendChild(SETTING_OVERLAY_TRANSPARENCY.controller)
 
     settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
     settingsWrapper.appendChild(SETTING_SWIPE_VERTICAL_THRESHOLD.controller)
@@ -565,6 +566,7 @@ function initSettings() {
     SETTING_BOOK_EDGE_VERTICAL.addListener(() => setTimeout(handleResize, 1000))
     SETTING_BOOK_TOOLS_HEIGHT.addListener(handleResize)
     SETTING_BOOK_ZOOM.addListener(setZoom)
+    SETTING_OVERLAY_TRANSPARENCY.addListener(initAlpha)
 
     settingsWrapper.appendChild(getRemoveProgressButton())
     settingsWrapper.appendChild(getMarkAsReadButton())
@@ -603,6 +605,7 @@ window.onload = function() {
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
     initializeMode()
+    initAlpha()
     window.addEventListener("focus", function(event) {
         initializeMode()
     }, false)

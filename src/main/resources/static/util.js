@@ -288,7 +288,6 @@ function toggleSettings() {
     if (settings) {
         if (window.getComputedStyle(settings).display == 'none') {
             settings.style.display = 'inline-block'
-            //alignSettingWidths()
         } else {
             settings.style.display = 'none'
         }
@@ -551,4 +550,16 @@ function getAppropriateStatusBarColor(originalColor) {
     let newColor = reduceLuminanceTo(rgb, SETTING_DESIRED_STATUS_BAR_LUMINANCE.get())
     let newColorHex = getHexCode(newColor)
     return newColorHex
+}
+
+function setBackgroundAlphaOnElement(element, alpha) {
+    let colorComponents = [...getComputedStyle(element).backgroundColor.matchAll(/\d+\.?\d*/g)]
+    if (colorComponents.length == 3 || colorComponents.length == 4) {
+        element.style.backgroundColor = "rgb(" + colorComponents[0] + ", " + colorComponents[1] + ", " + colorComponents[2] + ", " + alpha + ")"
+    }
+}
+
+function initAlpha() {
+    setBackgroundAlphaOnElement(document.getElementById('ch_tools_container'), SETTING_OVERLAY_TRANSPARENCY.get())
+    setBackgroundAlphaOnElement(document.getElementById('ch_spinner'), SETTING_OVERLAY_TRANSPARENCY.get())
 }

@@ -479,8 +479,10 @@ function initSettings() {
     settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
     settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
+    settingsWrapper.appendChild(SETTING_OVERLAY_TRANSPARENCY.controller)
     SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(fixControlSizes, 1000))
     SETTING_BOOK_TOOLS_HEIGHT.addListener(fixControlSizes)
+    SETTING_OVERLAY_TRANSPARENCY.addListener(initAlpha)
     settingsWrapper.appendChild(getRemoveProgressButton())
     settingsWrapper.appendChild(getMarkAsReadButton())
 }
@@ -547,6 +549,7 @@ window.onload = function() {
     document.imageSettings = {}
     setZoom(1.0)
 
+    initAlpha()
     initSettings()
     initFullscreenButton()
     initBookCollectionLinks()
