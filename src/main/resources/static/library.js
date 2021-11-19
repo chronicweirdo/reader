@@ -514,6 +514,7 @@ window.onload = function() {
     } else {
         loadLatestRead()
     }
+    loadLatestAdded()
 
     var searchParameter = getSearchUrlParameter()
     if (searchParameter != null) {

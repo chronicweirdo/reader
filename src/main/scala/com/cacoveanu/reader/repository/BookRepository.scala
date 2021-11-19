@@ -31,6 +31,4 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   def findByIdNotIn(ids: java.util.List[java.lang.Long]): java.util.List[Book]
 
   def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
-
-  def findLatestAdded(pageable: Pageable): java.util.List[Book]
 }
