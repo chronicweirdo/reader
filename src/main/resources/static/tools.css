@@ -278,13 +278,10 @@
 
 #ch_settings a.critical {
     color: orangered;
-    padding-top: 1em;
-    padding-bottom: 1em;
 }
 
 .setting {
     display: grid;
-    /*width: fit-content;*/
     grid-template-columns: auto auto;
     margin-bottom: .5em;
     padding: .5em;

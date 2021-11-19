@@ -452,15 +452,14 @@ function downloadComicToDevice() {
 }
 
 function getDownloadPageButton() {
-    let label = document.createElement('span')
-    label.innerHTML = ""
     let button = document.createElement('a')
     button.id = 'downloadPageButton'
     button.innerHTML = 'download'
+    button.style.gridColumnStart = '1'
+    button.style.gridColumnEnd = '3'
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    controller.appendChild(label)
     controller.appendChild(button)
     return controller
 }

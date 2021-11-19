@@ -318,21 +318,21 @@ function reportError(message) {
 }
 
 function getRemoveProgressButton() {
-    let label = document.createElement('span')
-    label.innerHTML = ""
+    let buttonLabel = 'remove progress'
     let button = document.createElement('a')
-    button.innerHTML = 'remove progress'
+    button.innerHTML = buttonLabel
+    button.style.gridColumnStart = '1'
+    button.style.gridColumnEnd = '3'
 
     let removeProgressFunction = (event) => {
         removeProgress()
     }
     let confirmationRequestFunction = (event) => {
-        console.log(event)
-        label.innerHTML = "are you sure?"
+        button.innerHTML = "are you sure you want to remove progress?"
         button.onclick = removeProgressFunction
         button.classList.add('critical')
         window.setTimeout(function() {
-            label.innerHTML = ""
+            button.innerHTML = buttonLabel
             button.onclick = confirmationRequestFunction
             button.classList.remove('critical')
         }, 2500)
@@ -342,27 +342,28 @@ function getRemoveProgressButton() {
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    controller.appendChild(label)
     controller.appendChild(button)
     return controller
 }
 
 function getMarkAsReadButton() {
-    let label = document.createElement('span')
-    label.innerHTML = ""
+    let buttonLabel = 'mark as read'
     let button = document.createElement('a')
-    button.innerHTML = 'mark as read'
+    button.innerHTML = buttonLabel
+    button.style.gridColumnStart = '1'
+    button.style.gridColumnEnd = '3'
 
     let markAsReadFunction = (event) => {
         markAsRead()
     }
+
     let confirmationRequestFunction = (event) => {
         console.log(event)
-        label.innerHTML = "are you sure?"
+        button.innerHTML = "are you sure you want to mark book as read?"
         button.onclick = markAsReadFunction
         button.classList.add('critical')
         window.setTimeout(function() {
-            label.innerHTML = ""
+            button.innerHTML = buttonLabel
             button.onclick = confirmationRequestFunction
             button.classList.remove('critical')
         }, 2500)
@@ -371,7 +372,6 @@ function getMarkAsReadButton() {
     button.onclick = confirmationRequestFunction
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    controller.appendChild(label)
     controller.appendChild(button)
     return controller
 }
