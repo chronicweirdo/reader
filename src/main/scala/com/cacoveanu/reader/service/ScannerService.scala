@@ -144,7 +144,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, new Date()))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -166,7 +166,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, new Date()))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -188,7 +188,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s))
+          Some(new Book(path, title, author, collection, c.mediaType, smallerCover, s, new Date()))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -219,7 +219,7 @@ class ScannerService {
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size)
+          val book = new Book(path, title, author, collection, c.mediaType, smallerCover, size, new Date())
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava

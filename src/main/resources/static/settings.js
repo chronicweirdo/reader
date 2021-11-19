@@ -77,10 +77,6 @@ function createColorController(setting) {
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    /*controller.style.display = 'grid'
-    controller.style.width = 'fit-content'
-    controller.style.gridTemplateColumns = 'auto auto'*/
-    /*input.style.justifySelf = 'right'*/
     controller.appendChild(label)
     controller.appendChild(input)
     return controller
@@ -103,7 +99,6 @@ function createNumberController(min, max, step) {
         input.value = setting.get()
         setting.input = input
 
-        // <output for="foo" onforminput="value = foo.valueAsNumber;"></output>
         let output = document.createElement('output')
         output.style.marginLeft = "10px"
         output.htmlFor = setting.name
@@ -117,18 +112,9 @@ function createNumberController(min, max, step) {
 
         let controller = document.createElement('div')
         controller.classList.add('setting')
-        /*controller.style.display = 'grid'
-        controller.style.width = 'fit-content'
-        controller.style.gridTemplateColumns = 'auto auto'*/
-
-        /*
-        grid-column-start: 1;
-        grid-column-end: 3;
-        */
         input.style.gridColumnStart = '1'
         input.style.gridColumnEnd = '3'
         input.style.justifySelf = 'auto'
-        /*output.style.justifySelf = 'right'*/
         controller.appendChild(label)
         controller.appendChild(output)
         controller.appendChild(input)
@@ -153,10 +139,6 @@ function createBooleanController(setting) {
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    /*controller.style.display = 'grid'
-    controller.style.width = 'fit-content'
-    controller.style.gridTemplateColumns = 'auto auto'*/
-    /*input.style.justifySelf = 'right'*/
     controller.appendChild(label)
     controller.appendChild(input)
     return controller
@@ -180,10 +162,6 @@ function createTimeController(setting) {
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
-    /*controller.style.display = 'grid'
-    controller.style.width = 'fit-content'
-    controller.style.gridTemplateColumns = 'auto auto'*/
-    /*input.style.justifySelf = 'right'*/
     controller.appendChild(label)
     controller.appendChild(input)
     return controller
@@ -233,14 +211,6 @@ Setting.prototype.addListener = function(listener) {
     this.listeners.push(listener)
 }
 
-/*Setting.prototype.createLabel = function() {
-    let label = document.createElement('label')
-    label.htmlFor = this.name
-    label.innerHTML = this.textName
-    return label
-}*/
-
-// function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
 var SETTING_DARK_MODE_BACKGROUND = new Setting("dark_mode_background", "dark mode background", "#000000", null, null, createColorController)
 var SETTING_DARK_MODE_FOREGROUND = new Setting("dark_mode_foreground", "dark mode foreground", "#ffffff", null, null, createColorController)
 var SETTING_COMIC_SCROLL_SPEED = new Setting("comic_scroll_speed", "comic scroll speed", "0.001", parseFloat, null, createNumberController(0.0005, 0.005, 0.0001))
@@ -269,3 +239,4 @@ var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "book edg
 var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "book edge vertical", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
 var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "book tools height", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))
 var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "overlay transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))
+var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added limit", "6", parseInt, null, createNumberController(0, 24, 6))

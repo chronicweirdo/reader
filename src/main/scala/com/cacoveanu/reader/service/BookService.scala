@@ -177,6 +177,12 @@ class BookService {
     }
   }
 
+  def loadLatestAdded(limit: Int): Seq[Book] = {
+    val sort = Sort.by(Direction.DESC, "added")
+    val pageRequest = PageRequest.of(0, limit, sort)
+    bookRepository.findLatestAdded(pageRequest).asScala.toSeq
+  }
+
   def search(term: String, page: Int): Seq[Book] = {
     val pageRequest = PageRequest.of(page, PAGE_SIZE)
     bookRepository.search(prepareSearchTerm(term), pageRequest).asScala.toSeq
