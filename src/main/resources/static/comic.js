@@ -8,9 +8,10 @@ var swipePreviousPossible = false
 function pan(x, y, currentX, currentY) {
     if (SETTING_SWIPE_PAGE.get()) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
-        let verticalMoveValid = Math.abs(panY - currentY) < (getViewportHeight() * SETTING_SWIPE_VERTICAL_THRESHOLD.get())
         let deltaX = panX - currentX
         let deltaY = panY - currentY
+        let swipeParameters = computeSwipeParameters(deltaX, deltaY)
+        let verticalMoveValid = swipeParameters.angle < SETTING_SWIPE_ANGLE_THRESHOLD.get()
         if (swipeNextPossible && deltaX < 0 ) swipeNextPossible = false
         if (swipePreviousPossible && deltaX > 0 ) swipePreviousPossible = false
         if (panEnabled && !pinching && verticalMoveValid && deltaX > horizontalThreshold && swipeNextPossible) {
@@ -475,8 +476,8 @@ function initSettings() {
     settingsWrapper.appendChild(SETTING_COMIC_SCROLL_SPEED.controller)
     settingsWrapper.appendChild(SETTING_COMIC_PAN_SPEED.controller)
     settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
-    settingsWrapper.appendChild(SETTING_SWIPE_VERTICAL_THRESHOLD.controller)
     settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_ANGLE_THRESHOLD.controller)
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
     settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
     settingsWrapper.appendChild(SETTING_OVERLAY_TRANSPARENCY.controller)

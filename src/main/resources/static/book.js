@@ -15,8 +15,11 @@ function touchGesturePan(event) {
         let newX = event.touches[0].pageX
         let newY = event.touches[0].pageY
         let deltaX = newX - panX
+        let deltaY = newY - panY
+        let swipeParameters = computeSwipeParameters(deltaX, deltaY)
+
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
-        let verticalMoveValid = Math.abs(newY - panY) < (getViewportHeight() * SETTING_SWIPE_VERTICAL_THRESHOLD.get())
+        let verticalMoveValid = swipeParameters.angle < SETTING_SWIPE_ANGLE_THRESHOLD.get()
         if (verticalMoveValid && deltaX < -horizontalThreshold) {
             swipeStart = false
             nextPage()
@@ -554,8 +557,8 @@ function initSettings() {
     settingsWrapper.appendChild(SETTING_OVERLAY_TRANSPARENCY.controller)
 
     settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
-    settingsWrapper.appendChild(SETTING_SWIPE_VERTICAL_THRESHOLD.controller)
     settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
+    settingsWrapper.appendChild(SETTING_SWIPE_ANGLE_THRESHOLD.controller)
 
     SETTING_BOOK_MODE.addListener(initializeMode)
     SETTING_DARK_MODE_BACKGROUND.addListener(initializeMode)

@@ -54,6 +54,10 @@ function bookModeToString(mode) {
     }
 }
 
+function degreeToString(degree) {
+    return degree + "°"
+}
+
 function percentageToString(percentage) {
     return Math.floor(percentage * 100) + "%"
 }
@@ -226,8 +230,6 @@ var SETTING_COMIC_ROW_THRESHOLD = new Setting("comic_row_threshold", "comic row 
 var SETTING_COMIC_COLUMN_THRESHOLD = new Setting("comic_column_threshold", "comic column threshold", "0.05", parseFloat, percentageToString, createNumberController(0.01, 0.1, 0.01))
 var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "display title in library", "false", parseBoolean, null, createBooleanController)
 var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe to turn page", "true", parseBoolean, null, createBooleanController)
-// todo: replace swipe vertical threshold with inclination/angle - maximum swipe angle
-var SETTING_SWIPE_VERTICAL_THRESHOLD = new Setting("swipe_vertical_threshold", "swipe vertical threshold", "0.11", parseFloat, percentageToString, createNumberController(0.01, 0.41, 0.1)) // screen percentage for vertical finger move before swipe becomes invalid
 var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "minimum swipe length", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
 var SETTING_ACCENT_COLOR = new Setting("accent_color", "accent color", "#FFD700", null, null, createColorController)
 var SETTING_FOREGROUND_COLOR = new Setting("foreground_color", "text color", "#000000", null, null, createColorController)
@@ -241,3 +243,4 @@ var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "top/bottom b
 var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "tools button height", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))
 var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "tools panel transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))
 var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added books to load", "6", parseInt, null, createNumberController(0, 24, 6))
+var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximum swipe angle", "30", parseInt, degreeToString, createNumberController(10, 60, 10))

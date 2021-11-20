@@ -549,3 +549,24 @@ function initAlpha() {
     setBackgroundAlphaOnElement(document.getElementById('ch_tools_container'), SETTING_OVERLAY_TRANSPARENCY.get())
     setBackgroundAlphaOnElement(document.getElementById('ch_spinner'), SETTING_OVERLAY_TRANSPARENCY.get())
 }
+
+function radiansToDegrees(radians) {
+  return radians * (180/Math.PI)
+}
+
+function computeSwipeParameters(deltaX, deltaY) {
+    let highOnPotenuse = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
+    if (highOnPotenuse != 0) {
+        let swipeSine = deltaY / highOnPotenuse
+        let swipeAngle = Math.abs(radiansToDegrees(Math.asin(swipeSine)))
+        return {
+            length: highOnPotenuse,
+            angle: swipeAngle
+        }
+    } else {
+        return {
+            length: 0,
+            angle: 0
+        }
+    }
+}
