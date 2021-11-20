@@ -71,6 +71,7 @@
             let settingsWrapper = document.getElementById('settings')
             settingsWrapper.innerHTML = ""
             settingsWrapper.appendChild(SETTING_LATEST_READ_LIMIT.controller)
+            settingsWrapper.appendChild(SETTING_LATEST_ADDED_LIMIT.controller)
             settingsWrapper.appendChild(SETTING_ACCENT_COLOR.controller)
             settingsWrapper.appendChild(SETTING_FOREGROUND_COLOR.controller)
             settingsWrapper.appendChild(SETTING_BACKGROUND_COLOR.controller)
@@ -82,7 +83,6 @@
             settingsWrapper.appendChild(SETTING_DAY_START.controller)
             settingsWrapper.appendChild(SETTING_DAY_END.controller)
             setDaySettingsStatus()
-            settingsWrapper.appendChild(SETTING_LATEST_ADDED_LIMIT.controller)
         }
 
         function rescan() {
