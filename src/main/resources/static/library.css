@@ -3,7 +3,7 @@
     --status-bar-color: gold;
     --foreground-color: black;
     --background-color: white;
-    --title-display:none;
+    --title-display: none;
 }
 * {
     margin: 0;
@@ -25,16 +25,16 @@ h1 {
 }
 ul {
     display: grid;
-    row-gap: 15px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    font-size: 1.5em;
+    row-gap: 1.3vw;
+    padding-top: 1.3vw;
+    padding-bottom: 1.3vw;
+    font-size: 1.5vw;
     list-style-type: none;
 
-    padding-left: 1.4285%;
-    width: 98.5714%;
-    grid-template-columns: 15.2173% 15.2173% 15.2173% 15.2173% 15.2173% 15.2173%;
-    column-gap: 1.4492%;
+    padding-left: 1.3vw;
+    width: 97.8vw;
+    grid-template-columns: repeat(6, 15vw);
+    column-gap: 1.3vw;
 }
 li {
     overflow: hidden;
@@ -42,14 +42,14 @@ li {
 }
 li a {
     position: relative;
-    display: inline-block;
+    display: block;
     width: 100%;
     text-decoration: none;
     color: var(--foreground-color, black);
 }
 span.cover {
     position: relative;
-    display: inline-block;
+    display: block;
     height: 25vw;
     width: 100%;
     overflow: hidden;
@@ -106,10 +106,14 @@ span.title {
         padding: 15px 2.5%;
     }
     ul {
-        padding-left: 2.5%;
-        width: 97.5%;
-        grid-template-columns: 30.76% 30.76% 30.76%;
-        column-gap: 2.56%;
+        padding-left: 2.5vw;
+        width: 97.5vw;
+        grid-template-columns: 30vw 30vw 30vw;
+        column-gap: 2.5vw;
+        row-gap: 2.5vw;
+        padding-top: 2.5vw;
+        padding-bottom: 2.5vw;
+        font-size: 3vw;
     }
     span.cover {
         height: 50vw;

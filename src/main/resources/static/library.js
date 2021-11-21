@@ -59,7 +59,7 @@ function getSvgCheck() {
 function applyTitles() {
     let toggleTitles = getToggleTitles()
     if (SETTING_LIBRARY_DISPLAY_TITLE.get()) {
-        setCssProperty('--title-display', 'inline-block')
+        setCssProperty('--title-display', 'block')
         toggleTitles.classList.add(ACTIVE_CLASS)
         toggleTitles.title = "Hide Book Titles"
     } else {
@@ -72,6 +72,7 @@ function applyTitles() {
 function toggleTitles() {
     if (SETTING_LIBRARY_DISPLAY_TITLE.get()) {
         SETTING_LIBRARY_DISPLAY_TITLE.put(false)
+
     } else {
         SETTING_LIBRARY_DISPLAY_TITLE.put(true)
     }
