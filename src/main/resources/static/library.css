@@ -70,13 +70,13 @@ span.cover img {
 span.progressbar {
     position: absolute;
     display: block;
-    left: 4%;
-    bottom: 4%;
-    width: 88%;
-    height: 4%;
+    left: 5%;
+    bottom: 3%;
+    width: 85%;
+    height: 3%;
     background-color: var(--background-color, white);
     border: 1px solid var(--foreground-color, black);
-    padding: 1%;
+    padding: 2%;
 }
 span.read {
     display: block;
