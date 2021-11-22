@@ -10,11 +10,21 @@
     padding: 0;
     border: 0;
 }
+html, body {
+    overflow:auto;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
 body {
     background-color: var(--status-bar-color, gold);
     font-family: 'Roboto', sans-serif;
     word-wrap: anywhere;
 }
+ /* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;
+}
+
 body > * {
     background-color: var(--background-color, white);
     color: var(--foreground-color, black);
@@ -25,16 +35,16 @@ h1 {
 }
 ul {
     display: grid;
-    row-gap: 1.3vw;
-    padding-top: 1.3vw;
-    padding-bottom: 1.3vw;
-    font-size: 1.5vw;
+    row-gap: 1.4285vw;
+    padding-top: 1.4285vw;
+    padding-bottom: 1.4285vw;
+    font-size: 1.4285vw;
     list-style-type: none;
 
-    padding-left: 1.3vw;
-    width: 97.8vw;
+    padding-left: 1.4285vw;
+    width: 98.5715vw;
     grid-template-columns: repeat(6, 15vw);
-    column-gap: 1.3vw;
+    column-gap: 1.4285vw;
 }
 li {
     overflow: hidden;
@@ -132,15 +142,17 @@ h1 a {
     background-color: var(--foreground-color, black);
     color: var(--accent-color, gold);
     font-size: 2em;
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-top: 1.4285vw;
+    padding-bottom: 1.4285vw;
     text-align: center;
     align-items: center;
     justify-items: center;
-    padding-left: 2%;
-    padding-right: 2%;
-    width: 96%;
+    padding-left: 1.4285vw;
+    padding-right: 1.4285vw;
+    width: 97.143vw;
     grid-template-columns: 9fr 1fr 1fr 1fr;
+    column-gap: 1.4285vw;
+    row-gap: 1.4285vw;
 }
 #ch_latestRead, #ch_latestReadTitle, #ch_latestAdded, #ch_latestAddedTitle {
     display: none;
@@ -200,9 +212,15 @@ h1 a {
         height: 25vw;
     }
     .tools {
+        padding-left: 2.5vw;
+        padding-right: 2.5vw;
+        padding-top: 2.5vw;
+        padding-bottom: 2.5vw;
+        width: 95vw;
+        row-gap: 2.5vw;
+        column-gap: 2.5vw;
         grid-template-columns: repeat(5, 1fr);
         grid-template-rows: 1fr 1fr;
-        row-gap: 15px;
     }
     #search, .offline-message {
         grid-column: 1 / 6;
