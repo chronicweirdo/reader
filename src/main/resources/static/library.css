@@ -249,3 +249,14 @@ h1 a {
 .spinner .accent {
     stroke: var(--accent-color, gold);
 }
+
+#scroll {
+    display: block;
+    position: fixed;
+    background-color: var(--accent-color, gold);
+    border: 1px solid var(--foreground-color, black);
+    right: 0.5vw;
+    width: 0.5vw;
+    top: 0;
+    height: 40px;
+}

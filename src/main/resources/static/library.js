@@ -401,7 +401,7 @@ function loadNextPage(callback) {
                         setEndOfCollection()
                         if (callback != null) callback()
                     }
-
+                    updateScroll()
                 }
             }
         }
@@ -509,6 +509,23 @@ function getSearchUrlParameter() {
     else return decodeURIComponent(search)
 }
 
+function updateScroll() {
+    let scroll = document.getElementById("scroll")
+    let bodyHeight = Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight,
+        document.body.clientHeight, document.documentElement.clientHeight
+    )
+    let currentScroll = window.pageYOffset
+    let windowHeight = document.documentElement.clientHeight
+
+    let scrollBarHeight = windowHeight * windowHeight / bodyHeight
+    let scrollBarTop = currentScroll * windowHeight / bodyHeight
+
+    scroll.style.height = scrollBarHeight + "px"
+    scroll.style.top = scrollBarTop + "px"
+}
+
 window.onload = function() {
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -531,6 +548,7 @@ window.onload = function() {
     addSearchTriggerListener()
     searchForTerm()
     updateClearSearch()
+    updateScroll()
 
     applyTitles()
     setCssProperty('--accent-color', SETTING_ACCENT_COLOR.get())
@@ -545,4 +563,5 @@ window.onscroll = function(ev) {
             loadNextPage(null)
         }
     }
+    updateScroll()
 }
