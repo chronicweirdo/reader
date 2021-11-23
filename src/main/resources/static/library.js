@@ -186,7 +186,7 @@ function getEndOfCollection() {
     return document.getElementById(FIN_ID) != null
 }
 
-function removeExistingBooks(hideLatestAdded) {
+function removeExistingBooks() {
     let collections = document.getElementsByClassName(COLLECTION_CONTAINER_CLASS)
     while (collections.length > 0) {
         document.body.removeChild(collections.item(0))
@@ -199,6 +199,10 @@ function removeExistingBooks(hideLatestAdded) {
     if (fin != null) {
         document.body.removeChild(fin)
     }
+}
+
+function cleanupLatestAddedSection() {
+    let hideLatestAdded = getTerm() != ""
     if (hideLatestAdded || document.getElementById("ch_latestAdded").childNodes.length == 0) {
         document.getElementById("ch_latestAdded").style.display = "none"
         document.getElementById("ch_latestAddedTitle").style.display = "none"
@@ -247,7 +251,8 @@ function triggerSearch(text) {
 }
 
 function searchForTerm() {
-    removeExistingBooks(getTerm() != "")
+    removeExistingBooks()
+    cleanupLatestAddedSection()
     setCurrentPage(-1)
     loadNextPage(loadUntilPageFull)
 }
@@ -345,13 +350,9 @@ function loadLatestAdded() {
                             collectionContainer.appendChild(getBookHtml(book))
                         }
                     }
-                    document.getElementById("ch_latestAddedTitle").style.display = "block"
-                    collectionContainer.style.display = "grid"
                     cleanupBookPages(bookIds)
-                } else {
-                    document.getElementById("ch_latestAdded").style.display = "none"
-                    document.getElementById("ch_latestAddedTitle").style.display = "none"
                 }
+                cleanupLatestAddedSection()
             }
         }
     }
