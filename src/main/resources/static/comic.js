@@ -6,7 +6,7 @@ var swipeNextPossible = false
 var swipePreviousPossible = false
 
 function pan(x, y, currentX, currentY) {
-    if (SETTING_SWIPE_PAGE.get()) {
+    if (SETTING_SWIPE_PAGE.get() && (swipeNextPossible || swipePreviousPossible) && (!pinching)) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
         let deltaX = panX - currentX
         let deltaY = panY - currentY
