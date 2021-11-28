@@ -47,7 +47,7 @@ function touchGestureEndPan() {
     swipePreviousPossible = false
 }
 
-function zoom(zoom, centerX, centerY) {
+function zoom(zoom, centerX, centerY, withImageUpdate) {
     var sideLeft = centerX - getImageLeft()
     var ratioLeft = sideLeft / (getImageWidth() * getZoom())
     var newSideLeft = (getImageWidth() * zoom) * ratioLeft
@@ -60,7 +60,7 @@ function zoom(zoom, centerX, centerY) {
 
     setZoom(zoom)
     setZoomJumpValue(zoom)
-    updateImage()
+    if (withImageUpdate) updateImage()
 }
 
 function updateImage() {
@@ -115,7 +115,7 @@ function setZoomJumpValue(value) {
 
 function zoomJump(x, y) {
     if (isPageFitToScreen()) {
-        zoom(getZoomJumpValue(), x, y)
+        zoom(getZoomJumpValue(), x, y, true)
     } else {
         fitPageToScreen()
     }
@@ -424,7 +424,7 @@ function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
     var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? 1 : -1)
     var newZoom = getZoom() * zoomDelta
-    zoom(newZoom, scrollCenterX, scrollCenterY)
+    zoom(newZoom, scrollCenterX, scrollCenterY, true)
 }
 
 function touchGesturePinchStart(pinchCenterX, pinchCenterY) {
@@ -433,7 +433,7 @@ function touchGesturePinchStart(pinchCenterX, pinchCenterY) {
 }
 
 function touchGesturePinchOngoing(currentZoom, pinchCenterX, pinchCenterY) {
-    zoom(document.originalZoom * currentZoom, pinchCenterX, pinchCenterY)
+    zoom(document.originalZoom * currentZoom, pinchCenterX, pinchCenterY, false)
 }
 
 function touchGesturePinchEnd() {
