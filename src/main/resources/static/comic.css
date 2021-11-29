@@ -8,15 +8,15 @@
     margin: 0;
     padding: 0;
     border: 0;
-    touch-action: none;
+    /*touch-action: none;
     -webkit-touch-callout: none !important;
-    -ms-touch-action: none;
-    /*-webkit-user-select: none !important;/*
+    -ms-touch-action: none;*/
+    /*-webkit-user-select: none !important;*/
 }
-html {
+/*html {
     -ms-touch-action: none;
     touch-action: none;
-}
+}*/
 body {
     background-color: var(--status-bar-color, gold);
     text-align: center;
@@ -25,7 +25,7 @@ body {
     -moz-user-select: none; /* mozilla browsers */
     -khtml-user-select: none; /* webkit (konqueror) browsers */
     -ms-user-select: none; /* IE10+ */
-    touch-action: none;
+    /*touch-action: none;*/
 }
 #ch_canv {
     display: block;
@@ -34,16 +34,16 @@ body {
     left: 10%;
     width: 80%;
     height: 100%;
-    touch-action: none;
-    cursor: pointer;
+    /*touch-action: none;
+    cursor: pointer;*/
 }
 img {
     position: fixed;
-    touch-action: none;
+    /*touch-action: none;*/
 }
-#content {
+/*#content {
     touch-action: none;
-}
+}*/
 .spinner {
     display: block;
 }

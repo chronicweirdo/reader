@@ -3,7 +3,7 @@ var swipeNextPossible = false
 var swipePreviousPossible = false
 
 function pan(x, y, totalDeltaX, totalDeltaY) {
-    console.log(swipeNextPossible + " " + swipePreviousPossible + " " + pinching + " " + x + " " + y + " " + totalDeltaX + " " + totalDeltaY)
+    //console.log(swipeNextPossible + " " + swipePreviousPossible + " " + pinching + " " + x + " " + y + " " + totalDeltaX + " " + totalDeltaY)
     if (SETTING_SWIPE_PAGE.get() && (swipeNextPossible || swipePreviousPossible) && (!pinching)) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
         let swipeParameters = computeSwipeParameters(totalDeltaX, totalDeltaY)
@@ -492,7 +492,7 @@ var originalCenter = null
 var previousCenter = null
 var originalPinchSize = 0
 //var originalZoom = 0
-//var clickCache = []
+var clickCache = []
 
 function computeDistance(pinchTouchEvent) {
     if (pinchTouchEvent.targetTouches.length == 2) {
@@ -526,7 +526,8 @@ function computeCenter(touchEvent) {
 function pointerdown_handler(ev) {
     disableEventNormalBehavior(ev)
     //evCache.push(ev);
-    //clickCache.push(Date.now())
+    clickCache.push(Date.now())
+    //console.log(ev)
 
     //if (evCache.length >= 1) {
     if (ev.targetTouches.length >= 1) {
@@ -571,7 +572,7 @@ function pointermove_handler(ev) {
     return false
 }
 
-var DOUBLE_CLICK_THRESHOLD = 500
+var DOUBLE_CLICK_THRESHOLD = 200
 
 function computeClickTimeDifference() {
     if (clickCache.length >= 2) {
@@ -608,13 +609,13 @@ function pointerup_handler(ev) {
         evCache.splice(index, 1);
     }*/
     //console.log("pointerup: " + clickCache.length)
-    /*if (computeLastClickRelevant()) {
+    if (computeLastClickRelevant()) {
         if (computeClickTimeDifference() < DOUBLE_CLICK_THRESHOLD) {
-            zoomJump(ev.clientX, ev.clientY)
+            zoomJump(originalCenter.x, originalCenter.y)
         } else {
             // single click
         }
-    }*/
+    }
     return false
 }
 
