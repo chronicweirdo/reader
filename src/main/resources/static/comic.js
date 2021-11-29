@@ -7,7 +7,7 @@ function pan(x, y, totalDeltaX, totalDeltaY) {
     if (SETTING_SWIPE_PAGE.get() && (swipeNextPossible || swipePreviousPossible) && (!pinching)) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
         let swipeParameters = computeSwipeParameters(totalDeltaX, totalDeltaY)
-        console.log(swipeParameters)
+        //console.log(swipeParameters)
         let verticalMoveValid = swipeParameters.angle < SETTING_SWIPE_ANGLE_THRESHOLD.get()
         if (swipeNextPossible && x > 0 ) swipeNextPossible = false
         if (swipePreviousPossible && x < 0 ) swipePreviousPossible = false
@@ -487,28 +487,36 @@ function initSettings() {
     settingsWrapper.appendChild(getMarkAsReadButton())
 }
 
-var evCache = []
+//var evCache = []
 var originalCenter = null
 var previousCenter = null
 var originalPinchSize = 0
 //var originalZoom = 0
-var clickCache = []
+//var clickCache = []
 
-function computeDistance(ev1, ev2) {
-    let distance = Math.sqrt(Math.pow(ev2.clientX - ev1.clientX, 2) + Math.pow(ev2.clientY - ev1.clientY, 2))
-    //console.log("coord: (" + ev1.clientX + "," + ev1.clientY +") (" + ev2.clientX + "," + ev2.clientY + ") " + distance)
-    return distance
+function computeDistance(pinchTouchEvent) {
+    if (pinchTouchEvent.targetTouches.length == 2) {
+        let x1 = pinchTouchEvent.targetTouches[0].clientX
+        let y1 = pinchTouchEvent.targetTouches[0].clientY
+        let x2 = pinchTouchEvent.targetTouches[1].clientX
+        let y2 = pinchTouchEvent.targetTouches[1].clientY
+        let distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+        //console.log("coord: (" + ev1.clientX + "," + ev1.clientY +") (" + ev2.clientX + "," + ev2.clientY + ") " + distance)
+        return distance
+    } else {
+        return null
+    }
 }
 
-function computeCenter(events) {
+function computeCenter(touchEvent) {
     let centerX = 0
     let centerY = 0
-    for (let i = 0; i < events.length; i++) {
-        centerX = centerX + events[i].pageX
-        centerY = centerY + events[i].pageY
+    for (let i = 0; i < touchEvent.targetTouches.length; i++) {
+        centerX = centerX + touchEvent.targetTouches[i].clientX
+        centerY = centerY + touchEvent.targetTouches[i].clientY
     }
-    centerX = centerX / events.length
-    centerY = centerY / events.length
+    centerX = centerX / touchEvent.targetTouches.length
+    centerY = centerY / touchEvent.targetTouches.length
     return {
         x: centerX,
         y: centerY
@@ -516,43 +524,43 @@ function computeCenter(events) {
 }
 
 function pointerdown_handler(ev) {
-    ev.preventDefault()
-    ev.stopPropagation()
-    ev.stopImmediatePropagation()
-    evCache.push(ev);
-    clickCache.push(Date.now())
+    disableEventNormalBehavior(ev)
+    //evCache.push(ev);
+    //clickCache.push(Date.now())
 
-    if (evCache.length >= 1) {
-        originalCenter = computeCenter(evCache)
+    //if (evCache.length >= 1) {
+    if (ev.targetTouches.length >= 1) {
+        originalCenter = computeCenter(ev)
         previousCenter = originalCenter
         if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
         if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
     }
-    if (evCache.length == 2) {
-        pinching = true
-        originalPinchSize = computeDistance(evCache[0], evCache[1])
+    if (ev.targetTouches.length == 2) {
+        //pinching = true
+        originalPinchSize = computeDistance(ev)
         document.originalZoom = getZoom()
     }
     return false
 }
 
 function pointermove_handler(ev) {
-    ev.preventDefault()
-    ev.stopPropagation()
-    ev.stopImmediatePropagation()
+    disableEventNormalBehavior(ev)
     // update event
-    const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
+    /*const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
     if (index > -1) {
         evCache[index] = ev
-    }
-    if (evCache.length == 2) {
-        let pinchSize = computeDistance(evCache[0], evCache[1])
+    }*/
+    if (ev.targetTouches.length == 2) {
+        pinching = true
+        let pinchSize = computeDistance(ev)
         let currentZoom = pinchSize / originalPinchSize
         let newZoom = document.originalZoom * currentZoom
         zoom(newZoom, originalCenter.x, originalCenter.y, false)
+    } else if (ev.targetTouches.length == 1) {
+        pinching = false
     }
-    if (evCache.length >= 1) {
-        let currentCenter = computeCenter(evCache)
+    if (ev.targetTouches.length <= 2) {
+        let currentCenter = computeCenter(ev)
         let deltaX = currentCenter.x - previousCenter.x
         let deltaY = currentCenter.y - previousCenter.y
         let totalDeltaX = currentCenter.x - originalCenter.x
@@ -563,7 +571,7 @@ function pointermove_handler(ev) {
     return false
 }
 
-var DOUBLE_CLICK_THRESHOLD = 200
+var DOUBLE_CLICK_THRESHOLD = 500
 
 function computeClickTimeDifference() {
     if (clickCache.length >= 2) {
@@ -581,34 +589,51 @@ function computeLastClickRelevant() {
     }
 }
 
-function pointerup_handler(ev) {
+function disableEventNormalBehavior(ev) {
     ev.preventDefault()
     ev.stopPropagation()
-    ev.stopImmediatePropagation()
-    const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
+    //ev.stopImmediatePropagation()
+}
+
+function pointerup_handler(ev) {
+    disableEventNormalBehavior(ev)
+    if (ev.targetTouches.length >= 1) {
+        originalCenter = computeCenter(ev)
+        previousCenter = originalCenter
+    }
+    //if (ev.targetTouches.length < 2) pinching = false
+    /*const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
     if (index > -1) {
         if (evCache.length == 2) pinching = false
         evCache.splice(index, 1);
-    }
-    if (computeLastClickRelevant()) {
+    }*/
+    //console.log("pointerup: " + clickCache.length)
+    /*if (computeLastClickRelevant()) {
         if (computeClickTimeDifference() < DOUBLE_CLICK_THRESHOLD) {
             zoomJump(ev.clientX, ev.clientY)
         } else {
             // single click
         }
-    }
+    }*/
     return false
 }
 
+function isTouchEnabled() {
+    return ( 'ontouchstart' in window ) ||
+           ( navigator.maxTouchPoints > 0 ) ||
+           ( navigator.msMaxTouchPoints > 0 );
+}
+
 window.onload = function() {
-    document.body.addEventListener('click', function(ev) {
+    // this is disabling ios safari normal double click behavior
+    /*document.body.addEventListener('click', function(ev) {
         ev.preventDefault()
-        console.log('body click')
-    })
-    document.body.addEventListener('doubleclick', function(ev) {
+        //console.log('body click')
+    })*/
+    /*document.body.addEventListener('doubleclick', function(ev) {
         ev.preventDefault()
         console.log('body double click')
-    })
+    })*/
     document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
     document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
@@ -636,9 +661,16 @@ window.onload = function() {
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Pinch_zoom_gestures
 
-    document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler, false)
-    document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler, false)
-    document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler, false)
+    if (isTouchEnabled()) {
+        document.getElementById("ch_canv").addEventListener("touchstart", pointerdown_handler, false)
+        document.getElementById("ch_canv").addEventListener("touchmove", pointermove_handler, false)
+        document.getElementById("ch_canv").addEventListener("touchend", pointerup_handler, false)
+    } else {
+        document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler, false)
+        document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler, false)
+        document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler, false)
+    }
+
     /*document.getElementById("ch_canv").onpointercancel = pointerup_handler;
     document.getElementById("ch_canv").onpointerout = pointerup_handler;
     document.getElementById("ch_canv").addEventListener("pointerleave", pointerup_handler)*/
