@@ -492,6 +492,7 @@ var originalCenter = null
 var previousCenter = null
 var originalPinchSize = 0
 //var originalZoom = 0
+var clickCache = []
 
 function computeDistance(ev1, ev2) {
     let distance = Math.sqrt(Math.pow(ev2.clientX - ev1.clientX, 2) + Math.pow(ev2.clientY - ev1.clientY, 2))
@@ -515,7 +516,11 @@ function computeCenter(events) {
 }
 
 function pointerdown_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
     evCache.push(ev);
+    clickCache.push(Date.now())
 
     if (evCache.length >= 1) {
         originalCenter = computeCenter(evCache)
@@ -528,9 +533,13 @@ function pointerdown_handler(ev) {
         originalPinchSize = computeDistance(evCache[0], evCache[1])
         document.originalZoom = getZoom()
     }
+    return false
 }
 
 function pointermove_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
     // update event
     const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
     if (index > -1) {
@@ -551,17 +560,55 @@ function pointermove_handler(ev) {
         previousCenter = currentCenter
         pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), totalDeltaX, totalDeltaY)
     }
+    return false
+}
+
+var DOUBLE_CLICK_THRESHOLD = 200
+
+function computeClickTimeDifference() {
+    if (clickCache.length >= 2) {
+        return clickCache[clickCache.length - 1] - clickCache[clickCache.length - 2]
+    } else {
+        return DOUBLE_CLICK_THRESHOLD + 1
+    }
+}
+
+function computeLastClickRelevant() {
+    if (clickCache.length >= 1) {
+        return Date.now() - clickCache[clickCache.length - 1] < DOUBLE_CLICK_THRESHOLD
+    } else {
+        return false
+    }
 }
 
 function pointerup_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
     const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
     if (index > -1) {
         if (evCache.length == 2) pinching = false
         evCache.splice(index, 1);
     }
+    if (computeLastClickRelevant()) {
+        if (computeClickTimeDifference() < DOUBLE_CLICK_THRESHOLD) {
+            zoomJump(ev.clientX, ev.clientY)
+        } else {
+            // single click
+        }
+    }
+    return false
 }
 
 window.onload = function() {
+    document.body.addEventListener('click', function(ev) {
+        ev.preventDefault()
+        console.log('body click')
+    })
+    document.body.addEventListener('doubleclick', function(ev) {
+        ev.preventDefault()
+        console.log('body double click')
+    })
     document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
     document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
@@ -589,9 +636,9 @@ window.onload = function() {
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Pinch_zoom_gestures
 
-    document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler)
-    document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler)
-    document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler)
+    document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler, false)
+    document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler, false)
+    document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler, false)
     /*document.getElementById("ch_canv").onpointercancel = pointerup_handler;
     document.getElementById("ch_canv").onpointerout = pointerup_handler;
     document.getElementById("ch_canv").addEventListener("pointerleave", pointerup_handler)*/
