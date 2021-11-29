@@ -488,6 +488,56 @@ function initSettings() {
     settingsWrapper.appendChild(getMarkAsReadButton())
 }
 
+var evCache = []
+var centerX = 0
+var centerY = 0
+var originalPinchSize = 0
+//var originalZoom = 0
+
+function pointerdown_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
+    evCache.push(ev);
+
+    if (evCache.length == 2) {
+        pinching = true
+        centerX = (evCache[0].x + evCache[1].x) / 2
+        centerY = (evCache[0].y + evCache[1].y) / 2
+        originalPinchSize = Math.sqrt(Math.pow(evCache[0].x - evCache[1].x, 2) + Math.pow(evCache[0].y - evCache[1].y, 2))
+        document.originalZoom = getZoom()
+    }
+}
+
+function pointermove_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
+
+    const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
+    if (index > -1) {
+        evCache[index] = ev
+    }
+    if (evCache.length == 2) {
+        let pinchSize = Math.sqrt(Math.pow(evCache[0].x - evCache[1].x, 2) + Math.pow(evCache[0].y - evCache[1].y, 2))
+        let currentZoom = pinchSize / originalPinchSize
+        let newZoom = document.originalZoom * currentZoom
+        //console.log(newZoom)
+        zoom(newZoom, centerX, centerY, true)
+    }
+}
+
+function pointerup_handler(ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.stopImmediatePropagation()
+    const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
+    if (index > -1) {
+        if (evCache.length == 2) pinching = false
+        evCache.splice(index, 1);
+    }
+}
+
 window.onload = function() {
     document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
@@ -502,7 +552,7 @@ window.onload = function() {
         "escapeAction": () => toggleTools(true)
     })
 
-    enableGesturesOnElement(document.getElementById("ch_canv"), {
+    /*enableGesturesOnElement(document.getElementById("ch_canv"), {
         "doubleClickAction": zoomJump,
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
@@ -512,7 +562,16 @@ window.onload = function() {
         "panStartAction": touchGestureStartPan,
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
-    })
+    })*/
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Pinch_zoom_gestures
+
+    document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler)
+    document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler)
+    document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler)
+    /*document.getElementById("ch_canv").onpointercancel = pointerup_handler;
+    document.getElementById("ch_canv").onpointerout = pointerup_handler;
+    document.getElementById("ch_canv").addEventListener("pointerleave", pointerup_handler)*/
 
     enableGesturesOnElement(document.getElementById("ch_prev"), {
         "mouseMoveAction": mouseGestureDrag,
