@@ -489,10 +489,31 @@ function initSettings() {
 }
 
 var evCache = []
-var centerX = 0
-var centerY = 0
+var center = null
 var originalPinchSize = 0
+var previousCenter = null
 //var originalZoom = 0
+
+function computeDistance(ev1, ev2) {
+    let distance = Math.sqrt(Math.pow(ev2.clientX - ev1.clientX, 2) + Math.pow(ev2.clientY - ev1.clientY, 2))
+    //console.log("coord: (" + ev1.clientX + "," + ev1.clientY +") (" + ev2.clientX + "," + ev2.clientY + ") " + distance)
+    return distance
+}
+
+function computeCenter(events) {
+    let centerX = 0
+    let centerY = 0
+    for (let i = 0; i < events.length; i++) {
+        centerX = centerX + events[i].pageX
+        centerY = centerY + events[i].pageY
+    }
+    centerX = centerX / events.length
+    centerY = centerY / events.length
+    return {
+        x: centerX,
+        y: centerY
+    }
+}
 
 function pointerdown_handler(ev) {
     ev.preventDefault()
@@ -500,30 +521,51 @@ function pointerdown_handler(ev) {
     ev.stopImmediatePropagation()
     evCache.push(ev);
 
+    if (evCache.length == 1) {
+        center = computeCenter(evCache)
+        previousCenter = center
+    }
     if (evCache.length == 2) {
         pinching = true
-        centerX = (evCache[0].x + evCache[1].x) / 2
-        centerY = (evCache[0].y + evCache[1].y) / 2
-        originalPinchSize = Math.sqrt(Math.pow(evCache[0].x - evCache[1].x, 2) + Math.pow(evCache[0].y - evCache[1].y, 2))
+        center = computeCenter(evCache)
+        originalPinchSize = computeDistance(evCache[0], evCache[1])
         document.originalZoom = getZoom()
     }
 }
 
 function pointermove_handler(ev) {
-    ev.preventDefault()
+    /*ev.preventDefault()
     ev.stopPropagation()
-    ev.stopImmediatePropagation()
+    ev.stopImmediatePropagation()*/
 
     const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
+    //console.log(ev.pointerId)
     if (index > -1) {
         evCache[index] = ev
     }
+    if (evCache.length == 1) {
+        let currentCenter = computeCenter(evCache)
+        let deltaX = currentCenter.x - previousCenter.x
+        let deltaY = currentCenter.y - previousCenter.y
+        previousCenter = currentCenter
+        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), ev.clientX, ev.clientY)
+    }
     if (evCache.length == 2) {
-        let pinchSize = Math.sqrt(Math.pow(evCache[0].x - evCache[1].x, 2) + Math.pow(evCache[0].y - evCache[1].y, 2))
+        let currentCenter = computeCenter(evCache)
+        if (previousCenter != null) {
+            deltaX = currentCenter.x - previousCenter.x
+            deltaY = currentCenter.y - previousCenter.y
+        } else {
+            deltaX = currentCenter.x - center.x
+            deltaY = currentCenter.y - center.y
+        }
+        previousCenter = currentCenter
+        let pinchSize = computeDistance(evCache[0], evCache[1])
         let currentZoom = pinchSize / originalPinchSize
         let newZoom = document.originalZoom * currentZoom
-        //console.log(newZoom)
-        zoom(newZoom, centerX, centerY, true)
+        //(pinchSize)
+        zoom(newZoom, center.x, center.y, false)
+        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), currentCenter.x, currentCenter.y)
     }
 }
 
