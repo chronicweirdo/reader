@@ -1,26 +1,25 @@
-var panEnabled = true
 var pinching = false
-var panX = 0
-var panY = 0
 var swipeNextPossible = false
 var swipePreviousPossible = false
 
-function pan(x, y, currentX, currentY) {
+function pan(x, y, totalDeltaX, totalDeltaY) {
+    console.log(swipeNextPossible + " " + swipePreviousPossible + " " + pinching + " " + x + " " + y + " " + totalDeltaX + " " + totalDeltaY)
     if (SETTING_SWIPE_PAGE.get() && (swipeNextPossible || swipePreviousPossible) && (!pinching)) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
-        let deltaX = panX - currentX
-        let deltaY = panY - currentY
-        let swipeParameters = computeSwipeParameters(deltaX, deltaY)
+        let swipeParameters = computeSwipeParameters(totalDeltaX, totalDeltaY)
+        console.log(swipeParameters)
         let verticalMoveValid = swipeParameters.angle < SETTING_SWIPE_ANGLE_THRESHOLD.get()
-        if (swipeNextPossible && deltaX < 0 ) swipeNextPossible = false
-        if (swipePreviousPossible && deltaX > 0 ) swipePreviousPossible = false
-        if (panEnabled && !pinching && verticalMoveValid && deltaX > horizontalThreshold && swipeNextPossible) {
-            panEnabled = false
+        if (swipeNextPossible && x > 0 ) swipeNextPossible = false
+        if (swipePreviousPossible && x < 0 ) swipePreviousPossible = false
+        if (verticalMoveValid && totalDeltaX < -horizontalThreshold && swipeNextPossible) {
+            swipeNextPossible = false
+            swipePreviousPossible = false
             goToNextView()
-        } else if (panEnabled && !pinching && verticalMoveValid && deltaX < -horizontalThreshold && swipePreviousPossible) {
-            panEnabled = false
+        } else if (verticalMoveValid && totalDeltaX > horizontalThreshold && swipePreviousPossible) {
+            swipeNextPossible = false
+            swipePreviousPossible = false
             goToPreviousView()
-        } else if (panEnabled) {
+        } else {
             setImageLeft(getImageLeft() + x)
             setImageTop(getImageTop() + y)
             updateImage()
@@ -489,9 +488,9 @@ function initSettings() {
 }
 
 var evCache = []
-var center = null
-var originalPinchSize = 0
+var originalCenter = null
 var previousCenter = null
+var originalPinchSize = 0
 //var originalZoom = 0
 
 function computeDistance(ev1, ev2) {
@@ -516,63 +515,45 @@ function computeCenter(events) {
 }
 
 function pointerdown_handler(ev) {
-    ev.preventDefault()
-    ev.stopPropagation()
-    ev.stopImmediatePropagation()
     evCache.push(ev);
 
-    if (evCache.length == 1) {
-        center = computeCenter(evCache)
-        previousCenter = center
+    if (evCache.length >= 1) {
+        originalCenter = computeCenter(evCache)
+        previousCenter = originalCenter
+        if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
+        if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
     }
     if (evCache.length == 2) {
         pinching = true
-        center = computeCenter(evCache)
         originalPinchSize = computeDistance(evCache[0], evCache[1])
         document.originalZoom = getZoom()
     }
 }
 
 function pointermove_handler(ev) {
-    /*ev.preventDefault()
-    ev.stopPropagation()
-    ev.stopImmediatePropagation()*/
-
+    // update event
     const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
-    //console.log(ev.pointerId)
     if (index > -1) {
         evCache[index] = ev
     }
-    if (evCache.length == 1) {
-        let currentCenter = computeCenter(evCache)
-        let deltaX = currentCenter.x - previousCenter.x
-        let deltaY = currentCenter.y - previousCenter.y
-        previousCenter = currentCenter
-        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), ev.clientX, ev.clientY)
-    }
     if (evCache.length == 2) {
-        let currentCenter = computeCenter(evCache)
-        if (previousCenter != null) {
-            deltaX = currentCenter.x - previousCenter.x
-            deltaY = currentCenter.y - previousCenter.y
-        } else {
-            deltaX = currentCenter.x - center.x
-            deltaY = currentCenter.y - center.y
-        }
-        previousCenter = currentCenter
         let pinchSize = computeDistance(evCache[0], evCache[1])
         let currentZoom = pinchSize / originalPinchSize
         let newZoom = document.originalZoom * currentZoom
-        //(pinchSize)
-        zoom(newZoom, center.x, center.y, false)
-        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), currentCenter.x, currentCenter.y)
+        zoom(newZoom, originalCenter.x, originalCenter.y, false)
+    }
+    if (evCache.length >= 1) {
+        let currentCenter = computeCenter(evCache)
+        let deltaX = currentCenter.x - previousCenter.x
+        let deltaY = currentCenter.y - previousCenter.y
+        let totalDeltaX = currentCenter.x - originalCenter.x
+        let totalDeltaY = currentCenter.y - originalCenter.y
+        previousCenter = currentCenter
+        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), totalDeltaX, totalDeltaY)
     }
 }
 
 function pointerup_handler(ev) {
-    ev.preventDefault()
-    ev.stopPropagation()
-    ev.stopImmediatePropagation()
     const index = evCache.findIndex(element => element.pointerId == ev.pointerId);
     if (index > -1) {
         if (evCache.length == 2) pinching = false
