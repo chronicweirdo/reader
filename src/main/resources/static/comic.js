@@ -3,11 +3,9 @@ var swipeNextPossible = false
 var swipePreviousPossible = false
 
 function pan(x, y, totalDeltaX, totalDeltaY, pinching) {
-    //console.log(swipeNextPossible + " " + swipePreviousPossible + " " + pinching + " " + x + " " + y + " " + totalDeltaX + " " + totalDeltaY)
     if (SETTING_SWIPE_PAGE.get() && (swipeNextPossible || swipePreviousPossible) && (!pinching)) {
         let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
         let swipeParameters = computeSwipeParameters(totalDeltaX, totalDeltaY)
-        //console.log(swipeParameters)
         let verticalMoveValid = swipeParameters.angle < SETTING_SWIPE_ANGLE_THRESHOLD.get()
         if (swipeNextPossible && x > 0 ) swipeNextPossible = false
         if (swipePreviousPossible && x < 0 ) swipePreviousPossible = false
@@ -492,25 +490,31 @@ function initSettings() {
 
 
 class Gestures {
-    constructor(element) {
+    constructor(element, resetSwipeFunction, getZoomFunction, setZoomFunction, panFunction, singleClickFunction, doubleClickFunction) {
         this.element = element
         this.clickCache = []
         this.DOUBLE_CLICK_THRESHOLD = 200
+        this.resetSwipe = resetSwipeFunction
+        this.getZoom = getZoomFunction
+        this.setZoom = setZoomFunction
+        this.pan = panFunction
+        this.singleClick = singleClickFunction
+        this.doubleClick = doubleClickFunction
 
         if (this.isTouchEnabled()) {
             this.element.addEventListener("touchstart", this.getTouchStartHandler(), false)
             this.element.addEventListener("touchmove", this.getTouchMoveHandler(), false)
             this.element.addEventListener("touchend", this.getTouchEndHandler(), false)
         } else {
-            /*document.getElementById("ch_canv").addEventListener("pointerdown", pointerdown_handler, false)
-            document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler, false)
-            document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler, false)*/
+            this.element.addEventListener("pointerdown", this.getTouchStartHandler(), false)
+            this.element.addEventListener("pointermove", this.getTouchMoveHandler(), false)
+            this.element.addEventListener("pointerup", this.getTouchEndHandler(), false)
         }
     }
     isTouchEnabled() {
-        return ('ontouchstart' in window) ||
+        return ('ontouchstart' in window)/* ||
             (navigator.maxTouchPoints > 0) ||
-            (navigator.msMaxTouchPoints > 0)
+            (navigator.msMaxTouchPoints > 0)*/
     }
     disableEventNormalBehavior(event) {
         event.preventDefault()
@@ -529,76 +533,86 @@ class Gestures {
             self.disableEventNormalBehavior(event)
             self.pushClick(Date.now())
 
-            if (event.targetTouches.length >= 1) {
+            if (self.getTouchesCount(event) >= 1) {
                 self.originalCenter = self.computeCenter(event)
                 self.previousCenter = self.originalCenter
-                if (isEndOfRow() && isEndOfColumn())
-                    swipeNextPossible = true // page.initializeSwipeNextPossible
-                if (isBeginningOfRow() && isBeginningOfColumn())
-                    swipePreviousPossible = true // page.initializeSwipePreviousPossible
+                if (self.resetSwipe) self.resetSwipe()
             }
-            if (event.targetTouches.length == 2) {
+            if (self.getTouchesCount(event) == 2) {
                 self.originalPinchSize = self.computeDistance(event)
-                self.originalZoom = getZoom() // page.getZoom
+                if (self.getZoom) self.originalZoom = self.getZoom()
             }
             return false
         }
         return touchStartHandler
     }
-    //var evCache = []
-    //var originalCenter = null
-    //var previousCenter = null
-    //var originalPinchSize = 0
-    //var originalZoom = 0
-    //var clickCache = []
+    getTouchesCount(event) {
+        if (event.type.startsWith("touch")) {
+            return event.targetTouches.length
+        } else {
+            return event.buttons > 0 ? 1 : 0
+        }
+    }
     computeDistance(pinchTouchEvent) {
         if (pinchTouchEvent.targetTouches.length == 2) {
-            let x1 = pinchTouchEvent.targetTouches[0].clientX
-            let y1 = pinchTouchEvent.targetTouches[0].clientY
-            let x2 = pinchTouchEvent.targetTouches[1].clientX
-            let y2 = pinchTouchEvent.targetTouches[1].clientY
-            let distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
-            //console.log("coord: (" + ev1.clientX + "," + ev1.clientY +") (" + ev2.clientX + "," + ev2.clientY + ") " + distance)
-            return distance
+            return this.computePointsDistance({
+                x: pinchTouchEvent.targetTouches[0].clientX,
+                y: pinchTouchEvent.targetTouches[0].clientY
+            }, {
+                x: pinchTouchEvent.targetTouches[1].clientX,
+                y: pinchTouchEvent.targetTouches[1].clientY
+            })
         } else {
             return null
         }
     }
-    computeCenter(touchEvent) {
-        let centerX = 0
-        let centerY = 0
-        for (let i = 0; i < touchEvent.targetTouches.length; i++) {
-            centerX = centerX + touchEvent.targetTouches[i].clientX
-            centerY = centerY + touchEvent.targetTouches[i].clientY
-        }
-        centerX = centerX / touchEvent.targetTouches.length
-        centerY = centerY / touchEvent.targetTouches.length
-        return {
-            x: centerX,
-            y: centerY
+    computePointsDistance(p1, p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+    }
+    computeCenter(event) {
+        if (event.type.startsWith("touch")) {
+            let centerX = 0
+            let centerY = 0
+            for (let i = 0; i < event.targetTouches.length; i++) {
+                centerX = centerX + event.targetTouches[i].clientX
+                centerY = centerY + event.targetTouches[i].clientY
+            }
+            centerX = centerX / event.targetTouches.length
+            centerY = centerY / event.targetTouches.length
+            return {
+                x: centerX,
+                y: centerY
+            }
+        } else if (event.type.startsWith("pointer")) {
+            return {
+                x: event.clientX,
+                y: event.clientY
+            }
+        } else {
+            return null
         }
     }
     getTouchMoveHandler() {
         let self = this
         function touchMoveHandler(ev) {
             self.disableEventNormalBehavior(ev)
-            if (ev.targetTouches.length == 2) {
-                self.pinching = true // send this as parameter to pan
+            if (self.getTouchesCount(ev) == 2) {
+                self.pinching = true
                 let pinchSize = self.computeDistance(ev)
                 let currentZoom = pinchSize / self.originalPinchSize
                 let newZoom = self.originalZoom * currentZoom
-                zoom(newZoom, self.originalCenter.x, self.originalCenter.y, false) // page.zoom
-            } else if (ev.targetTouches.length == 1) {
+                if (self.setZoom) self.setZoom(newZoom, self.originalCenter.x, self.originalCenter.y)
+            } else if (self.getTouchesCount(ev) == 1) {
                 self.pinching = false
             }
-            if (ev.targetTouches.length <= 2) {
+            if (self.getTouchesCount(ev) > 0 && self.getTouchesCount(ev) <= 2) {
                 let currentCenter = self.computeCenter(ev)
                 let deltaX = currentCenter.x - self.previousCenter.x
                 let deltaY = currentCenter.y - self.previousCenter.y
                 let totalDeltaX = currentCenter.x - self.originalCenter.x
                 let totalDeltaY = currentCenter.y - self.originalCenter.y
                 self.previousCenter = currentCenter
-                pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), totalDeltaX, totalDeltaY, self.pinching) // page.getPanSpeed?
+                if (self.pan) self.pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), totalDeltaX, totalDeltaY, self.pinching)
             }
             return false
         }
@@ -614,7 +628,9 @@ class Gestures {
     }
     isLastClickRelevant() {
         if (this.clickCache.length >= 1) {
-            return Date.now() - this.clickCache[this.clickCache.length - 1] < this.DOUBLE_CLICK_THRESHOLD
+            let clickNotTooOld = Date.now() - this.clickCache[this.clickCache.length - 1] < this.DOUBLE_CLICK_THRESHOLD
+            let panNotTooLarge = this.computePointsDistance(this.originalCenter, this.previousCenter) < 1
+            return clickNotTooOld && panNotTooLarge
         } else {
             return false
         }
@@ -624,15 +640,15 @@ class Gestures {
         function touchEndHandler(ev) {
             self.disableEventNormalBehavior(ev)
 
-            if (ev.targetTouches.length >= 1) {
+            if (self.getTouchesCount(ev) >= 1) {
                 self.originalCenter = self.computeCenter(ev)
                 self.previousCenter = self.originalCenter
             }
             if (self.isLastClickRelevant()) {
                 if (self.isDoubleClick()) {
-                    zoomJump(self.originalCenter.x, self.originalCenter.y) // page.zoomJump
+                    if (self.doubleClick) self.doubleClick(self.originalCenter.x, self.originalCenter.y)
                 } else {
-                    // single click
+                    if (self.singleClick) self.singleClick(self.originalCenter.x, self.originalCenter.y)
                 }
             }
             return false
@@ -642,15 +658,6 @@ class Gestures {
 }
 
 window.onload = function() {
-    // this is disabling ios safari normal double click behavior
-    /*document.body.addEventListener('click', function(ev) {
-        ev.preventDefault()
-        //console.log('body click')
-    })*/
-    /*document.body.addEventListener('doubleclick', function(ev) {
-        ev.preventDefault()
-        console.log('body double click')
-    })*/
     document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
     document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
@@ -687,13 +694,30 @@ window.onload = function() {
         document.getElementById("ch_canv").addEventListener("pointermove", pointermove_handler, false)
         document.getElementById("ch_canv").addEventListener("pointerup", pointerup_handler, false)
     }*/
-    new Gestures(document.getElementById("ch_canv"))
+    let resetSwipeFunction = function() {
+        if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
+        if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
+    }
+    new Gestures(document.getElementById("ch_canv"), resetSwipeFunction, getZoom, zoom, pan, null, zoomJump)
+    new Gestures(document.getElementById("ch_prev"), resetSwipeFunction, getZoom, zoom, pan, goToPreviousView, null)
+    new Gestures(document.getElementById("ch_next"), resetSwipeFunction, getZoom, zoom, pan, goToNextView, null)
 
     /*document.getElementById("ch_canv").onpointercancel = pointerup_handler;
     document.getElementById("ch_canv").onpointerout = pointerup_handler;
     document.getElementById("ch_canv").addEventListener("pointerleave", pointerup_handler)*/
 
-    enableGesturesOnElement(document.getElementById("ch_prev"), {
+    /*enableGesturesOnElement(document.getElementById("ch_prev"), {
+        "mouseMoveAction": mouseGestureDrag,
+        "scrollAction": mouseGestureScroll,
+        "pinchStartAction": touchGesturePinchStart,
+        "pinchAction": touchGesturePinchOngoing,
+        "pinchEndAction": touchGesturePinchEnd,
+        "panStartAction": touchGestureStartPan,
+        "panAction": touchGesturePan,
+        "panEndAction": touchGestureEndPan
+    })*/
+    /*document.getElementById("ch_prev").addEventListener("click", (event) => goToPreviousView())*/
+    /*enableGesturesOnElement(document.getElementById("ch_next"), {
         "mouseMoveAction": mouseGestureDrag,
         "scrollAction": mouseGestureScroll,
         "pinchStartAction": touchGesturePinchStart,
@@ -703,18 +727,7 @@ window.onload = function() {
         "panAction": touchGesturePan,
         "panEndAction": touchGestureEndPan
     })
-    document.getElementById("ch_prev").addEventListener("click", (event) => goToPreviousView())
-    enableGesturesOnElement(document.getElementById("ch_next"), {
-        "mouseMoveAction": mouseGestureDrag,
-        "scrollAction": mouseGestureScroll,
-        "pinchStartAction": touchGesturePinchStart,
-        "pinchAction": touchGesturePinchOngoing,
-        "pinchEndAction": touchGesturePinchEnd,
-        "panStartAction": touchGestureStartPan,
-        "panAction": touchGesturePan,
-        "panEndAction": touchGestureEndPan
-    })
-    document.getElementById("ch_next").addEventListener("click", (event) => goToNextView())
+    document.getElementById("ch_next").addEventListener("click", (event) => goToNextView())*/
 
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
