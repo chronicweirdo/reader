@@ -596,12 +596,9 @@ window.onload = function() {
     document.getElementById("ch_content").addEventListener('touchstart', touchGestureStartPan, false);
     document.getElementById("ch_content").addEventListener('touchmove', touchGesturePan, false);
 
-    enableGesturesOnElement(document.getElementById("ch_prev"), {
-        "clickAction": (x, y) => previousPage()
-    })
-    enableGesturesOnElement(document.getElementById("ch_next"), {
-        "clickAction": (x, y) => nextPage()
-    })
+    document.getElementById("ch_prev").addEventListener("click", (event) => previousPage())
+    document.getElementById("ch_next").addEventListener("click", (event) => nextPage())
+
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true, prepareBookTools))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false, prepareBookTools))
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
