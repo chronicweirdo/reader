@@ -408,37 +408,10 @@ function jumpToPage(page) {
     })
 }
 
-function goBack() {
-    window.history.back();
-}
-
-function mouseGestureDrag(mouseButtonPressed, deltaX, deltaY) {
-    if (mouseButtonPressed) {
-        pan(deltaX * getPanSpeed(), deltaY * getPanSpeed())
-    }
-}
-
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
     var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? 1 : -1)
     var newZoom = getZoom() * zoomDelta
     zoom(newZoom, scrollCenterX, scrollCenterY, true)
-}
-
-function touchGesturePinchStart(pinchCenterX, pinchCenterY) {
-    pinching = true
-    document.originalZoom = getZoom()
-}
-
-function touchGesturePinchOngoing(currentZoom, pinchCenterX, pinchCenterY) {
-    zoom(document.originalZoom * currentZoom, pinchCenterX, pinchCenterY, false)
-}
-
-function touchGesturePinchEnd() {
-    pinching = false
-}
-
-function touchGesturePan(deltaX, deltaY, currentX, currentY) {
-    pan(deltaX * getPanSpeed(), deltaY * getPanSpeed(), currentX, currentY)
 }
 
 function downloadComicToDevice() {
