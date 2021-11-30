@@ -490,7 +490,7 @@ function initSettings() {
 
 
 class Gestures {
-    constructor(element, resetSwipeFunction, getZoomFunction, setZoomFunction, panFunction, singleClickFunction, doubleClickFunction) {
+    constructor(element, resetSwipeFunction, getZoomFunction, setZoomFunction, panFunction, singleClickFunction, doubleClickFunction, mouseScrollFunction) {
         this.element = element
         this.clickCache = []
         this.DOUBLE_CLICK_THRESHOLD = 200
@@ -500,6 +500,7 @@ class Gestures {
         this.pan = panFunction
         this.singleClick = singleClickFunction
         this.doubleClick = doubleClickFunction
+        this.mouseScroll = mouseScrollFunction
 
         if (this.isTouchEnabled()) {
             this.element.addEventListener("touchstart", this.getTouchStartHandler(), false)
@@ -509,7 +510,19 @@ class Gestures {
             this.element.addEventListener("pointerdown", this.getTouchStartHandler(), false)
             this.element.addEventListener("pointermove", this.getTouchMoveHandler(), false)
             this.element.addEventListener("pointerup", this.getTouchEndHandler(), false)
+            this.element.addEventListener("wheel", this.getMouseWheelScrollHandler(), false)
         }
+    }
+    getMouseWheelScrollHandler() {
+        let self = this
+        function mouseWheelScrollHandler(event) {
+            let scrollCenterX = event.clientX
+            let scrollCenterY = event.clientY
+            let scrollValue = event.deltaY
+
+            if (self.mouseScroll) self.mouseScroll(scrollCenterX, scrollCenterY, scrollValue)
+        }
+        return mouseWheelScrollHandler
     }
     isTouchEnabled() {
         return ('ontouchstart' in window)/* ||
@@ -550,7 +563,7 @@ class Gestures {
         if (event.type.startsWith("touch")) {
             return event.targetTouches.length
         } else {
-            return event.buttons > 0 ? 1 : 0
+            return event.buttons > 0 && event.button == 0 ? 1 : 0
         }
     }
     computeDistance(pinchTouchEvent) {
@@ -698,9 +711,9 @@ window.onload = function() {
         if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
         if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
     }
-    new Gestures(document.getElementById("ch_canv"), resetSwipeFunction, getZoom, zoom, pan, null, zoomJump)
-    new Gestures(document.getElementById("ch_prev"), resetSwipeFunction, getZoom, zoom, pan, goToPreviousView, null)
-    new Gestures(document.getElementById("ch_next"), resetSwipeFunction, getZoom, zoom, pan, goToNextView, null)
+    new Gestures(document.getElementById("ch_canv"), resetSwipeFunction, getZoom, zoom, pan, null, zoomJump, mouseGestureScroll)
+    new Gestures(document.getElementById("ch_prev"), resetSwipeFunction, getZoom, zoom, pan, goToPreviousView, null, mouseGestureScroll)
+    new Gestures(document.getElementById("ch_next"), resetSwipeFunction, getZoom, zoom, pan, goToNextView, null, mouseGestureScroll)
 
     /*document.getElementById("ch_canv").onpointercancel = pointerup_handler;
     document.getElementById("ch_canv").onpointerout = pointerup_handler;
