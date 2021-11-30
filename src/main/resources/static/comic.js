@@ -18,18 +18,18 @@ function pan(x, y, totalDeltaX, totalDeltaY, pinching) {
             swipePreviousPossible = false
             goToPreviousView()
         } else {
-            setImageLeft(getImageLeft() + x)
-            setImageTop(getImageTop() + y)
-            updateImage()
+            getImage().addLeft(x)
+            getImage().addTop(y)
+            getImage().update()
         }
     } else {
-        setImageLeft(getImageLeft() + x)
-        setImageTop(getImageTop() + y)
-        updateImage()
+        getImage().addLeft(x)
+        getImage().addTop(y)
+        getImage().update()
     }
 }
 
-function touchGestureStartPan(x, y) {
+/*function touchGestureStartPan(x, y) {
     if (SETTING_SWIPE_PAGE.get()) {
         panX = x
         panY = y
@@ -42,48 +42,141 @@ function touchGestureEndPan() {
     panEnabled = true
     swipeNextPossible = false
     swipePreviousPossible = false
-}
+}*/
 
-function zoom(zoom, centerX, centerY, withImageUpdate) {
-    var sideLeft = centerX - getImageLeft()
-    var ratioLeft = sideLeft / (getImageWidth() * getZoom())
-    var newSideLeft = (getImageWidth() * zoom) * ratioLeft
-    setImageLeft(centerX - newSideLeft)
 
-    var sideTop = centerY - getImageTop()
-    var ratioTop = sideTop / (getImageHeight() * getZoom())
-    var newSideTop = (getImageHeight() * zoom) * ratioTop
-    setImageTop(centerY - newSideTop)
 
-    setZoom(zoom)
-    setZoomJumpValue(zoom)
-    if (withImageUpdate) updateImage()
-}
 
-function updateImage() {
-    var img = getImage()
 
-    if (getZoom() < getMinimumZoom()) setZoom(getMinimumZoom())
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////// IMAGE ↓
 
-    var newWidth = getOriginalImageWidth() * getZoom()
-    var newHeight = getOriginalImageHeight() * getZoom()
-    setImageWidth(newWidth)
-    setImageHeight(newHeight)
+class Image {
+    constructor(element) {
+        this.image = element
+        this.zoomValue = 1
+    }
+    setWidth(width) {
+        this.image.width = width
+    }
+    getWidth() {
+        return this.image.width
+    }
+    setHeight(height) {
+        this.image.height = height
+    }
+    getHeight() {
+        return this.image.height
+    }
+    getOriginalWidth() {
+        return this.image.naturalWidth
+    }
+    getOriginalHeight() {
+        return this.image.naturalHeight
+    }
+    setLeft(left) {
+        this.image.style.left = left + "px"
+    }
+    addLeft(x) {
+        this.setLeft(this.getLeft() + x)
+    }
+    getLeft() {
+        return num(this.image.style.left, 0)
+    }
+    setTop(top) {
+        this.image.style.top = top + "px"
+    }
+    addTop(y) {
+        this.setTop(this.getTop() + y)
+    }
+    getTop() {
+        return num(this.image.style.top, 0)
+    }
+    setZoom(zoom) {
+        this.zoomValue = zoom
+    }
+    getZoom() {
+        return this.zoomValue
+    }
+    // minimum zoom is determined by image and viewport dimensions
+    updateMinimumZoom() {
+        this.minimumZoom = Math.min(getViewportHeight() / this.getOriginalHeight(), getViewportWidth() / this.getOriginalWidth())
+    }
+    getMinimumZoom() {
+        return this.minimumZoom
+    }
+    isPageFitToScreen() {
+        return this.getZoomForFitToScreen() == this.getZoom()
+    }
+    getZoomForFitToScreen() {
+        return Math.min(getViewportHeight() / this.getOriginalHeight(), getViewportWidth() / this.getOriginalWidth())
+    }
+    fitPageToScreen() {
+        this.setZoom(this.getZoomForFitToScreen())
+        this.update()
+    }
+    getRowThreshold() {
+        return this.getWidth() * SETTING_COMIC_ROW_THRESHOLD.get()
+    }
+    getColumnThreshold() {
+        return this.getHeight() * SETTING_COMIC_COLUMN_THRESHOLD.get()
+    }
+    isEndOfRow() {
+        return (this.getWidth() <= getViewportWidth()) || approx(this.getLeft() + this.getWidth(), getViewportWidth(), this.getRowThreshold())
+    }
+    isBeginningOfRow() {
+        return (this.getWidth() <= getViewportWidth()) || approx(this.getLeft(), 0, this.getRowThreshold())
+    }
+    isEndOfColumn() {
+        return (this.getHeight() <= getViewportHeight()) || approx(this.getTop() + this.getHeight(), getViewportHeight(), this.getColumnThreshold())
+    }
+    isBeginningOfColumn() {
+        return (this.getHeight() <= getViewportHeight()) || approx(this.getTop(), 0, this.getColumnThreshold())
+    }
+    update() {
+        if (this.getZoom() < this.getMinimumZoom()) this.setZoom(this.getMinimumZoom())
 
-    var minimumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.min(0, getViewportWidth() - newWidth)
-    var maximumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.max(0, getViewportWidth() - newWidth)
-    var minimumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.min(0, getViewportHeight() - newHeight)
-    var maximumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.max(0, getViewportHeight() - newHeight)
+        let newWidth = this.getOriginalWidth() * this.getZoom()
+        let newHeight = this.getOriginalHeight() * this.getZoom()
+        this.setWidth(newWidth)
+        this.setHeight(newHeight)
 
-    if (getImageLeft() < minimumLeft) setImageLeft(minimumLeft)
-    if (getImageLeft() > maximumLeft) setImageLeft(maximumLeft)
-    if (getImageTop() < minimumTop) setImageTop(minimumTop)
-    if (getImageTop() > maximumTop) setImageTop(maximumTop)
+        let minimumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.min(0, getViewportWidth() - newWidth)
+        let maximumLeft = (newWidth < getViewportWidth()) ? (getViewportWidth() / 2) - (newWidth / 2) : Math.max(0, getViewportWidth() - newWidth)
+        let minimumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.min(0, getViewportHeight() - newHeight)
+        let maximumTop = (newHeight < getViewportHeight()) ? (getViewportHeight() / 2) - (newHeight / 2) : Math.max(0, getViewportHeight() - newHeight)
+
+        if (this.getLeft() < minimumLeft) this.setLeft(minimumLeft)
+        if (this.getLeft() > maximumLeft) this.setLeft(maximumLeft)
+        if (this.getTop() < minimumTop) this.setTop(minimumTop)
+        if (this.getTop() > maximumTop) this.setTop(maximumTop)
+    }
+    zoom(zoom, centerX, centerY, withImageUpdate) {
+        let sideLeft = centerX - this.getLeft()
+        let ratioLeft = sideLeft / (this.getWidth() * this.getZoom())
+        let newSideLeft = (this.getWidth() * zoom) * ratioLeft
+        this.setLeft(centerX - newSideLeft)
+
+        let sideTop = centerY - this.getTop()
+        let ratioTop = sideTop / (this.getHeight() * this.getZoom())
+        let newSideTop = (this.getHeight() * zoom) * ratioTop
+        this.setTop(centerY - newSideTop)
+
+        this.setZoom(zoom)
+        setZoomJumpValue(zoom)
+        if (withImageUpdate) this.update()
+    }
 }
 
 function getImage() {
-    return document.getElementsByTagName("img")[0]
+    if (document.image) {
+        return document.image
+    } else {
+        document.image = new Image(document.getElementsByTagName("img")[0])
+        return document.image
+    }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////// IMAGE ↑
 
 function getRevertScrollZoom() {
     return SETTING_COMIC_INVERT_SCROLL.get()
@@ -97,6 +190,7 @@ function getPanSpeed() {
     return SETTING_COMIC_PAN_SPEED.get()
 }
 
+// todo: make this a setting without UI
 function getZoomJumpValue() {
     var zoomJump = window.localStorage.getItem("zoomJump")
     if (zoomJump) {
@@ -111,64 +205,29 @@ function setZoomJumpValue(value) {
 }
 
 function zoomJump(x, y) {
-    if (isPageFitToScreen()) {
-        zoom(getZoomJumpValue(), x, y, true)
+    if (getImage().isPageFitToScreen()) {
+        console.log("page is fit to screen")
+        getImage().zoom(getZoomJumpValue(), x, y, true)
     } else {
-        fitPageToScreen()
+        console.log("making page fit to screen")
+        getImage().fitPageToScreen()
     }
 }
 
-function fitPageToScreenWidth() {
-    setZoom(getViewportWidth() / getOriginalImageWidth())
-    updateImage()
+/*function fitPageToScreenWidth() {
+    getImage().setZoom(getViewportWidth() / getImage().getOriginalWidth())
+    getImage().update()
 }
 
 function fitPageToScreenHeight() {
     setZoom(getViewportHeight() / getOriginalImageHeight())
     updateImage()
-}
-
-function isPageFitToScreen() {
-    return getZoomForFitToScreen() == getZoom()
-}
-
-function getZoomForFitToScreen() {
-    return Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
-}
-
-function fitPageToScreen() {
-    setZoom(getZoomForFitToScreen())
-    updateImage()
-}
+}*/
 
 function setPage(page) {
     if (page < 1) page = 1
     if (page > document.comicMaximumPages) page = document.comicMaximumPages
     updatePositionInput(page)
-}
-
-function setImageWidth(width) {
-    getImage().width = width
-}
-
-function getImageWidth() {
-    return getImage().width
-}
-
-function setImageHeight(height) {
-    getImage().height = height
-}
-
-function getImageHeight() {
-    return getImage().height
-}
-
-function getOriginalImageWidth() {
-    return getImage().naturalWidth
-}
-
-function getOriginalImageHeight() {
-    return getImage().naturalHeight
 }
 
 function getHorizontalJumpPercentage() {
@@ -177,39 +236,6 @@ function getHorizontalJumpPercentage() {
 
 function getVerticalJumpPercentage() {
     return SETTING_COMIC_VERTICAL_JUMP.get()
-}
-
-function setImageLeft(left) {
-    getImage().style.left = left + "px"
-}
-
-function getImageLeft() {
-    return num(getImage().style.left, 0)
-}
-
-function setImageTop(top) {
-    getImage().style.top = top + "px"
-}
-
-function getImageTop() {
-    return num(getImage().style.top, 0)
-}
-
-function setZoom(zoom) {
-    document.imageSettings.zoom = zoom
-}
-
-function getZoom() {
-    return document.imageSettings.zoom
-}
-
-// minimum zoom is determined by image and viewport dimensions
-function updateMinimumZoom() {
-    document.imageSettings.minimumZoom = Math.min(getViewportHeight() / getOriginalImageHeight(), getViewportWidth() / getOriginalImageWidth())
-}
-
-function getMinimumZoom() {
-    return document.imageSettings.minimumZoom
 }
 
 function downloadImageData(page, callback) {
@@ -244,18 +270,18 @@ function displayPage(page, callback) {
             if (document.pageDisplayTimestamp == timestamp) {
                 document.pageDisplayTimestamp = null
                 hideSpinner()
-                var img = getImage()
+                var img = getImage().image
                 img.onload = function() {
                     document.getElementById("content").style.background = getHexCode(data.color)
                     setStatusBarColor(getHexCode(data.color))
                     setPage(page)
                     saveProgress(getBookId(), page-1)
                     setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
-                    setImageWidth(getOriginalImageWidth())
-                    setImageHeight(getOriginalImageHeight())
-                    setImageLeft(0)
-                    setImageTop(0)
-                    updateMinimumZoom()
+                    getImage().setWidth(getImage().getOriginalWidth())
+                    getImage().setHeight(getImage().getOriginalHeight())
+                    getImage().setLeft(0)
+                    getImage().setTop(0)
+                    getImage().updateMinimumZoom()
                     updateDownloadUrl()
                     if (callback != null) {
                         callback()
@@ -301,28 +327,6 @@ function approx(val1, val2, threshold = 1) {
     return Math.abs(val1 - val2) < threshold
 }
 
-function getRowThreshold() {
-    return getImageWidth() * SETTING_COMIC_ROW_THRESHOLD.get()
-}
-
-function getColumnThreshold() {
-    return getImageHeight() * SETTING_COMIC_COLUMN_THRESHOLD.get()
-}
-
-function isEndOfRow() {
-    return (getImage().width <= getViewportWidth()) || approx(getImageLeft() + getImageWidth(), getViewportWidth(), getRowThreshold())
-}
-function isBeginningOfRow() {
-    return (getImage().width <= getViewportWidth()) || approx(getImageLeft(), 0, getRowThreshold())
-}
-
-function isEndOfColumn() {
-    return (getImage().height <= getViewportHeight()) || approx(getImageTop() + getImageHeight(), getViewportHeight(), getColumnThreshold())
-}
-function isBeginningOfColumn() {
-    return (getImage().height <= getViewportHeight()) || approx(getImageTop(), 0, getColumnThreshold())
-}
-
 function getLastPosition(imageDimension, viewportDimension, imageValue, viewportJumpPercentage, threshold) {
     return viewportDimension - imageDimension
 }
@@ -348,7 +352,7 @@ function getBookId() {
 function goToNextPage() {
     if (getPositionInput() < document.comicMaximumPages) {
         displayPage(getPositionInput() + 1, function() {
-            updateImage()
+            getImage().update()
         })
     }
 }
@@ -356,62 +360,64 @@ function goToNextPage() {
 function goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
     if (getPositionInput() > 1) {
         displayPage(getPositionInput() - 1, function() {
-            if (proposedLeft) setImageLeft(proposedLeft)
-            if (proposedTop) setImageTop(proposedTop)
-            updateImage()
+            if (proposedLeft) getImage().setLeft(proposedLeft)
+            if (proposedTop) getImage().setTop(proposedTop)
+            getImage().update()
         })
     }
 }
 
 function goToNextView() {
-    if (isEndOfRow()) {
-        if (isEndOfColumn()) {
+    let img = getImage()
+    if (img.isEndOfRow()) {
+        if (img.isEndOfColumn()) {
             goToNextPage()
         } else {
-            setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
-            setImageTop(getNextPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
-            updateImage()
+            img.setLeft(getNextPosition(img.getWidth(), getViewportWidth(), img.getLeft(), getHorizontalJumpPercentage(), img.getRowThreshold()))
+            img.setTop(getNextPosition(img.getHeight(), getViewportHeight(), img.getTop(), getVerticalJumpPercentage(), img.getColumnThreshold()))
+            img.update()
         }
     } else {
-        setImageLeft(getNextPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
-        updateImage()
+        img.setLeft(getNextPosition(img.getWidth(), getViewportWidth(), img.getLeft(), getHorizontalJumpPercentage(), img.getRowThreshold()))
+        img.update()
     }
 }
 
+// todo: move inside image?
 function goToPreviousView() {
-    if (isBeginningOfRow()) {
-        if (isBeginningOfColumn()) {
-            let lastLeft = getLastPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold())
-            let lastTop = getLastPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold())
+    let img = getImage()
+    if (img.isBeginningOfRow()) {
+        if (img.isBeginningOfColumn()) {
+            let lastLeft = getLastPosition(img.getWidth(), getViewportWidth(), img.getLeft(), getHorizontalJumpPercentage(), img.getRowThreshold())
+            let lastTop = getLastPosition(img.getHeight(), getViewportHeight(), img.getTop(), getVerticalJumpPercentage(), img.getColumnThreshold())
             goToPreviousPage(lastLeft, lastTop)
         } else {
-            setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
-            setImageTop(getPreviousPosition(getImage().height, getViewportHeight(), getImageTop(), getVerticalJumpPercentage(), getColumnThreshold()))
-            updateImage()
+            img.setLeft(getPreviousPosition(img.getWidth(), getViewportWidth(), img.getLeft(), getHorizontalJumpPercentage(), img.getRowThreshold()))
+            img.setTop(getPreviousPosition(img.getHeight(), getViewportHeight(), img.getTop(), getVerticalJumpPercentage(), img.getColumnThreshold()))
+            img.update()
         }
     } else {
-        setImageLeft(getPreviousPosition(getImage().width, getViewportWidth(), getImageLeft(), getHorizontalJumpPercentage(), getRowThreshold()))
-        updateImage()
+        img.setLeft(getPreviousPosition(img.getWidth(), getViewportWidth(), img.getLeft(), getHorizontalJumpPercentage(), img.getRowThreshold()))
+        img.update()
     }
-
 }
 
 function handleResize() {
     fixControlSizes()
-    updateMinimumZoom()
-    updateImage()
+    getImage().updateMinimumZoom()
+    getImage().update()
 }
 
 function jumpToPage(page) {
     displayPage(page, function() {
-        updateImage()
+        getImage().update()
     })
 }
 
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
     var zoomDelta = 1 + scrollValue * getScrollSpeed() * (getRevertScrollZoom() ? 1 : -1)
-    var newZoom = getZoom() * zoomDelta
-    zoom(newZoom, scrollCenterX, scrollCenterY, true)
+    var newZoom = getImage().getZoom() * zoomDelta
+    getImage().zoom(newZoom, scrollCenterX, scrollCenterY, true)
 }
 
 function downloadComicToDevice() {
@@ -451,10 +457,12 @@ class Gestures {
         this.mouseScroll = mouseScrollFunction
 
         if (this.isTouchEnabled()) {
+            console.log("enabling touch behavior")
             this.element.addEventListener("touchstart", this.getTouchStartHandler(), false)
             this.element.addEventListener("touchmove", this.getTouchMoveHandler(), false)
             this.element.addEventListener("touchend", this.getTouchEndHandler(), false)
         } else {
+            console.log("enabling screen behavior")
             this.element.addEventListener("pointerdown", this.getTouchStartHandler(), false)
             this.element.addEventListener("pointermove", this.getTouchMoveHandler(), false)
             this.element.addEventListener("pointerup", this.getTouchEndHandler(), false)
@@ -482,9 +490,10 @@ class Gestures {
         return mouseWheelScrollHandler
     }
     isTouchEnabled() {
-        return ('ontouchstart' in window)/* ||
+        /*return ('ontouchstart' in window) ||
             (navigator.maxTouchPoints > 0) ||
             (navigator.msMaxTouchPoints > 0)*/
+        return window.matchMedia("(pointer: coarse)").matches
     }
     disableEventNormalBehavior(event) {
         event.preventDefault()
@@ -622,6 +631,7 @@ class Gestures {
                 if (self.isDoubleClick()) {
                     if (self.doubleClick) self.doubleClick(self.originalCenter.x, self.originalCenter.y)
                 } else {
+                    console.log("click")
                     if (self.singleClick) self.singleClick(self.originalCenter.x, self.originalCenter.y)
                 }
             }
@@ -630,6 +640,8 @@ class Gestures {
         return touchEndHandler
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////// GESTURES ↑
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
@@ -669,12 +681,20 @@ window.onload = function() {
     })
 
     let resetSwipeFunction = function() {
-        if (isEndOfRow() && isEndOfColumn()) swipeNextPossible = true
-        if (isBeginningOfRow() && isBeginningOfColumn()) swipePreviousPossible = true
+        let img = getImage()
+        if (img.isEndOfRow() && img.isEndOfColumn()) swipeNextPossible = true
+        if (img.isBeginningOfRow() && img.isBeginningOfColumn()) swipePreviousPossible = true
     }
-    new Gestures(document.getElementById("ch_canv"), resetSwipeFunction, getZoom, zoom, pan, null, zoomJump, mouseGestureScroll)
-    new Gestures(document.getElementById("ch_prev"), resetSwipeFunction, getZoom, zoom, pan, goToPreviousView, null, mouseGestureScroll)
-    new Gestures(document.getElementById("ch_next"), resetSwipeFunction, getZoom, zoom, pan, goToNextView, null, mouseGestureScroll)
+    let getZoomFunction = function() {
+        return getImage().getZoom()
+    }
+    let zoomFunction = function(val, cx, cy, withUpdate) {
+        getImage().zoom(val, cx, cy, withUpdate)
+    }
+    let img = getImage()
+    new Gestures(document.getElementById("ch_canv"), resetSwipeFunction, getZoomFunction, zoomFunction, pan, null, zoomJump, mouseGestureScroll)
+    new Gestures(document.getElementById("ch_prev"), resetSwipeFunction, getZoomFunction, zoomFunction, pan, goToPreviousView, null, mouseGestureScroll)
+    new Gestures(document.getElementById("ch_next"), resetSwipeFunction, getZoomFunction, zoomFunction, pan, goToNextView, null, mouseGestureScroll)
 
     document.getElementById("ch_tools_left").addEventListener("click", (event) => toggleTools(true))
     document.getElementById("ch_tools_right").addEventListener("click", (event) => toggleTools(false))
@@ -686,8 +706,8 @@ window.onload = function() {
     document.bookId = getMeta("bookId")
     document.bookTitle = getMeta("bookTitle")
     document.comicMaximumPages = num(getMeta("size"))
-    document.imageSettings = {}
-    setZoom(1.0)
+    //document.imageSettings = {}
+    //setZoom(1.0)
 
     initAlpha()
     initSettings()
@@ -697,14 +717,7 @@ window.onload = function() {
     document.lastPageChange = new Date()
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
-        displayPage(startPage, function() {
-            var fit = getMeta("defaultFit")
-            if (fit == "width") {
-                fitPageToScreenWidth()
-            } else if (fit = "screen") {
-                fitPageToScreen()
-            }
-        })
+        displayPage(startPage, () => getImage().fitPageToScreen())
     })
 
     downloadComicToDevice()
