@@ -92,7 +92,6 @@ var filesToCache = [
     '/form.css',
     '/gestures.js',
     '/gold_logo.png',
-    '/hammer.min.js',
     '/library.css',
     '/library.js',
     '/login.css',
