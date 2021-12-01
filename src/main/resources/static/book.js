@@ -326,7 +326,8 @@ async function compute(section, start) {
     let shadowContent = document.getElementById("ch_shadow_content")
     shadowContent.innerHTML = ""
 
-    let firstEnd = section.findSpaceAfter(start)
+    //let firstEnd = section.findSpaceAfter(start)
+    let firstEnd = start
     let end = firstEnd
     let previousEnd = firstEnd
     shadowContent.innerHTML = section.copy(start, end).getContent()
@@ -517,7 +518,6 @@ function displayPageForTocEntry(entry) {
 
 function setZoom(zoom, withResize = true) {
     document.getElementById("content").style["font-size"] = zoom + "rem"
-    //document.body.style["font-size"] = zoom + "em"
     if (withResize) handleResize()
 }
 
