@@ -1,6 +1,132 @@
-//var pinching = false
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////// COMIC ↓
 
+class Comic {
+    constructor(id, title, size) {
+        this.id = id
+        this.title = title
+        this.size = size
+        this.lastPageChange = Date.now()
+    }
+    setPage(page) {
+        if (page < 1) page = 1
+        if (page > this.size) page = this.size
+        updatePositionInput(page)
+    }
+    setDocumentTitle(value) {
+        document.title = value
+    }
+    updateDownloadUrl() {
+        let url = "downloadPage?id=" + this.id + "&page=" + (getPositionInput()-1)
+        let downloadLink = document.getElementById("downloadPageButton")
+        downloadLink.href = url
+    }
+    displayPage(page, callback) {
+        let self = this
+        let displayPageInternal = function(page, callback) {
+            self.lastPageChange = timestamp
+            self.pageDisplayTimestamp = timestamp
+
+            var displayPageInternalCallback = function(data) {
+                if (self.pageDisplayTimestamp == timestamp) {
+                    self.pageDisplayTimestamp = null
+                    hideSpinner()
+                    var img = getImage().image
+                    img.onload = function() {
+                        document.getElementById("content").style.background = getHexCode(data.color)
+                        setStatusBarColor(getHexCode(data.color))
+                        self.setPage(page)
+                        saveProgress(self.id, page-1)
+                        self.setDocumentTitle(page + "/" + self.size + " - " + self.title)
+                        getImage().reset()
+                        self.updateDownloadUrl()
+                        if (callback != null) {
+                            callback()
+                        }
+                    }
+                    img.src = data.image
+                }
+            }
+            self.downloadImageData(page, displayPageInternalCallback)
+            window.setTimeout(function() {
+                if (self.pageDisplayTimestamp == timestamp) {
+                    showSpinner()
+                }
+            }, 100)
+        }
+
+        var timestamp = + new Date()
+        if (self.lastPageChange == undefined) {
+            window.location.reload()
+        }
+        let difference = timestamp - self.lastPageChange
+        if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
+            // load progress
+            // if progress is equal to current position, continue as normal, if not reload page
+            showSpinner()
+            loadProgress(currentPosition => {
+                if (currentPosition != getPositionInput() - 1) {
+                    window.location.reload()
+                } else {
+                    displayPageInternal(page, callback)
+                }
+            })
+        } else {
+            displayPageInternal(page, callback)
+        }
+    }
+    downloadImageData(page, callback) {
+        var xhttp = new XMLHttpRequest()
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 200 && this.responseText.length > 0) {
+                    var jsonResponse = JSON.parse(this.responseText)
+                    if (callback != null) {
+                        callback(jsonResponse)
+                    }
+                } else {
+                    reportError(this.status + " " + this.responseText)
+                }
+            }
+        }
+        xhttp.open("GET", "imageData?id=" + this.id + "&page=" + (page - 1))
+        xhttp.send()
+    }
+    goToNextPage() {
+        let currentPosition = getPositionInput()
+        if (currentPosition < this.size) {
+            this.displayPage(currentPosition + 1, function() {
+                getImage().update()
+            })
+        }
+    }
+    goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
+        let currentPosition = getPositionInput()
+        if (currentPosition > 1) {
+            this.displayPage(currentPosition - 1, function() {
+                if (proposedLeft) getImage().setLeft(proposedLeft)
+                if (proposedTop) getImage().setTop(proposedTop)
+                getImage().update()
+            })
+        }
+    }
+    jumpToPage(page) {
+        this.displayPage(page, function() {
+            getImage().update()
+        })
+    }
+}
+
+function getComic() {
+    if (document.comic) {
+        return document.comic
+    } else {
+        document.comic = new Comic(getMeta("bookId"), getMeta("bookTitle"), num(getMeta("size")))
+        return document.comic
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////// COMIC ↑
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////// IMAGE ↓
@@ -141,30 +267,30 @@ class Image {
     goToNextView() {
         if (this.isEndOfRow()) {
             if (this.isEndOfColumn()) {
-                goToNextPage()
+                getComic().goToNextPage()
             } else {
-                this.setLeft(this.#getNextPosition(this.getWidth(), getViewportWidth(), this.getLeft(), getHorizontalJumpPercentage(), this.getRowThreshold()))
-                this.setTop(this.#getNextPosition(this.getHeight(), getViewportHeight(), this.getTop(), getVerticalJumpPercentage(), this.getColumnThreshold()))
+                this.setLeft(this.#getNextPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold()))
+                this.setTop(this.#getNextPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold()))
                 this.update()
             }
         } else {
-            this.setLeft(this.#getNextPosition(this.getWidth(), getViewportWidth(), this.getLeft(), getHorizontalJumpPercentage(), this.getRowThreshold()))
+            this.setLeft(this.#getNextPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold()))
             this.update()
         }
     }
     goToPreviousView() {
         if (this.isBeginningOfRow()) {
             if (this.isBeginningOfColumn()) {
-                let lastLeft = this.#getLastPosition(this.getWidth(), getViewportWidth(), this.getLeft(), getHorizontalJumpPercentage(), this.getRowThreshold())
-                let lastTop = this.#getLastPosition(this.getHeight(), getViewportHeight(), this.getTop(), getVerticalJumpPercentage(), this.getColumnThreshold())
-                goToPreviousPage(lastLeft, lastTop)
+                let lastLeft = this.#getLastPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold())
+                let lastTop = this.#getLastPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold())
+                getComic().goToPreviousPage(lastLeft, lastTop)
             } else {
-                this.setLeft(this.#getPreviousPosition(this.getWidth(), getViewportWidth(), this.getLeft(), getHorizontalJumpPercentage(), this.getRowThreshold()))
-                this.setTop(this.#getPreviousPosition(this.getHeight(), getViewportHeight(), this.getTop(), getVerticalJumpPercentage(), this.getColumnThreshold()))
+                this.setLeft(this.#getPreviousPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold()))
+                this.setTop(this.#getPreviousPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold()))
                 this.update()
             }
         } else {
-            this.setLeft(this.#getPreviousPosition(this.getWidth(), getViewportWidth(), this.getLeft(), getHorizontalJumpPercentage(), this.getRowThreshold()))
+            this.setLeft(this.#getPreviousPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold()))
             this.update()
         }
     }
@@ -205,6 +331,13 @@ class Image {
             this.fitPageToScreen()
         }
     }
+    reset() {
+        this.setWidth(this.getOriginalWidth())
+        this.setHeight(this.getOriginalHeight())
+        this.setLeft(0)
+        this.setTop(0)
+        this.updateMinimumZoom()
+    }
 }
 
 function getImage() {
@@ -218,147 +351,14 @@ function getImage() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////// IMAGE ↑
 
-
-
-function setPage(page) {
-    if (page < 1) page = 1
-    if (page > document.comicMaximumPages) page = document.comicMaximumPages
-    updatePositionInput(page)
-}
-
-function getHorizontalJumpPercentage() {
-    return SETTING_COMIC_HORIZONTAL_JUMP.get()
-}
-
-function getVerticalJumpPercentage() {
-    return SETTING_COMIC_VERTICAL_JUMP.get()
-}
-
-function downloadImageData(page, callback) {
-    var xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            if (this.status == 200 && this.responseText.length > 0) {
-                var jsonResponse = JSON.parse(this.responseText)
-                if (callback != null) {
-                    callback(jsonResponse)
-                }
-            } else {
-                reportError(this.status + " " + this.responseText)
-            }
-        }
-    }
-    xhttp.open("GET", "imageData?id=" + getBookId() + "&page=" + (page-1))
-    xhttp.send()
-}
-
-function updateDownloadUrl() {
-    var url = "downloadPage?id=" + getBookId() + "&page=" + (getPositionInput()-1)
-    var downloadLink = document.getElementById("downloadPageButton")
-    downloadLink.href = url
-}
-
-function displayPage(page, callback) {
-    let displayPageInternal = function(page, callback) {
-        document.lastPageChange = timestamp
-        document.pageDisplayTimestamp = timestamp
-        var displayPageInternalCallback = function(data) {
-            if (document.pageDisplayTimestamp == timestamp) {
-                document.pageDisplayTimestamp = null
-                hideSpinner()
-                var img = getImage().image
-                img.onload = function() {
-                    document.getElementById("content").style.background = getHexCode(data.color)
-                    setStatusBarColor(getHexCode(data.color))
-                    setPage(page)
-                    saveProgress(getBookId(), page-1)
-                    setPageTitle(page + "/" + document.comicMaximumPages + " - " + document.bookTitle)
-                    getImage().setWidth(getImage().getOriginalWidth())
-                    getImage().setHeight(getImage().getOriginalHeight())
-                    getImage().setLeft(0)
-                    getImage().setTop(0)
-                    getImage().updateMinimumZoom()
-                    updateDownloadUrl()
-                    if (callback != null) {
-                        callback()
-                    }
-                }
-                img.src = data.image
-            }
-        }
-        downloadImageData(page, displayPageInternalCallback)
-        window.setTimeout(function() {
-            if (document.pageDisplayTimestamp == timestamp) {
-                showSpinner()
-            }
-        }, 100)
-    }
-
-    var timestamp = + new Date()
-    if (document.lastPageChange == undefined) {
-        window.location.reload()
-    }
-    let difference = timestamp - document.lastPageChange
-    if (difference > REFRESH_PAGE_TIME_DIFFERENCE) {
-        // load progress
-        // if progress is equal to current position, continue as normal, if not reload page
-        showSpinner()
-        loadProgress(currentPosition => {
-            if (currentPosition != getPositionInput() - 1) {
-                window.location.reload()
-            } else {
-                displayPageInternal(page, callback)
-            }
-        })
-    } else {
-        displayPageInternal(page, callback)
-    }
-}
-
-function setPageTitle(title) {
-    document.title = title
-}
-
 function approx(val1, val2, threshold = 1) {
     return Math.abs(val1 - val2) < threshold
 }
-
-
-
-function getBookId() {
-    return document.bookId
-}
-
-function goToNextPage() {
-    if (getPositionInput() < document.comicMaximumPages) {
-        displayPage(getPositionInput() + 1, function() {
-            getImage().update()
-        })
-    }
-}
-
-function goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
-    if (getPositionInput() > 1) {
-        displayPage(getPositionInput() - 1, function() {
-            if (proposedLeft) getImage().setLeft(proposedLeft)
-            if (proposedTop) getImage().setTop(proposedTop)
-            getImage().update()
-        })
-    }
-}
-
-
 
 function handleResize() {
     fixControlSizes()
     getImage().updateMinimumZoom()
     getImage().update()
-}
-
-function jumpToPage(page) {
-    displayPage(page, function() {
-        getImage().update()
-    })
 }
 
 function mouseGestureScroll(scrollCenterX, scrollCenterY, scrollValue) {
@@ -576,7 +576,6 @@ class Gestures {
                 if (self.isDoubleClick()) {
                     if (self.doubleClick) self.doubleClick(self.originalCenter.x, self.originalCenter.y)
                 } else {
-                    console.log("click")
                     if (self.singleClick) self.singleClick(self.originalCenter.x, self.originalCenter.y)
                 }
             }
@@ -634,7 +633,6 @@ window.onload = function() {
     let panFunction = function(x, y, totalDeltaX, totalDeltaY, pinching) {
         getImage().pan(x, y, totalDeltaX, totalDeltaY, pinching)
     }
-    getImage()
     new Gestures(document.getElementById("ch_canv"), () => getImage().resetPan(), getZoomFunction, zoomFunction, panFunction, null, (x, y) => getImage().zoomJump(x, y), mouseGestureScroll)
     new Gestures(document.getElementById("ch_prev"), () => getImage().resetPan(), getZoomFunction, zoomFunction, panFunction, () => getImage().goToPreviousView(), null, mouseGestureScroll)
     new Gestures(document.getElementById("ch_next"), () => getImage().resetPan(), getZoomFunction, zoomFunction, panFunction, () => getImage().goToNextView(), null, mouseGestureScroll)
@@ -644,11 +642,7 @@ window.onload = function() {
     document.getElementById("ch_tools_container").addEventListener("click", (event) => toggleTools())
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
-    addPositionInputTriggerListener(jumpToPage)
-
-    document.bookId = getMeta("bookId")
-    document.bookTitle = getMeta("bookTitle")
-    document.comicMaximumPages = num(getMeta("size"))
+    addPositionInputTriggerListener((page) => getComic().jumpToPage(page))
 
     initAlpha()
     initSettings()
@@ -658,7 +652,7 @@ window.onload = function() {
     document.lastPageChange = new Date()
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
-        displayPage(startPage, () => getImage().fitPageToScreen())
+        getComic().displayPage(startPage, () => getImage().fitPageToScreen())
     })
 
     downloadComicToDevice()
