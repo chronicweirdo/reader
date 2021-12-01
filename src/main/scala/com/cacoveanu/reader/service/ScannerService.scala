@@ -61,7 +61,8 @@ class ScannerService {
   }
 
   def getLastScanDate(): Date = {
-    lastScanDate.clone().asInstanceOf[Date]
+    if (lastScanDate != null) lastScanDate.clone().asInstanceOf[Date]
+    else null
   }
 
   def scan() = Future {
