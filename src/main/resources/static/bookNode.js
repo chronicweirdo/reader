@@ -26,7 +26,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getResources = getResources
 }
 
-var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image"]
+var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image","?dp"]
 
 function isVoidElement(tagName) {
   return VOID_ELEMENTS.includes(tagName.toLowerCase())

@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 
 object BookNode {
 
-  private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image")
+  private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image", "?dp")
   private val LEAF_ELEMENTS = Seq("img", "tr", "image")
 
   // if it starts and ends with angle brackets
