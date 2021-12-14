@@ -171,48 +171,48 @@ function createTimeController(setting) {
     return controller
 }
 
-function Setting(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
-    this.name = name
-    this.defaultValue = defaultValue
-    this.parser = parser
-    this.textValueFunction = textValueFunction
-    this.textName = textName
-    this.controller = createControllerFunction(this)
-}
-
-Setting.prototype.get = function() {
-    let stringValue = window.localStorage.getItem(this.name)
-    if (! stringValue) {
-        stringValue = this.defaultValue
+class Setting {
+    constructor(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
+        this.name = name
+        this.defaultValue = defaultValue
+        this.parser = parser
+        this.textValueFunction = textValueFunction
+        this.textName = textName
+        if (createControllerFunction) this.controller = createControllerFunction(this)
     }
-    if (this.parser) {
-        return this.parser(stringValue)
-    } else {
-        return stringValue
+    get() {
+        let stringValue = window.localStorage.getItem(this.name)
+        if (!stringValue) {
+            stringValue = this.defaultValue
+        }
+        if (this.parser) {
+            return this.parser(stringValue)
+        } else {
+            return stringValue
+        }
     }
-}
-
-Setting.prototype.getTextValue = function() {
-    if (this.textValueFunction) return this.textValueFunction(this.get())
-    else return this.get()
-}
-
-Setting.prototype.put = function(value) {
-    if (this.encoder) {
-        window.localStorage.setItem(this.name, this.encoder(value))
-    } else {
-        window.localStorage.setItem(this.name, value)
+    getTextValue() {
+        if (this.textValueFunction)
+            return this.textValueFunction(this.get())
+        else
+            return this.get()
     }
-    if (this.listeners) {
-        this.listeners.forEach(listener => listener(value))
+    put(value) {
+        if (this.encoder) {
+            window.localStorage.setItem(this.name, this.encoder(value))
+        } else {
+            window.localStorage.setItem(this.name, value)
+        }
+        if (this.listeners) {
+            this.listeners.forEach(listener => listener(value))
+        }
     }
-}
-
-Setting.prototype.addListener = function(listener) {
-    if (! this.listeners) {
-        this.listeners = []
+    addListener(listener) {
+        if (!this.listeners) {
+            this.listeners = []
+        }
+        this.listeners.push(listener)
     }
-    this.listeners.push(listener)
 }
 
 var SETTING_DARK_MODE_BACKGROUND = new Setting("dark_mode_background", "dark mode background", "#000000", null, null, createColorController)
@@ -244,3 +244,4 @@ var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "tools button h
 var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "tools panel transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))
 var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added books to load", "6", parseInt, null, createNumberController(0, 24, 6))
 var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximum swipe angle", "30", parseInt, degreeToString, createNumberController(10, 60, 10))
+var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null)

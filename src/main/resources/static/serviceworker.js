@@ -92,7 +92,6 @@ var filesToCache = [
     '/form.css',
     '/gestures.js',
     '/gold_logo.png',
-    '/hammer.min.js',
     '/library.css',
     '/library.js',
     '/login.css',
@@ -194,6 +193,8 @@ self.addEventListener('fetch', e => {
         e.respondWith(handleLoadProgress(e.request))
     } else if (url.pathname === '/latestRead') {
         e.respondWith(handleLatestReadRequest(e.request))
+    } else if (url.pathname === '/latestAdded') {
+        e.respondWith(handleLatestAddedRequest(e.request))
     } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
         e.respondWith(handleDataRequest(e.request))
     } else if (url.pathname === '/bookSection') {
@@ -291,6 +292,35 @@ async function handleWebResourceRequest(request) {
     } else {
         let serverResponse = await updateResourceInCache(request)
         return serverResponse
+    }
+}
+
+async function handleLatestAddedRequest(request) {
+    let serverResponse
+    try {
+        serverResponse = await fetch(request)
+    } catch (error) {
+        serverResponse = undefined
+    }
+
+    if (serverResponse) {
+        let text = await serverResponse.text()
+        let json = JSON.parse(text)
+        // find out what has been completely downloaded
+        let completelyDownloadedBooks = await databaseLoadDistinct(BOOKS_TABLE, "id")
+        let decoratedBooks = json.map(book => {
+            if (completelyDownloadedBooks.has(book.id)) {
+                book["downloaded"] = true
+            } else {
+                book["downloaded"] = false
+            }
+            return book
+        })
+        let responseText = JSON.stringify(decoratedBooks)
+
+        return new Response(responseText, {headers: new Headers(serverResponse.headers)})
+    } else {
+        return new Response('{"offline": true}')
     }
 }
 
