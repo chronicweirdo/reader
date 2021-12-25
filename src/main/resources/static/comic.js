@@ -298,6 +298,7 @@ class Image {
         if (this.isEndOfRow() && this.isEndOfColumn()) this.swipeNextPossible = true
         if (this.isBeginningOfRow() && this.isBeginningOfColumn()) this.swipePreviousPossible = true
     }
+    /* returns true if pan should be disabled / when moving to a different page */
     pan(x, y, totalDeltaX, totalDeltaY, pinching) {
         if (SETTING_SWIPE_PAGE.get() && (this.swipeNextPossible || this.swipePreviousPossible) && (!pinching)) {
             let horizontalThreshold = getViewportWidth() * SETTING_SWIPE_LENGTH.get()
@@ -309,19 +310,23 @@ class Image {
                 this.swipeNextPossible = false
                 this.swipePreviousPossible = false
                 this.goToNextView()
+                return true
             } else if (verticalMoveValid && totalDeltaX > horizontalThreshold && this.swipePreviousPossible) {
                 this.swipeNextPossible = false
                 this.swipePreviousPossible = false
                 this.goToPreviousView()
+                return true
             } else {
                 this.addLeft(x)
                 this.addTop(y)
                 this.update()
+                return false
             }
         } else {
             this.addLeft(x)
             this.addTop(y)
             this.update()
+            return false
         }
     }
     zoomJump(x, y) {
@@ -456,6 +461,7 @@ class Gestures {
         function touchStartHandler(event) {
             self.disableEventNormalBehavior(event)
             self.pushClick(Date.now())
+            self.panEnabled = true
 
             if (self.getTouchesCount(event) >= 1) {
                 self.originalCenter = self.computeCenter(event)
@@ -533,14 +539,18 @@ class Gestures {
             } else if (self.getTouchesCount(ev) == 1) {
                 self.pinching = false
             }
-            if (self.getTouchesCount(ev) > 0 && self.getTouchesCount(ev) <= 2) {
+            if (self.panEnabled && self.getTouchesCount(ev) > 0 && self.getTouchesCount(ev) <= 2) {
                 let currentCenter = self.computeCenter(ev)
                 let deltaX = currentCenter.x - self.previousCenter.x
                 let deltaY = currentCenter.y - self.previousCenter.y
                 let totalDeltaX = currentCenter.x - self.originalCenter.x
                 let totalDeltaY = currentCenter.y - self.originalCenter.y
                 self.previousCenter = currentCenter
-                if (self.pan) self.pan(deltaX * SETTING_COMIC_PAN_SPEED.get(), deltaY * SETTING_COMIC_PAN_SPEED.get(), totalDeltaX, totalDeltaY, self.pinching)
+                if (self.pan) {
+                    let stopPan = self.pan(deltaX * SETTING_COMIC_PAN_SPEED.get(), deltaY * SETTING_COMIC_PAN_SPEED.get(), totalDeltaX, totalDeltaY, self.pinching)
+                    console.log(stopPan)
+                    self.panEnabled = (stopPan == false)
+                }
             }
             return false
         }
@@ -631,7 +641,7 @@ window.onload = function() {
         getImage().zoom(val, cx, cy, withUpdate)
     }
     let panFunction = function(x, y, totalDeltaX, totalDeltaY, pinching) {
-        getImage().pan(x, y, totalDeltaX, totalDeltaY, pinching)
+        return getImage().pan(x, y, totalDeltaX, totalDeltaY, pinching)
     }
     new Gestures(document.getElementById("ch_canv"), () => getImage().resetPan(), getZoomFunction, zoomFunction, panFunction, null, (x, y) => getImage().zoomJump(x, y), mouseGestureScroll)
     new Gestures(document.getElementById("ch_prev"), () => getImage().resetPan(), getZoomFunction, zoomFunction, panFunction, () => getImage().goToPreviousView(), null, mouseGestureScroll)
