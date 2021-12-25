@@ -567,7 +567,7 @@ class Gestures {
         if (this.clickCache.length >= 1) {
             let clickNotTooOld = Date.now() - this.clickCache[this.clickCache.length - 1] < this.DOUBLE_CLICK_THRESHOLD
             let panNotTooLarge = this.computePointsDistance(this.originalCenter, this.previousCenter) < 1
-            return clickNotTooOld && panNotTooLarge
+            return clickNotTooOld && panNotTooLarge && this.panEnabled
         } else {
             return false
         }
