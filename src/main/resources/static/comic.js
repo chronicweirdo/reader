@@ -548,7 +548,6 @@ class Gestures {
                 self.previousCenter = currentCenter
                 if (self.pan) {
                     let stopPan = self.pan(deltaX * SETTING_COMIC_PAN_SPEED.get(), deltaY * SETTING_COMIC_PAN_SPEED.get(), totalDeltaX, totalDeltaY, self.pinching)
-                    console.log(stopPan)
                     self.panEnabled = (stopPan == false)
                 }
             }
