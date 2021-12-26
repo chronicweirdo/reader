@@ -295,8 +295,16 @@ class Image {
         }
     }
     resetPan() {
-        if (this.isEndOfRow() && this.isEndOfColumn()) this.swipeNextPossible = true
-        if (this.isBeginningOfRow() && this.isBeginningOfColumn()) this.swipePreviousPossible = true
+        if (this.isEndOfRow() && this.isEndOfColumn()) {
+            this.swipeNextPossible = true
+        } else {
+            this.swipeNextPossible = false
+        }
+        if (this.isBeginningOfRow() && this.isBeginningOfColumn()) {
+            this.swipePreviousPossible = true
+        } else {
+            this.swipePreviousPossible = false
+        }
     }
     /* returns true if pan should be disabled / when moving to a different page */
     pan(x, y, totalDeltaX, totalDeltaY, pinching) {
@@ -548,7 +556,7 @@ class Gestures {
                 self.previousCenter = currentCenter
                 if (self.pan) {
                     let stopPan = self.pan(deltaX * SETTING_COMIC_PAN_SPEED.get(), deltaY * SETTING_COMIC_PAN_SPEED.get(), totalDeltaX, totalDeltaY, self.pinching)
-                    self.panEnabled = (stopPan == false)
+                    if (stopPan) self.panEnabled = false
                 }
             }
             return false
