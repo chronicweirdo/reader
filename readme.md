@@ -19,6 +19,7 @@ and mobile devices.
 - [Updating the service](#updating-the-service)
 - [Troubleshooting - Resetting everything](#troubleshooting---resetting-everything)
 - [Installing as a service on Windows](#installing-as-a-service-on-windows)
+- [Running with Docker](#running-with-docker)
 - [Other considerations](#other-considerations)
 
 ## Features
@@ -136,7 +137,41 @@ Afterwards, restart the application. The database will be recreated, your librar
 ## Installing as a service on Windows
 
 This application is designed to run as a service on a server. You can easily run
-this application as a service on Windows using the [Non-Sucking Service Manager](https://nssm.cc/). 
+this application as a service on Windows using the [Non-Sucking Service Manager](https://nssm.cc/).
+
+## Running with Docker
+
+You can run the chronicreader server with docker using the following command:
+
+```
+docker run -d -e ADMIN_PASSWORD=??? -e SERVER_PORT=8086 -p 8086:8086 -v d:\books:/books -v c:\reader_db:/db chronicweirdo/chronicreader:4.5
+```
+
+You need to provide the following parameters:
+
+- `-d` - run in detached mode, keep the server running in the background
+- `-e ADMIN_PASSWORD=???` - replace `???` with a strong admin password for your server
+- `-e SERVER_PORT=8086 -p 8086:8086` - choose the port to run your server on, in this example port `8086`, and bind your docker port to the `localhost` port
+- `-v d:\books:/books` - bind your local book collection folder, in this example `d:\books`, to the books folder expected in the server image
+- `-v c:\reader_db:/db` - bind a local database folder, in this example `c:\reader_db`, to the database folder expected in the image; this is necessary to keep your read progress data between server restarts
+
+Or you can run this with docker compose:
+
+``` yml
+version: '3'
+services:
+  reader:
+    image: chronicweirdo/chronicreader:4.5
+    environment:
+      - ADMIN_PASSWORD=???
+      - SERVER_PORT=8086
+    ports:
+      - "8086:8086"
+    volumes:
+      - c:\reader_db:/db
+      - d:\books:/books
+    restart: unless-stopped
+```
 
 ## Other considerations
 
