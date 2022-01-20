@@ -9,7 +9,7 @@ FROM openjdk:latest as RUN
 
 RUN mkdir /db
 WORKDIR app
-COPY --from=BUILD /source/build/libs/reader-4.4.jar reader.jar
+COPY --from=BUILD /source/build/libs/reader.jar reader.jar
 COPY start.sh start.sh
 COPY docker-application.properties application.properties
 

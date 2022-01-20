@@ -15,6 +15,13 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   def search(@Param("term") term: String, pageable: Pageable): java.util.List[Book]
 
   @Query(
+    value="select * from book b where b.added is not null order by b.added desc",
+    countQuery = "select count(*) from book b where b.added is not null order by b.added desc",
+    nativeQuery = true
+  )
+  def findLatestAdded(pageable: Pageable): java.util.List[Book]
+
+  @Query(
     value="select distinct(collection) dc from book order by lower(dc) asc",
     nativeQuery = true
   )
