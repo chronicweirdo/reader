@@ -8,6 +8,7 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
+var SERVER_REQUEST_TIMEOUT = 1000
 
 var downloadingBook = new Set()
 
@@ -298,7 +299,7 @@ async function handleWebResourceRequest(request) {
 async function handleLatestAddedRequest(request) {
     let serverResponse
     try {
-        serverResponse = await fetch(request)
+        serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         serverResponse = undefined
     }
@@ -327,7 +328,7 @@ async function handleLatestAddedRequest(request) {
 async function handleSearchRequest(request) {
     let serverResponse
     try {
-        serverResponse = await fetch(request)
+        serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         serverResponse = undefined
     }
@@ -357,7 +358,7 @@ async function handleSearchRequest(request) {
 async function handleRootRequest(request) {
     let serverResponse
     try {
-        serverResponse = await fetch(request)
+        serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         serverResponse = undefined
     }
@@ -412,7 +413,7 @@ async function handleLoadProgress(request) {
     // always get progress from backend - otherwise this doesn't sync well with the server
     let serverProgress
     try {
-        serverProgress = await fetch(request)
+        serverProgress = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         serverProgress = undefined
     }
@@ -438,7 +439,7 @@ async function handleMarkProgress(request) {
 
     let markProgressResponse
     try {
-        markProgressResponse = await fetch(request)
+        markProgressResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         markProgressResponse = undefined
     }
@@ -468,10 +469,35 @@ async function handleMarkProgress(request) {
     return annotatedResponse
 }
 
+function fetchWithTimeout(request, timeoutMillis) {
+    let didTimeOut = false
+    return new Promise(function(resolve, reject) {
+       const timeout = setTimeout(function() {
+           didTimeOut = true
+           reject(new Error('request timed out'))
+       }, timeoutMillis)
+
+       fetch(request)
+       .then(function(response) {
+           // Clear the timeout as cleanup
+           clearTimeout(timeout)
+           if (! didTimeOut) {
+               resolve(response)
+           }
+       })
+       .catch(function(err) {
+           // Rejection already happened with setTimeout
+           if (didTimeOut) return
+           // Reject with error
+           reject(err)
+       })
+   })
+}
+
 async function handleLatestReadRequest(request) {
     let serverResponse
     try {
-        serverResponse = await fetch(request)
+        serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch(e) {
         serverResponse = undefined
     }

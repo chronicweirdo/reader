@@ -203,7 +203,7 @@ function removeExistingBooks() {
 
 function cleanupLatestAddedSection() {
     let hideLatestAdded = getTerm() != ""
-    if (hideLatestAdded || document.getElementById("ch_latestAdded").childNodes.length == 0) {
+    if (hideLatestAdded || document.getElementById("ch_latestAdded").getElementsByTagName('img').length == 0) {
         document.getElementById("ch_latestAdded").style.display = "none"
         document.getElementById("ch_latestAddedTitle").style.display = "none"
     } else {
@@ -307,6 +307,8 @@ function loadLatestRead() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200) {
+                var collectionContainer = document.getElementById("ch_latestRead")
+                collectionContainer.innerHTML = ""
                 var books = JSON.parse(this.responseText)
                 if (books.length > 0) {
                     let bookIds = []
@@ -520,9 +522,8 @@ window.onload = function() {
                 console.log("service worker registration failed: ", error)
             })
         });
-    } else {
-        loadLatestRead()
     }
+    loadLatestRead()
     loadLatestAdded()
 
     var searchParameter = getSearchUrlParameter()
