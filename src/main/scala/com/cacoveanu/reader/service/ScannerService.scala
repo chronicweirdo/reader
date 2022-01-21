@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled
 
 import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 import java.util.Date
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.{ExecutionContext, Future}
 
 @Service
@@ -56,6 +57,8 @@ class ScannerService {
 
   private var lastScanDate: Date = _
 
+  private var scanInProgress: AtomicBoolean = new AtomicBoolean(false)
+
   private def setLastScanDate() = synchronized {
     lastScanDate = new Date()
   }
@@ -66,43 +69,53 @@ class ScannerService {
   }
 
   def scan() = Future {
-    try {
-      log.info("scanning library")
-      val t1 = System.currentTimeMillis()
+    if (! scanInProgress.get()) {
+      scanInProgress.set(true)
+      try {
+        log.info("scanning library")
+        val t1 = System.currentTimeMillis()
 
-      val filesOnDisk = FileUtil.scanFilesRegex(libraryLocation, SUPPORTED_FILES_REGEX).toSet
-      val filesInDatabase = bookRepository.findAllPaths().asScala.toSet
+        val filesOnDisk = FileUtil.scanFilesRegex(libraryLocation, SUPPORTED_FILES_REGEX).toSet
+        val filesInDatabase = bookRepository.findAllPaths().asScala.toSet
 
-      val newFiles = filesOnDisk.diff(filesInDatabase)
-      val deletedFiles = filesInDatabase.diff(filesOnDisk)
+        val newFiles = filesOnDisk.diff(filesInDatabase)
+        val deletedFiles = filesInDatabase.diff(filesOnDisk)
 
-      val t2 = System.currentTimeMillis()
-      log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
-      val newBooks: Seq[Book] = newFiles
-        .toSeq
-        .toBatches(DB_BATCH_SIZE)
-        .flatMap(batch => {
-          log.debug(s"scanning batch of new books of size ${batch.size}")
-          val books = batch.flatMap(path => scanFile(path))
-          bookRepository.saveAll(books.asJava).asScala
-        })
-      val t3 = System.currentTimeMillis()
-      log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
-      val toDelete = bookRepository.findByPathIn(deletedFiles.toSeq.asJava)
-      val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
-      val matchedProgress = toDeleteProgress.flatMap(p =>
-        findEquivalent(p.book, newBooks)
-          .map(newBook => new Progress(p.user, newBook, p.position, p.lastUpdate, p.finished))
-      )
-      progressRepository.saveAll(matchedProgress.asJava)
-      bookRepository.deleteAll(toDelete)
-      val t4 = System.currentTimeMillis()
-      log.info(s"deleting missing files took ${t4 - t3} milliseconds")
-      log.info(s"full scan done, took ${t4 - t1} milliseconds")
-      setLastScanDate()
-    } catch {
-      case t: Throwable =>
-        t.printStackTrace()
+        val t2 = System.currentTimeMillis()
+        log.info(s"discovering files on disk took ${t2 - t1} milliseconds")
+        log.debug(s"found ${newFiles.size} new files")
+        var scannedNewFiles = 0
+        val newBooks: Seq[Book] = newFiles
+          .toSeq
+          .toBatches(DB_BATCH_SIZE)
+          .flatMap(batch => {
+            log.debug(s"scanning batch of new books of size ${batch.size}")
+            val books = batch.flatMap(path => scanFile(path))
+            val savedBooks = bookRepository.saveAll(books.asJava).asScala
+            scannedNewFiles += batch.size
+            val tc = System.currentTimeMillis()
+            log.debug(s"scanned ${scannedNewFiles} files in ${tc - t2} milliseconds, ${newFiles.size - scannedNewFiles} remaining")
+            savedBooks
+          })
+        val t3 = System.currentTimeMillis()
+        log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
+        val toDelete = bookRepository.findByPathIn(deletedFiles.toSeq.asJava)
+        val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
+        val matchedProgress = toDeleteProgress.flatMap(p =>
+          findEquivalent(p.book, newBooks)
+            .map(newBook => new Progress(p.user, newBook, p.position, p.lastUpdate, p.finished))
+        )
+        progressRepository.saveAll(matchedProgress.asJava)
+        bookRepository.deleteAll(toDelete)
+        val t4 = System.currentTimeMillis()
+        log.info(s"deleting missing files took ${t4 - t3} milliseconds")
+        log.info(s"full scan done, took ${t4 - t1} milliseconds")
+        setLastScanDate()
+        scanInProgress.set(false)
+      } catch {
+        case t: Throwable =>
+          t.printStackTrace()
+      }
     }
   }
 
