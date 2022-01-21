@@ -266,7 +266,7 @@ async function updateResourceInCache(request) {
     // then try to get from server
     let serverResponse
     try {
-        serverResponse = await fetch(request)
+        serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
         serverResponse = undefined
     }
@@ -472,25 +472,30 @@ async function handleMarkProgress(request) {
 function fetchWithTimeout(request, timeoutMillis) {
     let didTimeOut = false
     return new Promise(function(resolve, reject) {
-       const timeout = setTimeout(function() {
-           didTimeOut = true
-           reject(new Error('request timed out'))
-       }, timeoutMillis)
+        const timeout = setTimeout(function() {
+            didTimeOut = true
+            reject(new Error('request timed out'))
+        }, timeoutMillis)
 
-       fetch(request)
-       .then(function(response) {
-           // Clear the timeout as cleanup
-           clearTimeout(timeout)
-           if (! didTimeOut) {
-               resolve(response)
-           }
-       })
-       .catch(function(err) {
-           // Rejection already happened with setTimeout
-           if (didTimeOut) return
-           // Reject with error
-           reject(err)
-       })
+
+        fetch(request)
+        .then(function(response) {
+            // Clear the timeout as cleanup
+            clearTimeout(timeout)
+            if (! didTimeOut) {
+                if (response.status == 200) {
+                    resolve(response)
+                } else {
+                    reject(new Error('non 200 response'))
+                }
+            }
+        })
+        .catch(function(err) {
+            // Rejection already happened with setTimeout
+            if (didTimeOut) return
+            // Reject with error
+            reject(err)
+        })
    })
 }
 
