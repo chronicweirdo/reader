@@ -35,15 +35,15 @@ class BookService {
   @Autowired
   var progressRepository: ProgressRepository = _
 
-  def loadBook(id: java.lang.Long) = {
+  def loadBook(id: String) = {
     bookRepository.findById(id).asScala
   }
 
-  def loadProgress(account: Account, id: java.lang.Long) = {
+  def loadProgress(account: Account, id: String) = {
     progressRepository.findByUserAndBookId(account, id).asScala
   }
 
-  def loadProgress(bookId: java.lang.Long): Option[Progress] = {
+  def loadProgress(bookId: String): Option[Progress] = {
     loadBook(bookId) match {
       case Some(book) => progressRepository.findByUserAndBook(SessionUtil.getUser(), book).asScala
       case None => None
@@ -106,7 +106,7 @@ class BookService {
     progressRepository.findByUser(user).asScala.toSeq
   }
 
-  def saveProgress(bookId: java.lang.Long, position: Int) = {
+  def saveProgress(bookId: String, position: Int) = {
     loadBook(bookId) match {
       case Some(book) =>
         val finished = position >= book.size - 1
@@ -120,7 +120,7 @@ class BookService {
     }
   }
 
-  def deleteProgress(bookId: java.lang.Long) = {
+  def deleteProgress(bookId: String) = {
     progressRepository
       .findByUserAndBookId(SessionUtil.getUser(), bookId).asScala
       .map(progress => {

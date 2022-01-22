@@ -18,7 +18,7 @@ class BookController @Autowired()(private val contentService: ContentService,
                                   private val bookService: BookService) {
 
   @RequestMapping(Array("/book"))
-  def loadBook(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
+  def loadBook(@RequestParam(name="id") id: String, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(book) =>
         model.addAttribute("id", id)
@@ -37,7 +37,7 @@ class BookController @Autowired()(private val contentService: ContentService,
 
   @RequestMapping(Array("/bookSection"))
   @ResponseBody
-  def loadBookSection(@RequestParam("id") id: java.lang.Long, @RequestParam("position") position: java.lang.Long): ResponseEntity[BookNode] = {
+  def loadBookSection(@RequestParam("id") id: String, @RequestParam("position") position: java.lang.Long): ResponseEntity[BookNode] = {
     val sectionStartPosition = contentService.findStartPositionForSectionContaining(id, position)
     val node = contentService.loadBookSection(id, sectionStartPosition)
     val headers = new HttpHeaders()
@@ -47,7 +47,7 @@ class BookController @Autowired()(private val contentService: ContentService,
   }
 
   @RequestMapping(Array("/bookResource"))
-  def loadBookResource(@RequestParam("id") id: java.lang.Long, @RequestParam("path") path: String) = {
+  def loadBookResource(@RequestParam("id") id: String, @RequestParam("path") path: String) = {
     contentService.loadBookResource(id, path)
       .map(content => WebUtil.toResponseEntity(content.mediaType, content.data))
       .getOrElse(WebUtil.notFound)

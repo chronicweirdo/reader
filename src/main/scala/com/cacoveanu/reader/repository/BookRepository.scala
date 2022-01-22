@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
 
-trait BookRepository extends JpaRepository[Book, java.lang.Long] {
+trait BookRepository extends JpaRepository[Book, String] {
 
   @Query(
     value="select * from book b where lower(b.collection) + '/' + lower(b.title) like :term order by lower(b.collection) asc, lower(b.title) asc",
@@ -35,7 +35,7 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   )
   def findAllPaths(): java.util.List[String]
 
-  def findByIdNotIn(ids: java.util.List[java.lang.Long]): java.util.List[Book]
+  def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
 
   def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
 }

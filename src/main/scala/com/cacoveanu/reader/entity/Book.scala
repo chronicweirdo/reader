@@ -1,7 +1,5 @@
 package com.cacoveanu.reader.entity
 
-import com.cacoveanu.reader.util.EpubUtil
-
 import java.util.Date
 import scala.jdk.CollectionConverters._
 import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, OneToMany, Transient}
@@ -10,8 +8,7 @@ import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue
 class Book {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  var id: java.lang.Long = _
+  var id: java.lang.String = _
 
   @Column(unique = true)
   var path: String = _
@@ -43,8 +40,9 @@ class Book {
   @JoinColumn(name = "book_id")
   var toc: java.util.List[BookTocEntry] = _
 
-  def this(path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
+  def this(id: String, path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
     this()
+    this.id = id
     this.path = path
     this.title = title
     this.author = author

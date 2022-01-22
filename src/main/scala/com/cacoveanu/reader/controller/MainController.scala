@@ -69,7 +69,7 @@ class MainController @Autowired()(
                      @RequestParam(name = "withoutImages", required = false) withoutImages: Boolean): ResponseEntity[java.util.List[UiBook]] = {
     val books = bookService.loadLatestAdded(limit)
     val progress: Seq[Progress] = bookService.loadProgress(books)
-    val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
+    val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
 
     val uiBooks = books
       .map(book => UiBook(
@@ -92,7 +92,7 @@ class MainController @Autowired()(
       else bookService.search(term, page)
 
     val progress: Seq[Progress] = bookService.loadProgress(books)
-    val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
+    val progressByBook: Map[String, Progress] = progress.map(p => (p.book.id, p)).toMap
 
     val collections = books.map(c => c.collection).distinct.sortBy(c => c.toLowerCase())
     val uiBooks = books
@@ -125,20 +125,20 @@ class MainController @Autowired()(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)
   )
-  def removeProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[String] = {
+  def removeProgress(@RequestParam("id") id: String): ResponseEntity[String] = {
     if (bookService.deleteProgress(id)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(value=Array("/markProgress"), method=Array(RequestMethod.PUT))
-  def markProgress(@RequestParam("id") id: java.lang.Long,
+  def markProgress(@RequestParam("id") id: String,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
     if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(value=Array("/loadProgress"), method=Array(RequestMethod.GET))
-  def loadProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[java.lang.Long] = {
+  def loadProgress(@RequestParam("id") id: String): ResponseEntity[java.lang.Long] = {
     bookService.loadProgress(id).map(p => new ResponseEntity[java.lang.Long](p.position, HttpStatus.OK))
       .getOrElse(new ResponseEntity[java.lang.Long](0L, HttpStatus.OK))
   }
@@ -159,7 +159,7 @@ case class CollectionPage(
                          )
 
 case class UiBook(
-                    @BeanProperty id: java.lang.Long,
+                    @BeanProperty id: java.lang.String,
                     @BeanProperty `type`: String,
                     @BeanProperty collection: String,
                     @BeanProperty title: String,

@@ -430,7 +430,7 @@ async function handleLoadProgress(request) {
 
 async function handleMarkProgress(request) {
     let url = new URL(request.url)
-    let id = parseInt(url.searchParams.get("id"))
+    let id = url.searchParams.get("id")
     let position = parseInt(url.searchParams.get("position"))
     let dbProgress = await databaseSave(PROGRESS_TABLE, {id: id, position: position, synced: true})
 

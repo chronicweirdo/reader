@@ -13,7 +13,7 @@ trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
 
   def findByUser(user: Account): java.util.List[Progress]
 
-  def findByUserAndBookId(user: Account, bookId: java.lang.Long): Optional[Progress]
+  def findByUserAndBookId(user: Account, bookId: String): Optional[Progress]
 
   def findByUserAndBookIn(user: Account, books: java.util.List[Book]): java.util.List[Progress]
 
