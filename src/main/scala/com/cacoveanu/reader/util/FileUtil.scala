@@ -90,6 +90,12 @@ object FileUtil {
     files.toSeq
   }
 
+  def scanFolderTree(path: String): Seq[String] = {
+    scan(path)
+      .filter(f => f.isDirectory)
+      .map(f => f.getAbsolutePath)
+  }
+
   def scanFilesRegex(path: String, regex: String): Seq[String] = {
     val pattern = regex.r
     scan(path)

@@ -57,7 +57,7 @@ class ScannerService {
 
   private var lastScanDate: Date = _
 
-  private var scanInProgress: AtomicBoolean = new AtomicBoolean(false)
+  private val scanInProgress: AtomicBoolean = new AtomicBoolean(false)
 
   private def setLastScanDate() = synchronized {
     lastScanDate = new Date()
