@@ -50,7 +50,7 @@ class ScannerService {
   @PostConstruct
   def updateLibrary() = scan()
 
-  @Scheduled(cron = "0 0 */3 * * *")
+  @Scheduled(cron = "0 */30 * * * *")
   def scheduledRescan() = scan()
 
   private implicit val executionContext = ExecutionContext.global
