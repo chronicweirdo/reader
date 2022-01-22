@@ -20,10 +20,7 @@ class Progress {
   @JoinColumn(name="userId")
   var user: Account = _
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name="bookId")
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  var book: Book = _
+  var bookId: String = _
 
   var position: Int = _
 
@@ -31,10 +28,16 @@ class Progress {
 
   var finished: Boolean = _
 
+  var title: String = _
+
+  var collection: String = _
+
   def this(user: Account, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
-    this.book = book
+    this.bookId = book.id
+    this.title = book.title
+    this.collection = book.collection
     this.position = position
     this.lastUpdate = lastUpdate
     this.finished = finished

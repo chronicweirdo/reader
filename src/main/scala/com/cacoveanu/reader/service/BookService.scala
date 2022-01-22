@@ -44,21 +44,23 @@ class BookService {
   }
 
   def loadProgress(bookId: String): Option[Progress] = {
+    // todo: verify if there is a book before loading progress?
     loadBook(bookId) match {
-      case Some(book) => progressRepository.findByUserAndBook(SessionUtil.getUser(), book).asScala
+      case Some(_) => progressRepository.findByUserAndBookId(SessionUtil.getUser(), bookId).asScala
       case None => None
     }
   }
 
   def loadProgress(books: Seq[Book]): Seq[Progress] = {
-    progressRepository.findByUserAndBookIn(SessionUtil.getUser(), books.asJava).asScala.toSeq
+    progressRepository.findByUserAndBookIdIn(SessionUtil.getUser(), books.map(b => b.id).asJava).asScala.toSeq
   }
 
   def loadAllProgress() = {
     progressRepository.findAll().asScala.toSeq
   }
 
-  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String) = {
+  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String, checksum: String) = {
+    // todo: take checksum into account when importing progress
     try {
       val user = Option(accountRepository.findByUsername(username))
       val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
@@ -94,16 +96,15 @@ class BookService {
     }
   }
 
-  def loadTopProgress(limit: Int): Seq[Progress] = {
-    val sort = Sort.by(Direction.DESC, "last_update")
-    val pageRequest = PageRequest.of(0, limit, sort)
+  def loadValidTopProgress(limit: Int): Seq[Progress] = {
     val user = SessionUtil.getUser()
-    progressRepository.findUnreadByUser(user, pageRequest).asScala.toSeq
+    val userProgress = progressRepository.findUnreadByUser(user).asScala.toSeq
+    userProgress.sortBy(p => p.lastUpdate).reverse.filter(p => loadBook(p.bookId).isDefined).take(limit)
   }
 
-  def loadReadInformation(): Seq[Progress] = {
+  def loadValidReadInformation(): Seq[Progress] = {
     val user = SessionUtil.getUser()
-    progressRepository.findByUser(user).asScala.toSeq
+    progressRepository.findByUser(user).asScala.toSeq.sortBy(p => p.lastUpdate).reverse.filter(p => loadBook(p.bookId).isDefined)
   }
 
   def saveProgress(bookId: String, position: Int) = {

@@ -100,12 +100,12 @@ class ScannerService {
         val t3 = System.currentTimeMillis()
         log.info(s"scanning and saving files took ${t3 - t2} milliseconds")
         val toDelete = bookRepository.findByPathIn(deletedFiles.toSeq.asJava)
-        val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
+        /*val toDeleteProgress = progressRepository.findByBookIn(toDelete).asScala
         val matchedProgress = toDeleteProgress.flatMap(p =>
           findEquivalent(p.book, newBooks)
             .map(newBook => new Progress(p.user, newBook, p.position, p.lastUpdate, p.finished))
         )
-        progressRepository.saveAll(matchedProgress.asJava)
+        progressRepository.saveAll(matchedProgress.asJava)*/
         bookRepository.deleteAll(toDelete)
         val t4 = System.currentTimeMillis()
         log.info(s"deleting missing files took ${t4 - t3} milliseconds")
