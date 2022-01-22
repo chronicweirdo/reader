@@ -1,6 +1,8 @@
 package com.cacoveanu;
 
+import com.cacoveanu.reader.util.FileUtil;
 import org.assertj.core.internal.Arrays;
+import scala.collection.immutable.Seq;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -94,18 +96,23 @@ public class ChecksumTest {
         String md5Checksum = computeChecksum(md5Digest, file);
         long md5End = System.currentTimeMillis();
         System.out.println("computed md5 checksum " + md5Checksum + " in " + (md5End - md5Start) + " milliseconds");
+        System.out.println("verify:               " + FileUtil.getFileChecksum(file, "MD5", FileUtil::hexa));
+        System.out.println("verify (base32):      " + FileUtil.getFileChecksum(file, "MD5", FileUtil::base32));
+        System.out.println("verify (base64):      " + FileUtil.getFileChecksum(file, "MD5", FileUtil::base64));
 
         long sha1Start = System.currentTimeMillis();
         MessageDigest sha1Digest = MessageDigest.getInstance("SHA-1");
         String sha1Checksum = computeChecksum(sha1Digest, file);
         long sha1End = System.currentTimeMillis();
         System.out.println("computed sha1 checksum " + sha1Checksum + " in " + (sha1End - sha1Start) + " milliseconds");
+        System.out.println("verify:                " + FileUtil.getFileChecksum(file, "SHA1", FileUtil::hexa));
 
         long sha256Start = System.currentTimeMillis();
         MessageDigest sha256Digest = MessageDigest.getInstance("SHA-256");
         String sha256Checksum = computeChecksum(sha256Digest, file);
         long sha256End = System.currentTimeMillis();
         System.out.println("computed sha256 checksum " + sha256Checksum + " in " + (sha256End - sha256Start) + " milliseconds");
+        System.out.println("verify:                  " + FileUtil.getFileChecksum(file, "SHA-256", FileUtil::hexa));
 
         /*long creationDateStart = System.currentTimeMillis();
         Date creationDate = getFileCreationDate(file);

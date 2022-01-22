@@ -103,4 +103,41 @@ object FileUtil {
       .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
       .map(f => f.getAbsolutePath)
   }
+
+  /*
+    SHA1
+    SHA-256
+    SHA-512
+   */
+  def getFileChecksum(path: String, algorithm: String = "MD5", encoder: Array[Byte] => String = base32) = {
+    val md = MessageDigest.getInstance(algorithm)
+    var is: InputStream = null
+    try {
+      is = Files.newInputStream(Paths.get(path))
+      val buffer = new Array[Byte](1024)
+      LazyList.continually(is.read(buffer)).takeWhile(_ != -1).foreach(md.update(buffer, 0, _))
+    } finally {
+      if (is != null) is.close()
+    }
+    val digest = md.digest
+    encoder(digest)
+  }
+  def base64(arr: Array[Byte]): String = {
+    Base64.getEncoder().encodeToString(arr)
+  }
+  def base32(arr: Array[Byte]): String = {
+    new Base32().encodeAsString(arr).replaceAll("=", "").toLowerCase()
+  }
+  def hexa(bytes: Array[Byte]): String = {
+    val sb = new StringBuilder
+
+    // loop through the bytes array
+    for (i <- 0 until bytes.length) { // the following line converts the decimal into
+      // hexadecimal format and appends that to the
+      // StringBuilder object
+      sb.append(Integer.toString((bytes(i) & 0xff) + 0x100, 16).substring(1))
+    }
+
+    return sb.toString
+  }
 }
