@@ -32,7 +32,8 @@
         var DATE_CLASS = "history-date"
         var ACTIONS_CLASS = "history-actions"
         var BOOK_ID_ATTRIBUTE = "bookId"
-        var ORPHANED_CLASS = "orphaned"
+        var ORPHANED_CLASS = "history-orphaned"
+        var ORPHANED_CONTENT = "orphaned"
 
         function deleteElementsForBookId(bookId) {
             let sel = Array.from(document.getElementById("ch_read_history").childNodes).filter(e => e.getAttribute).filter(e => e.getAttribute("bookId") == bookId)
@@ -64,14 +65,12 @@
 
             var collection = document.createElement("span")
             collection.classList.add(COLLECTION_CLASS)
-            if (book.orphaned) collection.classList.add(ORPHANED_CLASS)
             collection.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             addCollectionLinkTokens(collection, book.collection, '/', searchLinkBuildHrefFunction)
             elements.push(collection)
 
             var title = document.createElement("span")
             title.classList.add(TITLE_CLASS)
-            if (book.orphaned) title.classList.add(ORPHANED_CLASS)
             title.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var titleLink = document.createElement("a")
             titleLink.href = book.type + "?id=" + book.id
@@ -81,14 +80,12 @@
 
             var bookId = document.createElement("span")
             bookId.classList.add(BOOK_ID_CLASS)
-            if (book.orphaned) bookId.classList.add(ORPHANED_CLASS)
             bookId.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             bookId.innerHTML = book.id
             elements.push(bookId)
 
             var progress = document.createElement("span")
             progress.classList.add(PROGRESS_CLASS)
-            if (book.orphaned) progress.classList.add(ORPHANED_CLASS)
             progress.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var percent = ((book.progress + 1) / parseFloat(book.pages)) * 100
             progress.innerHTML = Math.floor(percent) + "%"
@@ -96,15 +93,19 @@
 
             var date = document.createElement("span")
             date.classList.add(DATE_CLASS)
-            if (book.orphaned) date.classList.add(ORPHANED_CLASS)
             date.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
             elements.push(date)
 
+            var orphaned = document.createElement("span")
+            orphaned.classList.add(ORPHANED_CLASS)
+            orphaned.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
+            if (book.orphaned) orphaned.innerHTML = ORPHANED_CONTENT
+            elements.push(orphaned)
+
             var actions = document.createElement("span")
             actions.classList.add(ACTIONS_CLASS)
-            if (book.orphaned) actions.classList.add(ORPHANED_CLASS)
             actions.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
             var removeProgressButton = document.createElement("a")
             removeProgressButton.onclick = function(event) {
@@ -158,7 +159,7 @@
 <p>Go to <a href="/">Library</a></p>
 <p>
 <p id="ch_read_history" class="history">
-    <span class="header">collection</span><span class="header">title</span><span class="header">checksum</span><span class="header">progress</span><span class="header">read date</span><span class="header">actions</span>
+    <span class="header">collection</span><span class="header">title</span><span class="header">checksum</span><span class="header">progress</span><span class="header">read date</span><span class="header">orphaned</span><span class="header">actions</span>
     </table>
 </p>
 <div id="spinner">
