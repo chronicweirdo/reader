@@ -55,7 +55,7 @@ p.history {
     display: grid;
     align-items: top;
     justify-items: stretch;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
     overflow: hidden;
 }
 p.history > * {
@@ -64,6 +64,9 @@ p.history > * {
 }
 span.header {
     font-weight: bold;
+}
+.history .orphaned {
+    background-color: var(--accent-color, gold);
 }
 @media all and (max-width: 799px) {
     p.history {

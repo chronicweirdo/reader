@@ -39,13 +39,35 @@ class MainController @Autowired()(
     "more"
   }
 
+  @RequestMapping(value = Array("/historyData"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
+  @ResponseBody
+  def loadHistoryData(): ResponseEntity[java.util.List[UiBook]] = {
+    val progressWithBooks: Seq[(Progress, Option[Book])] = bookService.loadAllReadInformation()
+
+    val latestRead = progressWithBooks
+      .map(pb => {
+        val p = pb._1
+        val book = pb._2
+        UiBook(
+          p.bookId,
+          if (book.isDefined) getType(book.get) else null,
+          p.collection,
+          p.title,
+          null,
+          p.position,
+          p.size,
+          p.lastUpdate,
+          book.isEmpty
+        )
+      }).sortBy(_.lastUpdate).reverse
+
+    new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
+  }
+
   @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def loadLatestRead(@RequestParam(name = "limit", required = false) limit: Integer,
-                     @RequestParam(name = "withoutImages", required = false) withoutImages: Boolean): ResponseEntity[java.util.List[UiBook]] = {
-    val progress = if (limit != null && limit > 0) bookService.loadValidTopProgress(limit)
-      else if (limit == null) bookService.loadValidReadInformation()
-      else Seq()
+  def loadLatestRead(@RequestParam(name = "limit", required = true) limit: Integer): ResponseEntity[java.util.List[UiBook]] = {
+    val progress = bookService.loadValidTopProgress(limit)
     val books: Map[String, Book] = progress.map(p => p.bookId).distinct.flatMap(id => bookService.loadBook(id)).map(b => (b.id, b)).toMap
 
     val latestRead = progress
@@ -56,7 +78,7 @@ class MainController @Autowired()(
           getType(book),
           book.collection,
           book.title,
-          if (withoutImages != null && withoutImages) null else WebUtil.toBase64Image(book.mediaType, book.cover),
+          WebUtil.toBase64Image(book.mediaType, book.cover),
           p.position,
           book.size,
           p.lastUpdate
@@ -160,5 +182,6 @@ case class UiBook(
                     @BeanProperty cover: String,
                     @BeanProperty progress: Int,
                     @BeanProperty pages: Int,
-                    @BeanProperty lastUpdate: Date
+                    @BeanProperty lastUpdate: Date,
+                    @BeanProperty orphaned: Boolean = false
                   )

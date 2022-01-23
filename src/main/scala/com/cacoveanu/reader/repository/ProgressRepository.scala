@@ -19,6 +19,8 @@ trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
 
   def findByBookId(bookId: String): java.util.List[Progress]
 
+  def findByTitleAndCollection(title: String, collection: String): java.util.List[Progress]
+
   @Query(
     value="select * from progress p where p.user_id=:#{#user.id} and (p.finished is False)",
     countQuery = "select count(*) from progress p where p.user_id=:#{#user.id} and (p.finished is False)",

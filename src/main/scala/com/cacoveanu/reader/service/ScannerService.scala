@@ -162,12 +162,12 @@ class ScannerService {
             initialScanFolder(path)
           case BookFolderChange(path, true, ADDED) =>
             log.info(s"scan new book $path")
-            addBook(path)
+            verifyAndAddBook(path)
           //case BookFolderChange(path, false, DELETED) =>
           //  println(s"delete book $path")
           case BookFolderChange(path, true, MODIFIED) =>
             log.info(s"rescan and update book $path")
-            verifyBook(path)
+            verifyAndAddBook(path)
           case _ =>
             log.info("do nothing")
         }
@@ -182,45 +182,51 @@ class ScannerService {
     }
   }
 
-  def addBook(path: String) = {
-    scanFile(path) match {
-      case Some(book) =>
-        bookRepository.save(book)
-      case None => log.info(s"failed scanning book at path $path")
-    }
+  def adaptProgressToBook(oldProgress: Seq[Progress], newBook: Book) = {
+    oldProgress.map(p => {
+      p.id = null
+      p.bookId = newBook.id
+      if (p.position >= newBook.size) {
+        p.position = Math.floor(p.position.toDouble/p.size * newBook.size).toInt
+      }
+      p.title = newBook.title
+      p.collection = newBook.collection
+      p.size = newBook.size
+      p
+    })
   }
 
-  def verifyBook(path: String) = {
+  def verifyAndAddBook(path: String) = {
     bookRepository.findByPath(path).toScala match {
       case Some(book) =>
         val checksum = FileUtil.getFileChecksum(path)
         if (checksum != book.id) {
           // find progress for old version of book
-          val oldProgress = progressRepository.findByBookId(book.id).asScala
+          val oldProgress = progressRepository.findByBookId(book.id).asScala.toSeq
           // delete old version of book
           bookRepository.delete(book)
-          // todo: should also delete old progress? probably not, if the new book doesn't scan correctly
           // todo: but should probably have an admin method to delete orphaned progress
           // todo: or just show orphaned progress in the history page, allow users to delete (or match to existing book?)
           // rescan book
           scanFile(path) match {
             case Some(newBook) =>
               bookRepository.save(newBook)
-              val newProgress = oldProgress.map(p => {
-                p.id = null
-                p.bookId = newBook.id
-                if (p.position > newBook.size) {
-                  // todo: set this position recalculation to respect percentage of old book size?
-                  p.position = newBook.size
-                }
-                p.title = newBook.title
-                p.collection = newBook.collection
-                p
-              })
-              progressRepository.saveAll(newProgress.asJava)
+              val newProgress = adaptProgressToBook(oldProgress, newBook)
+              if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
             case None =>
               log.info(s"failed to scan book at $path")
           }
+        }
+      case None =>
+        // this is a completely new book
+        scanFile(path) match {
+          case Some(book) =>
+            bookRepository.save(book)
+            // look for orphaned progress with this path
+            val oldProgress = progressRepository.findByTitleAndCollection(book.title, book.collection).asScala.toSeq
+            val newProgress = adaptProgressToBook(oldProgress, book)
+            if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
+          case None => log.info(s"failed scanning book at path $path")
         }
     }
   }

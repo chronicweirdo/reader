@@ -32,11 +32,14 @@ class Progress {
 
   var collection: String = _
 
+  var size: Int = _
+
   def this(user: Account, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
     this.user = user
     this.bookId = book.id
     this.title = book.title
+    this.size = book.size
     this.collection = book.collection
     this.position = position
     this.lastUpdate = lastUpdate
