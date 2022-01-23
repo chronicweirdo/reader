@@ -297,7 +297,7 @@ function formatImage(img) {
     let size = parseInt(bookElement.getAttribute("size"))
     let progress = parseInt(bookElement.getAttribute("progress"))
     let downloaded = bookElement.getAttribute("downloaded") == "true"
-    if (size != NaN && size > 0 && progress != NaN) {
+    if (size != NaN && size > 0 && progress != NaN && progress != -1) {
         addProgress(img, progress, size, downloaded)
     }
 }
