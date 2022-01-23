@@ -9,6 +9,7 @@ var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
 var SERVER_REQUEST_TIMEOUT = 1000
+var LOGGED_OUT_MESSAGE = "logged out"
 
 var downloadingBook = new Set()
 
@@ -217,7 +218,7 @@ self.addEventListener('fetch', e => {
 
 self.addEventListener('message', event => {
     if (event.data.type === 'storeBook') {
-        var id = parseInt(event.data.bookId)
+        var id = event.data.bookId
         var size = parseInt(event.data.maxPositions)
         triggerStoreBook(id, event.data.kind, size)
     } else if (event.data.type === 'deleteBook') {
@@ -270,7 +271,12 @@ async function updateResourceInCache(request) {
     try {
         serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        serverResponse = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     if (serverResponse) {
@@ -303,7 +309,12 @@ async function handleLatestAddedRequest(request) {
     try {
         serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        serverResponse = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     if (serverResponse) {
@@ -332,7 +343,12 @@ async function handleSearchRequest(request) {
     try {
         serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        serverResponse = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     if (serverResponse) {
@@ -362,7 +378,12 @@ async function handleRootRequest(request) {
     try {
         serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        serverResponse = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     if (serverResponse) {
@@ -372,6 +393,7 @@ async function handleRootRequest(request) {
         return serverResponse
     } else {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
+        console.log("found database response")
         return databaseEntityToResponse(databaseResponse)
     }
 }
@@ -382,9 +404,14 @@ async function handleRootDataRequest(request) {
         let serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
         return serverResponse
     } catch (error) {
-        // then load from database
-        let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
-        return databaseEntityToResponse(databaseResponse)
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            // then load from database
+            let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
+            return databaseEntityToResponse(databaseResponse)
+        }
     }
 }
 
@@ -401,7 +428,7 @@ async function handleDataRequest(request) {
 
 async function handleBookSectionRequest(request) {
     let url = new URL(request.url)
-    let id = parseInt(url.searchParams.get("id"))
+    let id = url.searchParams.get("id")
     let position = parseInt(url.searchParams.get("position"))
 
     const matchFunction = value => {
@@ -422,14 +449,19 @@ async function handleLoadProgress(request) {
     await syncProgressInDatabase()
 
     let url = new URL(request.url)
-    let id = parseInt(url.searchParams.get("id"))
+    let id = url.searchParams.get("id")
 
     // always get progress from backend - otherwise this doesn't sync well with the server
     let serverProgress
     try {
         serverProgress = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        serverProgress = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     // if nothing, try to grab from database
@@ -455,7 +487,12 @@ async function handleMarkProgress(request) {
     try {
         markProgressResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
     } catch (error) {
-        markProgressResponse = undefined
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
 
     if (markProgressResponse) {
@@ -492,15 +529,18 @@ function fetchWithTimeout(request, timeoutMillis) {
         }, timeoutMillis)
 
 
-        fetch(request)
+        fetch(request) //, { redirect: "error" })
         .then(function(response) {
             // Clear the timeout as cleanup
             clearTimeout(timeout)
             if (! didTimeOut) {
-                if (response.status == 200) {
+                //if (!response.redirected && response.status == 200) {
+                if (response.redirected) {
+                    reject(new Error(LOGGED_OUT_MESSAGE))
+                } else if (response.status == 200) {
                     resolve(response)
                 } else {
-                    reject(new Error('non 200 response'))
+                    reject(new Error('response code: ' + response.status))
                 }
             }
         })
@@ -513,12 +553,21 @@ function fetchWithTimeout(request, timeoutMillis) {
    })
 }
 
+function get401Response() {
+    return new Response("", { "status" : 401 })
+}
+
 async function handleLatestReadRequest(request) {
     let serverResponse
     try {
         serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
-    } catch(e) {
-        serverResponse = undefined
+    } catch(error) {
+        if (error.message == LOGGED_OUT_MESSAGE) {
+            return get401Response()
+        } else {
+            console.error(error)
+            serverResponse = undefined
+        }
     }
     if (serverResponse) {
         let syncedProgressCount = await syncProgressInDatabase()
@@ -655,7 +704,7 @@ function saveActualResponseToDatabase(response) {
     return new Promise((resolve, reject) => {
         var url = new URL(response.url)
         var key = response.url
-        var bookId = parseInt(url.searchParams.get("id"))
+        var bookId = url.searchParams.get("id")
         var headers = Object.fromEntries(response.headers.entries())
         response.blob().then(responseBlob => {
             var entry = {
