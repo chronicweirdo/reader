@@ -196,7 +196,9 @@ self.addEventListener('fetch', e => {
         e.respondWith(handleLatestReadRequest(e.request))
     } else if (url.pathname === '/latestAdded') {
         e.respondWith(handleLatestAddedRequest(e.request))
-    } else if (url.pathname === '/imageData' || url.pathname === '/comic' || url.pathname === '/bookResource' || url.pathname === '/book') {
+    } else if (url.pathname === '/comic' || url.pathname === '/book') {
+        e.respondWith(handleRootDataRequest(e.request))
+    } else if (url.pathname === '/imageData' || url.pathname === '/bookResource') {
         e.respondWith(handleDataRequest(e.request))
     } else if (url.pathname === '/bookSection') {
         e.respondWith(handleBookSectionRequest(e.request))
@@ -369,6 +371,18 @@ async function handleRootRequest(request) {
         }
         return serverResponse
     } else {
+        let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
+        return databaseEntityToResponse(databaseResponse)
+    }
+}
+
+async function handleRootDataRequest(request) {
+    try {
+        // always try to load from backend first
+        let serverResponse = await fetchWithTimeout(request, SERVER_REQUEST_TIMEOUT)
+        return serverResponse
+    } catch (error) {
+        // then load from database
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
         return databaseEntityToResponse(databaseResponse)
     }

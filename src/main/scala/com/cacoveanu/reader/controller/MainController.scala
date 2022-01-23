@@ -36,7 +36,6 @@ class MainController @Autowired()(
   @RequestMapping(Array("/more"))
   def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
-    model.addAttribute("lastScanDate", scannerService.getLastScanDate())
     "more"
   }
 
@@ -145,15 +144,6 @@ class MainController @Autowired()(
   def loadProgress(@RequestParam("id") id: String): ResponseEntity[java.lang.Long] = {
     bookService.loadProgress(id).map(p => new ResponseEntity[java.lang.Long](p.position, HttpStatus.OK))
       .getOrElse(new ResponseEntity[java.lang.Long](0L, HttpStatus.OK))
-  }
-
-  @RequestMapping(
-    value=Array("/scan"),
-    method=Array(RequestMethod.GET)
-  )
-  def scan() = {
-    scannerService.scan()
-    new RedirectView("/")
   }
 }
 

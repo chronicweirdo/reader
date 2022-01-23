@@ -40,10 +40,14 @@ class BookController @Autowired()(private val contentService: ContentService,
   def loadBookSection(@RequestParam("id") id: String, @RequestParam("position") position: java.lang.Long): ResponseEntity[BookNode] = {
     val sectionStartPosition = contentService.findStartPositionForSectionContaining(id, position)
     val node = contentService.loadBookSection(id, sectionStartPosition)
-    val headers = new HttpHeaders()
-    headers.set("sectionStart", node.start.toString)
-    headers.set("sectionEnd", node.end.toString)
-    ResponseEntity.ok().headers(headers).body(node)
+    if (node != null) {
+      val headers = new HttpHeaders()
+      headers.set("sectionStart", node.start.toString)
+      headers.set("sectionEnd", node.end.toString)
+      ResponseEntity.ok().headers(headers).body(node)
+    } else {
+      ResponseEntity.notFound().build()
+    }
   }
 
   @RequestMapping(Array("/bookResource"))

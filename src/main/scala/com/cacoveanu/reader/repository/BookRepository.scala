@@ -1,9 +1,11 @@
 package com.cacoveanu.reader.repository
 
-import com.cacoveanu.reader.entity.{Book}
+import com.cacoveanu.reader.entity.Book
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
+
+import java.util.Optional
 
 trait BookRepository extends JpaRepository[Book, String] {
 
@@ -38,4 +40,6 @@ trait BookRepository extends JpaRepository[Book, String] {
   def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
 
   def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
+
+  def findByPath(path: String): Optional[Book]
 }
