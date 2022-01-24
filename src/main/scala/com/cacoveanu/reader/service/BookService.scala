@@ -40,15 +40,15 @@ class BookService {
   }
 
   def loadProgress(account: Account, id: String) = {
-    progressRepository.findByUserAndBookId(account, id).asScala
+    progressRepository.findByUsernameAndBookId(account.username, id).asScala
   }
 
   def loadProgress(bookId: String): Option[Progress] = {
-    progressRepository.findByUserAndBookId(SessionUtil.getUser(), bookId).asScala
+    progressRepository.findByUsernameAndBookId(SessionUtil.getUser().username, bookId).asScala
   }
 
   def loadProgress(books: Seq[Book]): Seq[Progress] = {
-    progressRepository.findByUserAndBookIdIn(SessionUtil.getUser(), books.map(b => b.id).asJava).asScala.toSeq
+    progressRepository.findByUsernameAndBookIdIn(SessionUtil.getUser().username, books.map(b => b.id).asJava).asScala.toSeq
   }
 
   def loadAllProgress() = {
@@ -74,17 +74,17 @@ class BookService {
       val lastUpdateDate = DateUtil.parse(lastUpdate)
       // try to find existing progress
       val existingProgressId: Option[lang.Long] = (user, matchingBook) match {
-        case (Some(u), Some(b)) => progressRepository.findByUserAndBookId(u, b.id).asScala.map(_.id)
+        case (Some(u), Some(b)) => progressRepository.findByUsernameAndBookId(username, b.id).asScala.map(_.id)
         case _ => None
       }
 
       (user, matchingBook, positionParsed, finishedParsed, lastUpdateDate) match {
         case (Some(u), Some(b), Some(p), Some(f), Some(d)) =>
-          val progress = new Progress(u, b, p, d, f)
+          val progress = new Progress(username, b, p, d, f)
           if (existingProgressId.isDefined) progress.id = existingProgressId.get
           Option(progressRepository.save(progress))
         case (Some(u), Some(b), Some(p), Some(f), None) =>
-          val progress = new Progress(u, b, p, new Date(), f)
+          val progress = new Progress(username, b, p, new Date(), f)
           if (existingProgressId.isDefined) progress.id = existingProgressId.get
           Option(progressRepository.save(progress))
         case _ =>
@@ -97,26 +97,26 @@ class BookService {
 
   def loadValidTopProgress(limit: Int): Seq[Progress] = {
     val user = SessionUtil.getUser()
-    val userProgress = progressRepository.findUnreadByUser(user).asScala.toSeq
+    val userProgress = progressRepository.findUnreadByUsername(user.username).asScala.toSeq
     userProgress.sortBy(p => p.lastUpdate).reverse.filter(p => loadBook(p.bookId).isDefined).take(limit)
   }
 
   def loadValidReadInformation(): Seq[Progress] = {
     val user = SessionUtil.getUser()
-    progressRepository.findByUser(user).asScala.toSeq.sortBy(p => p.lastUpdate).reverse.filter(p => loadBook(p.bookId).isDefined)
+    progressRepository.findByUsername(user.username).asScala.toSeq.sortBy(p => p.lastUpdate).reverse.filter(p => loadBook(p.bookId).isDefined)
   }
 
   def loadAllReadInformation(): Seq[(Progress, Option[Book])] = {
     val user = SessionUtil.getUser()
-    progressRepository.findByUser(user).asScala.toSeq.sortBy(p => p.lastUpdate).reverse.map(p => (p, loadBook(p.bookId)))
+    progressRepository.findByUsername(user.username).asScala.toSeq.sortBy(p => p.lastUpdate).reverse.map(p => (p, loadBook(p.bookId)))
   }
 
   def saveProgress(bookId: String, position: Int) = {
     loadBook(bookId) match {
       case Some(book) =>
         val finished = position >= book.size - 1
-        val progress = new Progress(SessionUtil.getUser(), book, position, new Date(), finished)
-        progressRepository.findByUserAndBookId(progress.user, bookId).asScala.foreach(p => progress.id = p.id)
+        val progress = new Progress(SessionUtil.getUser().username, book, position, new Date(), finished)
+        progressRepository.findByUsernameAndBookId(progress.username, bookId).asScala.foreach(p => progress.id = p.id)
         progressRepository.save(progress)
         true
 
@@ -127,7 +127,7 @@ class BookService {
 
   def deleteProgress(bookId: String) = {
     progressRepository
-      .findByUserAndBookId(SessionUtil.getUser(), bookId).asScala
+      .findByUsernameAndBookId(SessionUtil.getUser().username, bookId).asScala
       .map(progress => {
         progressRepository.delete(progress)
         true

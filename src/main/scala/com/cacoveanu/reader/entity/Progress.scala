@@ -9,16 +9,14 @@ import org.hibernate.annotations.{OnDelete, OnDeleteAction}
 import scala.jdk.CollectionConverters._
 
 @Entity
-@Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("userId", "bookId"))))
+@Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("username", "bookId"))))
 class Progress {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   var id: java.lang.Long = _
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name="userId")
-  var user: Account = _
+  var username: String = _
 
   var bookId: String = _
 
@@ -34,9 +32,9 @@ class Progress {
 
   var size: Int = _
 
-  def this(user: Account, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
+  def this(username: String, book: Book, position: Int, lastUpdate: Date, finished: Boolean) = {
     this()
-    this.user = user
+    this.username = username
     this.bookId = book.id
     this.title = book.title
     this.size = book.size

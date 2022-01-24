@@ -9,11 +9,11 @@ import org.springframework.data.repository.query.Param
 
 trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
 
-  def findByUser(user: Account): java.util.List[Progress]
+  def findByUsername(username: String): java.util.List[Progress]
 
-  def findByUserAndBookId(user: Account, bookId: String): Optional[Progress]
+  def findByUsernameAndBookId(username: String, bookId: String): Optional[Progress]
 
-  def findByUserAndBookIdIn(user: Account, bookIds: java.util.List[String]): java.util.List[Progress]
+  def findByUsernameAndBookIdIn(username: String, bookIds: java.util.List[String]): java.util.List[Progress]
 
   def findByBookIdIn(bookIds: java.util.List[String]): java.util.List[Progress]
 
@@ -22,9 +22,9 @@ trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
   def findByTitleAndCollection(title: String, collection: String): java.util.List[Progress]
 
   @Query(
-    value="select * from progress p where p.user_id=:#{#user.id} and (p.finished is False)",
-    countQuery = "select count(*) from progress p where p.user_id=:#{#user.id} and (p.finished is False)",
+    value="select * from progress p where p.username=:#{#username} and (p.finished is False)",
+    countQuery = "select count(*) from progress p where p.username=:#{#username} and (p.finished is False)",
     nativeQuery = true
   )
-  def findUnreadByUser(@Param("user") user: Account): java.util.List[Progress]
+  def findUnreadByUsername(@Param("username") username: String): java.util.List[Progress]
 }
