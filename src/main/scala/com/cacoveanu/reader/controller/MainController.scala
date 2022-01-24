@@ -1,17 +1,15 @@
 package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, ScannerService, UserService}
+import com.cacoveanu.reader.service.{BookService, ScannerService}
 import com.cacoveanu.reader.util.{FileTypes, FileUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
-import org.springframework.web.servlet.view.RedirectView
 
-import java.util
-import java.util.{Collections, Date}
+import java.util.Date
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 

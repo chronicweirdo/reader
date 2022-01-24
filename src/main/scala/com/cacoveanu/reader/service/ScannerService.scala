@@ -38,7 +38,6 @@ class ScannerService {
   private val log: Logger = LoggerFactory.getLogger(classOf[ScannerService])
   private val SUPPORTED_FILES_REGEX = s".+\\.(${FileTypes.CBR}|${FileTypes.CBZ}|${FileTypes.EPUB}|${FileTypes.PDF})$$"
   private val COVER_RESIZE_MINIMAL_SIDE = 500
-  private val DB_BATCH_SIZE = 20
 
   @Value("${library.location}")
   @BeanProperty
@@ -66,19 +65,11 @@ class ScannerService {
     startQueueConsumer()
   }
 
-  //@Scheduled(cron = "0 */30 * * * *")
-  //def scheduledRescan() = scan()
-
   private implicit val executionContext = ExecutionContext.global
-
-  //private var lastScanDate: Date = _
-
-  //private val scanInProgress: AtomicBoolean = new AtomicBoolean(false)
 
   val watchService = FileSystems.getDefault().newWatchService()
   val watchServiceKeyMap = new ConcurrentHashMap[String, WatchKey]()
   val changesQueue: BlockingQueue[BookFolderChange] = new LinkedBlockingQueue[BookFolderChange]()
-  //private val handlingEvents: AtomicBoolean = new AtomicBoolean(false)
 
   def startWatching(path: String): Unit = {
     val key: WatchKey = Paths.get(path).register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
@@ -93,17 +84,7 @@ class ScannerService {
     })
   }
 
-  /*private def setLastScanDate() = synchronized {
-    lastScanDate = new Date()
-  }
-
-  def getLastScanDate(): Date = {
-    if (lastScanDate != null) lastScanDate.clone().asInstanceOf[Date]
-    else null
-  }*/
-
   def initialScanFolder(path: String) = {
-    //FileUtil.scanFolderTree(path).foreach(f => changesQueue.put(BookFolderChange(f, false, ADDED)))
     FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
     val filesOnDisk = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
@@ -129,10 +110,8 @@ class ScannerService {
         key != null
       }) {
         for (event <- key.pollEvents.asScala) {
-          //var eventPath = key.watchable().asInstanceOf[Path].resolveSibling(event.context())
           val eventFile = key.watchable().asInstanceOf[Path].resolve(event.context().asInstanceOf[Path]).toFile
           val eventPath = eventFile.getAbsolutePath
-          //System.out.println("Event kind:" + event.kind + ". File affected: " + eventPath)
           val typ = event.kind() match {
             case ENTRY_CREATE => ADDED
             case ENTRY_MODIFY => MODIFIED
@@ -149,7 +128,6 @@ class ScannerService {
     new Thread(() => {
       while (true) {
         val change = changesQueue.take()
-        //println(change)
         change match {
           case BookFolderChange(path, _, DELETED) =>
             log.info(s"stop following changes in possible folder $path and delete possible book at $path")
@@ -157,13 +135,10 @@ class ScannerService {
             deleteBook(path)
           case BookFolderChange(path, false, ADDED) =>
             log.info(s"start following changes in folder $path")
-            //startWatching(path)
             initialScanFolder(path)
           case BookFolderChange(path, true, ADDED) =>
             log.info(s"scan new book $path")
             verifyAndAddBook(path)
-          //case BookFolderChange(path, false, DELETED) =>
-          //  println(s"delete book $path")
           case BookFolderChange(path, true, MODIFIED) =>
             log.info(s"rescan and update book $path")
             verifyAndAddBook(path)
@@ -194,12 +169,9 @@ class ScannerService {
       case Some(book) =>
         val checksum = FileUtil.getFileChecksum(path)
         if (checksum != book.id) {
-          // find progress for old version of book
           val oldProgress = progressRepository.findByBookId(book.id).asScala.toSeq
-          // delete old version of book
           bookRepository.delete(book)
           // todo: but should probably have an admin method to delete orphaned progress
-          // rescan book
           scanFile(path) match {
             case Some(newBook) =>
               bookRepository.save(newBook)
@@ -221,10 +193,6 @@ class ScannerService {
           case None => log.info(s"failed scanning book at path $path")
         }
     }
-  }
-
-  private def stringsAlike(s1: String, s2: String) = {
-    s1 == s2
   }
 
   private def scanFile(path: String): Option[Book] = {

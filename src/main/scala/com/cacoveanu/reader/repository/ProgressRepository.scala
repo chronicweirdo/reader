@@ -1,11 +1,10 @@
 package com.cacoveanu.reader.repository
 
-import java.util.Optional
-
-import com.cacoveanu.reader.entity.{Progress, Book, Account}
-import org.springframework.data.domain.Pageable
+import com.cacoveanu.reader.entity.Progress
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
+
+import java.util.Optional
 
 trait ProgressRepository extends JpaRepository[Progress, java.lang.Long] {
 

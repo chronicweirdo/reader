@@ -1,8 +1,7 @@
 package com.cacoveanu.reader.entity
 
 import java.util.Date
-import scala.jdk.CollectionConverters._
-import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, OneToMany, Transient}
+import javax.persistence._
 
 @Entity
 class Book {

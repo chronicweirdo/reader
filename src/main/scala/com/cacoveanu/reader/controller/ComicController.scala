@@ -1,7 +1,5 @@
 package com.cacoveanu.reader.controller
 
-import java.nio.charset.StandardCharsets
-
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileUtil, WebUtil}

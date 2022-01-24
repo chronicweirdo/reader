@@ -1,14 +1,13 @@
 package com.cacoveanu.reader.controller
 
-import com.cacoveanu.reader.entity.{BookTocEntry, Content, TocNode}
+import com.cacoveanu.reader.entity.TocNode
 import com.cacoveanu.reader.service.{BookService, ContentService}
-import com.cacoveanu.reader.util.{BookNode, FileTypes, FileUtil, WebUtil}
+import com.cacoveanu.reader.util.{BookNode, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpHeaders, ResponseEntity}
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
-import org.springframework.web.servlet.view.RedirectView
 import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.{RequestMapping, RequestParam, ResponseBody}
 
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._

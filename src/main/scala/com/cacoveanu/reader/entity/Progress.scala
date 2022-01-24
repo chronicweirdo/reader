@@ -1,12 +1,7 @@
 package com.cacoveanu.reader.entity
 
 import java.util.Date
-
-import com.cacoveanu.reader.util.EpubUtil
 import javax.persistence._
-import org.hibernate.annotations.{OnDelete, OnDeleteAction}
-
-import scala.jdk.CollectionConverters._
 
 @Entity
 @Table(uniqueConstraints=Array(new UniqueConstraint(columnNames = Array("username", "bookId"))))

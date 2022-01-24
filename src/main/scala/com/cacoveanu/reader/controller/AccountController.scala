@@ -1,9 +1,5 @@
 package com.cacoveanu.reader.controller
 
-import com.cacoveanu.reader.entity.Book
-
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import com.cacoveanu.reader.service.{BookService, UserService}
 import com.cacoveanu.reader.util.{DateUtil, SessionUtil}
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,11 +9,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody}
+import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
-import java.text.SimpleDateFormat
-import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
 
 @Controller

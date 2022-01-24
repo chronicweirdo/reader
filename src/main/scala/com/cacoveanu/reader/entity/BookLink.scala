@@ -9,8 +9,6 @@ class BookLink {
   @GeneratedValue(strategy = GenerationType.AUTO)
   var id: java.lang.Long = _
 
-  //var bookId: java.lang.Long = _
-
   var link: String = _
 
   var position: java.lang.Long = _
