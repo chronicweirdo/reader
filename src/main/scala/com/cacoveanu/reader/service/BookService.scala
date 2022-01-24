@@ -61,7 +61,7 @@ class BookService {
     try {
       val user = Option(accountRepository.findByUsername(username))
       var matchingBook: Option[Book] = None
-      val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
+      val matchingBooks = bookRepository.findByTitle(title).asScala
       matchingBook = if (matchingBooks.size == 1) {
         matchingBooks.headOption
       } else if (matchingBooks.size > 1) {

@@ -70,7 +70,6 @@ class AccountController @Autowired()(private val accountService: UserService,
     val books: Map[String, Book] = progress.map(p => p.bookId).distinct.flatMap(id => bookService.loadBook(id)).map(b => (b.id, b)).toMap
     progress.map(p =>
       p.user.username + ","
-      +wrapInQuotes(books.get(p.bookId).map(_.author).getOrElse("")) + ","
       +wrapInQuotes(p.title) + ","
       +wrapInQuotes(p.collection) + ","
       +p.position + ","

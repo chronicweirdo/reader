@@ -231,15 +231,6 @@ class ScannerService {
     }
   }
 
-  private def findEquivalent(oldBook: Book, newBooks: Seq[Book]) = {
-    val candidates = newBooks.filter(b => stringsAlike(b.title, oldBook.title) && stringsAlike(b.author, oldBook.author))
-    if (candidates.size == 1) {
-      Some(candidates.head)
-    } else {
-      None
-    }
-  }
-
   private def stringsAlike(s1: String, s2: String) = {
     s1 == s2
   }
@@ -276,14 +267,13 @@ class ScannerService {
     try {
       val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
-      val author = ""
       val collection = getCollection(path)
       val cover = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
       val size = CbrUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -299,14 +289,13 @@ class ScannerService {
     try {
       val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
-      val author = ""
       val collection = getCollection(path)
       val cover = PdfUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
       val size = PdfUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -322,14 +311,13 @@ class ScannerService {
     try {
       val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
-      val author = ""
       val collection = getCollection(path)
       val cover = CbzUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
       val size = CbzUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, author, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -347,7 +335,6 @@ class ScannerService {
     try {
       val checksum = FileUtil.getFileChecksum(path)
       val title = if (getTitleFromMetadata) EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path)) else FileUtil.getFileName(path)
-      val author = EpubUtil.getAuthor(path).getOrElse("")
       val collection = getCollection(path)
       val (resources, links, toc) = EpubUtil.scanContentMetadata(path)
       var cover = EpubUtil.getCoverFromOpf(path)
@@ -361,7 +348,7 @@ class ScannerService {
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          val book = new Book(checksum, path, title, author, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
+          val book = new Book(checksum, path, title, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava

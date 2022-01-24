@@ -29,7 +29,7 @@ trait BookRepository extends JpaRepository[Book, String] {
   )
   def findAllCollections(): java.util.List[String]
 
-  def findByAuthorAndTitle(author: String, title: String): java.util.List[Book]
+  def findByTitle(title: String): java.util.List[Book]
 
   @Query(
     value="select path from book",
