@@ -4,7 +4,7 @@ import java.nio.file.{FileSystems, Files, Path, Paths, WatchKey}
 import com.cacoveanu.reader.entity.{Book, Content, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
 import com.cacoveanu.reader.service.BookFolderChangeType.{ADDED, BookFolderChangeType, DELETED, MODIFIED}
-import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil}
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil, ProgressUtil}
 
 import javax.annotation.PostConstruct
 import org.slf4j.{Logger, LoggerFactory}
@@ -22,7 +22,6 @@ import java.util.Date
 import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue}
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.{ExecutionContext, Future}
-
 import scala.jdk.OptionConverters._
 
 
@@ -184,15 +183,9 @@ class ScannerService {
 
   def adaptProgressToBook(oldProgress: Seq[Progress], newBook: Book) = {
     oldProgress.map(p => {
-      p.id = null
-      p.bookId = newBook.id
-      if (p.position >= newBook.size) {
-        p.position = Math.floor(p.position.toDouble/p.size * newBook.size).toInt
-      }
-      p.title = newBook.title
-      p.collection = newBook.collection
-      p.size = newBook.size
-      p
+      val np = ProgressUtil.fixProgressForBook(p, newBook)
+      np.id = p.id
+      np
     })
   }
 

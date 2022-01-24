@@ -43,4 +43,16 @@ class Progress {
     this.lastUpdate = lastUpdate
     this.finished = finished
   }
+
+  def this(username: String, bookId: String, title: String, collection: String, position: Int, size: Int, lastUpdate: Date, finished: Boolean) = {
+    this()
+    this.username = username
+    this.bookId = bookId
+    this.title = title
+    this.collection = collection
+    this.position = position
+    this.size = size
+    this.lastUpdate = lastUpdate
+    this.finished = finished
+  }
 }

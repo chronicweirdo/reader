@@ -6,7 +6,7 @@ import java.util.Date
 import com.cacoveanu.reader.entity.{Account, Book, CollectionNode, Progress}
 import com.cacoveanu.reader.repository.{AccountRepository, BookRepository, ProgressRepository}
 import com.cacoveanu.reader.util.OptionalUtil.AugmentedOptional
-import com.cacoveanu.reader.util.{DateUtil, SessionUtil}
+import com.cacoveanu.reader.util.{DateUtil, ProgressUtil, SessionUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.domain.{PageRequest, Sort}
@@ -55,40 +55,84 @@ class BookService {
     progressRepository.findAll().asScala.toSeq
   }
 
-  def importProgressLegacy(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String) = {
-    // todo: have legacy and new progress import, legacy looks at title, collection, but new one doesn't even try to find book, just imports the progress on the checksum
-    // todo: take checksum into account when importing progress
-    try {
-      val user = Option(accountRepository.findByUsername(username))
-      var matchingBook: Option[Book] = None
-      val matchingBooks = bookRepository.findByTitle(title).asScala
-      matchingBook = if (matchingBooks.size == 1) {
-        matchingBooks.headOption
-      } else if (matchingBooks.size > 1) {
-        // try to pick the one with the correct collection
-        matchingBooks.find(b => b.collection == collection)
-      } else None
+  def importProgress(username: String, bookId: String, title: String, collection: String, position: String, size: String, finished: String, lastUpdate: String) = {
+    val positionInt = position.toIntOption
+    val sizeInt = position.toIntOption
+    val finishedBoolean = finished.toBooleanOption
+    val lastUpdateDate = DateUtil.parse(lastUpdate)
+    val existingProgressId = findMatchingProgressId(username, bookId)
 
-      val positionParsed = position.toIntOption
-      val finishedParsed = finished.toBooleanOption
-      val lastUpdateDate = DateUtil.parse(lastUpdate)
+    (positionInt, sizeInt, finishedBoolean, lastUpdateDate) match {
+      case (Some(positionValue), Some(sizeValue), Some(finishedValue), Some(lastUpdateValue)) =>
+        val progress = new Progress(username, bookId, title, collection, positionValue, sizeValue, lastUpdateValue, finishedValue)
+        if (existingProgressId.isDefined) progress.id = existingProgressId.get
+        val savedProgress: Option[Progress] = Option(progressRepository.save(progress))
+
+        // verify if there is a book for this progress
+        if (bookRepository.findById(bookId).isEmpty) {
+          // try to match to some book
+          findMatchingBook(title, collection) match {
+            case Some(book) =>
+              // create another progress for this matching book
+              val secondProgress = ProgressUtil.fixProgressForBook(progress, book)
+              findMatchingProgressId(username, book.id) match {
+                case Some(id) => progress.id = id
+              }
+              progressRepository.save(secondProgress)
+          }
+        }
+
+        savedProgress
+      case _ => None
+    }
+  }
+
+  def findMatchingBook(title: String, collection: String) = {
+    val matchingBooks = bookRepository.findByTitle(title).asScala
+    if (matchingBooks.size == 1) {
+      matchingBooks.headOption
+    } else if (matchingBooks.size > 1) {
+      // try to pick the one with the correct collection
+      matchingBooks.find(b => b.collection == collection)
+    } else None
+  }
+
+  def findMatchingProgressId(username: String, bookId: String) = progressRepository.findByUsernameAndBookId(username, bookId).asScala.map(_.id)
+
+  def importProgressLegacy(username: String, author: String, title: String, collection: String, positionString: String, finishedString: String, lastUpdateString: String) = {
+    try {
+      val matchingBook = findMatchingBook(title, collection)
+      val positionParsed = positionString.toIntOption
+      val finishedParsed = finishedString.toBooleanOption
+      val lastUpdateDate = DateUtil.parse(lastUpdateString)
+
       // try to find existing progress
-      val existingProgressId: Option[lang.Long] = (user, matchingBook) match {
-        case (Some(u), Some(b)) => progressRepository.findByUsernameAndBookId(username, b.id).asScala.map(_.id)
+      val existingProgressId: Option[lang.Long] = matchingBook match {
+        case Some(b) => findMatchingProgressId(username, b.id)
         case _ => None
       }
 
-      (user, matchingBook, positionParsed, finishedParsed, lastUpdateDate) match {
-        case (Some(u), Some(b), Some(p), Some(f), Some(d)) =>
-          val progress = new Progress(username, b, p, d, f)
-          if (existingProgressId.isDefined) progress.id = existingProgressId.get
-          Option(progressRepository.save(progress))
-        case (Some(u), Some(b), Some(p), Some(f), None) =>
-          val progress = new Progress(username, b, p, new Date(), f)
-          if (existingProgressId.isDefined) progress.id = existingProgressId.get
-          Option(progressRepository.save(progress))
+      // create or update progress
+      val progressToSave = (matchingBook, positionParsed, finishedParsed, lastUpdateDate, existingProgressId) match {
+        case (Some(book), Some(position), Some(finished), Some(lastUpdate), Some(progressId)) =>
+          val progress = new Progress(username, book, position, lastUpdate, finished)
+          progress.id = progressId
+          Some(progress)
+        case (Some(book), Some(position), Some(finished), Some(lastUpdate), None) =>
+          Some(new Progress(username, book, position, lastUpdate, finished))
+        case (Some(book), Some(position), Some(finished), None, Some(progressId)) =>
+          val progress = new Progress(username, book, position, new Date(), finished)
+          progress.id = progressId
+          Some(progress)
+        case (Some(book), Some(position), Some(finished), None, None) =>
+          Some(new Progress(username, book, position, new Date(), finished))
         case _ =>
           None
+      }
+
+      progressToSave match {
+        case Some(progress) => Option(progressRepository.save(progress))
+        case None => None
       }
     } catch {
       case _: Throwable => None
