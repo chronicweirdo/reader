@@ -224,8 +224,6 @@ class ScannerService {
       s" $remainingFiles files remaining, to be done in approximately ${DateUtil.millisToHumanReadable(remainingTime)}")
   }
 
-
-
   private def scanFile(path: String): Option[Book] = {
     log.debug(s"scanning file $path")
     FileUtil.getExtension(path) match {
@@ -264,7 +262,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, FileTypes.CBR, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -286,7 +284,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, FileTypes.PDF, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -308,7 +306,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, path, FileTypes.CBZ, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -339,7 +337,7 @@ class ScannerService {
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          val book = new Book(checksum, path, title, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
+          val book = new Book(checksum, path, FileTypes.EPUB, title, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava

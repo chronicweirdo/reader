@@ -51,7 +51,7 @@ class TocNode {
   @BeanProperty
   var children: java.util.List[TocNode] = new util.ArrayList[TocNode]()
 
-  def this(title: String, position: Long, level: Int) {
+  def this(title: String, position: Long, level: Int) = {
     this()
     this.title = title
     this.position = position
