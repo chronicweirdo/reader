@@ -124,15 +124,15 @@ class AccountController @Autowired()(private val accountService: UserService,
       val unsavedProgress = linesToImport
         .flatMap(line => {
           val tokens = line.split(CSV_PARSING_REGEX).toSeq.map(trimQuotes)
-          val result = if (tokens.size == 8) {
+          val result = /*if (tokens.size == 8) {
             bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6), tokens(7))
-          } else if (tokens.size == 7) {
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6), null)
+          } else*/ if (tokens.size == 7) {
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6))
           } else if (tokens.size == 6) {
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), null, null)
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), null)
           } else if (tokens.size == 5) {
             // section entry for progress is ignored
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4), null, null)
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4), null)
           } else None
           result match {
             case Some(data) => None

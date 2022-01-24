@@ -55,28 +55,20 @@ class BookService {
     progressRepository.findAll().asScala.toSeq
   }
 
-  def importProgress(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String, checksum: String) = {
+  def importProgressLegacy(username: String, author: String, title: String, collection: String, position: String, finished: String, lastUpdate: String) = {
+    // todo: have legacy and new progress import, legacy looks at title, collection, but new one doesn't even try to find book, just imports the progress on the checksum
     // todo: take checksum into account when importing progress
     try {
       val user = Option(accountRepository.findByUsername(username))
       var matchingBook: Option[Book] = None
-      // first try to find book by checksum
-      if (checksum != null) {
-        val bookById = bookRepository.findById(checksum)
-        if (bookById.isPresent) {
-          matchingBook = bookById.asScala
-        }
-      }
-      // then try to find book by title, author, collection
-      if (matchingBook == null) {
-        val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
-        matchingBook = if (matchingBooks.size == 1) {
-          matchingBooks.headOption
-        } else if (matchingBooks.size > 1) {
-          // try to pick the one with the correct collection
-          matchingBooks.find(b => b.collection == collection)
-        } else None
-      }
+      val matchingBooks = bookRepository.findByAuthorAndTitle(author, title).asScala
+      matchingBook = if (matchingBooks.size == 1) {
+        matchingBooks.headOption
+      } else if (matchingBooks.size > 1) {
+        // try to pick the one with the correct collection
+        matchingBooks.find(b => b.collection == collection)
+      } else None
+
       val positionParsed = position.toIntOption
       val finishedParsed = finished.toBooleanOption
       val lastUpdateDate = DateUtil.parse(lastUpdate)
