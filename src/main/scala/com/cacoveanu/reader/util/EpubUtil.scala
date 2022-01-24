@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
-import java.util.zip.ZipFile
+import java.util.zip.{ZipEntry, ZipFile, ZipInputStream}
 import com.cacoveanu.reader.entity.{BookLink, BookResource, BookTocEntry, Content}
 import com.cacoveanu.reader.service.xml.ResilientXmlLoader
 import org.apache.tomcat.util.http.fileupload.IOUtils
@@ -40,6 +40,22 @@ object EpubUtil {
     }
   }
 
+  def readResource2(epubBytes: Array[Byte], resourcePath: String): Option[Array[Byte]] = {
+    val basePath = baseLink(resourcePath)
+    var zipFile: ZipInputStream = null
+
+    try {
+      zipFile = new ZipInputStream(new ByteArrayInputStream(epubBytes))
+      getEntriesWithContent(zipFile).find(e => e._1.getName == basePath).map(_._2)
+    } catch {
+      case e: Throwable =>
+        //log.error(s"failed to read epub $epubPath", e) todo: fix error
+        None
+    } finally {
+      if (zipFile != null) zipFile.close()
+    }
+  }
+
   def findResource(epubPath: String, resourceRegex: String): Option[String] = {
     var zipFile: ZipFile = null
     val pattern = resourceRegex.r
@@ -58,10 +74,67 @@ object EpubUtil {
     }
   }
 
+  private def getEntriesWithContent(zipFile: ZipInputStream) = {
+    var entry = zipFile.getNextEntry
+    var result: Seq[ZipEntry] = Seq()
+    var contents: Seq[Array[Byte]] = Seq()
+    while (entry != null) {
+      result :+= entry
+
+      //read this entry
+      val outputStream = new ByteArrayOutputStream()
+      IOUtils.copy(zipFile, outputStream)
+      val bytes = outputStream.toByteArray
+      contents :+= bytes
+
+      entry = zipFile.getNextEntry
+    }
+    result.zip(contents).toMap
+  }
+
+  private def getEntries(zipFile: ZipInputStream) = {
+    var entry = zipFile.getNextEntry
+    var result: Seq[ZipEntry] = Seq()
+    while (entry != null) {
+      result :+= entry
+      entry = zipFile.getNextEntry
+    }
+    result
+  }
+
+  def findResource2(epubBytes: Array[Byte], resourceRegex: String): Option[String] = {
+    var zipFile: ZipInputStream = null
+    val pattern = resourceRegex.r
+
+    try {
+      zipFile = new ZipInputStream(new ByteArrayInputStream(epubBytes))
+      getEntries(zipFile)
+        .find(e => pattern.pattern.matcher(e.getName.toLowerCase).matches)
+        .map(f => f.getName)
+    } catch {
+      case e: Throwable =>
+        //log.error(s"failed to read epub $epubPath", e) todo: fix error
+        None
+    } finally {
+      if (zipFile != null) zipFile.close()
+    }
+  }
+
+
   private def getOpf(epubPath: String): Option[(String, Elem)] =
     findResource(epubPath, OPF_REGEX) match {
       case Some(opfPath) =>
         readResource(epubPath, opfPath).flatMap(getXml) match {
+          case Some(xml) => Some((opfPath, xml))
+          case None => None
+        }
+      case None => None
+    }
+
+  private def getOpf2(fileBytes: Array[Byte]): Option[(String, Elem)] =
+    findResource2(fileBytes, OPF_REGEX) match {
+      case Some(opfPath) =>
+        readResource2(fileBytes, opfPath).flatMap(getXml) match {
           case Some(xml) => Some((opfPath, xml))
           case None => None
         }
@@ -78,6 +151,16 @@ object EpubUtil {
       case None => None
     }
 
+  private def getNcx2(fileBytes: Array[Byte]) =
+    findResource2(fileBytes, NCX_REGEX) match {
+      case Some(ncxPath) =>
+        readResource2(fileBytes, ncxPath).flatMap(getXml) match {
+          case Some(xml) => Some((ncxPath, xml))
+          case None => None
+        }
+      case None => None
+    }
+
   def parseSection(epubPath: String, sectionPath: String, startPosition: Long = 0) = {
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
@@ -87,8 +170,34 @@ object EpubUtil {
     } else None
   }
 
+  def parseSection2(fileBytes: Array[Byte], sectionPath: String, startPosition: Long = 0) = {
+    val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
+    if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
+      EpubUtil.readResource2(fileBytes, EpubUtil.baseLink(sectionPath))
+        .map(bytes => new String(bytes, "UTF-8"))
+        .flatMap(text => BookNode.parse(text, startPosition))
+    } else None
+  }
+
   def getTocFromOpf2(epubPath: String) = {
     getOpf(epubPath).map { case (opfPath, opf) =>
+      (opf \ "spine" \ "itemref")
+        .map(n => (n \ "@idref").text)
+        .flatMap(id =>
+          (opf \ "manifest" \ "item")
+            .find(n => (n \ "@id").text == id)
+            .map(n => URLDecoder.decode((n \ "@href").text, StandardCharsets.UTF_8.name()))
+        )
+        .zipWithIndex
+        .map(e => (
+          e._2,
+          getAbsoluteEpubPath(opfPath, e._1)
+        ))
+    }
+  }
+
+  def getTocFromOpf22(fileBytes: Array[Byte]) = {
+    getOpf2(fileBytes).map { case (opfPath, opf) =>
       (opf \ "spine" \ "itemref")
         .map(n => (n \ "@idref").text)
         .flatMap(id =>
@@ -127,6 +236,13 @@ object EpubUtil {
 
   private def getTocFromNcx2(epubPath: String) = {
     getNcx(epubPath).map { case (ncxPath, ncx) =>
+      (ncx \ "navMap" \ "navPoint")
+        .flatMap(n => getRecursiveTocFromNcx2(ncxPath, n))
+    }
+  }
+
+  private def getTocFromNcx22(fileBytes: Array[Byte]) = {
+    getNcx2(fileBytes).map { case (ncxPath, ncx) =>
       (ncx \ "navMap" \ "navPoint")
         .flatMap(n => getRecursiveTocFromNcx2(ncxPath, n))
     }
@@ -184,6 +300,57 @@ object EpubUtil {
     (bookResources, bookLinkObjects, tocWithPositions)
   }
 
+  def scanContentMetadata2(fileBytes: Array[Byte]) = {
+    // get book resources and links
+    val resources = getTocFromOpf22(fileBytes).getOrElse(Seq())
+
+    var lastEnd: java.lang.Long = null
+    var bookResources = Seq[BookResource]()
+    var bookLinks = Map[String, Long]()
+    for (index <- resources.indices) {
+      val resourcePath = resources(index)._2
+      val startPosition = if (lastEnd != null) lastEnd + 1 else 0
+      val parsedSectionOptional = parseSection2(fileBytes, resourcePath, startPosition)
+      if (parsedSectionOptional.isDefined) {
+        val parsedSection = parsedSectionOptional.get
+        lastEnd = parsedSection.end
+
+        val bookResource = new BookResource()
+        bookResource.start = parsedSection.start
+        bookResource.end = parsedSection.end
+        bookResource.path = resourcePath
+        bookResources = bookResources :+ bookResource
+
+        bookLinks = bookLinks + (resourcePath -> parsedSection.start)
+        bookLinks = bookLinks ++ parsedSection.getIds().map { case (id, pos) => (resourcePath + "#" + id, pos)}
+      }
+    }
+
+    val toc = getTocFromNcx22(fileBytes).getOrElse(Seq())
+    val tocWithPositions = toc.flatMap { case (index, title, link, level) => {
+      val bookTocEntry = new BookTocEntry
+      bookTocEntry.index = index
+      bookTocEntry.title = title
+      bookTocEntry.level = level
+      val position: Long = bookLinks.getOrElse(link, bookLinks.getOrElse(getRootLink(link), -1))
+      if (position == -1) {
+        None
+      } else {
+        bookTocEntry.position = position
+        Some(bookTocEntry)
+      }
+    }}
+
+    val bookLinkObjects = bookLinks.map { case (link, position) => {
+      val bookLink = new BookLink
+      bookLink.link = link
+      bookLink.position = position
+      bookLink
+    }}.toSeq
+
+    (bookResources, bookLinkObjects, tocWithPositions)
+  }
+
   def getRootLink(link: String) = {
     if (link.indexOf("#") >= 0) link.substring(0, link.indexOf("#"))
     else link
@@ -195,6 +362,9 @@ object EpubUtil {
 
   def getTitle(epubPath: String): Option[String] =
     getOpf(epubPath).flatMap { case (_, opf) => (opf \ "metadata" \ "title").headOption.map(_.text) }
+
+  def getTitle2(fileBytes: Array[Byte]): Option[String] =
+    getOpf2(fileBytes).flatMap { case (_, opf) => (opf \ "metadata" \ "title").headOption.map(_.text) }
 
   def getAuthor(epubPath: String): Option[String] =
     getOpf(epubPath).flatMap { case (_, opf) => (opf \ "metadata" \ "creator").headOption.map(_.text) }
@@ -232,6 +402,13 @@ object EpubUtil {
         .map(bytes => Content(None, contentType, bytes))
     }
 
+  def getCoverFromOpf2(fileBytes: Array[Byte]): Option[Content] =
+    getOpf2(fileBytes).flatMap { case (opfPath, opf) => getCoverResource(opfPath, opf)}
+      .flatMap { case (href, contentType) =>
+        readResource2(fileBytes, href)
+          .map(bytes => Content(None, contentType, bytes))
+      }
+
   def findCoverInResource(epubPath: String, resourcePath: String) = {
     readResource(epubPath, resourcePath).flatMap(getXml)
       .flatMap( xml => {
@@ -244,6 +421,20 @@ object EpubUtil {
         }
       })
       .flatMap( coverResource => readResource(epubPath, coverResource).map(bytes => Content(None, FileUtil.getMediaType(coverResource).getOrElse(null), bytes)))
+  }
+
+  def findCoverInResource2(fileBytes: Array[Byte], resourcePath: String) = {
+    readResource2(fileBytes, resourcePath).flatMap(getXml)
+      .flatMap( xml => {
+        val fromImg = (xml \\ "img").headOption.map(imgNode => getAbsoluteEpubPath(resourcePath, (imgNode \ "@src").text))
+        if (fromImg.isDefined) {
+          fromImg
+        } else {
+          val fromImage = (xml \\ "image").headOption.map(imgNode => getAbsoluteEpubPath(resourcePath, (imgNode \ "@{http://www.w3.org/1999/xlink}href").text))
+          fromImage
+        }
+      })
+      .flatMap( coverResource => readResource2(fileBytes, coverResource).map(bytes => Content(None, FileUtil.getMediaType(coverResource).getOrElse(null), bytes)))
   }
 
   def getAbsoluteEpubPath(povPath: String, currentPath: String): String = {

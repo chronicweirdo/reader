@@ -21,6 +21,7 @@ import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 import java.util.Date
 import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicLong}
+import java.util.stream.IntStream
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters._
 
@@ -47,6 +48,10 @@ class ScannerService {
   @BeanProperty
   var getTitleFromMetadata: Boolean = _
 
+  @Value("${scanner.workers:1}")
+  @BeanProperty
+  var scannerWorkers: Int = _
+
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
@@ -67,7 +72,7 @@ class ScannerService {
   def init() = {
     initialScanFolder(libraryLocation)
     startWatcher()
-    startQueueConsumer()
+    IntStream.range(0, scannerWorkers).forEach(_ => startQueueConsumer())
   }
 
   private implicit val executionContext = ExecutionContext.global
@@ -131,6 +136,7 @@ class ScannerService {
   }
 
   def startQueueConsumer() = {
+    log.info("starting scanner worker (queue consumer)")
     new Thread(() => {
       while (true) {
         val change = changesQueue.take()
@@ -216,11 +222,12 @@ class ScannerService {
     val processedFiles = scannedFiles.get() + scanFailures.get()
     val meanScanTime = (scanTimeMilliseconds.get().toDouble / processedFiles).toLong
     val remainingFiles = filesToScan.get() - processedFiles
-    val remainingTime = remainingFiles * meanScanTime
+    val remainingTime = (remainingFiles * meanScanTime.toDouble / scannerWorkers).toLong
     log.info(s"scanned $processedFiles of ${filesToScan.get()}" +
       s" (${scannedFiles.get()} successful, ${scanFailures.get()} failed)" +
       s" in ${DateUtil.millisToHumanReadable(scanTimeMilliseconds.get())}" +
-      s" (mean scan time ${DateUtil.millisToHumanReadable(meanScanTime)});" +
+      s" total work time across $scannerWorkers workers" +
+      s" (mean scan time per worker ${DateUtil.millisToHumanReadable(meanScanTime)});" +
       s" $remainingFiles files remaining, to be done in approximately ${DateUtil.millisToHumanReadable(remainingTime)}")
   }
 
@@ -256,11 +263,16 @@ class ScannerService {
 
   private[service] def scanCbr(path: String): Option[Book] = {
     try {
-      val checksum = FileUtil.getFileChecksum(path)
+      val fileBytes: Array[Byte] = FileUtil.readFileBytes(path)
+
+      val checksum = FileUtil.getFileChecksum2(fileBytes)
+      //val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
       val collection = getCollection(path)
-      val cover = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
-      val size = CbrUtil.countPages(path)
+      val cover = CbrUtil.readPages2(fileBytes, Some(Seq(0))).flatMap(pages => pages.headOption)
+      //val cover = CbrUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+      val size = CbrUtil.countPages2(fileBytes)
+      //val size = CbrUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
@@ -278,11 +290,16 @@ class ScannerService {
 
   private[service] def scanPdf(path: String): Option[Book] = {
     try {
-      val checksum = FileUtil.getFileChecksum(path)
+      val fileBytes: Array[Byte] = FileUtil.readFileBytes(path)
+
+      val checksum = FileUtil.getFileChecksum2(fileBytes)
+      //val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
       val collection = getCollection(path)
-      val cover = PdfUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
-      val size = PdfUtil.countPages(path)
+      val cover = PdfUtil.readPages2(fileBytes, Some(Seq(0))).flatMap(pages => pages.headOption)
+      //val cover = PdfUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+      val size = PdfUtil.countPages2(fileBytes)
+      //val size = PdfUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
@@ -300,11 +317,17 @@ class ScannerService {
 
   private[service] def scanCbz(path: String): Option[Book] = {
     try {
-      val checksum = FileUtil.getFileChecksum(path)
+      val fileBytes: Array[Byte] = FileUtil.readFileBytes(path)
+
+      val checksum = FileUtil.getFileChecksum2(fileBytes)
+      //val checksum = FileUtil.getFileChecksum(path)
       val title = FileUtil.getFileName(path)
       val collection = getCollection(path)
-      val cover = CbzUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
-      val size = CbzUtil.countPages(path)
+      val pages: Option[Seq[Content]] = CbzUtil.readPages2(fileBytes)
+      val cover = pages.flatMap(pgs => pgs.headOption)
+      //val cover = CbzUtil.readPages(path, Some(Seq(0))).flatMap(pages => pages.headOption)
+      val size = pages.flatMap(pgs => Option(pgs.size))
+      //val size = CbzUtil.countPages(path)
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
@@ -320,16 +343,21 @@ class ScannerService {
     }
   }
 
-
-
   private[service] def scanEpub(path: String): Option[Book] = {
     try {
+      //val fileBytes: Array[Byte] = FileUtil.readFileBytes(path)
+
       val checksum = FileUtil.getFileChecksum(path)
+      //val checksum = FileUtil.getFileChecksum2(fileBytes)
+      //val title = if (getTitleFromMetadata) EpubUtil.getTitle2(fileBytes).getOrElse(FileUtil.getFileName(path)) else FileUtil.getFileName(path)
       val title = if (getTitleFromMetadata) EpubUtil.getTitle(path).getOrElse(FileUtil.getFileName(path)) else FileUtil.getFileName(path)
       val collection = getCollection(path)
+      //val (resources, links, toc) = EpubUtil.scanContentMetadata2(fileBytes)
       val (resources, links, toc) = EpubUtil.scanContentMetadata(path)
+      //var cover = EpubUtil.getCoverFromOpf2(fileBytes)
       var cover = EpubUtil.getCoverFromOpf(path)
       if (! cover.isDefined) {
+        //cover = EpubUtil.findCoverInResource2(fileBytes, resources.head.path)
         cover = EpubUtil.findCoverInResource(path, resources.head.path)
       }
       if (! cover.isDefined) {

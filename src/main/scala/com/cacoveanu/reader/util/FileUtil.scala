@@ -1,11 +1,11 @@
 package com.cacoveanu.reader.util
 
-import java.io.{File, InputStream}
+import java.io.{ByteArrayInputStream, File, InputStream}
 import java.nio.file.{Files, Paths}
 import java.security.{DigestInputStream, MessageDigest}
 import java.util.Base64
-
 import org.apache.commons.codec.binary.Base32
+import org.apache.tomcat.util.http.fileupload.FileUtils
 import org.springframework.http.MediaType
 import org.springframework.web.accept.MediaTypeFileExtensionResolver
 
@@ -104,11 +104,28 @@ object FileUtil {
       .map(f => f.getAbsolutePath)
   }
 
+  def readFileBytes(path: String): Array[Byte] = {
+    org.apache.commons.io.FileUtils.readFileToByteArray(new File(path))
+  }
+
   /*
     SHA1
     SHA-256
     SHA-512
    */
+  def getFileChecksum2(fileBytes: Array[Byte], algorithm: String = "MD5", encoder: Array[Byte] => String = base32) = {
+    val md = MessageDigest.getInstance(algorithm)
+    var is: InputStream = null
+    try {
+      is = new ByteArrayInputStream(fileBytes)
+      val buffer = new Array[Byte](1024)
+      LazyList.continually(is.read(buffer)).takeWhile(_ != -1).foreach(md.update(buffer, 0, _))
+    } finally {
+      if (is != null) is.close()
+    }
+    val digest = md.digest
+    encoder(digest)
+  }
   def getFileChecksum(path: String, algorithm: String = "MD5", encoder: Array[Byte] => String = base32) = {
     val md = MessageDigest.getInstance(algorithm)
     var is: InputStream = null

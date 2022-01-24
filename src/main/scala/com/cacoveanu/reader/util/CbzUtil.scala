@@ -1,8 +1,7 @@
 package com.cacoveanu.reader.util
 
-import java.io.ByteArrayOutputStream
-import java.util.zip.{ZipEntry, ZipFile}
-
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.util.zip.{ZipEntry, ZipFile, ZipInputStream}
 import com.cacoveanu.reader.entity.Content
 import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.slf4j.{Logger, LoggerFactory}
@@ -21,6 +20,41 @@ object CbzUtil {
       .sortBy(f => f.getName)
   }
 
+  private def getEntries(zipFile: ZipInputStream) = {
+    var entry = zipFile.getNextEntry
+    var result: Seq[ZipEntry] = Seq()
+    var contents: Seq[Array[Byte]] = Seq()
+    while (entry != null) {
+      result :+= entry
+
+      //read this entry
+      val outputStream = new ByteArrayOutputStream()
+      IOUtils.copy(zipFile, outputStream)
+      val bytes = outputStream.toByteArray
+      contents :+= bytes
+
+      entry = zipFile.getNextEntry
+    }
+    result.zip(contents).toMap
+  }
+
+  private def getOnlyEntries(zipFile: ZipInputStream) = {
+    var entry = zipFile.getNextEntry
+    var result: Seq[ZipEntry] = Seq()
+    while (entry != null) {
+      result :+= entry
+      entry = zipFile.getNextEntry
+    }
+    result
+  }
+
+  private def getValidCbzPages2(entries: Seq[ZipEntry]) = {
+    entries
+      .filter(f => !f.isDirectory)
+      .filter(f => FileUtil.isImageType(f.getName))
+      .sortBy(f => f.getName)
+  }
+
   def countPages(path: String): Option[Int] = {
     var zipFile: ZipFile = null
     try {
@@ -29,6 +63,21 @@ object CbzUtil {
     } catch {
       case e: Throwable =>
         log.error("failed to read comic pages for " + path, e)
+        None
+    } finally {
+      zipFile.close()
+    }
+  }
+
+  def countPages2(fileBytes: Array[Byte]): Option[Int] = {
+    var zipFile: ZipInputStream = null
+    try {
+      zipFile = new ZipInputStream(new ByteArrayInputStream(fileBytes))
+      val entries = getOnlyEntries(zipFile)
+      Some(getValidCbzPages2(entries).size)
+    } catch {
+      case e: Throwable =>
+        // log.error("failed to read comic pages for " + path, e) todo: fix error
         None
     } finally {
       zipFile.close()
@@ -68,6 +117,40 @@ object CbzUtil {
     } catch {
       case e: Throwable =>
         log.error("failed to read comic pages for " + path, e)
+        None
+    } finally {
+      if (zipFile != null) zipFile.close()
+    }
+  }
+
+  def readPages2(fileBytes: Array[Byte], pages: Option[Seq[Int]] = None): Option[Seq[Content]] = {
+    //var zipFile: ZipFile = null
+    var zipFile: ZipInputStream = null
+
+    try {
+      zipFile = new ZipInputStream(new ByteArrayInputStream(fileBytes))
+      val entries: Map[ZipEntry, Array[Byte]] = getEntries(zipFile)
+
+      val sortedImageFiles: Seq[(ZipEntry, Int)] = getValidCbzPages2(entries.keys.toSeq).zipWithIndex
+
+      val selectedImageFiles: Seq[(ZipEntry, Int)] = pages match {
+        case Some(pgs) =>
+          sortedImageFiles.filter { case (_, index) => pgs.contains(index) }
+        case None =>
+          sortedImageFiles
+      }
+
+      val selectedImageData: Seq[Content] = selectedImageFiles
+        .flatMap{ case (file, index) => FileUtil.getMediaType(file.getName) match {
+          case Some(mediaType) =>
+            Some(Content(Option(index), mediaType, entries(file)))
+          case None => None
+        }}
+
+      Some(selectedImageData)
+    } catch {
+      case e: Throwable =>
+        // log.error("failed to read comic pages for " + path, e) todo: fix error
         None
     } finally {
       if (zipFile != null) zipFile.close()
