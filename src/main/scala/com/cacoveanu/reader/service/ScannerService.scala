@@ -4,7 +4,7 @@ import java.nio.file.{FileSystems, Files, Path, Paths, WatchKey}
 import com.cacoveanu.reader.entity.{Book, Content, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
 import com.cacoveanu.reader.service.BookFolderChangeType.{ADDED, BookFolderChangeType, DELETED, MODIFIED}
-import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil, ProgressUtil}
+import com.cacoveanu.reader.util.{CbrUtil, CbzUtil, DateUtil, EpubUtil, FileMediaTypes, FileTypes, FileUtil, PdfUtil, ProgressUtil}
 
 import javax.annotation.PostConstruct
 import org.slf4j.{Logger, LoggerFactory}
@@ -20,7 +20,7 @@ import java.nio.file.StandardWatchEventKinds.{ENTRY_CREATE, ENTRY_DELETE, ENTRY_
 import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 import java.util.Date
 import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue}
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicLong}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters._
 
@@ -58,6 +58,11 @@ class ScannerService {
   @BeanProperty
   @Autowired var imageService: ImageService = _
 
+  val filesToScan = new AtomicLong(0)
+  val scannedFiles = new AtomicLong(0)
+  val scanFailures = new AtomicLong(0)
+  val scanTimeMilliseconds = new AtomicLong(0)
+
   @PostConstruct
   def init() = {
     initialScanFolder(libraryLocation)
@@ -88,6 +93,7 @@ class ScannerService {
     FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
     val filesOnDisk = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
+    filesToScan.set(filesToScan.get() + filesOnDisk.size)
     val filesInDatabase = bookRepository.findAllPaths().asScala.filter(p => p.startsWith(path)).toSet
 
     val newFiles = filesOnDisk.diff(filesInDatabase)
@@ -165,6 +171,7 @@ class ScannerService {
   }
 
   def verifyAndAddBook(path: String) = {
+    val startTime = System.currentTimeMillis()
     bookRepository.findByPath(path).toScala match {
       case Some(book) =>
         val checksum = FileUtil.getFileChecksum(path)
@@ -174,26 +181,50 @@ class ScannerService {
           // todo: but should probably have an admin method to delete orphaned progress
           scanFile(path) match {
             case Some(newBook) =>
+              scannedFiles.incrementAndGet()
               bookRepository.save(newBook)
               val newProgress = adaptProgressToBook(oldProgress, newBook)
               if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
             case None =>
+              scanFailures.incrementAndGet()
               log.info(s"failed to scan book at $path")
           }
+        } else {
+          scannedFiles.incrementAndGet()
+          log.info(s"checksum checks out for $path")
         }
       case None =>
         // this is a completely new book
         scanFile(path) match {
           case Some(book) =>
+            scannedFiles.incrementAndGet()
             bookRepository.save(book)
             // look for orphaned progress with this path
             val oldProgress = progressRepository.findByTitleAndCollection(book.title, book.collection).asScala.toSeq
             val newProgress = adaptProgressToBook(oldProgress, book)
             if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
-          case None => log.info(s"failed scanning book at path $path")
+          case None =>
+            scanFailures.incrementAndGet()
+            log.info(s"failed scanning book at path $path")
         }
     }
+    val endTime = System.currentTimeMillis()
+    val durationMilliseconds = endTime - startTime
+    scanTimeMilliseconds.set(scanTimeMilliseconds.get() + durationMilliseconds)
+
+    // compute and show statistics
+    val processedFiles = scannedFiles.get() + scanFailures.get()
+    val meanScanTime = (scanTimeMilliseconds.get().toDouble / processedFiles).toLong
+    val remainingFiles = filesToScan.get() - processedFiles
+    val remainingTime = remainingFiles * meanScanTime
+    log.info(s"scanned $processedFiles of ${filesToScan.get()}" +
+      s" (${scannedFiles.get()} successful, ${scanFailures.get()} failed)" +
+      s" in ${DateUtil.millisToHumanReadable(scanTimeMilliseconds.get())}" +
+      s" (mean scan time ${DateUtil.millisToHumanReadable(meanScanTime)});" +
+      s" $remainingFiles files remaining, to be done in approximately ${DateUtil.millisToHumanReadable(remainingTime)}")
   }
+
+
 
   private def scanFile(path: String): Option[Book] = {
     log.debug(s"scanning file $path")
