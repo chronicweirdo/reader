@@ -199,7 +199,6 @@ class ScannerService {
           // delete old version of book
           bookRepository.delete(book)
           // todo: but should probably have an admin method to delete orphaned progress
-          // todo: or just show orphaned progress in the history page, allow users to delete (or match to existing book?)
           // rescan book
           scanFile(path) match {
             case Some(newBook) =>
