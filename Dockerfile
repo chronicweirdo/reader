@@ -16,6 +16,8 @@ COPY docker-application.properties application.properties
 ENV SERVER_PORT=8084
 ENV DEBUG=false
 ENV LOG_LEVEL=INFO
+ENV SCANNER_WORKERS=1
+ENV PROCESSORS=1
 
 #WORKDIR config
 ENTRYPOINT ["/bin/bash", "/app/start.sh"]
