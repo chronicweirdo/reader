@@ -1,6 +1,6 @@
 package com.cacoveanu.reader.service
 
-import java.nio.file.{FileSystems, Files, Path, Paths, WatchKey}
+import java.nio.file.{FileSystems, Files, Path, Paths, WatchKey, WatchService}
 import com.cacoveanu.reader.entity.{Book, Content, Progress}
 import com.cacoveanu.reader.repository.{BookRepository, ProgressRepository}
 import com.cacoveanu.reader.service.BookFolderChangeType.{ADDED, BookFolderChangeType, DELETED, MODIFIED}
@@ -64,24 +64,22 @@ class ScannerService {
   val scanTimeMilliseconds = new AtomicLong(0)
 
   @PostConstruct
-  def init() = {
+  def init(): Unit = {
     initialScanFolder(libraryLocation)
     startWatcher()
     startQueueConsumer()
   }
 
-  private implicit val executionContext = ExecutionContext.global
+  private val watchService = FileSystems.getDefault.newWatchService()
+  private val watchServiceKeyMap = new ConcurrentHashMap[String, WatchKey]()
+  private val changesQueue: BlockingQueue[BookFolderChange] = new LinkedBlockingQueue[BookFolderChange]()
 
-  val watchService = FileSystems.getDefault().newWatchService()
-  val watchServiceKeyMap = new ConcurrentHashMap[String, WatchKey]()
-  val changesQueue: BlockingQueue[BookFolderChange] = new LinkedBlockingQueue[BookFolderChange]()
-
-  def startWatching(path: String): Unit = {
+  private def startWatching(path: String) = {
     val key: WatchKey = Paths.get(path).register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
     watchServiceKeyMap.put(path, key)
   }
 
-  def stopWatching(path: String) = {
+  private def stopWatching(path: String) = {
     watchServiceKeyMap.keys().asScala.filter(k => k.startsWith(path)).foreach(k => {
       val key = watchServiceKeyMap.get(k)
       key.cancel()
@@ -89,11 +87,11 @@ class ScannerService {
     })
   }
 
-  def relativePathToAbsolute(path: String) = {
+  private def relativePathToAbsolute(path: String) = {
     Paths.get(libraryLocation, path).toFile.getAbsolutePath
   }
 
-  def initialScanFolder(path: String) = {
+  private def initialScanFolder(path: String) = {
     FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
     val filesOnDisk = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
@@ -112,7 +110,7 @@ class ScannerService {
     modifiedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, MODIFIED)))
   }
 
-  def startWatcher() = {
+  private def startWatcher() = {
     new Thread(() => {
       var key: WatchKey = null
       while ( {
@@ -142,32 +140,32 @@ class ScannerService {
     }).start()
   }
 
-  def startQueueConsumer() = {
+  private def startQueueConsumer() = {
     new Thread(() => {
       while (true) {
         val change = changesQueue.take()
         change match {
           case BookFolderChange(path, _, DELETED) =>
-            log.info(s"stop following changes in possible folder $path and delete possible book at $path")
+            log.debug(s"stop following changes in possible folder $path and delete possible book at $path")
             stopWatching(path)
             deleteBook(path)
           case BookFolderChange(path, false, ADDED) =>
-            log.info(s"start following changes in folder $path")
+            log.debug(s"start following changes in folder $path")
             initialScanFolder(path)
           case BookFolderChange(path, true, ADDED) =>
-            log.info(s"scan new book $path")
+            log.debug(s"scan new book $path")
             verifyAndAddBook(path)
           case BookFolderChange(path, true, MODIFIED) =>
-            log.info(s"rescan and update book $path")
+            log.debug(s"rescan and update book $path")
             verifyAndAddBook(path)
           case _ =>
-            log.info("do nothing")
+            log.debug("do nothing")
         }
       }
     }).start()
   }
 
-  def deleteBook(path: String) = {
+  private def deleteBook(path: String) = {
     val title = FileUtil.getFileName(path)
     val collection = getCollection(path)
     bookRepository.findByCollectionAndTitle(collection, title).toScala match {
@@ -175,11 +173,11 @@ class ScannerService {
         bookRepository.delete(book)
       case None =>
         // probably book was just moved inside the library
-        log.info(s"no book to delete for path $path")
+        log.debug(s"no book to delete for path $path")
     }
   }
 
-  def adaptProgressToBook(oldProgress: Seq[Progress], newBook: Book) = {
+  private def adaptProgressToBook(oldProgress: Seq[Progress], newBook: Book) = {
     oldProgress.map(p => {
       val np = ProgressUtil.fixProgressForBook(p, newBook)
       np.id = p.id
@@ -187,63 +185,73 @@ class ScannerService {
     })
   }
 
-  def verifyAndAddBook(path: String) = {
+  private def verifyAndAddBook(path: String) = {
     val startTime = System.currentTimeMillis()
     val title = FileUtil.getFileName(path)
     val collection = getCollection(path)
     bookRepository.findByCollectionAndTitle(collection, title).toScala match {
       case Some(book) =>
-        val checksum = FileUtil.getFileChecksum(path)
-        if (checksum != book.id) {
-          val oldProgress = progressRepository.findByBookId(book.id).asScala.toSeq
-          bookRepository.delete(book)
-          // todo: but should probably have an admin method to delete orphaned progress
-          scanFile(path) match {
-            case Some(newBook) =>
-              scannedFiles.incrementAndGet()
-              bookRepository.save(newBook)
-              val newProgress = adaptProgressToBook(oldProgress, newBook)
-              if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
-            case None =>
-              scanFailures.incrementAndGet()
-              log.info(s"failed to scan book at $path")
-          }
-        } else {
-          scannedFiles.incrementAndGet()
-          log.info(s"checksum checks out for $path")
-        }
+        verifyExistingBook(path, book)
       case None =>
         // this may be a book that was moved
         val checksum = FileUtil.getFileChecksum(path)
         bookRepository.findById(checksum).toScala match {
-          case Some(book) =>
-            // we have the book, just update title and collection
-            scannedFiles.incrementAndGet()
-            book.collection = collection
-            book.title = title
-            book.mediaType = FileUtil.getExtensionWithCorrectCase(path)
-            bookRepository.save(book)
-          case None =>
-            // completely new book
-            scanFile(path) match {
-              case Some(book) =>
-                scannedFiles.incrementAndGet()
-                bookRepository.save(book)
-                // look for orphaned progress with this path
-                val oldProgress = progressRepository.findByTitleAndCollection(book.title, book.collection).asScala.toSeq
-                val newProgress = adaptProgressToBook(oldProgress, book)
-                if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
-              case None =>
-                scanFailures.incrementAndGet()
-                log.info(s"failed scanning book at path $path")
-            }
+          case Some(book) => refreshExistingBook(path, title, collection, book)
+          case None => scanNewBook(path)
         }
     }
     val endTime = System.currentTimeMillis()
     val durationMilliseconds = endTime - startTime
     scanTimeMilliseconds.set(scanTimeMilliseconds.get() + durationMilliseconds)
+    computeAndPrintStatistics()
+  }
 
-    // compute and show statistics
+  private def scanNewBook(path: String) = {
+    scanFile(path) match {
+      case Some(book) =>
+        scannedFiles.incrementAndGet()
+        bookRepository.save(book)
+        // look for orphaned progress with this path
+        val oldProgress = progressRepository.findByTitleAndCollection(book.title, book.collection).asScala.toSeq
+        val newProgress = adaptProgressToBook(oldProgress, book)
+        if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
+      case None =>
+        scanFailures.incrementAndGet()
+        log.debug(s"failed to scan book at path $path")
+    }
+  }
+
+  private def refreshExistingBook(path: String, title: String, collection: String, book: Book) = {
+    scannedFiles.incrementAndGet()
+    book.collection = collection
+    book.title = title
+    book.mediaType = FileUtil.getExtensionWithCorrectCase(path)
+    bookRepository.save(book)
+  }
+
+  private def verifyExistingBook(path: String, book: Book) = {
+    val checksum = FileUtil.getFileChecksum(path)
+    if (checksum != book.id) {
+      val oldProgress = progressRepository.findByBookId(book.id).asScala.toSeq
+      bookRepository.delete(book)
+      // todo: but should probably have an admin method to delete orphaned progress
+      scanFile(path) match {
+        case Some(newBook) =>
+          scannedFiles.incrementAndGet()
+          bookRepository.save(newBook)
+          val newProgress = adaptProgressToBook(oldProgress, newBook)
+          if (newProgress.nonEmpty) progressRepository.saveAll(newProgress.asJava)
+        case None =>
+          scanFailures.incrementAndGet()
+          log.debug(s"failed to scan book at $path")
+      }
+    } else {
+      scannedFiles.incrementAndGet()
+      log.debug(s"checksum checks out for $path")
+    }
+  }
+
+  private def computeAndPrintStatistics() = {
     val processedFiles = scannedFiles.get() + scanFailures.get()
     val meanScanTime = (scanTimeMilliseconds.get().toDouble / processedFiles).toLong
     val remainingFiles = filesToScan.get() - processedFiles
@@ -348,8 +356,6 @@ class ScannerService {
         None
     }
   }
-
-
 
   private[service] def scanEpub(path: String): Option[Book] = {
     try {
