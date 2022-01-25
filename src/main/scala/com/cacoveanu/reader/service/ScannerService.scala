@@ -89,12 +89,16 @@ class ScannerService {
     })
   }
 
+  def relativePathToAbsolute(path: String) = {
+    Paths.get(libraryLocation, path).toFile.getAbsolutePath
+  }
+
   def initialScanFolder(path: String) = {
     FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
     val filesOnDisk = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
     filesToScan.set(filesToScan.get() + filesOnDisk.size)
-    val filesInDatabase = bookRepository.findAllPaths().asScala.filter(p => p.startsWith(path)).toSet
+    val filesInDatabase = bookRepository.findAllPaths().asScala.map(relativePathToAbsolute(_)).filter(p => p.startsWith(path)).toSet
 
     val newFiles = filesOnDisk.diff(filesInDatabase)
     log.info(s"found ${newFiles.size} new files in initial scan")
@@ -156,7 +160,9 @@ class ScannerService {
   }
 
   def deleteBook(path: String) = {
-    bookRepository.findByPath(path).toScala match {
+    val title = FileUtil.getFileName(path)
+    val collection = getCollection(path)
+    bookRepository.findByCollectionAndTitle(collection, title).toScala match {
       case Some(book) => bookRepository.delete(book)
       case None => log.info(s"no book to delete for path $path")
     }
@@ -172,7 +178,9 @@ class ScannerService {
 
   def verifyAndAddBook(path: String) = {
     val startTime = System.currentTimeMillis()
-    bookRepository.findByPath(path).toScala match {
+    val title = FileUtil.getFileName(path)
+    val collection = getCollection(path)
+    bookRepository.findByCollectionAndTitle(collection, title).toScala match {
       case Some(book) =>
         val checksum = FileUtil.getFileChecksum(path)
         if (checksum != book.id) {
@@ -262,7 +270,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, FileTypes.CBR, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, FileUtil.getExtensionWithCorrectCase(path), title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -284,7 +292,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, FileTypes.PDF, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, FileUtil.getExtensionWithCorrectCase(path), title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -306,7 +314,7 @@ class ScannerService {
       (cover, size) match {
         case (Some(c), Some(s)) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          Some(new Book(checksum, path, FileTypes.CBZ, title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
+          Some(new Book(checksum, FileUtil.getExtensionWithCorrectCase(path), title, collection, c.mediaType, smallerCover, s, getFileCreationDate(path)))
         case _ =>
           log.warn(s"failed to scan $path")
           None
@@ -337,7 +345,7 @@ class ScannerService {
       cover match {
         case Some(c) =>
           val smallerCover = imageService.resizeImageByMinimalSide(c.data, c.mediaType, COVER_RESIZE_MINIMAL_SIDE)
-          val book = new Book(checksum, path, FileTypes.EPUB, title, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
+          val book = new Book(checksum, FileUtil.getExtensionWithCorrectCase(path), title, collection, c.mediaType, smallerCover, size, getFileCreationDate(path))
           book.toc = toc.asJava
           book.resources = resources.asJava
           book.links = links.asJava

@@ -9,9 +9,6 @@ class Book {
   @Id
   var id: java.lang.String = _
 
-  @Column(unique = true)
-  var path: String = _
-
   @Column(nullable = false)
   var fileType: String = _
 
@@ -40,10 +37,9 @@ class Book {
   @JoinColumn(name = "book_id")
   var toc: java.util.List[BookTocEntry] = _
 
-  def this(id: String, path: String, fileType: String, title: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
+  def this(id: String, fileType: String, title: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
     this()
     this.id = id
-    this.path = path
     this.fileType = fileType
     this.title = title
     this.collection = collection

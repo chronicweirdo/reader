@@ -32,14 +32,12 @@ trait BookRepository extends JpaRepository[Book, String] {
   def findByTitle(title: String): java.util.List[Book]
 
   @Query(
-    value="select path from book",
+    value="select (collection + '/' + title + '.' + file_type) from book",
     nativeQuery = true
   )
   def findAllPaths(): java.util.List[String]
 
   def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
 
-  def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
-
-  def findByPath(path: String): Optional[Book]
+  def findByCollectionAndTitle(collection: String, title: String): Optional[Book]
 }

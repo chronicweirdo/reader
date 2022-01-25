@@ -1,10 +1,11 @@
 package com.cacoveanu.reader.util
 
+import com.cacoveanu.reader.entity.Book
+
 import java.io.{File, InputStream}
 import java.nio.file.{Files, Paths}
 import java.security.{DigestInputStream, MessageDigest}
 import java.util.Base64
-
 import org.apache.commons.codec.binary.Base32
 import org.springframework.http.MediaType
 import org.springframework.web.accept.MediaTypeFileExtensionResolver
@@ -36,6 +37,12 @@ object FileUtil {
   def getExtension(path: String): String = {
     val lastDotIndex = path.lastIndexOf('.')
     if (lastDotIndex >= 0) path.toLowerCase().substring(lastDotIndex).substring(1)
+    else ""
+  }
+
+  def getExtensionWithCorrectCase(path: String): String = {
+    val lastDotIndex = path.lastIndexOf('.')
+    if (lastDotIndex >= 0) path.substring(lastDotIndex).substring(1)
     else ""
   }
 

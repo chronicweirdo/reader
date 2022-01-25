@@ -133,7 +133,7 @@ class MainController @Autowired()(
   }
 
   def getType(book: Book): String = {
-    FileUtil.getExtension(book.path) match {
+    book.fileType match {
       case FileTypes.CBR => "comic"
       case FileTypes.CBZ => "comic"
       case FileTypes.PDF => "comic"
