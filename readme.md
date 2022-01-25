@@ -173,6 +173,10 @@ services:
     restart: unless-stopped
 ```
 
+[Docker Hub entry for this project](https://hub.docker.com/r/chronicweirdo/chronicreader)
+
+See information about performance considerations when running in Docker on Windows on the [4.6 release page](https://github.com/chronicweirdo/reader/releases/tag/v4.6).
+
 ## Other considerations
 
 If you want to make this service available on the internet, you should add SSL,
