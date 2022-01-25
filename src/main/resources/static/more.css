@@ -55,7 +55,7 @@ p.history {
     display: grid;
     align-items: top;
     justify-items: stretch;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     overflow: hidden;
 }
 p.history > * {
@@ -81,6 +81,10 @@ span.header {
         content: "title: ";
         font-weight: bold;
     }
+    .history-book-id:before {
+        content: "checksum: ";
+        font-weight: bold;
+    }
     .history-progress:before {
         content: "progress: ";
         font-weight: bold;
@@ -88,6 +92,13 @@ span.header {
     .history-date:before {
         content: "date: ";
         font-weight: bold;
+    }
+    .history-orphaned:before {
+        content: "orphaned: ";
+        font-weight: bold;
+    }
+    .history-orphaned:empty {
+        display: none;
     }
     .history-actions:before {
         content: "actions: ";

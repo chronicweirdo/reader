@@ -1,11 +1,13 @@
 package com.cacoveanu.reader.repository
 
-import com.cacoveanu.reader.entity.{Book}
+import com.cacoveanu.reader.entity.Book
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.{JpaRepository, Query}
 import org.springframework.data.repository.query.Param
 
-trait BookRepository extends JpaRepository[Book, java.lang.Long] {
+import java.util.Optional
+
+trait BookRepository extends JpaRepository[Book, String] {
 
   @Query(
     value="select * from book b where lower(b.collection) + '/' + lower(b.title) like :term order by lower(b.collection) asc, lower(b.title) asc",
@@ -27,15 +29,15 @@ trait BookRepository extends JpaRepository[Book, java.lang.Long] {
   )
   def findAllCollections(): java.util.List[String]
 
-  def findByAuthorAndTitle(author: String, title: String): java.util.List[Book]
+  def findByTitle(title: String): java.util.List[Book]
 
   @Query(
-    value="select path from book",
+    value="select (collection + '/' + title + '.' + file_type) from book",
     nativeQuery = true
   )
   def findAllPaths(): java.util.List[String]
 
-  def findByIdNotIn(ids: java.util.List[java.lang.Long]): java.util.List[Book]
+  def findByIdNotIn(ids: java.util.List[String]): java.util.List[Book]
 
-  def findByPathIn(paths: java.util.List[String]): java.util.List[Book]
+  def findByCollectionAndTitle(collection: String, title: String): Optional[Book]
 }

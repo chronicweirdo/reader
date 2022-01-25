@@ -1,17 +1,15 @@
 package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
-import com.cacoveanu.reader.service.{BookService, ScannerService, UserService}
+import com.cacoveanu.reader.service.{BookService, ScannerService}
 import com.cacoveanu.reader.util.{FileTypes, FileUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
-import org.springframework.web.servlet.view.RedirectView
 
-import java.util
-import java.util.{Collections, Date}
+import java.util.Date
 import scala.beans.BeanProperty
 import scala.jdk.CollectionConverters._
 
@@ -36,29 +34,54 @@ class MainController @Autowired()(
   @RequestMapping(Array("/more"))
   def morePage(model: Model): String = {
     model.addAttribute("admin", SessionUtil.getUser().admin)
-    model.addAttribute("lastScanDate", scannerService.getLastScanDate())
     "more"
+  }
+
+  @RequestMapping(value = Array("/historyData"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
+  @ResponseBody
+  def loadHistoryData(): ResponseEntity[java.util.List[UiBook]] = {
+    val progressWithBooks: Seq[(Progress, Option[Book])] = bookService.loadAllReadInformation()
+
+    val latestRead = progressWithBooks
+      .map(pb => {
+        val p = pb._1
+        val book = pb._2
+        UiBook(
+          p.bookId,
+          if (book.isDefined) getType(book.get) else null,
+          p.collection,
+          p.title,
+          null,
+          p.position,
+          p.size,
+          p.lastUpdate,
+          book.isEmpty
+        )
+      }).sortBy(_.lastUpdate).reverse
+
+    new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }
 
   @RequestMapping(value = Array("/latestRead"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
-  def loadLatestRead(@RequestParam(name = "limit", required = false) limit: Integer,
-                     @RequestParam(name = "withoutImages", required = false) withoutImages: Boolean): ResponseEntity[java.util.List[UiBook]] = {
-    val progress = if (limit != null && limit > 0) bookService.loadTopProgress(limit)
-      else if (limit == null) bookService.loadReadInformation()
-      else Seq()
+  def loadLatestRead(@RequestParam(name = "limit", required = true) limit: Integer): ResponseEntity[java.util.List[UiBook]] = {
+    val progress = bookService.loadValidTopProgress(limit)
+    val books: Map[String, Book] = progress.map(p => p.bookId).distinct.flatMap(id => bookService.loadBook(id)).map(b => (b.id, b)).toMap
 
     val latestRead = progress
-      .map(p => UiBook(
-        p.book.id,
-        getType(p.book),
-        p.book.collection,
-        p.book.title,
-        if (withoutImages != null && withoutImages) null else WebUtil.toBase64Image(p.book.mediaType, p.book.cover),
-        p.position,
-        p.book.size,
-        p.lastUpdate
-      )).sortBy(_.lastUpdate).reverse
+      .map(p => {
+        val book = books(p.bookId)
+        UiBook(
+          p.bookId,
+          getType(book),
+          book.collection,
+          book.title,
+          WebUtil.toBase64Image(book.mediaType, book.cover),
+          p.position,
+          book.size,
+          p.lastUpdate
+        )
+      }).sortBy(_.lastUpdate).reverse
 
     new ResponseEntity[java.util.List[UiBook]](latestRead.asJava, HttpStatus.OK)
   }
@@ -69,7 +92,7 @@ class MainController @Autowired()(
                      @RequestParam(name = "withoutImages", required = false) withoutImages: Boolean): ResponseEntity[java.util.List[UiBook]] = {
     val books = bookService.loadLatestAdded(limit)
     val progress: Seq[Progress] = bookService.loadProgress(books)
-    val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
+    val progressByBook: Map[String, Progress] = progress.map(p => (p.bookId, p)).toMap
 
     val uiBooks = books
       .map(book => UiBook(
@@ -79,7 +102,7 @@ class MainController @Autowired()(
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
         progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
-        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1),
+        progressByBook.get(book.id).map(p => book.size).getOrElse(-1),
         progressByBook.get(book.id).map(p => p.lastUpdate).getOrElse(null)
       ))
     new ResponseEntity[java.util.List[UiBook]](uiBooks.asJava, HttpStatus.OK)
@@ -92,7 +115,7 @@ class MainController @Autowired()(
       else bookService.search(term, page)
 
     val progress: Seq[Progress] = bookService.loadProgress(books)
-    val progressByBook: Map[java.lang.Long, Progress] = progress.map(p => (p.book.id, p)).toMap
+    val progressByBook: Map[String, Progress] = progress.map(p => (p.bookId, p)).toMap
 
     val collections = books.map(c => c.collection).distinct.sortBy(c => c.toLowerCase())
     val uiBooks = books
@@ -103,14 +126,14 @@ class MainController @Autowired()(
         book.title,
         WebUtil.toBase64Image(book.mediaType, book.cover),
         progressByBook.get(book.id).map(p => p.position).getOrElse(-1),
-        progressByBook.get(book.id).map(p => p.book.size).getOrElse(-1),
+        book.size,
         progressByBook.get(book.id).map(p => p.lastUpdate).getOrElse(null)
       ))
     new ResponseEntity[CollectionPage](CollectionPage(collections.asJava, uiBooks.asJava), HttpStatus.OK)
   }
 
   def getType(book: Book): String = {
-    FileUtil.getExtension(book.path) match {
+    book.fileType match {
       case FileTypes.CBR => "comic"
       case FileTypes.CBZ => "comic"
       case FileTypes.PDF => "comic"
@@ -125,31 +148,22 @@ class MainController @Autowired()(
     value=Array("/removeProgress"),
     method=Array(RequestMethod.DELETE)
   )
-  def removeProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[String] = {
+  def removeProgress(@RequestParam("id") id: String): ResponseEntity[String] = {
     if (bookService.deleteProgress(id)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(value=Array("/markProgress"), method=Array(RequestMethod.PUT))
-  def markProgress(@RequestParam("id") id: java.lang.Long,
+  def markProgress(@RequestParam("id") id: String,
                    @RequestParam("position") position: Int): ResponseEntity[String] = {
     if (bookService.saveProgress(id, position)) new ResponseEntity[String](HttpStatus.OK)
     else new ResponseEntity[String](HttpStatus.NOT_FOUND)
   }
 
   @RequestMapping(value=Array("/loadProgress"), method=Array(RequestMethod.GET))
-  def loadProgress(@RequestParam("id") id: java.lang.Long): ResponseEntity[java.lang.Long] = {
+  def loadProgress(@RequestParam("id") id: String): ResponseEntity[java.lang.Long] = {
     bookService.loadProgress(id).map(p => new ResponseEntity[java.lang.Long](p.position, HttpStatus.OK))
       .getOrElse(new ResponseEntity[java.lang.Long](0L, HttpStatus.OK))
-  }
-
-  @RequestMapping(
-    value=Array("/scan"),
-    method=Array(RequestMethod.GET)
-  )
-  def scan() = {
-    scannerService.scan()
-    new RedirectView("/")
   }
 }
 
@@ -159,12 +173,13 @@ case class CollectionPage(
                          )
 
 case class UiBook(
-                    @BeanProperty id: java.lang.Long,
+                    @BeanProperty id: java.lang.String,
                     @BeanProperty `type`: String,
                     @BeanProperty collection: String,
                     @BeanProperty title: String,
                     @BeanProperty cover: String,
                     @BeanProperty progress: Int,
                     @BeanProperty pages: Int,
-                    @BeanProperty lastUpdate: Date
+                    @BeanProperty lastUpdate: Date,
+                    @BeanProperty orphaned: Boolean = false
                   )

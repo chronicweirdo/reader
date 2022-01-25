@@ -1,7 +1,5 @@
 package com.cacoveanu.reader.controller
 
-import java.nio.charset.StandardCharsets
-
 import com.cacoveanu.reader.entity.Content
 import com.cacoveanu.reader.service.{BookService, ContentService}
 import com.cacoveanu.reader.util.{FileMediaTypes, FileUtil, WebUtil}
@@ -20,7 +18,7 @@ class ComicController @Autowired() (private val contentService: ContentService,
                                     private val bookService: BookService) {
 
   @RequestMapping(Array("/comic"))
-  def loadComic(@RequestParam(name="id") id: java.lang.Long, model: Model): String = {
+  def loadComic(@RequestParam(name="id") id: String, model: Model): String = {
     bookService.loadBook(id) match {
       case Some(comic) =>
         model.addAttribute("id", id)
@@ -39,7 +37,7 @@ class ComicController @Autowired() (private val contentService: ContentService,
   }
 
   @RequestMapping(Array("/imageData"))
-  def loadImageData(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int)/*: String*/ = {
+  def loadImageData(@RequestParam("id") id: String, @RequestParam("page") page: Int)/*: String*/ = {
     contentService
       .loadComicResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)
@@ -49,7 +47,7 @@ class ComicController @Autowired() (private val contentService: ContentService,
 
   @RequestMapping(Array("/downloadPage"))
   @ResponseBody
-  def download(@RequestParam("id") id: java.lang.Long, @RequestParam("page") page: Int) = {
+  def download(@RequestParam("id") id: String, @RequestParam("page") page: Int) = {
     contentService
       .loadComicResources(id, contentService.getBatchForPosition(page))
       .find(p => p.index.isDefined && p.index.get == page)
@@ -61,7 +59,7 @@ class ComicController @Autowired() (private val contentService: ContentService,
       ).getOrElse(WebUtil.notFound)
   }
 
-  private def getFileName(id: java.lang.Long, page: Int, mediaType: String) =
+  private def getFileName(id: String, page: Int, mediaType: String) =
     FileUtil.getExtensionForMediaType(mediaType) match {
       case Some(ext) => s"$id-$page.${ext}"
       case None => s"$id-$page"

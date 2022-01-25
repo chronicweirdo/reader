@@ -1,7 +1,5 @@
 package com.cacoveanu.reader.controller
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import com.cacoveanu.reader.service.{BookService, UserService}
 import com.cacoveanu.reader.util.{DateUtil, SessionUtil}
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,11 +9,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RequestParam, ResponseBody}
+import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RequestParam, ResponseBody}
 import org.springframework.web.servlet.view.RedirectView
 
-import java.text.SimpleDateFormat
-import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
 
 @Controller
@@ -64,14 +60,16 @@ class AccountController @Autowired()(private val accountService: UserService,
   )
   @ResponseBody
   def exportProgress() = {
-    bookService.loadAllProgress().map(p =>
-      p.user.username + ","
-        + wrapInQuotes(p.book.author) + ","
-        + wrapInQuotes(p.book.title) + ","
-        + wrapInQuotes(p.book.collection) + ","
-        + p.position + ","
-        + p.finished + ","
-        + DateUtil.format(p.lastUpdate)
+    val progress = bookService.loadAllProgress()
+    progress.map(p =>
+      p.username + ","
+        +p.bookId + ","
+        +wrapInQuotes(p.title) + ","
+        +wrapInQuotes(p.collection) + ","
+        +p.position + ","
+        +p.size + ","
+        +p.finished + ","
+        +DateUtil.format(p.lastUpdate)
     ).mkString("\n")
   }
 
@@ -119,14 +117,18 @@ class AccountController @Autowired()(private val accountService: UserService,
       val unsavedProgress = linesToImport
         .flatMap(line => {
           val tokens = line.split(CSV_PARSING_REGEX).toSeq.map(trimQuotes)
-          val result = if (tokens.size == 7) {
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6))
+          val result = if (tokens.size == 8) {
+            /* username bookId title collection position size finished lastUpdate */
+            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6), tokens(7))
+          } else if (tokens.size == 7) {
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), tokens(6))
           } else if (tokens.size == 6) {
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), null)
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), tokens(3), tokens(4), tokens(5), null)
           } else if (tokens.size == 5) {
             // section entry for progress is ignored
-            bookService.importProgress(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4), null)
+            bookService.importProgressLegacy(tokens(0), tokens(1), tokens(2), null, tokens(3), tokens(4), null)
           } else None
+
           result match {
             case Some(data) => None
             case None => Some(line)

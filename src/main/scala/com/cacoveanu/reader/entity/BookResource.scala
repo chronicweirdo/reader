@@ -9,8 +9,6 @@ class BookResource {
   @GeneratedValue(strategy = GenerationType.AUTO)
   var id: java.lang.Long = _
 
-  //var bookId: java.lang.Long = _
-
   var path: String = _
 
   var start: java.lang.Long = _

@@ -31,6 +31,14 @@ class ContentService {
   @BeanProperty
   var keepEbookStyles: Boolean = _
 
+  @Value("${library.location}")
+  @BeanProperty
+  var libraryLocation: String = _
+
+  def getBookPath(book: Book) = {
+    Paths.get(libraryLocation, book.collection, book.title + "." + book.fileType).toFile.getAbsolutePath
+  }
+
   /**
    * Book resources are loaded based on a path. These are usually images.
    * @param bookId
@@ -38,18 +46,18 @@ class ContentService {
    * @return
    */
   @Cacheable(Array("bookResource"))
-  def loadBookResource(bookId: java.lang.Long, resourcePath: String): Option[Content] = {
+  def loadBookResource(bookId: String, resourcePath: String): Option[Content] = {
     bookRepository.findById(bookId).asScala
-      .filter(book => FileUtil.getExtension(book.path) == FileTypes.EPUB)
-      .map(book => (FileUtil.getMediaType(resourcePath), EpubUtil.readResource(book.path, EpubUtil.baseLink(resourcePath))))
+      .filter(book => book.fileType.toLowerCase() == FileTypes.EPUB)
+      .map(book => (FileUtil.getMediaType(resourcePath), EpubUtil.readResource(getBookPath(book), EpubUtil.baseLink(resourcePath))))
       .filter { case (contentTypeOption, bytesOption) => contentTypeOption.isDefined && bytesOption.isDefined}
       .flatMap { case (contentTypeOption, bytesOption) => Some(Content(None, contentTypeOption.get, bytesOption.get))}
   }
 
   @Cacheable(Array("sectionStartPosition"))
-  def findStartPositionForSectionContaining(bookId: java.lang.Long, position: java.lang.Long): Long = {
+  def findStartPositionForSectionContaining(bookId: String, position: java.lang.Long): Long = {
     bookRepository.findById(bookId).asScala match {
-      case Some(book) if FileUtil.getExtension(book.path) == FileTypes.EPUB =>
+      case Some(book) if book.fileType.toLowerCase() == FileTypes.EPUB =>
         book.resources.asScala.find(r => r.start <= position && position <= r.end) match {
           case Some(section) => section.start
           case None => -1
@@ -71,7 +79,7 @@ class ContentService {
     else (src, null)
   }
 
-  private def imageLinkTransform(bookId: Long, resourcePath: String, oldSrc: String): String = {
+  private def imageLinkTransform(bookId: String, resourcePath: String, oldSrc: String): String = {
     val remoteUri = new URI(oldSrc)
     if (remoteUri.isAbsolute) {
       oldSrc
@@ -111,7 +119,7 @@ class ContentService {
     }
   }
 
-  private def nodeSrcTransform(bookId: Long, resourcePath: String, node: BookNode): BookNode = {
+  private def nodeSrcTransform(bookId: String, resourcePath: String, node: BookNode): BookNode = {
     node.srcTransform(imageLinkTransform(bookId, resourcePath, _: String))
     node
   }
@@ -122,13 +130,13 @@ class ContentService {
   }
 
   @Cacheable(Array("bookSection"))
-  def loadBookSection(bookId: java.lang.Long, position: Long): BookNode = {
+  def loadBookSection(bookId: String, position: Long): BookNode = {
     bookRepository.findById(bookId).asScala match {
-      case Some(book) if FileUtil.getExtension(book.path) == FileTypes.EPUB => {
+      case Some(book) if book.fileType.toLowerCase() == FileTypes.EPUB => {
         book.resources.asScala.find(r => r.start <= position && position <= r.end)
           .map(resource => (resource.path, resource.start))
           .flatMap { case (resourcePath, resourceStart) => {
-            EpubUtil.parseSection(book.path, resourcePath, resourceStart)
+            EpubUtil.parseSection(getBookPath(book), resourcePath, resourceStart)
               .map(nodeSrcTransform(bookId, resourcePath, _))
               .map(nodeHrefTransform(book.links.asScala.map(l => (l.link -> l.position.toLong)).toMap, resourcePath, _))
           }}.orNull
@@ -144,9 +152,9 @@ class ContentService {
    * @return
    */
   @Cacheable(Array("resources"))
-  def loadComicResources(bookId: java.lang.Long, positions: Seq[Int]): Seq[Content] = {
+  def loadComicResources(bookId: String, positions: Seq[Int]): Seq[Content] = {
     val pages = bookRepository.findById(bookId).asScala
-      .map(book => (book.path, FileUtil.getExtension(book.path))) match {
+      .map(book => (getBookPath(book), book.fileType.toLowerCase())) match {
         case Some((path, FileTypes.CBZ)) => CbzUtil.readPages(path, Some(positions)).getOrElse(Seq())
         case Some((path, FileTypes.CBR)) => CbrUtil.readPages(path, Some(positions)).getOrElse(Seq())
         case Some((path, FileTypes.PDF)) => PdfUtil.readPages(path, Some(positions)).getOrElse(Seq())

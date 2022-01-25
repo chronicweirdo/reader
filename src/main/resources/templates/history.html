@@ -27,10 +27,13 @@
     <script>
         var COLLECTION_CLASS = "history-collection"
         var TITLE_CLASS = "history-title"
+        var BOOK_ID_CLASS = "history-book-id"
         var PROGRESS_CLASS = "history-progress"
         var DATE_CLASS = "history-date"
         var ACTIONS_CLASS = "history-actions"
         var BOOK_ID_ATTRIBUTE = "bookId"
+        var ORPHANED_CLASS = "history-orphaned"
+        var ORPHANED_CONTENT = "orphaned"
 
         function deleteElementsForBookId(bookId) {
             let sel = Array.from(document.getElementById("ch_read_history").childNodes).filter(e => e.getAttribute).filter(e => e.getAttribute("bookId") == bookId)
@@ -75,6 +78,12 @@
             title.appendChild(titleLink)
             elements.push(title)
 
+            var bookId = document.createElement("span")
+            bookId.classList.add(BOOK_ID_CLASS)
+            bookId.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
+            bookId.innerHTML = book.id
+            elements.push(bookId)
+
             var progress = document.createElement("span")
             progress.classList.add(PROGRESS_CLASS)
             progress.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
@@ -88,6 +97,12 @@
             var lastUpdate = new Date(book.lastUpdate)
             date.innerHTML = lastUpdate.getFullYear() + "-" + (lastUpdate.getMonth() + 1) + "-" + lastUpdate.getDate() + " " + lastUpdate.getHours() + ":" + lastUpdate.getMinutes()
             elements.push(date)
+
+            var orphaned = document.createElement("span")
+            orphaned.classList.add(ORPHANED_CLASS)
+            orphaned.setAttribute(BOOK_ID_ATTRIBUTE, book.id)
+            if (book.orphaned) orphaned.innerHTML = ORPHANED_CONTENT
+            elements.push(orphaned)
 
             var actions = document.createElement("span")
             actions.classList.add(ACTIONS_CLASS)
@@ -127,7 +142,7 @@
                     hideSpinner()
                 }
             }
-            xhttp.open("GET", "latestRead?withoutImages=true")
+            xhttp.open("GET", "historyData")
             xhttp.send()
         }
         window.onload = function() {
@@ -144,7 +159,7 @@
 <p>Go to <a href="/">Library</a></p>
 <p>
 <p id="ch_read_history" class="history">
-    <span class="header">collection</span><span class="header">title</span><span class="header">progress</span><span class="header">read date</span><span class="header">actions</span>
+    <span class="header">collection</span><span class="header">title</span><span class="header">checksum</span><span class="header">progress</span><span class="header">read date</span><span class="header">orphaned</span><span class="header">actions</span>
     </table>
 </p>
 <div id="spinner">

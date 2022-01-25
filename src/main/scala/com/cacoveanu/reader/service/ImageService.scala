@@ -9,7 +9,6 @@ import javax.imageio.ImageIO
 import org.springframework.stereotype.Service
 
 import java.awt
-import java.awt.Color
 import scala.collection.mutable
 import java.awt.Font
 import java.awt.FontFormatException

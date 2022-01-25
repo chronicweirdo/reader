@@ -21,7 +21,7 @@ class CollectionNode() {
   @BeanProperty
   var children: java.util.List[CollectionNode] = _
 
-  def this(name: String, search: String) {
+  def this(name: String, search: String) = {
     this()
     this.name = name
     this.search = URLEncoder.encode(search, StandardCharsets.UTF_8).replace("+", "%20")

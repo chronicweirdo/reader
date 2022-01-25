@@ -1,24 +1,18 @@
 package com.cacoveanu.reader.entity
 
-import com.cacoveanu.reader.util.EpubUtil
-
 import java.util.Date
-import scala.jdk.CollectionConverters._
-import javax.persistence.{CascadeType, Column, Entity, FetchType, GeneratedValue, GenerationType, Id, JoinColumn, OneToMany, Transient}
+import javax.persistence._
 
 @Entity
 class Book {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  var id: java.lang.Long = _
+  var id: java.lang.String = _
 
-  @Column(unique = true)
-  var path: String = _
+  @Column(nullable = false)
+  var fileType: String = _
 
   var title: String = _
-
-  var author: String = _
 
   var collection: String = _
 
@@ -43,11 +37,11 @@ class Book {
   @JoinColumn(name = "book_id")
   var toc: java.util.List[BookTocEntry] = _
 
-  def this(path: String, title: String, author: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
+  def this(id: String, fileType: String, title: String, collection: String, mediaType: String, cover: Array[Byte], size: Int, added: Date) = {
     this()
-    this.path = path
+    this.id = id
+    this.fileType = fileType
     this.title = title
-    this.author = author
     this.collection = collection
     this.mediaType = mediaType
     this.cover = cover

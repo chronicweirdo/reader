@@ -103,6 +103,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       .formLogin()
       .loginPage("/login")
       .failureUrl("/login?error")
+      .successForwardUrl("/")
       .permitAll()
 
       .and()

@@ -1,10 +1,11 @@
 package com.cacoveanu.reader.util
 
+import com.cacoveanu.reader.entity.Book
+
 import java.io.{File, InputStream}
 import java.nio.file.{Files, Paths}
 import java.security.{DigestInputStream, MessageDigest}
 import java.util.Base64
-
 import org.apache.commons.codec.binary.Base32
 import org.springframework.http.MediaType
 import org.springframework.web.accept.MediaTypeFileExtensionResolver
@@ -36,6 +37,12 @@ object FileUtil {
   def getExtension(path: String): String = {
     val lastDotIndex = path.lastIndexOf('.')
     if (lastDotIndex >= 0) path.toLowerCase().substring(lastDotIndex).substring(1)
+    else ""
+  }
+
+  def getExtensionWithCorrectCase(path: String): String = {
+    val lastDotIndex = path.lastIndexOf('.')
+    if (lastDotIndex >= 0) path.substring(lastDotIndex).substring(1)
     else ""
   }
 
@@ -90,11 +97,54 @@ object FileUtil {
     files.toSeq
   }
 
+  def scanFolderTree(path: String): Seq[String] = {
+    scan(path)
+      .filter(f => f.isDirectory)
+      .map(f => f.getAbsolutePath)
+  }
+
   def scanFilesRegex(path: String, regex: String): Seq[String] = {
     val pattern = regex.r
     scan(path)
       .filter(f => f.isFile)
       .filter(f => pattern.pattern.matcher(f.getAbsolutePath).matches)
       .map(f => f.getAbsolutePath)
+  }
+
+  /*
+    SHA1
+    SHA-256
+    SHA-512
+   */
+  def getFileChecksum(path: String, algorithm: String = "MD5", encoder: Array[Byte] => String = base32) = {
+    val md = MessageDigest.getInstance(algorithm)
+    var is: InputStream = null
+    try {
+      is = Files.newInputStream(Paths.get(path))
+      val buffer = new Array[Byte](1024)
+      LazyList.continually(is.read(buffer)).takeWhile(_ != -1).foreach(md.update(buffer, 0, _))
+    } finally {
+      if (is != null) is.close()
+    }
+    val digest = md.digest
+    encoder(digest)
+  }
+  def base64(arr: Array[Byte]): String = {
+    Base64.getEncoder().encodeToString(arr)
+  }
+  def base32(arr: Array[Byte]): String = {
+    new Base32().encodeAsString(arr).replaceAll("=", "").toLowerCase()
+  }
+  def hexa(bytes: Array[Byte]): String = {
+    val sb = new StringBuilder
+
+    // loop through the bytes array
+    for (i <- 0 until bytes.length) { // the following line converts the decimal into
+      // hexadecimal format and appends that to the
+      // StringBuilder object
+      sb.append(Integer.toString((bytes(i) & 0xff) + 0x100, 16).substring(1))
+    }
+
+    return sb.toString
   }
 }

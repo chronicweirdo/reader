@@ -297,7 +297,7 @@ function formatImage(img) {
     let size = parseInt(bookElement.getAttribute("size"))
     let progress = parseInt(bookElement.getAttribute("progress"))
     let downloaded = bookElement.getAttribute("downloaded") == "true"
-    if (size != NaN && size > 0 && progress != NaN) {
+    if (size != NaN && size > 0 && progress != NaN && progress != -1) {
         addProgress(img, progress, size, downloaded)
     }
 }
@@ -306,7 +306,9 @@ function loadLatestRead() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
-            if (this.status == 200) {
+            if (this.status == 401) {
+                window.location = "/login"
+            } else if (this.status == 200) {
                 var collectionContainer = document.getElementById("ch_latestRead")
                 collectionContainer.innerHTML = ""
                 var books = JSON.parse(this.responseText)
@@ -339,7 +341,9 @@ function loadLatestAdded() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
-            if (this.status == 200) {
+            if (this.status == 401) {
+                window.location = "/login"
+            } else if (this.status == 200) {
                 var books = JSON.parse(this.responseText)
                 if (books.length > 0) {
                     let bookIds = []
@@ -389,7 +393,9 @@ function loadNextPage(callback) {
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && document.searchTimestamp == timestamp) {
                 document.searchTimestamp = null
-                if (this.status == 200) {
+                if (this.status == 401) {
+                    window.location = "/login"
+                } else if (this.status == 200) {
                     setCurrentPage(pagenum)
                     var response = JSON.parse(this.responseText)
                     if (response.offline && response.offline == true) {
