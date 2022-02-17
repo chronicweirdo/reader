@@ -75,11 +75,13 @@ class ScannerService {
   private val changesQueue: BlockingQueue[BookFolderChange] = new LinkedBlockingQueue[BookFolderChange]()
 
   private def startWatching(path: String) = {
+    log.debug(s"start watching path $path")
     val key: WatchKey = Paths.get(path).register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
     watchServiceKeyMap.put(path, key)
   }
 
   private def stopWatching(path: String) = {
+    log.debug(s"stop watching path $path")
     watchServiceKeyMap.keys().asScala.filter(k => k.startsWith(path)).foreach(k => {
       val key = watchServiceKeyMap.get(k)
       key.cancel()
@@ -112,30 +114,39 @@ class ScannerService {
 
   private def startWatcher() = {
     new Thread(() => {
-      var key: WatchKey = null
-      while ( {
-        key = watchService.take
-        key != null
-      }) {
-        var changesInEvent: Seq[BookFolderChange] = Seq()
-        for (event <- key.pollEvents.asScala) {
-          val eventFile = key.watchable().asInstanceOf[Path].resolve(event.context().asInstanceOf[Path]).toFile
-          val eventPath = eventFile.getAbsolutePath
-          val typ = event.kind() match {
-            case ENTRY_CREATE => ADDED
-            case ENTRY_MODIFY => MODIFIED
-            case ENTRY_DELETE => DELETED
-          }
-          changesInEvent :+= BookFolderChange(eventPath, eventFile.isFile, typ)
+      while(true) {
+        var key: WatchKey = null
+        try {
+          key = watchService.take()
+        } catch {
+          case e: Throwable =>
+            log.info("watcher service failed to get key", e)
         }
-        // order these changes by priority
-        val sortedChanges = changesInEvent.sortWith((c1, c2) => (c1.typ, c2.typ) match {
-          case (ADDED, _) => true
-          case (MODIFIED, DELETED) => true
-          case _ => false
-        })
-        sortedChanges.foreach(c => changesQueue.put(c))
-        key.reset
+
+        if (key != null) {
+          var changesInEvent: Seq[BookFolderChange] = Seq()
+          for (event <- key.pollEvents.asScala) {
+            val eventFile = key.watchable().asInstanceOf[Path].resolve(event.context().asInstanceOf[Path]).toFile
+            val eventPath = eventFile.getAbsolutePath
+            val typ = event.kind() match {
+              case ENTRY_CREATE => ADDED
+              case ENTRY_MODIFY => MODIFIED
+              case ENTRY_DELETE => DELETED
+            }
+            val change = BookFolderChange(eventPath, eventFile.isFile, typ)
+            changesInEvent :+= change
+            log.debug(s"detect change $change")
+          }
+          log.debug(s"found ${changesInEvent.size} changes")
+          // order these changes by priority
+          val sortedChanges = changesInEvent.sortWith((c1, c2) => (c1.typ, c2.typ) match {
+            case (ADDED, _) => true
+            case (MODIFIED, DELETED) => true
+            case _ => false
+          })
+          sortedChanges.foreach(c => changesQueue.put(c))
+          key.reset
+        }
       }
     }).start()
   }

@@ -5,7 +5,7 @@ COPY . /source
 WORKDIR /source
 RUN gradle build
 
-FROM openjdk:latest as RUN
+FROM openjdk:19-jdk-alpine as RUN
 
 RUN mkdir /db
 WORKDIR app
@@ -18,4 +18,4 @@ ENV DEBUG=false
 ENV LOG_LEVEL=INFO
 
 #WORKDIR config
-ENTRYPOINT ["/bin/bash", "/app/start.sh"]
+ENTRYPOINT ["/bin/sh", "/app/start.sh"]
