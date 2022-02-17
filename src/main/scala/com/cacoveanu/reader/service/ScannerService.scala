@@ -47,6 +47,10 @@ class ScannerService {
   @BeanProperty
   var getTitleFromMetadata: Boolean = _
 
+  @Value("${enableFolderWatching:true}")
+  @BeanProperty
+  var enableFolderWatching: Boolean = _
+
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
@@ -63,10 +67,12 @@ class ScannerService {
   val scanFailures = new AtomicLong(0)
   val scanTimeMilliseconds = new AtomicLong(0)
 
+  var filesSnapshot = Set[String]()
+
   @PostConstruct
   def init(): Unit = {
     initialScanFolder(libraryLocation)
-    startWatcher()
+    if (enableFolderWatching) startWatcher()
     startQueueConsumer()
   }
 
@@ -94,9 +100,10 @@ class ScannerService {
   }
 
   private def initialScanFolder(path: String) = {
-    FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
+    if (enableFolderWatching) FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
-    val filesOnDisk = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
+    val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
+    filesSnapshot = filesOnDisk
     filesToScan.set(filesToScan.get() + filesOnDisk.size)
     val filesInDatabase = bookRepository.findAllPaths().asScala.map(relativePathToAbsolute(_)).filter(p => p.startsWith(path)).toSet
 
@@ -110,6 +117,20 @@ class ScannerService {
     deletedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, DELETED)))
     newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
     modifiedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, MODIFIED)))
+  }
+
+  @Scheduled(cron = "0 */1 * * * *")
+  def scheduledRescan() = if (!enableFolderWatching) subsequentScanFolder(libraryLocation)
+
+  private def subsequentScanFolder(path: String) = {
+    val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
+    val newFiles = filesOnDisk.diff(filesSnapshot)
+    log.info(s"found ${newFiles.size} new files in subsequent scan")
+    newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
+    val deletedFiles = filesSnapshot.diff(filesOnDisk)
+    log.info(s"found ${deletedFiles.size} deleted files in subsequent scan")
+    deletedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, DELETED)))
+    filesSnapshot = filesOnDisk
   }
 
   private def startWatcher() = {
@@ -158,7 +179,7 @@ class ScannerService {
         change match {
           case BookFolderChange(path, _, DELETED) =>
             log.debug(s"stop following changes in possible folder $path and delete possible book at $path")
-            stopWatching(path)
+            if (enableFolderWatching) stopWatching(path)
             deleteBook(path)
           case BookFolderChange(path, false, ADDED) =>
             log.debug(s"start following changes in folder $path")

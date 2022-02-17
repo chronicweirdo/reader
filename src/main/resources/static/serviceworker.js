@@ -8,7 +8,7 @@ var PROGRESS_TABLE = 'progress'
 var BOOKS_TABLE = 'books'
 var WORKER_TABLE = 'worker'
 var ID_INDEX = 'id'
-var SERVER_REQUEST_TIMEOUT = 1000
+var SERVER_REQUEST_TIMEOUT = 2000
 var LOGGED_OUT_MESSAGE = "logged out"
 
 var downloadingBook = new Set()
