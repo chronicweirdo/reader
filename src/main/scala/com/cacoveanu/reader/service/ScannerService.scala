@@ -35,7 +35,7 @@ case class BookFolderChange(path: String, isFile: Boolean, typ: BookFolderChange
 class BookFolderChangeComparator extends Comparator[BookFolderChange] {
   override def compare(o1: BookFolderChange, o2: BookFolderChange): Int = (o1.typ, o2.typ) match {
     case (ADDED, _) => -1
-    case (MODIFIED, DELETED) => -1
+    case (DELETED, MODIFIED) => -1
     case _ => 1
   }
 }
