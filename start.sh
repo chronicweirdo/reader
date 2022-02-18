@@ -4,4 +4,4 @@ sed -i 's/DEBUG/'$DEBUG'/' application.properties
 sed -i 's/LOG_LEVEL/'$LOG_LEVEL'/' application.properties
 sed -i 's/ENABLE_FOLDER_WATCHING/'$ENABLE_FOLDER_WATCHING'/' application.properties
 
-java -Dcom.sun.media.imageio.disableCodecLib=true -jar reader.jar
+java -jar reader.jar
