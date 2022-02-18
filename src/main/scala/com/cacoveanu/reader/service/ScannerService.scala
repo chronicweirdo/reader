@@ -18,8 +18,8 @@ import org.springframework.scheduling.annotation.Scheduled
 
 import java.nio.file.StandardWatchEventKinds.{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY}
 import java.nio.file.attribute.{BasicFileAttributes, FileTime}
-import java.util.Date
-import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue}
+import java.util.{Comparator, Date}
+import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQueue, PriorityBlockingQueue}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicLong}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters._
@@ -31,6 +31,14 @@ object BookFolderChangeType extends Enumeration {
 }
 
 case class BookFolderChange(path: String, isFile: Boolean, typ: BookFolderChangeType)
+
+class BookFolderChangeComparator extends Comparator[BookFolderChange] {
+  override def compare(o1: BookFolderChange, o2: BookFolderChange): Int = (o1.typ, o2.typ) match {
+    case (ADDED, _) => -1
+    case (MODIFIED, DELETED) => -1
+    case _ => 1
+  }
+}
 
 @Service
 class ScannerService {
@@ -78,7 +86,7 @@ class ScannerService {
 
   private val watchService = FileSystems.getDefault.newWatchService()
   private val watchServiceKeyMap = new ConcurrentHashMap[String, WatchKey]()
-  private val changesQueue: BlockingQueue[BookFolderChange] = new LinkedBlockingQueue[BookFolderChange]()
+  private val changesQueue: BlockingQueue[BookFolderChange] = new PriorityBlockingQueue[BookFolderChange](100, new BookFolderChangeComparator())
 
   private def startWatching(path: String) = {
     log.debug(s"start watching path $path")
@@ -159,13 +167,7 @@ class ScannerService {
             log.debug(s"detect change $change")
           }
           log.debug(s"found ${changesInEvent.size} changes")
-          // order these changes by priority
-          val sortedChanges = changesInEvent.sortWith((c1, c2) => (c1.typ, c2.typ) match {
-            case (ADDED, _) => true
-            case (MODIFIED, DELETED) => true
-            case _ => false
-          })
-          sortedChanges.foreach(c => changesQueue.put(c))
+          changesInEvent.foreach(c => changesQueue.put(c))
           key.reset
         }
       }
