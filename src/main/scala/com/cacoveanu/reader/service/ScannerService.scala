@@ -59,6 +59,10 @@ class ScannerService {
   @BeanProperty
   var enableFolderWatching: Boolean = _
 
+  @Value("${verifyOnInitialScan:true}")
+  @BeanProperty
+  var verifyOnInitialScan: Boolean = _
+
   @BeanProperty
   @Autowired
   var bookRepository: BookRepository = _
@@ -117,14 +121,17 @@ class ScannerService {
 
     val newFiles = filesOnDisk.diff(filesInDatabase)
     log.info(s"found ${newFiles.size} new files in initial scan")
+    newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
+
     val deletedFiles = filesInDatabase.diff(filesOnDisk)
     log.info(s"found ${deletedFiles.size} deleted files in initial scan")
-    val modifiedFiles = filesInDatabase.diff(deletedFiles)
-    log.info(s"found ${modifiedFiles.size} modified files in initial scan")
-
     deletedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, DELETED)))
-    newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
-    modifiedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, MODIFIED)))
+
+    if (verifyOnInitialScan) {
+      val modifiedFiles = filesInDatabase.diff(deletedFiles)
+      log.info(s"found ${modifiedFiles.size} modified files in initial scan")
+      modifiedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, MODIFIED)))
+    }
   }
 
   @Scheduled(cron = "0 */1 * * * *")
