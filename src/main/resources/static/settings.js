@@ -246,3 +246,4 @@ var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added
 var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximum swipe angle", "30", parseInt, degreeToString, createNumberController(10, 60, 10))
 var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
+var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)

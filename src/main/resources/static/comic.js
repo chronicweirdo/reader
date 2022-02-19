@@ -96,7 +96,11 @@ class Comic {
         let currentPosition = getPositionInput()
         if (currentPosition < this.size) {
             this.displayPage(currentPosition + 1, function() {
-                getImage().update()
+                if (SETTING_FIT_COMIC_TO_SCREEN.get()) {
+                    getImage().fitPageToScreen()
+                } else {
+                    getImage().update()
+                }
             })
         }
     }
@@ -104,9 +108,13 @@ class Comic {
         let currentPosition = getPositionInput()
         if (currentPosition > 1) {
             this.displayPage(currentPosition - 1, function() {
-                if (proposedLeft) getImage().setLeft(proposedLeft)
-                if (proposedTop) getImage().setTop(proposedTop)
-                getImage().update()
+                if (SETTING_FIT_COMIC_TO_SCREEN.get()) {
+                    getImage().fitPageToScreen()
+                } else {
+                    if (proposedLeft) getImage().setLeft(proposedLeft)
+                    if (proposedTop) getImage().setTop(proposedTop)
+                    getImage().update()
+                }
             })
         }
     }
@@ -186,9 +194,6 @@ class Image {
     }
     getMinimumZoom() {
         return this.minimumZoom
-    }
-    isPageFitToScreen() {
-        return this.getZoomForFitToScreen() == this.getZoom()
     }
     getZoomForFitToScreen() {
         return Math.min(getViewportHeight() / this.getOriginalHeight(), getViewportWidth() / this.getOriginalWidth())
@@ -338,9 +343,11 @@ class Image {
         }
     }
     zoomJump(x, y) {
-        if (this.isPageFitToScreen()) {
+        if (SETTING_FIT_COMIC_TO_SCREEN.get()) {
+            SETTING_FIT_COMIC_TO_SCREEN.put(false)
             this.zoom(SETTING_ZOOM_JUMP.get(), x, y, true)
         } else {
+            SETTING_FIT_COMIC_TO_SCREEN.put(true)
             this.fitPageToScreen()
         }
     }
