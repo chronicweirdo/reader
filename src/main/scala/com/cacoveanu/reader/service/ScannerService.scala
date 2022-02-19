@@ -74,7 +74,6 @@ class ScannerService {
   @BeanProperty
   @Autowired var imageService: ImageService = _
 
-  val filesToScan = new AtomicLong(0)
   val scannedFiles = new AtomicLong(0)
   val scanFailures = new AtomicLong(0)
   val scanTimeMilliseconds = new AtomicLong(0)
@@ -116,7 +115,6 @@ class ScannerService {
 
     val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
     filesSnapshot = filesOnDisk
-    filesToScan.set(filesToScan.get() + filesOnDisk.size)
     val filesInDatabase = bookRepository.findAllPaths().asScala.map(relativePathToAbsolute(_)).filter(p => p.startsWith(path)).toSet
 
     val newFiles = filesOnDisk.diff(filesInDatabase)
@@ -207,6 +205,7 @@ class ScannerService {
   }
 
   private def deleteBook(path: String) = {
+    val startTime = System.currentTimeMillis()
     val title = FileUtil.getFileName(path)
     val collection = getCollection(path)
     bookRepository.findByCollectionAndTitle(collection, title).toScala match {
@@ -216,6 +215,10 @@ class ScannerService {
         // probably book was just moved inside the library
         log.debug(s"no book to delete for path $path")
     }
+    val endTime = System.currentTimeMillis()
+    val durationMilliseconds = endTime - startTime
+    scanTimeMilliseconds.set(scanTimeMilliseconds.get() + durationMilliseconds)
+    computeAndPrintStatistics()
   }
 
   private def adaptProgressToBook(oldProgress: Seq[Progress], newBook: Book) = {
@@ -295,9 +298,9 @@ class ScannerService {
   private def computeAndPrintStatistics() = {
     val processedFiles = scannedFiles.get() + scanFailures.get()
     val meanScanTime = (scanTimeMilliseconds.get().toDouble / processedFiles).toLong
-    val remainingFiles = filesToScan.get() - processedFiles
+    val remainingFiles = changesQueue.size()
     val remainingTime = remainingFiles * meanScanTime
-    log.info(s"scanned $processedFiles of ${filesToScan.get()}" +
+    log.info(s"scanned $processedFiles" +
       s" (${scannedFiles.get()} successful, ${scanFailures.get()} failed)" +
       s" in ${DateUtil.millisToHumanReadable(scanTimeMilliseconds.get())}" +
       s" (mean scan time ${DateUtil.millisToHumanReadable(meanScanTime)});" +
