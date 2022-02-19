@@ -18,7 +18,7 @@ html, body {
 body {
     background-color: var(--status-bar-color, gold);
     font-family: 'Roboto', sans-serif;
-    word-wrap: anywhere;
+    word-wrap: break-word;
 }
  /* Hide scrollbar for Chrome, Safari and Opera */
 html::-webkit-scrollbar, body::-webkit-scrollbar {
@@ -132,6 +132,7 @@ span.title {
 h1 > * {
     margin-right: .2em;
     color: var(--foreground-color, black);
+    display: inline-block;
 }
 h1 a {
     text-decoration: underline;

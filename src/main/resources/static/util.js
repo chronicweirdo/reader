@@ -448,7 +448,7 @@ function searchLinkBuildHrefFunction(currentSearch) {
 function addCollectionLinkTokens(parent, collection, searchSeparator, buildHrefFunction) {
     let tokens = collection.split('/')
     let currentSearch = ""
-    for (let i = 0; i < tokens.length; i++) {
+    for (let i = 1; i < tokens.length; i++) {
         if (i > 0) {
             let slash = document.createElement("span")
             slash.innerHTML = "/"
