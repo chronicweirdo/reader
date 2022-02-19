@@ -676,7 +676,10 @@ window.onload = function() {
     document.lastPageChange = new Date()
     loadProgress(currentPosition => {
         var startPage = currentPosition + 1
-        getComic().displayPage(startPage, () => getImage().fitPageToScreen())
+        getComic().displayPage(startPage, () => {
+            SETTING_FIT_COMIC_TO_SCREEN.put(true)
+            getImage().fitPageToScreen()
+        })
     })
 
     downloadComicToDevice()
