@@ -210,8 +210,10 @@ class ScannerService {
     val collection = getCollection(path)
     bookRepository.findByCollectionAndTitle(collection, title).toScala match {
       case Some(book) =>
+        scannedFiles.incrementAndGet()
         bookRepository.delete(book)
       case None =>
+        scanFailures.incrementAndGet()
         // probably book was just moved inside the library
         log.debug(s"no book to delete for path $path")
     }
