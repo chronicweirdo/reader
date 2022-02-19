@@ -109,6 +109,14 @@ span.title {
     display: var(--title-display, none);
     font-family: 'Merriweather', serif;
 }
+span.title * {
+    display: inline-block;
+    word-wrap: break-word;
+}
+span.title a {
+    text-decoration: underline;
+    width: auto;
+}
 
 @media (orientation: portrait)
 {

@@ -72,7 +72,6 @@ function applyTitles() {
 function toggleTitles() {
     if (SETTING_LIBRARY_DISPLAY_TITLE.get()) {
         SETTING_LIBRARY_DISPLAY_TITLE.put(false)
-
     } else {
         SETTING_LIBRARY_DISPLAY_TITLE.put(true)
     }
@@ -116,7 +115,7 @@ function addCollections(collections) {
     }
 }
 
-function getBookHtml(book) {
+function getBookHtml(book, withCollection) {
     let li = document.createElement("li")
     li.setAttribute("bookid", book.id)
     li.setAttribute("size", book.pages)
@@ -141,7 +140,15 @@ function getBookHtml(book) {
 
     let title = document.createElement("span")
     title.classList.add("title")
-    title.innerHTML = book.title
+    if (withCollection && book.collection != "/") {
+        addCollectionLinkTokens(title, book.collection, '/', triggerSearchBuildHrefFunction)
+        let slash = document.createElement("span")
+        slash.innerHTML = "/"
+        title.appendChild(slash)
+    }
+    let titleSpan = document.createElement("span")
+    titleSpan.innerHTML = book.title
+    title.appendChild(titleSpan)
 
     a.appendChild(title)
 
@@ -155,7 +162,7 @@ function addBooks(books) {
         let collectionId = getCollectionId(book.collection)
         let container = document.getElementById(collectionId)
         if (container != null) {
-            container.appendChild(getBookHtml(book))
+            container.appendChild(getBookHtml(book, false))
         }
     }
 }
@@ -320,7 +327,7 @@ function loadLatestRead() {
                         bookIds.push(book.id)
 
                         if (collectionContainer != null) {
-                            collectionContainer.appendChild(getBookHtml(book))
+                            collectionContainer.appendChild(getBookHtml(book, SETTING_COLLECTIONS_IN_BOOK_TITLES.get()))
                         }
                     }
                     document.getElementById("ch_latestReadTitle").style.display = "block"
@@ -353,7 +360,7 @@ function loadLatestAdded() {
                         bookIds.push(book.id)
 
                         if (collectionContainer != null) {
-                            collectionContainer.appendChild(getBookHtml(book))
+                            collectionContainer.appendChild(getBookHtml(book, SETTING_COLLECTIONS_IN_BOOK_TITLES.get()))
                         }
                     }
                     cleanupBookPages(bookIds)
