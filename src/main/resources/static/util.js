@@ -376,6 +376,9 @@ function cleanupBookPages(booksToKeep) {
         window.localStorage.removeItem(keysToDelete[i])
     }
 }
+function cleanupComicZoom(booksToKeep) {
+    SETTING_ZOOM_JUMP.clearUnused(booksToKeep)
+}
 
 function fullscreenAvailable() {
     return document.fullscreen != undefined

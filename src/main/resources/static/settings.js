@@ -172,16 +172,38 @@ function createTimeController(setting) {
 }
 
 class Setting {
-    constructor(name, textName, defaultValue, parser, textValueFunction, createControllerFunction) {
+    constructor(name, textName, defaultValue, parser, textValueFunction, createControllerFunction, bookSpecific = false) {
         this.name = name
         this.defaultValue = defaultValue
         this.parser = parser
         this.textValueFunction = textValueFunction
         this.textName = textName
+        this.bookSpecific = bookSpecific
         if (createControllerFunction) this.controller = createControllerFunction(this)
     }
+    #getBookId() {
+        return getMeta("bookId")
+    }
+    #getSettingName() {
+        if (this.bookSpecific) {
+            return this.name + "_" + this.#getBookId()
+        } else {
+            return this.name
+        }
+    }
+    clearUnused(ids) {
+        if (this.bookSpecific) {
+            let all_keys = Object.keys(window.localStorage).filter(k => k.startsWith(this.name))
+            for (let k in all_keys) {
+                let id = all_keys[k].substring(all_keys[k].lastIndexOf("_") + 1)
+                if (! ids.includes(id)) {
+                    window.localStorage.removeItem(all_keys[k])
+                }
+            }
+        }
+    }
     get() {
-        let stringValue = window.localStorage.getItem(this.name)
+        let stringValue = window.localStorage.getItem(this.#getSettingName())
         if (!stringValue) {
             stringValue = this.defaultValue
         }
@@ -199,9 +221,9 @@ class Setting {
     }
     put(value) {
         if (this.encoder) {
-            window.localStorage.setItem(this.name, this.encoder(value))
+            window.localStorage.setItem(this.#getSettingName(), this.encoder(value))
         } else {
-            window.localStorage.setItem(this.name, value)
+            window.localStorage.setItem(this.#getSettingName(), value)
         }
         if (this.listeners) {
             this.listeners.forEach(listener => listener(value))
@@ -244,6 +266,6 @@ var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "tools button h
 var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "tools panel transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))
 var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added books to load", "6", parseInt, null, createNumberController(0, 24, 6))
 var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximum swipe angle", "30", parseInt, degreeToString, createNumberController(10, 60, 10))
-var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null)
+var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null, true)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
 var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)

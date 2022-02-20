@@ -333,6 +333,7 @@ function loadLatestRead() {
                     document.getElementById("ch_latestReadTitle").style.display = "block"
                     collectionContainer.style.display = "grid"
                     cleanupBookPages(bookIds)
+                    cleanupComicZoom(bookIds)
                 } else {
                     document.getElementById("ch_latestRead").style.display = "none"
                     document.getElementById("ch_latestReadTitle").style.display = "none"
@@ -363,7 +364,6 @@ function loadLatestAdded() {
                             collectionContainer.appendChild(getBookHtml(book, SETTING_COLLECTIONS_IN_BOOK_TITLES.get()))
                         }
                     }
-                    cleanupBookPages(bookIds)
                 }
                 cleanupLatestAddedSection()
             }
