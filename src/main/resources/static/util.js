@@ -621,27 +621,13 @@ function configureTheme() {
         setCssProperty('--accent-text-color', SETTING_DARK_ACCENT_TEXT_COLOR.get())
         setCssProperty('--text-color', SETTING_DARK_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_DARK_BACKGROUND_COLOR.get())
-        setCssProperty('--ribbon-color', SETTING_DARK_RIBBON_COLOR.get())
-        setCssProperty('--ribbon-text-color', SETTING_DARK_RIBBON_TEXT_COLOR.get())
         setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_DARK_ACCENT_COLOR.get()))
-
-        setCssProperty('--progress-line-color', SETTING_DARK_TEXT_COLOR.get())
-        setCssProperty('--progress-background-color', SETTING_DARK_BACKGROUND_COLOR.get())
-        setCssProperty('--downloaded-progress-line-color', SETTING_DARK_ACCENT_COLOR.get())
-        setCssProperty('--downloaded-progress-background-color', SETTING_DARK_BACKGROUND_COLOR.get())
     } else {
         setCssProperty('--accent-color', SETTING_LIGHT_ACCENT_COLOR.get())
         setStatusBarColor(SETTING_LIGHT_ACCENT_COLOR.get())
         setCssProperty('--accent-text-color', SETTING_LIGHT_ACCENT_TEXT_COLOR.get())
         setCssProperty('--text-color', SETTING_LIGHT_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
-        setCssProperty('--ribbon-color', SETTING_LIGHT_RIBBON_COLOR.get())
-        setCssProperty('--ribbon-text-color', SETTING_LIGHT_RIBBON_TEXT_COLOR.get())
         setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_LIGHT_ACCENT_COLOR.get()))
-
-        setCssProperty('--progress-line-color', SETTING_LIGHT_TEXT_COLOR.get())
-        setCssProperty('--progress-background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
-        setCssProperty('--downloaded-progress-line-color', SETTING_LIGHT_TEXT_COLOR.get())
-        setCssProperty('--downloaded-progress-background-color', SETTING_LIGHT_ACCENT_COLOR.get())
     }
 }
