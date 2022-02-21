@@ -102,60 +102,60 @@
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
-    margin-bottom: 0.2em;
+    margin-bottom: 0.5em;
 }
 #ch_tools > h1 {
     font-weight: bold;
     font-size: 1.2em;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    /*padding-top: 8px;
+    padding-bottom: 8px;*/
 }
 #ch_tools > *:first-child {
-    margin-top: 0.2em;
+    margin-top: 0.5em;
 }
 /* --------------------------------------------------- general paragraphs end */
 
 /* ------------------------------------------ general paragraph content start */
-#ch_tools > p > * {
+/*#ch_tools > p > * {
     display: inline-block;
     padding: 8px;
     margin-left: 8px;
     background-color: #00000000;
-}
-#ch_tools.left > p >* {
+}*/
+/*#ch_tools.left > p >* {
     padding-right: 0;
 }
 #ch_tools.right > p > * {
     padding-left: 0;
-}
-#ch_tools > p > *:first-child {
+}*/
+/*#ch_tools > p > *:first-child {
     margin-left: 0;
     padding-left: 0;
 }
 #ch_tools > p > *:last-child {
     margin-right: 0;
     padding-right: 0;
-}
-#ch_tools > p > span {
+}*/
+/*#ch_tools > p > span {
     color: var(--text-color, black);
     margin-left: 0;
-}
-#ch_tools > p > a {
+}*/
+#ch_tools a {
     color: var(--text-color, black);
-    border: 0;
+    /*border: 0;*/
     text-decoration: underline;
     cursor: pointer;
-    font-style: italic;
+    /*font-style: italic;*/
 }
 /* -------------------------------------------- general paragraph content end */
 
 /* -------------------------------------------------- table of contents start */
-#ch_tools > p.ch_toc_separator {
+/*#ch_tools > p.ch_toc_separator {
     width: 100%;
     margin-top: 28px;
-    border-top: 4px dotted var(--background-color, white);
+    border-top: 4px dotted var(--text-color, white);
     margin-bottom: 28px;
-}
+}*/
 #ch_tools.left span.expand {
     float: left;
 }
@@ -179,10 +179,10 @@
 }
 #ch_tools a.ch_chapter {
     color: var(--text-color, black);
-    background-color: #1a1a1a00;
+    /*background-color: #1a1a1a00;*/
     border: 0;
     text-decoration: underline;
-    font-style: italic;
+    /*font-style: italic;*/
     font-weight: 300;
 }
 #ch_tools a.ch_current {

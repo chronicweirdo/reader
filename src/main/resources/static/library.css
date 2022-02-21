@@ -55,6 +55,14 @@ ul {
     column-gap: 1.4285vw;
     border-bottom: 2px solid var(--text-color, black);
 }
+/*ul::after {
+    content: '';
+    width: 80vw;
+    left: 10vw;
+    position: absolute;
+    bottom: -4px;
+    border-bottom: 4px dotted var(--text-color, black);
+}*/
 ul#ch_latestRead, ul:last-of-type {
     border-bottom: none;
 }
