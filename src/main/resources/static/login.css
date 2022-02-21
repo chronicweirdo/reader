@@ -63,3 +63,6 @@ input::placeholder, textarea::placeholder {
     font-style: italic;
     opacity: 1;
 }
+input:focus, input:focus-visible {
+    outline: none;
+}

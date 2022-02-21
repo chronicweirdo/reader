@@ -44,16 +44,6 @@ function convertDateToTimeString(date) {
     return hourString + ":" + minuteString
 }
 
-function bookModeToString(mode) {
-    if (mode == 0) {
-        return "dark"
-    } else if (mode == 2) {
-        return "light"
-    } else {
-        return "auto"
-    }
-}
-
 var THEME_DARK = 0
 var THEME_OS = 1
 var THEME_TIME = 2
@@ -258,18 +248,12 @@ var SETTING_DARK_BACKGROUND_COLOR = new Setting("dark_background", "dark theme b
 var SETTING_DARK_TEXT_COLOR = new Setting("dark_text", "dark theme text color", "#ffffff", null, null, createColorController)
 var SETTING_DARK_ACCENT_COLOR = new Setting("dark_accent", "dark theme accent background color", "#FFD700", null, null, createColorController)
 var SETTING_DARK_ACCENT_TEXT_COLOR = new Setting("dark_accent_text", "dark theme accent text color", "#000000", null, null, createColorController)
-var SETTING_DARK_RIBBON_COLOR = new Setting("dark_ribbon", "dark theme ribbon color", "#1a1a1a", null, null, createColorController)
-var SETTING_DARK_RIBBON_TEXT_COLOR = new Setting("dark_ribbon_text", "dark theme ribbon text color", "#ffffff", null, null, createColorController)
 
 var SETTING_LIGHT_BACKGROUND_COLOR = new Setting("light_background", "light theme background color", "#ffffff", null, null, createColorController)
 var SETTING_LIGHT_TEXT_COLOR = new Setting("light_text", "light theme text color", "#000000", null, null, createColorController)
 var SETTING_LIGHT_ACCENT_COLOR = new Setting("light_accent", "light theme accent background color", "#FFD700", null, null, createColorController)
 var SETTING_LIGHT_ACCENT_TEXT_COLOR = new Setting("light_accent_text", "light theme accent text color", "#000000", null, null, createColorController)
-var SETTING_LIGHT_RIBBON_COLOR = new Setting("light_ribbon", "light theme ribbon color", "#000000", null, null, createColorController)
-var SETTING_LIGHT_RIBBON_TEXT_COLOR = new Setting("light_ribbon_text", "light theme ribbon text color", "#ffffff", null, null, createColorController)
 
-// to following add an OS specific setting, so it will be aligned with THEME
-var SETTING_BOOK_MODE = new Setting("book_mode", "book mode", "1", parseInt, bookModeToString, createNumberController(0, 2, 1))
 // var SETTING_THEME // options are light, dark, OS specific, time of day specific
 var SETTING_THEME = new Setting("theme", "theme", "1", parseInt, themeToString, createNumberController(0, 3, 1))
 
@@ -286,16 +270,9 @@ var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "displa
 var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe to turn page", "true", parseBoolean, null, createBooleanController)
 var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "minimum swipe length", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
 
-// var SETTING_DARK_ACCENT_COLOR
-// replace following with dark mode and light mode colors
-//var SETTING_FOREGROUND_COLOR = new Setting("foreground_color", "text color", "#000000", null, null, createColorController)
-//var SETTING_BACKGROUND_COLOR = new Setting("background_color", "background color", "#FFFFFF", null, null, createColorController)
-
 var SETTING_DESIRED_STATUS_BAR_LUMINANCE = new Setting("desired_status_bar_luminance", "maximum status bar luminance", "180", parseInt, null, createNumberController(150, 255, 5))
 var SETTING_DAY_START = new Setting("day_start", "switch to light mode at", "07:00", parseTime, null, createTimeController)
 var SETTING_DAY_END = new Setting("day_end", "switch to dark mode at", "22:00", parseTime, null, createTimeController)
-
-
 
 var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "left/right book edge", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.2, 0.05))
 var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "top/bottom book edge", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
@@ -306,6 +283,5 @@ var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximu
 var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null, true)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
 var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)
-
 
 // and maybe redesign the settings UI to show light and dark modes colors side by side when there is enough space on screen
