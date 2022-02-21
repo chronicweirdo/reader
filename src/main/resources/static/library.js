@@ -548,10 +548,11 @@ window.onload = function() {
     updateClearSearch()
 
     applyTitles()
-    setCssProperty('--accent-color', SETTING_ACCENT_COLOR.get())
+    /*setCssProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     setStatusBarColor(SETTING_ACCENT_COLOR.get())
     setCssProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get());
-    setCssProperty('--background-color', SETTING_BACKGROUND_COLOR.get());
+    setCssProperty('--background-color', SETTING_BACKGROUND_COLOR.get());*/
+    configureTheme()
 }
 
 window.onscroll = function(ev) {

@@ -49,13 +49,17 @@ function setMeta(metaName, value) {
     document.querySelector('meta[name="' + metaName + '"]').setAttribute("content", value);
 }
 
-function setStatusBarColor(color) {
+function setStatusBarColor(color, theme) {
     setMeta('theme-color', color)
     if (onIOS()) {
         let appropriateColor = getAppropriateStatusBarColor(color)
         document.documentElement.style.setProperty('--status-bar-color', appropriateColor)
     } else {
-        document.documentElement.style.setProperty('--status-bar-color', SETTING_BACKGROUND_COLOR.get())
+        if (theme == "dark") {
+            document.documentElement.style.setProperty('--status-bar-color', SETTING_DARK_BACKGROUND_COLOR.get())
+        } else {
+            document.documentElement.style.setProperty('--status-bar-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
+        }
     }
 }
 
@@ -571,5 +575,62 @@ function computeSwipeParameters(deltaX, deltaY) {
             length: 0,
             angle: 0
         }
+    }
+}
+
+function getTheme() {
+    let theme = SETTING_THEME.get()
+    if (theme == THEME_DARK) {
+        return "dark"
+    } else if (theme == THEME_OS) {
+        // decide based on OS
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return "dark"
+        } else {
+            return "light"
+        }
+    } else if (theme == THEME_TIME) {
+        let dayStart = timeStringToDate(SETTING_DAY_START.get())
+        let dayEnd = timeStringToDate(SETTING_DAY_END.get())
+        let now = new Date()
+        if (now < dayStart || dayEnd < now) {
+            return "dark"
+        } else {
+            return "light"
+        }
+    } else {
+        // default is light theme
+        return "light"
+    }
+}
+
+function configureTheme() {
+    let currentTheme = getTheme()
+    if (currentTheme == "dark") {
+        setCssProperty('--accent-color', SETTING_DARK_ACCENT_COLOR.get())
+        setStatusBarColor(SETTING_DARK_ACCENT_COLOR.get())
+        setCssProperty('--accent-text-color', SETTING_DARK_ACCENT_TEXT_COLOR.get())
+        setCssProperty('--text-color', SETTING_DARK_TEXT_COLOR.get())
+        setCssProperty('--background-color', SETTING_DARK_BACKGROUND_COLOR.get())
+        setCssProperty('--ribbon-color', SETTING_DARK_RIBBON_COLOR.get())
+        setCssProperty('--ribbon-text-color', SETTING_DARK_RIBBON_TEXT_COLOR.get())
+
+        setCssProperty('--progress-line-color', SETTING_DARK_TEXT_COLOR.get())
+        setCssProperty('--progress-background-color', SETTING_DARK_BACKGROUND_COLOR.get())
+        setCssProperty('--downloaded-progress-line-color', SETTING_DARK_ACCENT_COLOR.get())
+        setCssProperty('--downloaded-progress-background-color', SETTING_DARK_BACKGROUND_COLOR.get())
+    } else {
+        setCssProperty('--accent-color', SETTING_LIGHT_ACCENT_COLOR.get())
+        setStatusBarColor(SETTING_LIGHT_ACCENT_COLOR.get())
+        setCssProperty('--accent-text-color', SETTING_LIGHT_ACCENT_TEXT_COLOR.get())
+        setCssProperty('--text-color', SETTING_LIGHT_TEXT_COLOR.get())
+        setCssProperty('--background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
+        setCssProperty('--ribbon-color', SETTING_LIGHT_RIBBON_COLOR.get())
+        setCssProperty('--ribbon-text-color', SETTING_LIGHT_RIBBON_TEXT_COLOR.get())
+
+        setCssProperty('--progress-line-color', SETTING_LIGHT_TEXT_COLOR.get())
+        setCssProperty('--progress-background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
+        setCssProperty('--downloaded-progress-line-color', SETTING_LIGHT_TEXT_COLOR.get())
+        setCssProperty('--downloaded-progress-background-color', SETTING_LIGHT_ACCENT_COLOR.get())
     }
 }

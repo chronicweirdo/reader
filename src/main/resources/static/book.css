@@ -1,7 +1,7 @@
 :root {
     --accent-color: gold;
     --status-bar-color: gold;
-    --foreground-color: black;
+    --text-color: black;
     --background-color: white;
 }
 body {

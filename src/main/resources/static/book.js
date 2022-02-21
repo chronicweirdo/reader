@@ -146,7 +146,9 @@ async function displayPageFor(position) {
             }
             updatePositionInput(getPositionPercentage(page.start, page.end))
             updatePagesLeft()
-            initializeMode()
+            //initializeMode() todo: check and update theme?
+            //configureTheme()
+            setUiColors()
             // check if overflow is triggerred on every page display
             scrollNecessaryPromise(content).then(scrollNecessary => {
                 if (scrollNecessary) {
@@ -360,11 +362,11 @@ function getBookStyleSheet() {
     }
 }
 
-function setDarkMode() {
+/*function setDarkMode() {
     let background = SETTING_DARK_MODE_BACKGROUND.get()
     let foreground = SETTING_DARK_MODE_FOREGROUND.get()
     setUiColors(foreground, background)
-}
+}*/
 
 function createDynamicStyleSheet() {
     var sheet = (function() {
@@ -377,24 +379,37 @@ function createDynamicStyleSheet() {
     document.dynamicStyleSheet = sheet
 }
 
-function setLightMode() {
+/*function setLightMode() {
     let background = SETTING_LIGHT_MODE_BACKGROUND.get()
     let foreground = SETTING_LIGHT_MODE_FOREGROUND.get()
     setUiColors(foreground, background)
-}
+}*/
 
-function setUiColors(foreground, background) {
+function setUiColors() {
+    /*let foreground = "#000000"
+    let background = "#ffffff"
+    if (getTheme() == "dark") {
+        foreground = SETTING_DARK_TEXT_COLOR.get()
+        background = SETTING_DARK_BACKGROUND_COLOR.get()
+    } else {
+        foreground = SETTING_LIGHT_TEXT_COLOR.get()
+        background = SETTING_LIGHT_BACKGROUND_COLOR.get()
+    }
+    console.log("set ui colors to: " + foreground + " " + background)*/
     let bookStyleSheet = document.dynamicStyleSheet
     if (bookStyleSheet) {
         while (bookStyleSheet.cssRules.length > 0) bookStyleSheet.deleteRule(0)
-        bookStyleSheet.insertRule('#content { color: ' + foreground + '; background-color: ' + background + '; }', 0)
-        bookStyleSheet.insertRule('a { color: ' + foreground + '; }', 0)
-        bookStyleSheet.insertRule('table, th, td { border-color: ' + foreground + '; }', 0)
-        setStatusBarColor(background)
+        //bookStyleSheet.insertRule('#content { color: ' + foreground + '; background-color: ' + background + '; }', 0)
+        bookStyleSheet.insertRule('#content { color: var(--text-color, black); background-color: var(--background-color, white); }', 0)
+        //bookStyleSheet.insertRule('a { color: ' + foreground + '; }', 0)
+        bookStyleSheet.insertRule('a { color: var(--text-color, black); }', 0)
+        //bookStyleSheet.insertRule('table, th, td { border-color: ' + foreground + '; }', 0)
+        bookStyleSheet.insertRule('table, th, td { border-color: var(--text-color, black); }', 0)
+        //setStatusBarColor(background)
     }
 }
 
-function initializeMode() {
+/*function initializeMode() {
     let bookMode = SETTING_BOOK_MODE.get()
     if (bookMode == 0) {
         setDarkMode()
@@ -410,7 +425,7 @@ function initializeMode() {
             setLightMode()
         }
     }
-}
+}*/
 
 function getChapters() {
     if (! document.chapters) {
@@ -545,11 +560,11 @@ function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     settingsWrapper.appendChild(SETTING_BOOK_ZOOM.controller)
 
-    settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
+    /*settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
     settingsWrapper.appendChild(SETTING_DARK_MODE_BACKGROUND.controller)
     settingsWrapper.appendChild(SETTING_DARK_MODE_FOREGROUND.controller)
     settingsWrapper.appendChild(SETTING_LIGHT_MODE_BACKGROUND.controller)
-    settingsWrapper.appendChild(SETTING_LIGHT_MODE_FOREGROUND.controller)
+    settingsWrapper.appendChild(SETTING_LIGHT_MODE_FOREGROUND.controller)*/
 
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
     settingsWrapper.appendChild(SETTING_BOOK_EDGE_VERTICAL.controller)
@@ -560,11 +575,11 @@ function initSettings() {
     settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
     settingsWrapper.appendChild(SETTING_SWIPE_ANGLE_THRESHOLD.controller)
 
-    SETTING_BOOK_MODE.addListener(initializeMode)
+    /*SETTING_BOOK_MODE.addListener(initializeMode)
     SETTING_DARK_MODE_BACKGROUND.addListener(initializeMode)
     SETTING_DARK_MODE_FOREGROUND.addListener(initializeMode)
     SETTING_LIGHT_MODE_BACKGROUND.addListener(initializeMode)
-    SETTING_LIGHT_MODE_FOREGROUND.addListener(initializeMode)
+    SETTING_LIGHT_MODE_FOREGROUND.addListener(initializeMode)*/
     SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(handleResize, 1000))
     SETTING_BOOK_EDGE_VERTICAL.addListener(() => setTimeout(handleResize, 1000))
     SETTING_BOOK_TOOLS_HEIGHT.addListener(handleResize)
@@ -576,9 +591,11 @@ function initSettings() {
 }
 
 window.onload = function() {
-    document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get());
-    document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get());
-    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get());
+    //document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get());
+    //document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get());
+    //document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get());
+    configureTheme()
+    setUiColors()
 
     createDynamicStyleSheet()
     fixControlSizes()
@@ -604,10 +621,12 @@ window.onload = function() {
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
-    initializeMode()
+    //initializeMode()
     initAlpha()
     window.addEventListener("focus", function(event) {
-        initializeMode()
+        //initializeMode()
+        configureTheme() // todo: check if theme needs to change, then configure it
+        setUiColors()
     }, false)
     setZoom(SETTING_BOOK_ZOOM.get(), false)
     loadCache()

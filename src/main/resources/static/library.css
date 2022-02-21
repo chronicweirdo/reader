@@ -1,9 +1,16 @@
 :root {
     --accent-color: gold;
+    --accent-text-color: black;
     --status-bar-color: gold;
-    --foreground-color: black;
+    --text-color: black;
+    --ribbon-color: black;
+    --ribbon-text-color: white;
     --background-color: white;
     --title-display: none;
+    --progress-line-color: black;
+    --progress-background-color: white;
+    --downloaded-progress-line-color: black;
+    --downloaded-progress-background-color: gold;
 }
 * {
     margin: 0;
@@ -27,11 +34,12 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
 body > * {
     background-color: var(--background-color, white);
-    color: var(--foreground-color, black);
+    color: var(--text-color, black);
 }
 h1 {
     padding: 15px 1.4285%;
     background-color: var(--accent-color, gold);
+    color: var(--accent-text-color, black);
 }
 ul {
     display: grid;
@@ -55,7 +63,7 @@ li a {
     display: block;
     width: 100%;
     text-decoration: none;
-    color: var(--foreground-color, black);
+    color: var(--text-color, black);
 }
 span.cover {
     position: relative;
@@ -74,13 +82,13 @@ span.progressbar {
     bottom: 3%;
     width: 84%;
     height: 3%;
-    background-color: var(--background-color, white);
-    border: 1px solid var(--foreground-color, black);
+    background-color: var(--progress-background-color, white);
+    border: 1px solid var(--progress-line-color, black);
     padding: 2%;
 }
 span.read {
     display: block;
-    background-color: var(--foreground-color, black);
+    background-color: var(--progress-line-color, black);
     height: 98%;
 }
 span.progresscheck {
@@ -96,14 +104,19 @@ span.progresscheck svg {
 }
 span.progresscheck svg path {
     stroke-width: .1px;
-    stroke: var(--foreground-color, black);
-    fill: var(--background-color, white);
+    stroke: var(--progress-line-color, black);
+    fill: var(--progress-background-color, white);
 }
 span.progresscheck.downloaded svg path {
-    fill: var(--accent-color, gold);
+    fill: var(--downloaded-progress-background-color, gold);
+    border: 1px solid var(--downloaded-progress-line-color, black);
 }
 span.progressbar.downloaded {
-    background-color: var(--accent-color, gold);
+    background-color: var(--downloaded-progress-background-color, gold);
+    border: 1px solid var(--downloaded-progress-line-color, black);
+}
+span.progressbar.downloaded span.read {
+    background-color: var(--downloaded-progress-line-color, black);
 }
 span.title {
     display: var(--title-display, none);
@@ -139,17 +152,17 @@ span.title a {
 }
 h1 > * {
     margin-right: .2em;
-    color: var(--foreground-color, black);
+    color: var(--accent-text-color, black);
     display: inline-block;
 }
 h1 a {
     text-decoration: underline;
-    color: var(--foreground-color, black);
+    color: var(--text-color, black);
 }
 .tools {
     display: grid;
-    background-color: var(--foreground-color, black);
-    color: var(--accent-color, gold);
+    background-color: var(--ribbon-color, black);
+    color: var(--ribbon-text-color, white);
     font-size: 2em;
     padding-top: 1.4285vw;
     padding-bottom: 1.4285vw;
@@ -189,8 +202,8 @@ h1 a {
 }
 .tools path, .tools rect {
     stroke-width: 1px;
-    fill: var(--foreground-color, black);
-    stroke: var(--background-color, white);
+    fill: var(--ribbon-color, black);
+    stroke: var(--ribbon-text-color, white);
 }
 .tools .active path, .tools .active rect {
     fill: var(--accent-color, gold);
@@ -265,7 +278,7 @@ h1 a {
     stroke: var(--background-color, white);
 }
 .spinner .foreground {
-    stroke: var(--foreground-color, black);
+    stroke: var(--text-color, black);
 }
 .spinner .accent {
     stroke: var(--accent-color, gold);

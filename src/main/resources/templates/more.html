@@ -73,12 +73,36 @@
             settingsWrapper.appendChild(SETTING_LATEST_READ_LIMIT.controller)
             settingsWrapper.appendChild(SETTING_LATEST_ADDED_LIMIT.controller)
             settingsWrapper.appendChild(SETTING_COLLECTIONS_IN_BOOK_TITLES.controller)
-            settingsWrapper.appendChild(SETTING_ACCENT_COLOR.controller)
-            settingsWrapper.appendChild(SETTING_FOREGROUND_COLOR.controller)
-            settingsWrapper.appendChild(SETTING_BACKGROUND_COLOR.controller)
+
+            settingsWrapper.appendChild(SETTING_DARK_BACKGROUND_COLOR.controller)
+            SETTING_DARK_BACKGROUND_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_DARK_TEXT_COLOR.controller)
+            SETTING_DARK_TEXT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_DARK_ACCENT_COLOR.controller)
+            SETTING_DARK_ACCENT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_DARK_ACCENT_TEXT_COLOR.controller)
+            SETTING_DARK_ACCENT_TEXT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_DARK_RIBBON_COLOR.controller)
+            settingsWrapper.appendChild(SETTING_DARK_RIBBON_TEXT_COLOR.controller)
+
+            settingsWrapper.appendChild(SETTING_LIGHT_BACKGROUND_COLOR.controller)
+            SETTING_LIGHT_BACKGROUND_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_LIGHT_TEXT_COLOR.controller)
+            SETTING_LIGHT_TEXT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_COLOR.controller)
+            SETTING_LIGHT_ACCENT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_TEXT_COLOR.controller)
+            SETTING_LIGHT_ACCENT_TEXT_COLOR.addListener(configureTheme)
+            settingsWrapper.appendChild(SETTING_LIGHT_RIBBON_COLOR.controller)
+            settingsWrapper.appendChild(SETTING_LIGHT_RIBBON_TEXT_COLOR.controller)
+
             if (onIOS()) {
                 settingsWrapper.appendChild(SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller)
+                SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(configureTheme)
             }
+
+            settingsWrapper.appendChild(SETTING_THEME.controller)
+            SETTING_THEME.addListener(configureTheme)
             settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
             SETTING_BOOK_MODE.addListener(setDaySettingsStatus)
             settingsWrapper.appendChild(SETTING_DAY_START.controller)
@@ -87,16 +111,17 @@
         }
 
         window.onload = function() {
-            updateAccentColor()
+            /*updateAccentColor()
             updateForegroundColor()
-            updateBackgroundColor()
+            updateBackgroundColor()*/
 
             loadSettings()
 
-            SETTING_ACCENT_COLOR.addListener(updateAccentColor)
+            /*SETTING_ACCENT_COLOR.addListener(updateAccentColor)
             SETTING_BACKGROUND_COLOR.addListener(updateBackgroundColor)
             SETTING_FOREGROUND_COLOR.addListener(updateForegroundColor)
-            SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(updateAccentColor)
+            SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(updateAccentColor)*/
+            configureTheme()
         }
     </script>
 </head>

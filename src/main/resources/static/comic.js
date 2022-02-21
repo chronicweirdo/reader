@@ -635,9 +635,10 @@ function initSettings() {
 }
 
 window.onload = function() {
-    document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
+    /*document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
     document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
-    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
+    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())*/
+    configureTheme()
 
     fixControlSizes()
     enableKeyboardGestures({
