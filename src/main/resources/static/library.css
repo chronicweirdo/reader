@@ -195,6 +195,18 @@ h1 a {
 .tools .active path, .tools .active rect {
     fill: var(--accent-color, gold);
 }
+.tools #refreshIcon {
+    display: block;
+}
+.tools #clearIcon {
+    display: none;
+}
+.tools .active #refreshIcon {
+    display: none;
+}
+.tools .active #clearIcon {
+    display: block;
+}
 .offline-message {
     color: var(--background-color, white);
 }
