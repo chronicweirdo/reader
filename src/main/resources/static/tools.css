@@ -261,12 +261,13 @@
 }
 
 #ch_settings a {
-    color: var(--accent-color, gold);
-    text-decoration: none;
+    color: var(--text-color, black);
+    text-decoration: underline;
 }
 
 #ch_settings a.critical {
-    color: orangered;
+    color: var(--accent-text-color, black);
+    background-color: var(--accent-color, gold);
 }
 
 .setting {
