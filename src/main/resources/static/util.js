@@ -545,6 +545,15 @@ function getAppropriateStatusBarColor(originalColor) {
     return newColorHex
 }
 
+function getAppropriatePlaceholderColor(placeholderBackgroundColor) {
+    let rgb = getRGB(placeholderBackgroundColor)
+    let currentLuminance = computeLuminance(rgb)
+    let desiredLuminance = currentLuminance * .5
+    let newColor = reduceLuminanceTo(rgb, desiredLuminance)
+    let newColorHex = getHexCode(newColor)
+    return newColorHex
+}
+
 function setBackgroundAlphaOnElement(element, alpha) {
     let colorComponents = [...getComputedStyle(element).backgroundColor.matchAll(/\d+\.?\d*/g)]
     if (colorComponents.length == 3 || colorComponents.length == 4) {
@@ -614,6 +623,7 @@ function configureTheme() {
         setCssProperty('--background-color', SETTING_DARK_BACKGROUND_COLOR.get())
         setCssProperty('--ribbon-color', SETTING_DARK_RIBBON_COLOR.get())
         setCssProperty('--ribbon-text-color', SETTING_DARK_RIBBON_TEXT_COLOR.get())
+        setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_DARK_ACCENT_COLOR.get()))
 
         setCssProperty('--progress-line-color', SETTING_DARK_TEXT_COLOR.get())
         setCssProperty('--progress-background-color', SETTING_DARK_BACKGROUND_COLOR.get())
@@ -627,6 +637,7 @@ function configureTheme() {
         setCssProperty('--background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
         setCssProperty('--ribbon-color', SETTING_LIGHT_RIBBON_COLOR.get())
         setCssProperty('--ribbon-text-color', SETTING_LIGHT_RIBBON_TEXT_COLOR.get())
+        setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_LIGHT_ACCENT_COLOR.get()))
 
         setCssProperty('--progress-line-color', SETTING_LIGHT_TEXT_COLOR.get())
         setCssProperty('--progress-background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())

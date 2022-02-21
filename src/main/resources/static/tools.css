@@ -50,13 +50,13 @@
 #ch_spinner a {
     font-family: 'Roboto', sans-serif;
     font-size: 48px;
-    color: var(--accent-color, gold);
+    color: var(--text-color, black);
 }
 #ch_errorPanel {
     margin-top: 24px;
     font-family: 'Roboto', sans-serif;
     font-size: 24px;
-    color: var(--accent-color, gold);
+    color: var(--text-color, black);
 }
 /* -------------------------------------------------------------- spinner end */
 

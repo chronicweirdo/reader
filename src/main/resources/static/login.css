@@ -1,13 +1,16 @@
 :root {
     --accent-color: gold;
-    --foreground-color: black;
+    --accent-text-color: black;
+    --text-color: black;
     --background-color: white;
+    --placeholder-color: #b39500
 }
 * {
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
 }
+
 html,body {
     height:100%;
     width:100%;
@@ -17,7 +20,7 @@ body {
     display:flex;
     font-size: 2em;
     font-family: 'Roboto', sans-serif;
-    background-color: var(--foreground-color, black);
+    background-color: var(--accent-color, gold);
 }
 @media all and (max-width: 399px) {
     body {
@@ -27,8 +30,8 @@ body {
 .container {
     margin: auto;
     position: relative;
-    background-color: var(--foreground-color, black);
-    color: var(--accent-color, gold);
+    background-color: var(--accent-color, gold);
+    color: var(--text-color, black);
     padding: 1em;
     position: relative;
     text-align: center;
@@ -43,9 +46,20 @@ p {
     margin-top: 0;
     padding: .2em;
 }
-input[type="text"], input[type="password"], input[type="submit"] {
-    width: 100%;
-}
 input[type="submit"] {
     cursor: pointer;
-}to
+}
+textarea, input[type="text"], input[type="password"], input[type="submit"], input[type="button"] {
+    width: 100%;
+    display: inline-block;
+    font-size: 1em;
+    height: 1.5em;
+    background-color: var(--accent-color, gold);
+    border: 2px solid var(--text-color, gold);
+    color: var(--text-color, black);
+}
+input::placeholder, textarea::placeholder {
+    color: var(--placeholder-color, #b39500);
+    font-style: italic;
+    opacity: 1;
+}

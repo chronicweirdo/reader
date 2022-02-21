@@ -11,6 +11,7 @@
     --progress-background-color: white;
     --downloaded-progress-line-color: black;
     --downloaded-progress-background-color: gold;
+    --placeholder-text-color: #b39500;
 }
 * {
     margin: 0;
@@ -106,6 +107,7 @@ span.progresscheck svg path {
     stroke-width: .1px;
     stroke: var(--progress-line-color, black);
     fill: var(--progress-background-color, white);
+    stroke-width: .3;
 }
 span.progresscheck.downloaded svg path {
     fill: var(--downloaded-progress-background-color, gold);
@@ -157,12 +159,14 @@ h1 > * {
 }
 h1 a {
     text-decoration: underline;
-    color: var(--text-color, black);
+    color: var(--accent-text-color, black);
 }
 .tools {
     display: grid;
-    background-color: var(--ribbon-color, black);
-    color: var(--ribbon-text-color, white);
+    background-color: var(--accent-color, gold);
+    color: var(--accent-text-color, black);
+    border-top: 1px solid var(--accent-text-color, black);
+    border-bottom: 1px solid var(--accent-text-color, black);
     font-size: 2em;
     padding-top: 1.4285vw;
     padding-bottom: 1.4285vw;
@@ -202,11 +206,11 @@ h1 a {
 }
 .tools path, .tools rect {
     stroke-width: 1px;
-    fill: var(--ribbon-color, black);
-    stroke: var(--ribbon-text-color, white);
+    fill: var(--accent-color, gold);
+    stroke: var(--accent-text-color, black);
 }
 .tools .active path, .tools .active rect {
-    fill: var(--accent-color, gold);
+    fill: var(--accent-text-color, black);
 }
 .tools #refreshIcon {
     display: block;
@@ -221,7 +225,7 @@ h1 a {
     display: block;
 }
 .offline-message {
-    color: var(--background-color, white);
+    color: var(--accent-text-color, white);
 }
 .spinner {
     display: none;

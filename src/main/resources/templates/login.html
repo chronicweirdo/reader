@@ -21,17 +21,17 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
-    <link rel="stylesheet" type="text/css" href="form.css">
     <link rel="stylesheet" type="text/css" href="login.css">
     <script>
         window.onload = function() {
             window.localStorage.clear()
+            //configureTheme()
         }
     </script>
 </head>
 <body>
 <div class="container">
-    <h1><img src="gold_logo.png"></h1>
+    <h1><img src="shortcut192.png"></h1>
     <p th:if="${param.error}">Invalid credentials.</p>
     <p th:if="${param.logout}">You have been logged out.</p>
     <form th:action="@{/login}" method="post" autocomplete="off">
