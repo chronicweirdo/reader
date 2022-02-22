@@ -50,7 +50,7 @@ function setMeta(metaName, value) {
 }
 
 function setStatusBarColor(color, theme) {
-    setMeta('theme-color', color)
+    /*setMeta('theme-color', color)
     if (onIOS()) {
         let appropriateColor = getAppropriateStatusBarColor(color)
         document.documentElement.style.setProperty('--status-bar-color', appropriateColor)
@@ -60,7 +60,9 @@ function setStatusBarColor(color, theme) {
         } else {
             document.documentElement.style.setProperty('--status-bar-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
         }
-    }
+    }*/
+    setMeta('theme-color', color)
+    document.documentElement.style.setProperty('--status-bar-color', color)
 }
 
 function getViewportWidth() {
@@ -613,18 +615,26 @@ function getTheme() {
     }
 }
 
-function configureTheme() {
+function configureTheme(useAccentForStatusBar = false) {
     let currentTheme = getTheme()
     if (currentTheme == "dark") {
         setCssProperty('--accent-color', SETTING_DARK_ACCENT_COLOR.get())
-        setStatusBarColor(SETTING_DARK_ACCENT_COLOR.get())
+        if (useAccentForStatusBar) {
+            setStatusBarColor(SETTING_DARK_ACCENT_COLOR.get())
+        } else {
+            setStatusBarColor(SETTING_DARK_BACKGROUND_COLOR.get())
+        }
         setCssProperty('--accent-text-color', SETTING_DARK_ACCENT_TEXT_COLOR.get())
         setCssProperty('--text-color', SETTING_DARK_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_DARK_BACKGROUND_COLOR.get())
         setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_DARK_ACCENT_COLOR.get()))
     } else {
         setCssProperty('--accent-color', SETTING_LIGHT_ACCENT_COLOR.get())
-        setStatusBarColor(SETTING_LIGHT_ACCENT_COLOR.get())
+        if (useAccentForStatusBar) {
+            setStatusBarColor(SETTING_LIGHT_ACCENT_COLOR.get())
+        } else {
+            setStatusBarColor(SETTING_LIGHT_BACKGROUND_COLOR.get())
+        }
         setCssProperty('--accent-text-color', SETTING_LIGHT_ACCENT_TEXT_COLOR.get())
         setCssProperty('--text-color', SETTING_LIGHT_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())

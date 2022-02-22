@@ -9,14 +9,21 @@ textarea, input, p {
     font-family: 'Roboto', sans-serif;
 }
 
-textarea, input[type="text"], input[type="password"], input:focus, input:focus-visible {
+textarea, input[type="text"], input[type="password"] {
     display: inline-block;
     font-size: 1em;
     height: 1.5em;
     background-color: var(--accent-color, gold);
-    border: 2px solid var(--accent-text-color, white);
+    border: 2px solid var(--accent-text-color, black);
     color: var(--accent-text-color, black);
+}
+
+input:focus, input:focus-visible {
     outline: none;
+    -webkit-appearance:none;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
 }
 
 textarea {
@@ -35,7 +42,7 @@ input[type="submit"], input[type="button"] {
     font-size: 1em;
     height: 1.5em;
     background-color: var(--accent-color, gold);
-    border: 2px solid var(--background-color, white);
-    color: var(--foreground-color, black);
+    border: 2px solid var(--accent-text-color, white);
+    color: var(--accent-text-color, black);
     cursor: pointer;
 }

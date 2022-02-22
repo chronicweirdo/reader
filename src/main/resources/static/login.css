@@ -31,7 +31,7 @@ body {
     margin: auto;
     position: relative;
     background-color: var(--accent-color, gold);
-    color: var(--text-color, black);
+    color: var(--accent-text-color, black);
     padding: 1em;
     position: relative;
     text-align: center;
@@ -55,8 +55,8 @@ textarea, input[type="text"], input[type="password"], input[type="submit"], inpu
     font-size: 1em;
     height: 1.5em;
     background-color: var(--accent-color, gold);
-    border: 2px solid var(--text-color, gold);
-    color: var(--text-color, black);
+    border: 2px solid var(--accent-text-color, gold);
+    color: var(--accent-text-color, black);
 }
 input::placeholder, textarea::placeholder {
     color: var(--placeholder-color, #b39500);

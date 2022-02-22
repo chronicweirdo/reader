@@ -37,6 +37,7 @@ h1 {
     color: var(--text-color, black);
     /*font-weight: normal;*/
     /*border-top: 2px solid var(--text-color, black);*/
+    font-size: 1.8em;
 }
 /*h1#ch_latestReadTitle, .tools + h1 {
     border-top: none;
@@ -53,7 +54,7 @@ ul {
     width: 98.5715vw;
     grid-template-columns: repeat(6, 15vw);
     column-gap: 1.4285vw;
-    border-bottom: 2px solid var(--text-color, black);
+    /*border-bottom: 2px solid var(--text-color, black);*/
 }
 /*ul::after {
     content: '';
@@ -63,9 +64,9 @@ ul {
     bottom: -4px;
     border-bottom: 4px dotted var(--text-color, black);
 }*/
-ul#ch_latestRead, ul:last-of-type {
+/*ul#ch_latestRead, ul:last-of-type {
     border-bottom: none;
-}
+}*/
 li {
     overflow: hidden;
     position: relative;
@@ -191,6 +192,10 @@ h1 a {
     grid-template-columns: 9fr 1fr 1fr 1fr;
     column-gap: 1.4285vw;
     row-gap: 1.4285vw;
+    margin-bottom: 1.4285vw;
+}
+#ch_latestReadTitle {
+    margin-top: 1.4285vw;
 }
 #ch_latestRead, #ch_latestReadTitle, #ch_latestAdded, #ch_latestAddedTitle {
     display: none;
@@ -262,6 +267,9 @@ h1 a {
         width: 15vw;
         height: 25vw;
     }
+    #ch_latestReadTitle {
+        margin-top: 2.5vw;
+    }
     .tools {
         padding-left: 2.5vw;
         padding-right: 2.5vw;
@@ -272,6 +280,7 @@ h1 a {
         column-gap: 2.5vw;
         grid-template-columns: repeat(5, 1fr);
         grid-template-rows: 1fr 1fr;
+        margin-bottom: 2.5vw;
     }
     #search, .offline-message {
         grid-column: 1 / 6;
@@ -288,6 +297,9 @@ h1 a {
     #more {
         grid-column: 4;
         grid-row: 2;
+    }
+    h1 {
+        font-size: 1.4em;
     }
 }
 

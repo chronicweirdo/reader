@@ -270,7 +270,7 @@ var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "displa
 var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe to turn page", "true", parseBoolean, null, createBooleanController)
 var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "minimum swipe length", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
 
-var SETTING_DESIRED_STATUS_BAR_LUMINANCE = new Setting("desired_status_bar_luminance", "maximum status bar luminance", "180", parseInt, null, createNumberController(150, 255, 5))
+//var SETTING_DESIRED_STATUS_BAR_LUMINANCE = new Setting("desired_status_bar_luminance", "maximum status bar luminance", "180", parseInt, null, createNumberController(150, 255, 5))
 var SETTING_DAY_START = new Setting("day_start", "switch to light mode at", "07:00", parseTime, null, createTimeController)
 var SETTING_DAY_END = new Setting("day_end", "switch to dark mode at", "22:00", parseTime, null, createTimeController)
 

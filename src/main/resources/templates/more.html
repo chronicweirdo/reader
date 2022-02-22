@@ -66,6 +66,9 @@
                 document.getElementsByName(SETTING_DAY_END.name)[0].disabled = true
             }
         }
+        function configureThemeForMorePage() {
+            configureTheme(true)
+        }
 
         function loadSettings() {
             let settingsWrapper = document.getElementById('settings')
@@ -74,34 +77,35 @@
             settingsWrapper.appendChild(SETTING_LATEST_ADDED_LIMIT.controller)
             settingsWrapper.appendChild(SETTING_COLLECTIONS_IN_BOOK_TITLES.controller)
 
-            settingsWrapper.appendChild(SETTING_DARK_BACKGROUND_COLOR.controller)
-            SETTING_DARK_BACKGROUND_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_DARK_TEXT_COLOR.controller)
-            SETTING_DARK_TEXT_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_DARK_ACCENT_COLOR.controller)
-            SETTING_DARK_ACCENT_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_DARK_ACCENT_TEXT_COLOR.controller)
-            SETTING_DARK_ACCENT_TEXT_COLOR.addListener(configureTheme)
-
-            settingsWrapper.appendChild(SETTING_LIGHT_BACKGROUND_COLOR.controller)
-            SETTING_LIGHT_BACKGROUND_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_LIGHT_TEXT_COLOR.controller)
-            SETTING_LIGHT_TEXT_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_COLOR.controller)
-            SETTING_LIGHT_ACCENT_COLOR.addListener(configureTheme)
-            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_TEXT_COLOR.controller)
-            SETTING_LIGHT_ACCENT_TEXT_COLOR.addListener(configureTheme)
-
-            if (onIOS()) {
-                settingsWrapper.appendChild(SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller)
-                SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(configureTheme)
-            }
-
             settingsWrapper.appendChild(SETTING_THEME.controller)
             SETTING_THEME.addListener(function() {
-                configureTheme()
+                configureThemeForMorePage()
                 setDaySettingsStatus()
             })
+
+            settingsWrapper.appendChild(SETTING_DARK_BACKGROUND_COLOR.controller)
+            SETTING_DARK_BACKGROUND_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_DARK_TEXT_COLOR.controller)
+            SETTING_DARK_TEXT_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_DARK_ACCENT_COLOR.controller)
+            SETTING_DARK_ACCENT_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_DARK_ACCENT_TEXT_COLOR.controller)
+            SETTING_DARK_ACCENT_TEXT_COLOR.addListener(configureThemeForMorePage)
+
+            settingsWrapper.appendChild(SETTING_LIGHT_BACKGROUND_COLOR.controller)
+            SETTING_LIGHT_BACKGROUND_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_LIGHT_TEXT_COLOR.controller)
+            SETTING_LIGHT_TEXT_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_COLOR.controller)
+            SETTING_LIGHT_ACCENT_COLOR.addListener(configureThemeForMorePage)
+            settingsWrapper.appendChild(SETTING_LIGHT_ACCENT_TEXT_COLOR.controller)
+            SETTING_LIGHT_ACCENT_TEXT_COLOR.addListener(configureThemeForMorePage)
+
+            /*if (onIOS()) {
+                settingsWrapper.appendChild(SETTING_DESIRED_STATUS_BAR_LUMINANCE.controller)
+                SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(configureTheme)
+            }*/
+
             settingsWrapper.appendChild(SETTING_DAY_START.controller)
             settingsWrapper.appendChild(SETTING_DAY_END.controller)
             setDaySettingsStatus()
@@ -118,7 +122,7 @@
             SETTING_BACKGROUND_COLOR.addListener(updateBackgroundColor)
             SETTING_FOREGROUND_COLOR.addListener(updateForegroundColor)
             SETTING_DESIRED_STATUS_BAR_LUMINANCE.addListener(updateAccentColor)*/
-            configureTheme()
+            configureThemeForMorePage()
         }
     </script>
 </head>
