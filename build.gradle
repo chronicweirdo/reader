@@ -28,6 +28,9 @@ dependencies {
 	implementation 'org.jsoup:jsoup:1.13.1'
 	implementation 'org.apache.pdfbox:pdfbox:2.0.20'
 	implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+	implementation 'org.apache.xmlgraphics:batik:1.14'
+	implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
+	implementation 'org.apache.xmlgraphics:batik-codec:1.14'
 
 	runtimeOnly 'org.hsqldb:hsqldb'
 

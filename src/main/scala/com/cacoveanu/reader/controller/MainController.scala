@@ -2,7 +2,7 @@ package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.service.{BookService, ScannerService}
-import com.cacoveanu.reader.util.{FileTypes, FileUtil, SessionUtil, WebUtil}
+import com.cacoveanu.reader.util.{FileTypes, FileUtil, LogoUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
@@ -62,6 +62,19 @@ class MainController @Autowired()(
   def loadSettingsJs(): ResponseEntity[String] = {
     val content = processJsTemplate("/static/settings_template.js")
     new ResponseEntity[String](content, HttpStatus.OK)
+  }
+
+  @RequestMapping(value = Array("/logo.png"), produces = Array(MediaType.IMAGE_PNG_VALUE))
+  @ResponseBody
+  def loadLogoPng(@RequestParam(name = "size", required = false, defaultValue = "64") size: Integer) = {
+    val backgroundColor = if (environment.getProperty("LOGO_BACKGROUND") != null) {
+      unwrapStringValue(environment.getProperty("LOGO_BACKGROUND"))
+    } else "#ffd700"
+    val foregroundColor = if (environment.getProperty("LOGO_FOREGROUND") != null) {
+      unwrapStringValue(environment.getProperty("LOGO_FOREGROUND"))
+    } else "#000000"
+    val imageBytes = LogoUtil.generate("/static/logo.svg", backgroundColor, foregroundColor, size.toFloat)
+    ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
   }
 
   @RequestMapping(Array("/collections"))

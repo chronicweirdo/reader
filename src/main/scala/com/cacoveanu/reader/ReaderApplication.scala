@@ -84,7 +84,8 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/shortcut*.png",
         "/history.js",
         "/more.js",
-        "/logo.svg"
+        "/logo.svg",
+        "/logo.png"
       ).permitAll()
       .antMatchers(
         "/users",
