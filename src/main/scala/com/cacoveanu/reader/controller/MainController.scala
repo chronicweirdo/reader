@@ -4,6 +4,8 @@ import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.service.{BookService, ScannerService}
 import com.cacoveanu.reader.util.{FileTypes, FileUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.{HttpStatus, MediaType, ResponseEntity}
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -17,6 +19,43 @@ import scala.jdk.CollectionConverters._
 class MainController @Autowired()(
                                    private val bookService: BookService,
                                    private val scannerService: ScannerService) {
+
+  @Autowired
+  private var environment: Environment = _
+
+  val CONST_LINE_REGEX = "const\\s*([^=\\s]+)\\s*=.+".r
+
+  def constructConstLine(constName: String, constValue: String): String = {
+    s"const ${constName} = '${constValue}'"
+  }
+
+  def processJsLine(line: String): String = {
+    val constLineMatcher = CONST_LINE_REGEX.pattern.matcher(line)
+    if (constLineMatcher.matches()) {
+      val settingName = constLineMatcher.group(1)
+      val settingValue = environment.getProperty(settingName)
+      if (settingValue != null) {
+        constructConstLine(settingName, settingValue)
+      } else {
+        line
+      }
+    } else {
+      line
+    }
+  }
+
+  def processJsTemplate(path: String): String = {
+    val source = scala.io.Source.fromInputStream(new ClassPathResource(path).getInputStream())
+    val lines: Seq[String] = try source.getLines().toSeq finally source.close()
+    lines.map(line => processJsLine(line)).mkString("\n")
+  }
+
+
+  @RequestMapping(value = Array("/settings.js"), produces = Array("application/javascript"))
+  def loadSettingsJs(): ResponseEntity[String] = {
+    val content = processJsTemplate("/static/settings_template.js")
+    new ResponseEntity[String](content, HttpStatus.OK)
+  }
 
   @RequestMapping(Array("/collections"))
   def loadCollections(model: Model): String = {
