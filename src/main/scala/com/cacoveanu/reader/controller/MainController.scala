@@ -25,8 +25,15 @@ class MainController @Autowired()(
 
   val CONST_LINE_REGEX = "const\\s*([^=\\s]+)\\s*=.+".r
 
+  def unwrapStringValue(value: String): String =
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      value.substring(1, value.length - 1)
+    } else if (value.startsWith("'") && value.endsWith("'")) {
+      value.substring(1, value.length - 1)
+    } else value
+
   def constructConstLine(constName: String, constValue: String): String = {
-    s"const ${constName} = '${constValue}'"
+    s"const ${constName} = '${unwrapStringValue(constValue)}'"
   }
 
   def processJsLine(line: String): String = {

@@ -36,6 +36,12 @@ body {
     position: relative;
     text-align: center;
 }
+svg {
+    width: 200px;
+}
+path {
+    fill: var(--accent-text-color, black);
+}
 h1 {
     font-size: 1.1em;
     text-align: center;
