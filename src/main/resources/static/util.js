@@ -50,17 +50,6 @@ function setMeta(metaName, value) {
 }
 
 function setStatusBarColor(color, theme) {
-    /*setMeta('theme-color', color)
-    if (onIOS()) {
-        let appropriateColor = getAppropriateStatusBarColor(color)
-        document.documentElement.style.setProperty('--status-bar-color', appropriateColor)
-    } else {
-        if (theme == "dark") {
-            document.documentElement.style.setProperty('--status-bar-color', SETTING_DARK_BACKGROUND_COLOR.get())
-        } else {
-            document.documentElement.style.setProperty('--status-bar-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
-        }
-    }*/
     setMeta('theme-color', color)
     document.documentElement.style.setProperty('--status-bar-color', color)
 }
@@ -556,16 +545,6 @@ function getAppropriatePlaceholderColor(placeholderBackgroundColor) {
     return newColorHex
 }
 
-// function setBackgroundAlphaOnElement(element, alpha) {
-//     if (element) {
-//         let colorComponents = [...getComputedStyle(element).backgroundColor.matchAll(/\d+\.?\d*/g)]
-//         console.log(colorComponents)
-//         if (colorComponents.length == 3 || colorComponents.length == 4) {
-//             element.style.backgroundColor = "rgb(" + colorComponents[0] + ", " + colorComponents[1] + ", " + colorComponents[2] + ", " + alpha + ")"
-//         }
-//     }
-// }
-
 function getAlphaColor(originalHexColor, alpha) {
     let colorComponents = getRGB(originalHexColor)
     if (colorComponents.length == 3 || colorComponents.length == 4) {
@@ -585,11 +564,6 @@ function setAlphaBackgroundOnElements(originalHexColor, alpha, elementIds) {
         }
     }
 }
-
-/*function initAlpha() {
-    setBackgroundAlphaOnElement(document.getElementById('ch_tools_container'), SETTING_OVERLAY_TRANSPARENCY.get())
-    setBackgroundAlphaOnElement(document.getElementById('ch_spinner'), SETTING_OVERLAY_TRANSPARENCY.get())
-}*/
 
 function radiansToDegrees(radians) {
     return radians * (180/Math.PI)

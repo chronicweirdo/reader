@@ -548,7 +548,6 @@ window.onload = function() {
     document.getElementById("ch_tools_container").addEventListener("click", (event) => hideTools())
     document.getElementById("ch_tools").addEventListener("click", event => event.stopPropagation())
 
-    //initAlpha()
     window.addEventListener("focus", function(event) {
         checkAndUpdateTheme()
         setUiColors()

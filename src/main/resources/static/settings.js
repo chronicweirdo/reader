@@ -13,10 +13,6 @@
 then, in the UI we grab the textValue, the textName and the controller, we register listeners
 */
 
-
-
-
-
 function alignSettingWidths() {
     let settingsInPage = Array.from(document.getElementsByClassName('setting'))
     let maxWidth = Math.max(...settingsInPage.map(s => s.offsetWidth))
@@ -254,7 +250,6 @@ var SETTING_LIGHT_TEXT_COLOR = new Setting("light_text", "light theme text color
 var SETTING_LIGHT_ACCENT_COLOR = new Setting("light_accent", "light theme accent background color", "#FFD700", null, null, createColorController)
 var SETTING_LIGHT_ACCENT_TEXT_COLOR = new Setting("light_accent_text", "light theme accent text color", "#000000", null, null, createColorController)
 
-// var SETTING_THEME // options are light, dark, OS specific, time of day specific
 var SETTING_THEME = new Setting("theme", "theme", "1", parseInt, themeToString, createNumberController(0, 3, 1))
 
 var SETTING_COMIC_SCROLL_SPEED = new Setting("comic_scroll_speed", "comic scroll speed", "0.001", parseFloat, null, createNumberController(0.0005, 0.005, 0.0001))
@@ -270,7 +265,6 @@ var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "displa
 var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe to turn page", "true", parseBoolean, null, createBooleanController)
 var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "minimum swipe length (of screen width)", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
 
-//var SETTING_DESIRED_STATUS_BAR_LUMINANCE = new Setting("desired_status_bar_luminance", "maximum status bar luminance", "180", parseInt, null, createNumberController(150, 255, 5))
 var SETTING_DAY_START = new Setting("day_start", "switch to light mode at", "07:00", parseTime, null, createTimeController)
 var SETTING_DAY_END = new Setting("day_end", "switch to dark mode at", "22:00", parseTime, null, createTimeController)
 
@@ -283,5 +277,3 @@ var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximu
 var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null, true)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
 var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)
-
-// and maybe redesign the settings UI to show light and dark modes colors side by side when there is enough space on screen

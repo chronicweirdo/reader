@@ -251,7 +251,6 @@ class Image {
         this.setTop(centerY - newSideTop)
 
         this.setZoom(zoom)
-        //setZoomJumpValue(zoom)
         SETTING_ZOOM_JUMP.put(zoom)
         if (withImageUpdate) this.update()
     }
@@ -456,15 +455,11 @@ class Gestures {
         return mouseWheelScrollHandler
     }
     isTouchEnabled() {
-        /*return ('ontouchstart' in window) ||
-            (navigator.maxTouchPoints > 0) ||
-            (navigator.msMaxTouchPoints > 0)*/
         return window.matchMedia("(pointer: coarse)").matches
     }
     disableEventNormalBehavior(event) {
         event.preventDefault()
         event.stopPropagation()
-        //event.stopImmediatePropagation()
     }
     pushClick(timestamp) {
         this.clickCache.push(timestamp)
@@ -653,7 +648,6 @@ window.onload = function() {
 
     addPositionInputTriggerListener((page) => getComic().jumpToPage(page))
 
-    //initAlpha()
     initSettings()
     initFullscreenButton()
     initBookCollectionLinks()
