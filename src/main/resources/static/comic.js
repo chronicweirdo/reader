@@ -40,6 +40,7 @@ class Comic {
                         self.setDocumentTitle(page + "/" + self.size + " - " + self.title)
                         getImage().reset()
                         self.updateDownloadUrl()
+                        checkAndUpdateTheme()
                         if (callback != null) {
                             callback()
                         }
@@ -621,10 +622,7 @@ function initSettings() {
 }
 
 window.onload = function() {
-    /*document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
-    document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
-    document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())*/
-    configureTheme()
+    checkAndUpdateTheme()
 
     fixControlSizes()
     enableKeyboardGestures({
@@ -655,7 +653,7 @@ window.onload = function() {
 
     addPositionInputTriggerListener((page) => getComic().jumpToPage(page))
 
-    initAlpha()
+    //initAlpha()
     initSettings()
     initFullscreenButton()
     initBookCollectionLinks()

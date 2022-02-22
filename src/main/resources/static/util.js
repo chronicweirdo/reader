@@ -355,7 +355,6 @@ function getMarkAsReadButton() {
     }
 
     let confirmationRequestFunction = (event) => {
-        console.log(event)
         button.innerHTML = "are you sure you want to mark book as read?"
         button.onclick = markAsReadFunction
         button.classList.add('critical')
@@ -401,7 +400,6 @@ function fullscreenAvailable() {
 
 function toggleFullscreen() {
     var d = document.documentElement
-    console.log(d)
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         if (document.exitFullscreen) {
             document.exitFullscreen();
@@ -417,19 +415,15 @@ function toggleFullscreen() {
         }
     } else {
         if (d.requestFullscreen) {
-            console.log("requestFullscreen")
             d.requestFullscreen()
         }
         else if (d.mozRequestFullScreen) {
-            console.log("mozRequestFullscreen")
             d.mozRequestFullScreen()
         }
         else if (d.webkitRequestFullScreen) {
-            console.log("webkitRequestFullscreen")
             d.webkitRequestFullScreen()
         }
         else if (d.msRequestFullscreen) {
-            console.log("msRequestFullscreen")
             d.msRequestFullscreen()
         }
     }
@@ -562,20 +556,43 @@ function getAppropriatePlaceholderColor(placeholderBackgroundColor) {
     return newColorHex
 }
 
-function setBackgroundAlphaOnElement(element, alpha) {
-    let colorComponents = [...getComputedStyle(element).backgroundColor.matchAll(/\d+\.?\d*/g)]
+// function setBackgroundAlphaOnElement(element, alpha) {
+//     if (element) {
+//         let colorComponents = [...getComputedStyle(element).backgroundColor.matchAll(/\d+\.?\d*/g)]
+//         console.log(colorComponents)
+//         if (colorComponents.length == 3 || colorComponents.length == 4) {
+//             element.style.backgroundColor = "rgb(" + colorComponents[0] + ", " + colorComponents[1] + ", " + colorComponents[2] + ", " + alpha + ")"
+//         }
+//     }
+// }
+
+function getAlphaColor(originalHexColor, alpha) {
+    let colorComponents = getRGB(originalHexColor)
     if (colorComponents.length == 3 || colorComponents.length == 4) {
-        element.style.backgroundColor = "rgb(" + colorComponents[0] + ", " + colorComponents[1] + ", " + colorComponents[2] + ", " + alpha + ")"
+        return "rgb(" + colorComponents[0] + ", " + colorComponents[1] + ", " + colorComponents[2] + ", " + alpha + ")"
     }
 }
 
-function initAlpha() {
-    setBackgroundAlphaOnElement(document.getElementById('ch_tools_container'), SETTING_OVERLAY_TRANSPARENCY.get())
-    setBackgroundAlphaOnElement(document.getElementById('ch_spinner'), SETTING_OVERLAY_TRANSPARENCY.get())
+function setAlphaBackgroundOnElements(originalHexColor, alpha, elementIds) {
+    let alphaColor = getAlphaColor(originalHexColor, alpha)
+    if (alphaColor) {
+        for (let i in elementIds) {
+            let id = elementIds[i]
+            let element = document.getElementById(id)
+            if (element) {
+                element.style.backgroundColor = alphaColor
+            }
+        }
+    }
 }
 
+/*function initAlpha() {
+    setBackgroundAlphaOnElement(document.getElementById('ch_tools_container'), SETTING_OVERLAY_TRANSPARENCY.get())
+    setBackgroundAlphaOnElement(document.getElementById('ch_spinner'), SETTING_OVERLAY_TRANSPARENCY.get())
+}*/
+
 function radiansToDegrees(radians) {
-  return radians * (180/Math.PI)
+    return radians * (180/Math.PI)
 }
 
 function computeSwipeParameters(deltaX, deltaY) {
@@ -634,6 +651,7 @@ function configureTheme(useAccentForStatusBar = false) {
         setCssProperty('--text-color', SETTING_DARK_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_DARK_BACKGROUND_COLOR.get())
         setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_DARK_ACCENT_COLOR.get()))
+        setAlphaBackgroundOnElements(SETTING_DARK_BACKGROUND_COLOR.get(), SETTING_OVERLAY_TRANSPARENCY.get(), ['ch_tools_container', 'ch_spinner'])
     } else {
         setCssProperty('--accent-color', SETTING_LIGHT_ACCENT_COLOR.get())
         if (useAccentForStatusBar) {
@@ -645,5 +663,15 @@ function configureTheme(useAccentForStatusBar = false) {
         setCssProperty('--text-color', SETTING_LIGHT_TEXT_COLOR.get())
         setCssProperty('--background-color', SETTING_LIGHT_BACKGROUND_COLOR.get())
         setCssProperty('--placeholder-text-color', getAppropriatePlaceholderColor(SETTING_LIGHT_ACCENT_COLOR.get()))
+        setAlphaBackgroundOnElements(SETTING_LIGHT_BACKGROUND_COLOR.get(), SETTING_OVERLAY_TRANSPARENCY.get(), ['ch_tools_container', 'ch_spinner'])
+    }
+}
+
+function checkAndUpdateTheme() {
+    let currentTheme = document.theme
+    let correctTheme = getTheme()
+    if (correctTheme != currentTheme) {
+        configureTheme()
+        document.theme = correctTheme
     }
 }
