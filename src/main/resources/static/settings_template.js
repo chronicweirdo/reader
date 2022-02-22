@@ -106,7 +106,7 @@ function createNumberController(min, max, step) {
         setting.input = input
 
         let output = document.createElement('output')
-        output.style.marginLeft = "10px"
+        if (output.style) output.style.marginLeft = "10px"
         output.htmlFor = setting.name
         output.value = setting.getTextValue()
         setting.output = output
@@ -118,9 +118,11 @@ function createNumberController(min, max, step) {
 
         let controller = document.createElement('div')
         controller.classList.add('setting')
-        input.style.gridColumnStart = '1'
-        input.style.gridColumnEnd = '3'
-        input.style.justifySelf = 'auto'
+        if (input.style) {
+            input.style.gridColumnStart = '1'
+            input.style.gridColumnEnd = '3'
+            input.style.justifySelf = 'auto'
+        }
         controller.appendChild(label)
         controller.appendChild(output)
         controller.appendChild(input)
