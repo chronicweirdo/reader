@@ -1,17 +1,16 @@
-// setting object containing
-/*
-{
-    "name": // how it's saved in local storage
-    "default": // default value as string
-    "parser": // function that transforms the string representation of the setting to its actual value
-    "textValue": // function converting the setting to a string that can be shown in UI
-    "textName": // the name of the setting as shown in UI
-    "controller": // function that gives us the UI element for controlling this setting
-    "listeners": // a list of objects to which we send the new value when the setting is updated
-}
-
-then, in the UI we grab the textValue, the textName and the controller, we register listeners
-*/
+const SETTING_THEME_DEFAULT = "1"
+const SETTING_DARK_BACKGROUND_COLOR_DEFAULT = "#000000"
+const SETTING_DARK_TEXT_COLOR_DEFAULT = "#ffffff"
+const SETTING_DARK_ACCENT_COLOR_DEFAULT = "#FFD700"
+const SETTING_DARK_ACCENT_TEXT_COLOR_DEFAULT = "#000000"
+const SETTING_LIGHT_BACKGROUND_COLOR_DEFAULT = "#ffffff"
+const SETTING_LIGHT_TEXT_COLOR_DEFAULT = "#000000"
+const SETTING_LIGHT_ACCENT_COLOR_DEFAULT = "#FFD700"
+const SETTING_LIGHT_ACCENT_TEXT_COLOR_DEFAULT = "#000000"
+const SETTING_LATEST_READ_LIMIT_DEFAULT = "6"
+const SETTING_LATEST_ADDED_LIMIT_DEFAULT = "6"
+const SETTING_DAY_START_DEFAULT = "07:00"
+const SETTING_DAY_END_DEFAULT = "22:00"
 
 function alignSettingWidths() {
     let settingsInPage = Array.from(document.getElementsByClassName('setting'))
@@ -240,28 +239,25 @@ class Setting {
     }
 }
 
-const SETTING_DARK_BACKGROUND_COLOR_DEFAULT = "#000000"
-const SETTING_DARK_TEXT_COLOR_DEFAULT = "#ffffff"
-const SETTING_DARK_ACCENT_COLOR_DEFAULT = "#FFD700"
-const SETTING_DARK_ACCENT_TEXT_COLOR_DEFAULT = "#000000"
+
 
 var SETTING_DARK_BACKGROUND_COLOR = new Setting("dark_background", "dark theme background color", SETTING_DARK_BACKGROUND_COLOR_DEFAULT, null, null, createColorController)
 var SETTING_DARK_TEXT_COLOR = new Setting("dark_text", "dark theme text color", SETTING_DARK_TEXT_COLOR_DEFAULT, null, null, createColorController)
 var SETTING_DARK_ACCENT_COLOR = new Setting("dark_accent", "dark theme accent background color", SETTING_DARK_ACCENT_COLOR_DEFAULT, null, null, createColorController)
 var SETTING_DARK_ACCENT_TEXT_COLOR = new Setting("dark_accent_text", "dark theme accent text color", SETTING_DARK_ACCENT_TEXT_COLOR_DEFAULT, null, null, createColorController)
 
-var SETTING_LIGHT_BACKGROUND_COLOR = new Setting("light_background", "light theme background color", "#ffffff", null, null, createColorController)
-var SETTING_LIGHT_TEXT_COLOR = new Setting("light_text", "light theme text color", "#000000", null, null, createColorController)
-var SETTING_LIGHT_ACCENT_COLOR = new Setting("light_accent", "light theme accent background color", "#FFD700", null, null, createColorController)
-var SETTING_LIGHT_ACCENT_TEXT_COLOR = new Setting("light_accent_text", "light theme accent text color", "#000000", null, null, createColorController)
+var SETTING_LIGHT_BACKGROUND_COLOR = new Setting("light_background", "light theme background color", SETTING_LIGHT_BACKGROUND_COLOR_DEFAULT, null, null, createColorController)
+var SETTING_LIGHT_TEXT_COLOR = new Setting("light_text", "light theme text color", SETTING_LIGHT_TEXT_COLOR_DEFAULT, null, null, createColorController)
+var SETTING_LIGHT_ACCENT_COLOR = new Setting("light_accent", "light theme accent background color", SETTING_LIGHT_ACCENT_COLOR_DEFAULT, null, null, createColorController)
+var SETTING_LIGHT_ACCENT_TEXT_COLOR = new Setting("light_accent_text", "light theme accent text color", SETTING_LIGHT_ACCENT_TEXT_COLOR_DEFAULT, null, null, createColorController)
 
-var SETTING_THEME = new Setting("theme", "theme", "1", parseInt, themeToString, createNumberController(0, 3, 1))
+var SETTING_THEME = new Setting("theme", "theme", SETTING_THEME_DEFAULT, parseInt, themeToString, createNumberController(0, 3, 1))
 
 var SETTING_COMIC_SCROLL_SPEED = new Setting("comic_scroll_speed", "comic scroll speed", "0.001", parseFloat, null, createNumberController(0.0005, 0.005, 0.0001))
 var SETTING_BOOK_ZOOM = new Setting("book_zoom", "text size", "1.5", parseFloat, null, createNumberController(0.9, 2.1, 0.2))
 var SETTING_COMIC_PAN_SPEED = new Setting("comic_pan_speed", "comic pan speed", "3", parseInt, null, createNumberController(1, 10, 1))
 var SETTING_COMIC_INVERT_SCROLL = new Setting("comic_invert_scroll", "scroll down to zoom in", "false", parseBoolean, null, createBooleanController)
-var SETTING_LATEST_READ_LIMIT = new Setting("latest_read_limit", "latest read books to load", "6", parseInt, null, createNumberController(0, 12, 1))
+var SETTING_LATEST_READ_LIMIT = new Setting("latest_read_limit", "latest read books to load", SETTING_LATEST_READ_LIMIT_DEFAULT, parseInt, null, createNumberController(0, 12, 1))
 var SETTING_COMIC_HORIZONTAL_JUMP = new Setting("comic_horizontal_jump (of screen width)", "horizontal jump", "0.9", parseFloat, percentageToString, createNumberController(0.1, 1, 0.1))
 var SETTING_COMIC_VERTICAL_JUMP = new Setting("comic_vertical_jump", "vertical jump (of screen height)", "0.5", parseFloat, percentageToString, createNumberController(0.1, 1, 0.1))
 var SETTING_COMIC_ROW_THRESHOLD = new Setting("comic_row_threshold", "comic row threshold (of comic page width)", "0.02", parseFloat, percentageToString, createNumberController(0.01, 0.1, 0.01))
@@ -270,14 +266,14 @@ var SETTING_LIBRARY_DISPLAY_TITLE = new Setting("library_display_title", "displa
 var SETTING_SWIPE_PAGE = new Setting("swipe_page", "swipe to turn page", "true", parseBoolean, null, createBooleanController)
 var SETTING_SWIPE_LENGTH = new Setting("swipe_length", "minimum swipe length (of screen width)", "0.06", parseFloat, percentageToString, createNumberController(0.01, 0.31, 0.05)) // screen percentage for horizontal finger move for swipe action to register
 
-var SETTING_DAY_START = new Setting("day_start", "switch to light mode at", "07:00", parseTime, null, createTimeController)
-var SETTING_DAY_END = new Setting("day_end", "switch to dark mode at", "22:00", parseTime, null, createTimeController)
+var SETTING_DAY_START = new Setting("day_start", "switch to light mode at", SETTING_DAY_START_DEFAULT, parseTime, null, createTimeController)
+var SETTING_DAY_END = new Setting("day_end", "switch to dark mode at", SETTING_DAY_END_DEFAULT, parseTime, null, createTimeController)
 
 var SETTING_BOOK_EDGE_HORIZONTAL = new Setting("book_edge_horizontal", "left/right book edge (of screen width)", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.2, 0.05))
 var SETTING_BOOK_EDGE_VERTICAL = new Setting("book_edge_vertical", "top/bottom book edge (of screen height)", "0.05", parseFloat, percentageToString, createNumberController(0.03, 0.11, 0.02))
 var SETTING_BOOK_TOOLS_HEIGHT = new Setting("book_tools_height", "tools button height (of screen height)", "0.1", parseFloat, percentageToString, createNumberController(0.05, 0.3, 0.05))
 var SETTING_OVERLAY_TRANSPARENCY = new Setting("overlay_transparency", "tools panel transparency", "0.8", parseFloat, percentageToString, createNumberController(0.5, 0.9, 0.1))
-var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added books to load", "6", parseInt, null, createNumberController(0, 24, 6))
+var SETTING_LATEST_ADDED_LIMIT = new Setting("latest_added_limit", "latest added books to load", SETTING_LATEST_ADDED_LIMIT_DEFAULT, parseInt, null, createNumberController(0, 48, 6))
 var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximum swipe angle", "30", parseInt, degreeToString, createNumberController(10, 60, 10))
 var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null, true)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
