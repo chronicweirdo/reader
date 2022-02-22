@@ -63,6 +63,8 @@ textarea, input[type="text"], input[type="password"], input[type="submit"], inpu
     background-color: var(--accent-color, gold);
     border: 2px solid var(--accent-text-color, gold);
     color: var(--accent-text-color, black);
+    outline: none;
+    -webkit-appearance: none;
 }
 input::placeholder, textarea::placeholder {
     color: var(--placeholder-color, #b39500);
@@ -71,4 +73,5 @@ input::placeholder, textarea::placeholder {
 }
 input:focus, input:focus-visible {
     outline: none;
+    -webkit-appearance: none;
 }

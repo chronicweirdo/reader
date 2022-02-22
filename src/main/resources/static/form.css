@@ -16,6 +16,8 @@ textarea, input[type="text"], input[type="password"] {
     background-color: var(--accent-color, gold);
     border: 2px solid var(--accent-text-color, black);
     color: var(--accent-text-color, black);
+    outline: none;
+    -webkit-appearance: none;
 }
 
 input:focus, input:focus-visible {
