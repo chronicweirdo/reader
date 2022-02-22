@@ -301,6 +301,12 @@ function toggleSettings(button) {
             button.innerHTML = "show settings"
         }
     }
+    setTimeout(function() {
+        if (window.getComputedStyle(settings).display != 'none') {
+            settings.style.display = 'none'
+            button.innerHTML = "show settings"
+        }
+    }, 60*1000)
 }
 
 function reportError(message) {

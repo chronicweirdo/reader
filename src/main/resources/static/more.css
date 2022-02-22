@@ -37,6 +37,22 @@ h2 {
     color: var(--accent-text-color, black);
     padding-bottom: 1em;
 }
+h3 {
+    font-size: 1em;
+    background-color: var(--background-color, white);
+    color: var(--text-color, black);
+    padding-bottom: 1em;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 2em;
+    padding: .5em;
+}
+h3:first-child {
+    margin-top: 0;
+}
+h3::after {
+    content: ":"
+}
 h1 a, h2 a {
     color: var(--accent-text-color, black);
 }

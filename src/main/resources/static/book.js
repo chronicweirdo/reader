@@ -560,31 +560,7 @@ function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     settingsWrapper.appendChild(SETTING_BOOK_ZOOM.controller)
 
-    /*settingsWrapper.appendChild(SETTING_BOOK_MODE.controller)
-    settingsWrapper.appendChild(SETTING_DARK_MODE_BACKGROUND.controller)
-    settingsWrapper.appendChild(SETTING_DARK_MODE_FOREGROUND.controller)
-    settingsWrapper.appendChild(SETTING_LIGHT_MODE_BACKGROUND.controller)
-    settingsWrapper.appendChild(SETTING_LIGHT_MODE_FOREGROUND.controller)*/
-
-    settingsWrapper.appendChild(SETTING_BOOK_EDGE_HORIZONTAL.controller)
-    settingsWrapper.appendChild(SETTING_BOOK_EDGE_VERTICAL.controller)
-    settingsWrapper.appendChild(SETTING_BOOK_TOOLS_HEIGHT.controller)
-    settingsWrapper.appendChild(SETTING_OVERLAY_TRANSPARENCY.controller)
-
-    settingsWrapper.appendChild(SETTING_SWIPE_PAGE.controller)
-    settingsWrapper.appendChild(SETTING_SWIPE_LENGTH.controller)
-    settingsWrapper.appendChild(SETTING_SWIPE_ANGLE_THRESHOLD.controller)
-
-    /*SETTING_BOOK_MODE.addListener(initializeMode)
-    SETTING_DARK_MODE_BACKGROUND.addListener(initializeMode)
-    SETTING_DARK_MODE_FOREGROUND.addListener(initializeMode)
-    SETTING_LIGHT_MODE_BACKGROUND.addListener(initializeMode)
-    SETTING_LIGHT_MODE_FOREGROUND.addListener(initializeMode)*/
-    SETTING_BOOK_EDGE_HORIZONTAL.addListener(() => setTimeout(handleResize, 1000))
-    SETTING_BOOK_EDGE_VERTICAL.addListener(() => setTimeout(handleResize, 1000))
-    SETTING_BOOK_TOOLS_HEIGHT.addListener(handleResize)
-    SETTING_BOOK_ZOOM.addListener(setZoom)
-    SETTING_OVERLAY_TRANSPARENCY.addListener(initAlpha)
+    SETTING_BOOK_ZOOM.addListener((zoom) => setTimeout(function() { setZoom(zoom)}, 1000))
 
     settingsWrapper.appendChild(getRemoveProgressButton())
     settingsWrapper.appendChild(getMarkAsReadButton())

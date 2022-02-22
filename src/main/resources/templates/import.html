@@ -33,10 +33,7 @@
             form.submit()
         }
         window.onload = function() {
-            document.documentElement.style.setProperty('--accent-color', SETTING_ACCENT_COLOR.get())
-            document.documentElement.style.setProperty('--foreground-color', SETTING_FOREGROUND_COLOR.get())
-            document.documentElement.style.setProperty('--background-color', SETTING_BACKGROUND_COLOR.get())
-            setStatusBarColor(SETTING_ACCENT_COLOR.get())
+            configureTheme(true)
         }
     </script>
 </head>
