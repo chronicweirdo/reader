@@ -66,11 +66,9 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/bookNode.js",
         "/comic.css",
         "/comic.js",
-        "/favicon.ico",
         "/fonts.css",
         "/form.css",
         "/gestures.js",
-        "/gold_logo.png",
         "/library.css",
         "/library.js",
         "/login.css",
@@ -81,11 +79,10 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         "/Merriweather/*",
         "/Roboto/*",
         "/manifest.json",
-        "/shortcut*.png",
         "/history.js",
         "/more.js",
         "/logo.svg",
-        "/logo.png"
+        "/logo.png*"
       ).permitAll()
       .antMatchers(
         "/users",

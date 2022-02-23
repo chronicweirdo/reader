@@ -16,7 +16,7 @@ class ImageServiceTest {
 
   @Test
   def testImageResizeByFactor() = {
-    val path = Paths.get("src", "main", "resources", "static", "gold_logo.png") // 198 x 154
+    val path = Paths.get("src", "test", "resources", "gold_logo.png") // 198 x 154
     val image = Files.readAllBytes(path)
     val (originalWidth, originalHeight) = getDimensions(image)
 
@@ -30,7 +30,7 @@ class ImageServiceTest {
 
   @Test
   def testImageResizeByMinimalSide() = {
-    val path = Paths.get("src", "main", "resources", "static", "gold_logo.png") // 198 x 154
+    val path = Paths.get("src", "test", "resources", "gold_logo.png") // 198 x 154
     val image = Files.readAllBytes(path)
     val (originalWidth, originalHeight) = getDimensions(image)
 

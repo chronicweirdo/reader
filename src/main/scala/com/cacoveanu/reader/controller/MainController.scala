@@ -83,7 +83,7 @@ class MainController @Autowired()(
     val themeColor = if (environment.getProperty("LOGO_BACKGROUND") != null) {
       unwrapStringValue(environment.getProperty("LOGO_BACKGROUND"))
     } else "#ffd700"
-    val manifest = ManifestUtil.generateManifest(themeColor, Array(16, 24, 32, 48, 64, 152, 167, 180, 192))
+    val manifest = ManifestUtil.generateManifest(themeColor, Array(16, 24, 32, 48, 64, 152, 167, 180, 192, 512))
     ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(manifest)
   }
 
