@@ -641,11 +641,11 @@ function configureTheme(useAccentForStatusBar = false) {
     }
 }
 
-function checkAndUpdateTheme() {
+function checkAndUpdateTheme(useAccentForStatusBar = false) {
     let currentTheme = document.theme
     let correctTheme = getTheme()
     if (correctTheme != currentTheme) {
-        configureTheme()
+        configureTheme(useAccentForStatusBar)
         document.theme = correctTheme
     }
 }

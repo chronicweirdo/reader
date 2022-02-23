@@ -548,7 +548,8 @@ window.onload = function() {
     updateClearSearch()
 
     applyTitles()
-    configureTheme()
+    checkAndUpdateTheme()
+    window.addEventListener("focus", () => checkAndUpdateTheme(), false)
 }
 
 window.onscroll = function(ev) {

@@ -661,5 +661,7 @@ window.onload = function() {
         })
     })
 
+    window.addEventListener("focus", checkAndUpdateTheme, false)
+
     downloadComicToDevice()
 }

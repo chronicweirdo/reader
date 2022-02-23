@@ -118,4 +118,5 @@ function loadSettings() {
 window.onload = function() {
     loadSettings()
     configureThemeForMorePage()
+    window.addEventListener("focus", () => checkAndUpdateTheme(true), false)
 }

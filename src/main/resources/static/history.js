@@ -121,4 +121,5 @@ function loadHistory() {
 window.onload = function() {
     configureTheme(true)
     loadHistory()
+    window.addEventListener("focus", () => checkAndUpdateTheme(true), false)
 }
