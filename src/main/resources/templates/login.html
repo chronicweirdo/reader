@@ -2,15 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="gold">
+    <div th:replace="fragments/headFragment :: normalPage"></div>
     <title>Login - Chronic Reader</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" href="/logo.png?size=192">
-    <link rel="icon" href="/logo.png">
-    <link rel="apple-touch-icon" href="/logo.png">
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <link rel="stylesheet" type="text/css" href="login.css">
     <script src="settings.js"></script>

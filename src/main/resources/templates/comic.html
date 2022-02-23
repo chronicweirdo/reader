@@ -2,28 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
-    <meta name="viewport"
-          content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, height=device-height">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#FFD700">
+    <div th:replace="fragments/headFragment :: bookPage"></div>
+
     <meta name="bookId" content="1" th:content="${id}">
     <meta name="bookTitle" content="1" th:content="${title}">
     <meta name="size" content="20" th:content=${pages}>
     <title th:text="${title}">Comic Title</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" href="/shortcut.png">
-    <link rel="icon" href="/shortcut.png">
-    <link rel="icon" sizes="16x16" href="/shortcut16.png">
-    <link rel="icon" sizes="24x24" href="/shortcut24.png">
-    <link rel="icon" sizes="32x32" href="/shortcut32.png">
-    <link rel="icon" sizes="48x48" href="/shortcut48.png">
-    <link rel="icon" sizes="64x64" href="/shortcut64.png">
-    <link rel="icon" sizes="192x192" href="/shortcut192.png">
-    <link rel="apple-touch-icon" href="/shortcut.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/shortcut152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/shortcut180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/shortcut167.png">
+
     <link rel="stylesheet" type="text/css" href="fonts.css">
     <link rel="stylesheet" type="text/css" href="comic.css">
     <link rel="stylesheet" type="text/css" href="tools.css">
