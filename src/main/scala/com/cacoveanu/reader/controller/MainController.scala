@@ -2,7 +2,7 @@ package com.cacoveanu.reader.controller
 
 import com.cacoveanu.reader.entity.{Book, Progress}
 import com.cacoveanu.reader.service.{BookService, ScannerService}
-import com.cacoveanu.reader.util.{FileTypes, FileUtil, LogoUtil, SessionUtil, WebUtil}
+import com.cacoveanu.reader.util.{FileTypes, FileUtil, LogoUtil, ManifestUtil, SessionUtil, WebUtil}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
@@ -75,6 +75,16 @@ class MainController @Autowired()(
     } else "#000000"
     val imageBytes = LogoUtil.generate("/static/logo.svg", backgroundColor, foregroundColor, size.toFloat)
     ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
+  }
+
+  @RequestMapping(value = Array("/manifest.json"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
+  @ResponseBody
+  def loadManifestJson() = {
+    val themeColor = if (environment.getProperty("LOGO_BACKGROUND") != null) {
+      unwrapStringValue(environment.getProperty("LOGO_BACKGROUND"))
+    } else "#ffd700"
+    val manifest = ManifestUtil.generateManifest(themeColor, Array(16, 24, 32, 48, 64, 152, 167, 180, 192))
+    ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(manifest)
   }
 
   @RequestMapping(Array("/collections"))
