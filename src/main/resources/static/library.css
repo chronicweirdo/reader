@@ -190,6 +190,7 @@ h1 a {
     position: relative;
     display: inline-block;
     justify-self: stretch;
+    width: 70vw;
 }
 @media all and (max-width: 399px) {
     ul {
@@ -269,6 +270,10 @@ h1 a {
     #search, .offline-message {
         grid-column: 1 / 6;
         grid-row: 1;
+    }
+    #search {
+        justify-self: center;
+        width: 90vw;
     }
     #clearsearch {
         grid-column: 2;
