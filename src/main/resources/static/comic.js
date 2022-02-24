@@ -105,15 +105,16 @@ class Comic {
             })
         }
     }
-    goToPreviousPage(proposedLeft = undefined, proposedTop = undefined) {
+    goToPreviousPage(lastPosition = false) {
         let currentPosition = getPositionInput()
         if (currentPosition > 1) {
             this.displayPage(currentPosition - 1, function() {
                 if (SETTING_FIT_COMIC_TO_SCREEN.get()) {
                     getImage().fitPageToScreen()
                 } else {
-                    if (proposedLeft) getImage().setLeft(proposedLeft)
-                    if (proposedTop) getImage().setTop(proposedTop)
+                    if (lastPosition) {
+                        getImage().goToLastPosition()
+                    }
                     getImage().update()
                 }
             })
@@ -283,12 +284,16 @@ class Image {
             this.update()
         }
     }
+    goToLastPosition() {
+        let lastLeft = this.#getLastPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold())
+        let lastTop = this.#getLastPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold())
+        this.setLeft(lastLeft)
+        this.setTop(lastTop)
+    }
     goToPreviousView() {
         if (this.isBeginningOfRow()) {
             if (this.isBeginningOfColumn()) {
-                let lastLeft = this.#getLastPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold())
-                let lastTop = this.#getLastPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold())
-                getComic().goToPreviousPage(lastLeft, lastTop)
+                getComic().goToPreviousPage(true)
             } else {
                 this.setLeft(this.#getPreviousPosition(this.getWidth(), getViewportWidth(), this.getLeft(), SETTING_COMIC_HORIZONTAL_JUMP.get(), this.getRowThreshold()))
                 this.setTop(this.#getPreviousPosition(this.getHeight(), getViewportHeight(), this.getTop(), SETTING_COMIC_VERTICAL_JUMP.get(), this.getColumnThreshold()))
