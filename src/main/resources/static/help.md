@@ -1,12 +1,3 @@
-<style>
-    p.images {
-        display: grid;
-    }
-    p.images span {
-        text-align: center;
-    }
-</style>
-
 # Chronic Reader Help
 
 - [About the Library Page](#about-the-library-page)
@@ -17,7 +8,7 @@
 
 ## About the Library Page
 
-<p class="images" style="grid-template-columns: 1fr;"><img src="library.png" /><span>library page</span></p>
+<p style="display: grid; grid-template-columns: 1fr;"><img src="library.png" /><span style="text-align: center">library page</span></p>
 
 This page lets you navigate the available collections of books and comics, search, view progress of books you have opened and read. New books are loaded as you scroll, with their corresponding collections. You can click on parts of collection names to search for all comics in that specific collection, or you can use the search field directly to look for available books. Click on a book or comic to start reading it. At the top of the page, the most recent books you read are displayed. Books that are in progress have a progress bar displayed on top of their cover. Books that have been read (cover to cover) have a checkmark displayed on top of their cover.
 
@@ -29,7 +20,7 @@ On the library page you also have three buttons/controls. The clear search butto
 
 ## About the Application Settings Page
 
-<p class="images" style="grid-template-columns: 1fr 1fr;"><img src="application_settings.png" /><img src="other_colors.png"/><span>application settings</span><span>customized UI colors</span></p>
+<p style="display: grid; grid-template-columns: 1fr 1fr;"><img src="application_settings.png" /><img src="other_colors.png"/><span>application settings</span><span style="text-align: center">customized UI colors</span></p>
 
 On this page you have access to other parts of the application and to some global configuration settings.
 
@@ -45,7 +36,7 @@ The last option on this page is to log out of the application. Logging out will 
 
 ## About the Collections Page
 
-<p class="images" style="grid-template-columns: auto;"><img src="collection_tree.png" /><span>collections tree</span></p>
+<p style="display: grid; grid-template-columns: auto;"><img src="collection_tree.png" /><span style="text-align: center">collections tree</span></p>
 
 Every book and comic is part of a collection, based on the folders and sub-folders it is stored in. The collections page displays all the collections in the app as a tree. For tree entries with a plus sign next to them you have sub-collections. You can click that plus sign to expand the collection and view sub-collections. You can organize your books and comics into collections by organizing them into sub-folders in your root library folder. Clicking on a collection name will take you back to the library page and only display the entries in that collection.
 
@@ -53,19 +44,19 @@ Every book and comic is part of a collection, based on the folders and sub-folde
 
 ## About Book Pages
 
-<p class="images" style="grid-template-columns: auto;"><img src="book_controls.png" /><span>book controls</span></p>
+<p style="display: grid; grid-template-columns: auto;"><img src="book_controls.png" /><span style="text-align: center">book controls</span></p>
 
 You can use the highlighted areas of the screen to move between pages/views or to open the tools menu.
 
-<p class="images" style="grid-template-columns: 50% 50%;"><img src="book_tools.png"/><img src="comic_tools.png"/><span>tools menu on the left</span><span>tools menu on the right</span></p>
+<p style="display: grid; grid-template-columns: 50% 50%;"><img src="book_tools.png"/><img src="comic_tools.png"/><span style="text-align: center">tools menu on the left</span><span style="text-align: center">tools menu on the right</span></p>
 
 The tools menu has a left-side and a right-side version, depending on the tools button you pressed. It is designed to be easy to use with whatever hand you hold your device in.
 
-<p class="images" style="grid-template-columns: 33% 33% 33%;"><img src="book_page.png"/><img src="book_tools.png"/><img src="book_settings.png"/><span>book display page</span><span>book tools</span><span>book settings</span></p>
+<p style="display: grid; grid-template-columns: 33% 33% 33%;"><img src="book_page.png"/><img src="book_tools.png"/><img src="book_settings.png"/><span style="text-align: center">book display page</span><span style="text-align: center">book tools</span><span style="text-align: center">book settings</span></p>
 
 If you open the tools menu for a book you can see progress information, what percentage of the book you have read and how many pages are left in the current chapter. You can also expand the settings, where you can switch to dark mode for night-time reading, pick preferred colors for background and text for both dark and light modes, change the text size. You can also toggle fullscreen, if your device permits this (this does not work on iOS devices), and you can delete the progress for the current book.
 
-<p class="images" style="grid-template-columns: 50% 50%;"><img src="book_toc.png"/><img src="book_dark_mode.png"/><span>book table of contents</span><span>book dark mode</span></p>
+<p style="display: grid; grid-template-columns: 50% 50%;"><img src="book_toc.png"/><img src="book_dark_mode.png"/><span style="text-align: center">book table of contents</span><span style="text-align: center">book dark mode</span></p>
 
 Above the standard tools you can also view the table of contents of the book, with expandable chapters and subchapters that you can click to jump to the desired position in the book.
 
@@ -73,7 +64,7 @@ Above the standard tools you can also view the table of contents of the book, wi
 
 ## About Comic Book Pages
 
-<p class="images" style="grid-template-columns: 33% 33% 33%;"><img src="comic_page.png" /><img src="comic_tools.png" /><img src="comic_settings.png" /><span>comic page</span><span>comic tools</span><span>comic settings</span></p>
+<p style="display: grid; grid-template-columns: 33% 33% 33%;"><img src="comic_page.png" /><img src="comic_tools.png" /><img src="comic_settings.png" /><span style="text-align: center">comic page</span><span style="text-align: center">comic tools</span><span style="text-align: center">comic settings</span></p>
 
 You can pinch-zoom or use the mouse wheel to adjust the zoom of the comic page. Press left mouse and drag or touch screen and drag to adjust the position of the comic page. A double left click or a double tap on the center of the screen zooms you in or out on the comic page.
 
