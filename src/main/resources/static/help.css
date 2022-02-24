@@ -1,0 +1,12 @@
+h2 {
+    margin-top: 1em;
+}
+.libraryLink {
+    margin-left: 1em;
+}
+p.images {
+    display: grid;
+}
+p.images span {
+    text-align: center;
+}
