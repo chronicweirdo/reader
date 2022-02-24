@@ -616,8 +616,8 @@ class Gestures {
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
     settingsWrapper.appendChild(getDownloadPageButton())
-    settingsWrapper.appendChild(SETTING_COMIC_HORIZONTAL_JUMP.controller)
-    settingsWrapper.appendChild(SETTING_COMIC_VERTICAL_JUMP.controller)
+    settingsWrapper.appendChild(SETTING_COMIC_HORIZONTAL_JUMP.getController())
+    settingsWrapper.appendChild(SETTING_COMIC_VERTICAL_JUMP.getController())
     settingsWrapper.appendChild(getRemoveProgressButton())
     settingsWrapper.appendChild(getMarkAsReadButton())
 }

@@ -183,7 +183,10 @@ class Setting {
         this.textValueFunction = textValueFunction
         this.textName = textName
         this.bookSpecific = bookSpecific
-        if (createControllerFunction) this.controller = createControllerFunction(this)
+        if (createControllerFunction) this.createControllerFunction = createControllerFunction
+    }
+    getController() {
+        return this.createControllerFunction(this)
     }
     #getBookId() {
         return getMeta("bookId")

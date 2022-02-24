@@ -512,7 +512,7 @@ function saveCache() {
 
 function initSettings() {
     let settingsWrapper = document.getElementById('ch_settings')
-    settingsWrapper.appendChild(SETTING_BOOK_ZOOM.controller)
+    settingsWrapper.appendChild(SETTING_BOOK_ZOOM.getController())
 
     SETTING_BOOK_ZOOM.addListener((zoom) => setTimeout(function() { setZoom(zoom)}, 1000))
 

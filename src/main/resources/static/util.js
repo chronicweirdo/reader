@@ -649,3 +649,12 @@ function checkAndUpdateTheme(useAccentForStatusBar = false) {
         document.theme = correctTheme
     }
 }
+
+function clearLocalStorage() {
+    window.localStorage.clear()
+    if('serviceWorker' in navigator) {
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type: 'reset'})
+        }
+    }
+}

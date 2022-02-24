@@ -10,6 +10,7 @@
     <script src="util.js"></script>
     <script>
         window.onload = function() {
+            clearLocalStorage()
             checkAndUpdateTheme(true)
             window.addEventListener("focus", () => checkAndUpdateTheme(true), false)
         }
