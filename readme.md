@@ -21,7 +21,6 @@ and mobile devices.
 - [Installing as a service on Windows](#installing-as-a-service-on-windows)
 - [Running with Docker](#running-with-docker)
 - [Other considerations](#other-considerations)
-- [Read the Help Page](src/main/resources/static/help.md)
 
 ## Features
 
