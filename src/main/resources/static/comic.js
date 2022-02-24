@@ -414,7 +414,8 @@ class Gestures {
     constructor(element, resetSwipeFunction, getZoomFunction, setZoomFunction, panFunction, singleClickFunction, doubleClickFunction, mouseScrollFunction) {
         this.element = element
         this.clickCache = []
-        this.DOUBLE_CLICK_THRESHOLD = 200
+        this.DOUBLE_CLICK_THRESHOLD = 400
+        this.CLICK_DISTANCE_THRESHOLD = 5
         this.resetSwipe = resetSwipeFunction
         this.getZoom = getZoomFunction
         this.setZoom = setZoomFunction
@@ -577,7 +578,7 @@ class Gestures {
     isLastClickRelevant() {
         if (this.clickCache.length >= 1) {
             let clickNotTooOld = Date.now() - this.clickCache[this.clickCache.length - 1] < this.DOUBLE_CLICK_THRESHOLD
-            let panNotTooLarge = this.computePointsDistance(this.originalCenter, this.previousCenter) < 1
+            let panNotTooLarge = this.computePointsDistance(this.originalCenter, this.previousCenter) < this.CLICK_DISTANCE_THRESHOLD
             return clickNotTooOld && panNotTooLarge && this.panEnabled
         } else {
             return false
