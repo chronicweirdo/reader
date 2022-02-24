@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, R
 
 import java.util.Date
 import scala.beans.BeanProperty
+import scala.io.Codec
 import scala.jdk.CollectionConverters._
 
 @Controller
@@ -52,6 +53,7 @@ class MainController @Autowired()(
   }
 
   def processJsTemplate(path: String): String = {
+    implicit val codec = Codec.UTF8
     val source = scala.io.Source.fromInputStream(new ClassPathResource(path).getInputStream())
     val lines: Seq[String] = try source.getLines().toSeq finally source.close()
     lines.map(line => processJsLine(line)).mkString("\n")
