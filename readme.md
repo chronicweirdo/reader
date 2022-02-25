@@ -20,6 +20,8 @@ and mobile devices.
 - [Troubleshooting - Resetting everything](#troubleshooting---resetting-everything)
 - [Installing as a service on Windows](#installing-as-a-service-on-windows)
 - [Running with Docker](#running-with-docker)
+- [Performance Considerations](#performance-considerations)
+- [Setting Up the Service](#setting-up-the-service)
 - [Other considerations](#other-considerations)
 
 ## Features
