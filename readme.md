@@ -1,6 +1,6 @@
 # Chronic Reader
 
-![chronic reader screenshot](screenshot.png)
+![chronic reader screenshot](src/main/resources/static/library.png)
 
 ## Description
 
