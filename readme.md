@@ -175,7 +175,64 @@ services:
 
 [Docker Hub entry for this project](https://hub.docker.com/r/chronicweirdo/chronicreader)
 
-See information about performance considerations when running in Docker on Windows on the [4.6 release page](https://github.com/chronicweirdo/reader/releases/tag/v4.6).
+## Performance Considerations
+
+If you are running in Docker on Windows using the WSL2 subsystem engine there may be
+a performance impact depending on your setup. This performance impact occurs when
+you mount a Windows folder, with a Windows file system, into the Linux Docker
+container that is running Chronic Reader. This file system translation will make
+interaction with the file system slow, meaning that library scanning will work
+a lot slower than it would on Windows. This performance impact does not occur if
+you are using Docker with Hyper-V instead of WSL2.
+
+This performance impact is especially felt when starting the container, since
+at that point a library check, which scans all books and verifies their checksum,
+occurs. To mitigate this, you now can set an environment to turn off library
+verification: `VERIFY_ON_INITIAL_SCAN=false`.
+
+When running on Windows Docker on WSL2 folder change watching will not work. To make the
+application discover changes in your library folder you will have to disable folder
+watching by setting `ENABLE_FOLDER_WATCHING=false`; this will enable the periodic folder
+rescan mechanism which will be able to detect changes in your library folder.
+
+See information about performance considerations when running in Docker on Windows
+for version 4.6 on the [4.6 release page](https://github.com/chronicweirdo/reader/releases/tag/v4.6).
+
+## Setting Up the Service
+
+Whether when running with docker or as a Windows service, there are a series of
+startup settings you can use to configure your deployment. This is done through
+environment variables or settings in the `application.properties` file.
+
+- `adminPass` property or `ADMIN_PASSWORD` environment variable: the hardcoded admin password
+- `server.port` property or `SERVER_PORT` environment variable: the port the server listens to
+- `debug` property or `DEBUG` environment variable: `true` or `false` to enable or disable debug 
+mode logs on the server
+- `logging.level.com.cacoveanu` property or `LOG_LEVEL` environment variable: values can be 
+`TRACE`, `DEBUG`, `INFO`, `WARN` and `ERROR`, to set the log level of the Chronic Reader app
+- `enableFolderWatching` property or `ENABLE_FOLDER_WATCHING` environment variable: if set 
+to `false` it will turn off the folder watching mechanism and enable the periodic library 
+rescan mechanism
+- `verifyOnInitialScan` property or `VERIFY_ON_INITIAL_SCAN` environment variable: use `true` or
+`false` to enable or disable library verification when the application starts up
+- `server.tomcat.threads.max` property or `SERVER_TOMCAT_MAX_THREADS` environment variable: set
+the number of Tomcat threads the application should use
+- `SETTING_THEME_DEFAULT` environment variable: values `0`, `1`, `2`, `3` correspond to "light",
+"OS theme", "time based" and "dark"
+- `SETTING_DARK_BACKGROUND_COLOR_DEFAULT` environment variable: default dark theme background color HEX code (example: `"#000000"`)
+- `SETTING_DARK_TEXT_COLOR_DEFAULT` environment variable: default dark theme text color HEX code
+- `SETTING_DARK_ACCENT_COLOR_DEFAULT` environment variable: default dark theme accent color HEX code
+- `SETTING_DARK_ACCENT_TEXT_COLOR_DEFAULT` environment variable: default dark theme accent text color HEX code
+- `SETTING_LIGHT_BACKGROUND_COLOR_DEFAULT` environment variable: default light theme background color HEX code
+- `SETTING_LIGHT_TEXT_COLOR_DEFAULT` environment variable: default light theme text color HEX code
+- `SETTING_LIGHT_ACCENT_COLOR_DEFAULT` environment variable: default light theme accent color HEX code
+- `SETTING_LIGHT_ACCENT_TEXT_COLOR_DEFAULT` environment variable: default light theme accent text color HEX code
+- `SETTING_LATEST_READ_LIMIT_DEFAULT` environment variable: default latest read books to load (example: `6`)
+- `SETTING_LATEST_ADDED_LIMIT_DEFAULT` environment variable: default latest added books to load (example: `24`)
+- `SETTING_DAY_START_DEFAULT` environment variable: default day start hour and minute (example: `"07:00"`)
+- `SETTING_DAY_END_DEFAULT` environment variable: default day end hour and minute (example: `"22:00"`)
+- `LOGO_BACKGROUND` environment variable: background color HEX code for the generated logo
+- `LOGO_FOREGROUND` environment variable: foreground color HEX code for the generated logo
 
 ## Other considerations
 
