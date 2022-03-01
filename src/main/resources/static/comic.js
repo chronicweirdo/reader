@@ -34,13 +34,14 @@ class Comic {
                     var img = getImage().image
                     img.onload = function() {
                         document.getElementById("content").style.background = getHexCode(data.color)
-                        setStatusBarColor(getHexCode(data.color))
+                        document.statusBarColor = getHexCode(data.color)
+                        //setStatusBarColor(getHexCode(data.color))
                         self.setPage(page)
                         saveProgress(self.id, page-1)
                         self.setDocumentTitle(page + "/" + self.size + " - " + self.title)
                         getImage().reset()
                         self.updateDownloadUrl()
-                        checkAndUpdateTheme()
+                        comicCheckAndUpdateTheme()
                         if (callback != null) {
                             callback()
                         }
@@ -622,8 +623,13 @@ function initSettings() {
     settingsWrapper.appendChild(getMarkAsReadButton())
 }
 
-window.onload = function() {
+function comicCheckAndUpdateTheme() {
     checkAndUpdateTheme()
+    if (document.statusBarColor) setStatusBarColor(document.statusBarColor)
+}
+
+window.onload = function() {
+    comicCheckAndUpdateTheme()
 
     fixControlSizes()
     enableKeyboardGestures({
@@ -667,7 +673,7 @@ window.onload = function() {
         })
     })
 
-    window.addEventListener("focus", checkAndUpdateTheme, false)
+    window.addEventListener("focus", comicCheckAndUpdateTheme, false)
 
     downloadComicToDevice()
 }
