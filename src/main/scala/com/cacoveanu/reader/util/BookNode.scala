@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 
 object BookNode {
 
-  private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image", "?dp")
+  private val VOID_ELEMENTS = Seq("area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image", "?dp", "?pagebreak")
   private val LEAF_ELEMENTS = Seq("img", "tr", "image")
 
   // if it starts and ends with angle brackets
@@ -76,14 +76,14 @@ object BookNode {
               // we check that this tag closes the current node correctly
               if (isVoidElement(name)) {
                 // the last child should have the correct name
-                if (name != current.children.last.name) throw new Throwable("incompatible end for void tag")
+                if (name != current.children.last.name) throw new Throwable("incompatible end " + name + " for void tag " + current.children.last.name)
                 else {
                   current.children.last.content += content
                 }
               } else {
                 // the current node should have the correct name, and it is getting closed
                 if (name != current.name) {
-                  throw new Throwable("incompatible end tag " + current.name)
+                  throw new Throwable("incompatible end tag " + name + " for " + current.name)
                 }
                 // move current node up
                 current = current.parent

@@ -26,7 +26,7 @@ function BookNode(name, content, parent = null, children = [], start = null, end
   this.getResources = getResources
 }
 
-var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image","?dp"]
+var VOID_ELEMENTS = ["area","base","br","col","hr","img","input","link","meta","param","keygen","source","image","svg:image","?dp", "?pagebreak"]
 
 function isVoidElement(tagName) {
   return VOID_ELEMENTS.includes(tagName.toLowerCase())
@@ -133,13 +133,13 @@ function parseBody(body) {
           if (isVoidElement(name)) {
             // the last child should have the correct name
             var lastChild = current.children[current.children.length - 1]
-            if (name != lastChild.name) throw "incompatible end for void tag"
+            if (name != lastChild.name) throw "incompatible end " + name + " for void tag " + lastChild.name
             else {
               lastChild.content += content
             }
           } else {
             // the current node should have the correct name, and it is getting closed
-            if (name != current.name) throw "incompatible end tag"
+            if (name != current.name) throw "incompatible end tag " + name + " for " + current.name
             // move current node up
             current = current.parent
           }

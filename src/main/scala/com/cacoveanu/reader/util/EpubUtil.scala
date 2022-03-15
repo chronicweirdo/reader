@@ -79,6 +79,7 @@ object EpubUtil {
     }
 
   def parseSection(epubPath: String, sectionPath: String, startPosition: Long = 0) = {
+    log.debug(s"parsing section $sectionPath from book $epubPath")
     val sectionExtension = FileUtil.getExtension(EpubUtil.baseLink(sectionPath))
     if (sectionExtension == "html" || sectionExtension == "xhtml" || sectionExtension == "htm" || sectionExtension == "xml") {
       EpubUtil.readResource(epubPath, EpubUtil.baseLink(sectionPath))
