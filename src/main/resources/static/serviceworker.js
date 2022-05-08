@@ -391,7 +391,6 @@ async function handleRootRequest(request) {
         return serverResponse
     } else {
         let databaseResponse = await databaseLoad(REQUESTS_TABLE, request.url)
-        console.log("found database response")
         return databaseEntityToResponse(databaseResponse)
     }
 }
@@ -580,6 +579,9 @@ async function handleLatestReadRequest(request) {
 
     if (serverResponse) {
         let blob = await serverResponse.blob()
+        // remove existing latest read
+        await databaseDelete(request => request.url.includes("latestRead"), REQUESTS_TABLE)
+
         // cache response
         let savedEntity = await databaseSave(REQUESTS_TABLE, {
             url: request.url,
