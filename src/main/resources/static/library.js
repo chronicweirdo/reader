@@ -5,10 +5,14 @@ var SPINNER_ID = "spinner"
 var TOGGLE_TITLES_ID = "toggletitles"
 var COLLECTION_CONTAINER_CLASS = "collection-container"
 var COLLECTION_TITLE_CLASS = "collection-title"
+var KEEP_ON_TOP_CLASS = "keep-on-top"
 var ACTIVE_CLASS = "active"
 var ENTER_KEY_CODE = 13
 var SCROLL_THRESHOLD = 20
 var RELOAD_LIBRARY_MESSAGE = "Reload Library"
+var LATEST_READ_ID = "ch_latestRead"
+var LATEST_ADDED_TITLE_ID = "ch_latestAddedTitle"
+var TOOLS_ID = "tools"
 
 function getSpinner() {
     return document.getElementsByClassName("spinner")[0]
@@ -391,6 +395,10 @@ function setToOfflineMode() {
     }
 }
 
+function scrollToSearch() {
+    window.scroll(0, getSearch().offsetTop)
+}
+
 function loadNextPage(callback) {
     if (getSearch() && (document.searchTimestamp === undefined || document.searchTimestamp == null)) {
         var pagenum = getCurrentPage() + 1
@@ -411,6 +419,7 @@ function loadNextPage(callback) {
                         hideSpinner()
                         addCollections(response.collections)
                         addBooks(response.books)
+                        if (getTerm().length > 0) scrollToSearch()
                         if (callback != null) callback()
                     } else {
                         hideSpinner()
@@ -557,5 +566,18 @@ window.onscroll = function(ev) {
         if (! getEndOfCollection()) {
             loadNextPage(null)
         }
+    }
+    let e = document.getElementById(LATEST_READ_ID)
+    let s = document.getElementById(TOOLS_ID)
+    var followingElement = document.getElementById(LATEST_ADDED_TITLE_ID)
+    if (followingElement.style.display == "none") {
+        followingElement = document.getElementsByClassName(COLLECTION_TITLE_CLASS)[0]
+    }
+    if (window.scrollY > e.offsetTop + e.offsetHeight) {
+        s.classList.add(KEEP_ON_TOP_CLASS)
+        if (followingElement) followingElement.style.marginTop = s.offsetHeight + "px"
+    } else {
+        s.classList.remove(KEEP_ON_TOP_CLASS)
+        if (followingElement) followingElement.style.marginTop = ""
     }
 }

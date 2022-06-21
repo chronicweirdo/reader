@@ -178,6 +178,11 @@ h1 a {
     row-gap: 1.4285vw;
     margin-bottom: 1.4285vw;
 }
+.keep-on-top {
+    position: fixed;
+    top: 0;
+    z-index: 100;
+}
 #ch_latestReadTitle {
     margin-top: 1.4285vw;
 }
