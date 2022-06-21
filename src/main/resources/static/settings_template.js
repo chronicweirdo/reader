@@ -289,6 +289,8 @@ var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat,
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
 var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)
 
+var SETTING_LIBRARY_SCROLL_TOOLS = new Setting("library_scroll_tools", "keep library tools on screen", "true", parseBoolean, null, createBooleanController)
+
 var SETTINGS = []
 for (var nam in this) {
     if (nam.startsWith("SETTING_")) SETTINGS.push(this[nam])

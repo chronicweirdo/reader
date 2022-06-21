@@ -562,17 +562,19 @@ window.onscroll = function(ev) {
             loadNextPage(null)
         }
     }
-    let e = document.getElementById(LATEST_READ_ID)
-    let s = document.getElementById(TOOLS_ID)
-    var followingElement = document.getElementById(LATEST_ADDED_TITLE_ID)
-    if (followingElement.style.display == "none") {
-        followingElement = document.getElementsByClassName(COLLECTION_TITLE_CLASS)[0]
-    }
-    if (window.scrollY > e.offsetTop + e.offsetHeight) {
-        s.classList.add(KEEP_ON_TOP_CLASS)
-        if (followingElement) followingElement.style.marginTop = s.offsetHeight + "px"
-    } else {
-        s.classList.remove(KEEP_ON_TOP_CLASS)
-        if (followingElement) followingElement.style.marginTop = ""
+    if (SETTING_LIBRARY_SCROLL_TOOLS.get()) {
+        let e = document.getElementById(LATEST_READ_ID)
+        let s = document.getElementById(TOOLS_ID)
+        var followingElement = document.getElementById(LATEST_ADDED_TITLE_ID)
+        if (followingElement.style.display == "none") {
+            followingElement = document.getElementsByClassName(COLLECTION_TITLE_CLASS)[0]
+        }
+        if (window.scrollY > e.offsetTop + e.offsetHeight) {
+            s.classList.add(KEEP_ON_TOP_CLASS)
+            if (followingElement) followingElement.style.marginTop = s.offsetHeight + "px"
+        } else {
+            s.classList.remove(KEEP_ON_TOP_CLASS)
+            if (followingElement) followingElement.style.marginTop = ""
+        }
     }
 }

@@ -73,6 +73,7 @@ function loadSettings() {
     settingsWrapper.appendChild(SETTING_LATEST_READ_LIMIT.getController())
     settingsWrapper.appendChild(SETTING_LATEST_ADDED_LIMIT.getController())
     settingsWrapper.appendChild(SETTING_COLLECTIONS_IN_BOOK_TITLES.getController())
+    settingsWrapper.appendChild(SETTING_LIBRARY_SCROLL_TOOLS.getController())
 
     // theme settings
     settingsWrapper.appendChild(getSettingCategory("Theme Settings"))
