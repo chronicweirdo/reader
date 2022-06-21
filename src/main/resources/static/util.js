@@ -364,7 +364,7 @@ function getMarkAsReadButton() {
 function getBookId(bookPagesKey) {
     let tokens = bookPagesKey.split("_")
     if (tokens.length > 2) {
-        return parseInt(tokens[1])
+        return tokens[1]
     } else {
         return undefined
     }
