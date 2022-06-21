@@ -209,6 +209,12 @@ class Setting {
             }
         }
     }
+    reset() {
+        let all_keys = Object.keys(window.localStorage).filter(k => k.startsWith(this.name))
+        for (let k in all_keys) {
+            window.localStorage.removeItem(all_keys[k])
+        }
+    }
     get() {
         let stringValue = window.localStorage.getItem(this.#getSettingName())
         if (!stringValue) {
@@ -243,7 +249,6 @@ class Setting {
         this.listeners.push(listener)
     }
 }
-
 
 
 var SETTING_DARK_BACKGROUND_COLOR = new Setting("dark_background", "dark theme background color", SETTING_DARK_BACKGROUND_COLOR_DEFAULT, null, null, createColorController)
@@ -283,3 +288,8 @@ var SETTING_SWIPE_ANGLE_THRESHOLD = new Setting("swipe_angle_threshold", "maximu
 var SETTING_ZOOM_JUMP = new Setting("zoom_jump", "zoom jump", "1.0", parseFloat, null, null, true)
 var SETTING_COLLECTIONS_IN_BOOK_TITLES = new Setting("collections_book_titles", "show collections in latest read and added", "true", parseBoolean, null, createBooleanController)
 var SETTING_FIT_COMIC_TO_SCREEN = new Setting("fit_comic_to_screen", "fit comic page to screen", "true", parseBoolean, null, null)
+
+var SETTINGS = []
+for (var nam in this) {
+    if (nam.startsWith("SETTING_")) SETTINGS.push(this[nam])
+}

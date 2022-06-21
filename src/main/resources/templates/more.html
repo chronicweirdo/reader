@@ -20,7 +20,8 @@
 <p id="settings" class="settings"></p>
 <p class="online-only" ><a href="/password">Change Password</a></p>
 <p class="online-only" th:if="${admin}"><a href="/import">Import Data</a></p>
-<p class="end"><a onclick="clearStorage(this)">Clear Local Cache</a></p>
+<p><a onclick="clearStorage(this)">Clear Local Cache</a></p>
+<p class="end"><a onclick="resetSettings(this)">Reset Device Settings</a></p>
 <h2 class="online-only" >Exit</h2>
 <p class="online-only end"><a href="/logout">Logout</a></p>
 </body>

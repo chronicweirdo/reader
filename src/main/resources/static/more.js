@@ -1,10 +1,19 @@
 var ONLINE_ONLY_CLASS = "online-only"
 
-function clearStorage(element) {
-    clearLocalStorage()
+function resetSettings(element) {
+    for (let i = 0; i < SETTINGS.length; i++) {
+        SETTINGS[i].reset()
+    }
     element.innerHTML = element.innerHTML + " - done!"
     loadSettings()
     configureThemeForMorePage()
+}
+
+function clearStorage(element) {
+    /*clearLocalStorage()
+    element.innerHTML = element.innerHTML + " - done!"
+    loadSettings()
+    configureThemeForMorePage()*/
 }
 
 function updateStatusBarForMorePage() {
