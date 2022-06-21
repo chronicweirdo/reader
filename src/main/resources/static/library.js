@@ -414,7 +414,7 @@ function loadNextPage(callback) {
                         hideSpinner()
                         addCollections(response.collections)
                         addBooks(response.books)
-                        if (getTerm().length > 0) scrollToSearch()
+                        if (getTerm().length > 0 && getCurrentPage() == 0) scrollToSearch()
                         if (callback != null) callback()
                     } else {
                         hideSpinner()
