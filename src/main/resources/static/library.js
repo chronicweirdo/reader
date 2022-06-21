@@ -387,11 +387,6 @@ function setToOfflineMode() {
         offlineMessage.classList.add("offline-message")
         offlineMessage.innerHTML = "The application is in offline mode, only the latest read books are available."
         document.getElementById("search").replaceWith(offlineMessage)
-
-        let moreElement = document.getElementById("more")
-        moreElement.classList.remove(ACTIVE_CLASS)
-        moreElement.href = "/"
-        moreElement.title = RELOAD_LIBRARY_MESSAGE
     }
 }
 

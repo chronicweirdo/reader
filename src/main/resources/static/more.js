@@ -1,3 +1,5 @@
+var ONLINE_ONLY_CLASS = "online-only"
+
 function clearStorage(element) {
     clearLocalStorage()
     element.innerHTML = element.innerHTML + " - done!"
@@ -27,6 +29,30 @@ function getSettingCategory(title) {
     let cat = document.createElement("h3")
     cat.innerHTML = title
     return cat
+}
+
+function checkOnline() {
+    var xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var response = JSON.parse(this.responseText)
+                if (response.offline == undefined) {
+                    setToOnlineMode()
+                }
+            }
+        }
+    }
+    xhttp.open("GET", "search?term=&page=0")
+    xhttp.send()
+}
+
+function setToOnlineMode() {
+    let onlineOnlyElements = Array.from(document.getElementsByClassName(ONLINE_ONLY_CLASS))
+    for (let i = 0; i < onlineOnlyElements.length; i++) {
+        //onlineOnlyElements[i].style.display = "none"
+        onlineOnlyElements[i].classList.remove(ONLINE_ONLY_CLASS)
+    }
 }
 
 function loadSettings() {
@@ -100,4 +126,5 @@ window.onload = function() {
     loadSettings()
     configureThemeForMorePage()
     window.addEventListener("focus", () => checkAndUpdateTheme(true), false)
+    checkOnline()
 }

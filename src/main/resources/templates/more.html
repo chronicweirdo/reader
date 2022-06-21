@@ -13,15 +13,15 @@
 <body>
 <h1>Chronic Reader Pages</h1>
 <p><a href="/">Library</a></p>
-<p><a href="/collections">Collections</a></p>
-<p><a href="/history">History</a></p>
+<p class="online-only" ><a href="/collections">Collections</a></p>
+<p class="online-only" ><a href="/history">History</a></p>
 <p class="end"><a href="/help">Help</a></p>
 <h2>Settings and Tools</h2>
 <p id="settings" class="settings"></p>
-<p><a href="/password">Change Password</a></p>
-<p th:if="${admin}"><a href="/import">Import Data</a></p>
+<p class="online-only" ><a href="/password">Change Password</a></p>
+<p class="online-only" th:if="${admin}"><a href="/import">Import Data</a></p>
 <p class="end"><a onclick="clearStorage(this)">Clear Local Cache</a></p>
-<h2>Exit</h2>
-<p class="end"><a href="/logout">Logout</a></p>
+<h2 class="online-only" >Exit</h2>
+<p class="online-only end"><a href="/logout">Logout</a></p>
 </body>
 </html>

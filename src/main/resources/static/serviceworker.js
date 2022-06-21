@@ -129,7 +129,28 @@ var filesToCache = [
     '/logo.png?size=167',
     '/logo.png?size=180',
     '/logo.png?size=192',
-    '/manifest.json'
+    '/manifest.json',
+    '/more',
+    '/more.js',
+    '/more.css',
+    '/help',
+    '/help.js',
+    '/help.css',
+    '/library.png',
+    '/library_collection.png',
+    '/library_collection_search.png',
+    '/application_settings.png',
+    '/other_colors.png',
+    '/collection_tree.png',
+    '/book_controls.png',
+    '/book_tools.png',
+    '/comic_tools.png',
+    '/book_page.png',
+    '/book_settings.png',
+    '/book_toc.png',
+    '/book_dark_mode.png',
+    '/comic_page.png',
+    '/comic_settings.png'
 ]
 
 self.addEventListener('install', e => {

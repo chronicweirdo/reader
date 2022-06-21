@@ -246,3 +246,6 @@ img {
 #ch_spinner_svg .accent {
     stroke: var(--accent-color, gold);
 }
+.online-only {
+    display: none;
+}
