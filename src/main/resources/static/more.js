@@ -4,17 +4,34 @@ function resetSettings(element) {
     for (let i = 0; i < SETTINGS.length; i++) {
         SETTINGS[i].reset()
     }
-    element.innerHTML = element.innerHTML + " - done!"
+    element.innerHTML = element.innerHTML + " - done at " + Date()
     loadSettings()
     configureThemeForMorePage()
 }
 
-function clearStorage(element) {
+function clearBookPageCache(element) {
+    let all_keys = Object.keys(window.localStorage).filter(k => k.startsWith("bookPages_"))
+    for (let k in all_keys) {
+        window.localStorage.removeItem(all_keys[k])
+    }
+    element.innerHTML = element.innerHTML + " - done at " + Date()
+}
+
+function resetApplication(element) {
+    if('serviceWorker' in navigator) {
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type: 'reset'})
+        }
+    }
+    element.innerHTML = element.innerHTML + " - done at " + Date()
+}
+
+//function clearStorage(element) {
     /*clearLocalStorage()
     element.innerHTML = element.innerHTML + " - done!"
     loadSettings()
     configureThemeForMorePage()*/
-}
+//}
 
 function updateStatusBarForMorePage() {
     setStatusBarColor(SETTING_ACCENT_COLOR.get())

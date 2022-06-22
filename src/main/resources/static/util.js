@@ -650,11 +650,11 @@ function checkAndUpdateTheme(useAccentForStatusBar = false) {
     }
 }
 
-function clearLocalStorage() {
+/*function clearLocalStorage() {
     window.localStorage.clear()
     if('serviceWorker' in navigator) {
         if (navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({type: 'reset'})
         }
     }
-}
+}*/
