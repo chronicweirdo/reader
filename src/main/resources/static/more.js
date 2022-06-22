@@ -1,37 +1,27 @@
 var ONLINE_ONLY_CLASS = "online-only"
 
-function resetSettings(element) {
+function resetSettings() {
     for (let i = 0; i < SETTINGS.length; i++) {
         SETTINGS[i].reset()
     }
-    element.innerHTML = element.innerHTML + " - done at " + Date()
     loadSettings()
     configureThemeForMorePage()
 }
 
-function clearBookPageCache(element) {
+function clearBookPageCache() {
     let all_keys = Object.keys(window.localStorage).filter(k => k.startsWith("bookPages_"))
     for (let k in all_keys) {
         window.localStorage.removeItem(all_keys[k])
     }
-    element.innerHTML = element.innerHTML + " - done at " + Date()
 }
 
-function resetApplication(element) {
+function resetApplication() {
     if('serviceWorker' in navigator) {
         if (navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage({type: 'reset'})
         }
     }
-    element.innerHTML = element.innerHTML + " - done at " + Date()
 }
-
-//function clearStorage(element) {
-    /*clearLocalStorage()
-    element.innerHTML = element.innerHTML + " - done!"
-    loadSettings()
-    configureThemeForMorePage()*/
-//}
 
 function updateStatusBarForMorePage() {
     setStatusBarColor(SETTING_ACCENT_COLOR.get())
@@ -76,7 +66,6 @@ function checkOnline() {
 function setToOnlineMode() {
     let onlineOnlyElements = Array.from(document.getElementsByClassName(ONLINE_ONLY_CLASS))
     for (let i = 0; i < onlineOnlyElements.length; i++) {
-        //onlineOnlyElements[i].style.display = "none"
         onlineOnlyElements[i].classList.remove(ONLINE_ONLY_CLASS)
     }
 }
@@ -149,8 +138,56 @@ function loadSettings() {
     settingsWrapper.appendChild(SETTING_COMIC_COLUMN_THRESHOLD.getController())
 }
 
+function addResetButtons() {
+    let p1 = document.getElementById('resetSettingsParagraph')
+    let b1 = getButtonWithConfirmation(
+        'Reset Device Settings',
+        'Are you sure you want to reset device settings?',
+        resetSettings,
+        (b) => {
+            b.classList.remove('critical')
+        },
+        (b) => {
+            b.classList.add('critical')
+        },
+        2500
+    )
+    p1.appendChild(b1)
+
+    let p2 = document.getElementById('clearBookPageCacheParagraph')
+    let b2 = getButtonWithConfirmation(
+        'Clear Book Pages Cache',
+        'Are you sure you want to clear book pages cache?',
+        clearBookPageCache,
+        (b) => {
+            b.classList.remove('critical')
+        },
+        (b) => {
+            b.classList.add('critical')
+        },
+        2500
+    )
+    p2.appendChild(b2)
+
+    let p3 = document.getElementById('resetApplicationParagraph')
+    let b3 = getButtonWithConfirmation(
+        'Reset Service Worker',
+        'Are you sure you want to reset service worker?',
+        resetApplication,
+        (b) => {
+            b.classList.remove('critical')
+        },
+        (b) => {
+            b.classList.add('critical')
+        },
+        2500
+    )
+    p3.appendChild(b3)
+}
+
 window.onload = function() {
     loadSettings()
+    addResetButtons()
     configureThemeForMorePage()
     window.addEventListener("focus", () => checkAndUpdateTheme(true), false)
     checkOnline()

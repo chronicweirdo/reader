@@ -303,28 +303,56 @@ function reportError(message) {
     errorPanel.innerHTML = message
 }
 
-function getRemoveProgressButton() {
-    let buttonLabel = 'remove progress'
+function getButtonWithConfirmation(buttonLabel, confirmationLabel, action, applyButtonStyle, applyConfirmationStyle, timeout) {
     let button = document.createElement('a')
     button.innerHTML = buttonLabel
-    button.style.gridColumnStart = '1'
-    button.style.gridColumnEnd = '3'
+    if (applyButtonStyle) {
+        applyButtonStyle(button)
+    }
 
-    let removeProgressFunction = (event) => {
-        removeProgress()
+    let buttonFunction = (event) => {
+        action()
+        button.innerHTML = buttonLabel
+        button.onclick = confirmationRequestFunction
+        if (applyButtonStyle) {
+            applyButtonStyle(button)
+        }
     }
     let confirmationRequestFunction = (event) => {
-        button.innerHTML = "are you sure you want to remove progress?"
-        button.onclick = removeProgressFunction
-        button.classList.add('critical')
+        button.innerHTML = confirmationLabel
+        button.onclick = buttonFunction
+        if (applyConfirmationStyle) {
+            applyConfirmationStyle(button)
+        }
         window.setTimeout(function() {
             button.innerHTML = buttonLabel
             button.onclick = confirmationRequestFunction
-            button.classList.remove('critical')
-        }, 2500)
+            if (applyButtonStyle) {
+                applyButtonStyle(button)
+            }
+        }, timeout)
     }
 
     button.onclick = confirmationRequestFunction
+
+    return button
+}
+
+function getRemoveProgressButton() {
+    let button = getButtonWithConfirmation(
+        'remove progress',
+        'are you sure you want to remove progress?',
+        removeProgress,
+        (b) => {
+            b.style.gridColumnStart = '1'
+            b.style.gridColumnEnd = '3'
+            b.classList.remove('critical')
+        },
+        (b) => {
+            b.classList.add('critical')
+        },
+        2500
+    )
 
     let controller = document.createElement('div')
     controller.classList.add('setting')
@@ -333,28 +361,21 @@ function getRemoveProgressButton() {
 }
 
 function getMarkAsReadButton() {
-    let buttonLabel = 'mark as read'
-    let button = document.createElement('a')
-    button.innerHTML = buttonLabel
-    button.style.gridColumnStart = '1'
-    button.style.gridColumnEnd = '3'
+    let button = getButtonWithConfirmation(
+        'mark as read',
+        'are you sure you want to mark book as read?',
+        markAsRead,
+        (b) => {
+            b.style.gridColumnStart = '1'
+            b.style.gridColumnEnd = '3'
+            b.classList.remove('critical')
+        },
+        (b) => {
+            b.classList.add('critical')
+        },
+        2500
+    )
 
-    let markAsReadFunction = (event) => {
-        markAsRead()
-    }
-
-    let confirmationRequestFunction = (event) => {
-        button.innerHTML = "are you sure you want to mark book as read?"
-        button.onclick = markAsReadFunction
-        button.classList.add('critical')
-        window.setTimeout(function() {
-            button.innerHTML = buttonLabel
-            button.onclick = confirmationRequestFunction
-            button.classList.remove('critical')
-        }, 2500)
-    }
-
-    button.onclick = confirmationRequestFunction
     let controller = document.createElement('div')
     controller.classList.add('setting')
     controller.appendChild(button)
@@ -649,12 +670,3 @@ function checkAndUpdateTheme(useAccentForStatusBar = false) {
         document.theme = correctTheme
     }
 }
-
-/*function clearLocalStorage() {
-    window.localStorage.clear()
-    if('serviceWorker' in navigator) {
-        if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({type: 'reset'})
-        }
-    }
-}*/

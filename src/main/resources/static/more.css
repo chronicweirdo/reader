@@ -249,3 +249,7 @@ img {
 .online-only {
     display: none;
 }
+a.critical {
+    color: var(--accent-text-color, black);
+    background-color: var(--accent-color, gold);
+}

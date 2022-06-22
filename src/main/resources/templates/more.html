@@ -20,9 +20,11 @@
 <p id="settings" class="settings"></p>
 <p class="online-only" ><a href="/password">Change Password</a></p>
 <p class="online-only" th:if="${admin}"><a href="/import">Import Data</a></p>
-<p><a onclick="resetSettings(this)">Reset Device Settings</a></p>
-<p><a onclick="clearBookPageCache(this)">Clear Book Pages Cache</a></p>
-<p class="online-only end"><a onclick="resetApplication(this)">Reset Service Worker</a></p>
+
+<p id="resetSettingsParagraph"></p>
+<p id="clearBookPageCacheParagraph"></p>
+<p id="resetApplicationParagraph" class="online-only end"></p>
+
 <h2 class="online-only">Exit</h2>
 <p class="online-only end"><a href="/logout">Logout</a></p>
 </body>
