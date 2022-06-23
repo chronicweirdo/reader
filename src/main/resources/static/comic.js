@@ -16,10 +16,8 @@ class Comic {
     setDocumentTitle(value) {
         document.title = value
     }
-    updateDownloadUrl() {
-        let url = "downloadPage?id=" + this.id + "&page=" + (getPositionInput()-1)
-        let downloadLink = document.getElementById("downloadPageButton")
-        downloadLink.href = url
+    getPageDownloadUrl() {
+        return "downloadPage?id=" + this.id + "&page=" + (getPositionInput()-1)
     }
     displayPage(page, callback) {
         let self = this
@@ -40,7 +38,6 @@ class Comic {
                         saveProgress(self.id, page-1)
                         self.setDocumentTitle(page + "/" + self.size + " - " + self.title)
                         getImage().reset()
-                        self.updateDownloadUrl()
                         comicCheckAndUpdateTheme()
                         if (callback != null) {
                             callback()
@@ -135,6 +132,22 @@ function getComic() {
         document.comic = new Comic(getMeta("bookId"), getMeta("bookTitle"), num(getMeta("size")))
         return document.comic
     }
+}
+
+function downloadPage() {
+    let url = getComic().getPageDownloadUrl()
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', url, true)
+    xhr.responseType = 'blob'
+    xhr.onload = function(e) {
+        if (this.status == 200) {
+            var myBlob = this.response;
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(myBlob);
+            link.click();
+        }
+    }
+    xhr.send();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////// COMIC ↑
@@ -405,6 +418,7 @@ function getDownloadPageButton() {
     let button = document.createElement('a')
     button.id = 'downloadPageButton'
     button.innerHTML = 'download'
+    button.onclick = downloadPage
     button.style.gridColumnStart = '1'
     button.style.gridColumnEnd = '3'
 
