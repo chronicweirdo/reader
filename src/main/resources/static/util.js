@@ -153,6 +153,15 @@ function goHome() {
     window.location = "/"
 }
 
+function markOnDevice(onDeviceHeader) {
+    let coverElement = document.getElementById("ch_cover")
+    if (onDeviceHeader == "true") {
+        coverElement.classList.add("ondevice")
+    } else {
+        coverElement.classList.remove("ondevice")
+    }
+}
+
 function saveProgress(bookId, position, callback) {
     var xhttp = new XMLHttpRequest()
     xhttp.onreadystatechange = function() {
@@ -161,11 +170,7 @@ function saveProgress(bookId, position, callback) {
                 window.location.href = "/logout"
             } else {
                 // mark on device
-                let onDeviceHeader = this.getResponseHeader("ondevice")
-                if (onDeviceHeader == "true") {
-                    let coverElement = document.getElementById("ch_cover")
-                    coverElement.classList.add("ondevice")
-                }
+                markOnDevice(this.getResponseHeader("ondevice"))
                 if (callback) callback()
             }
         }
@@ -186,11 +191,12 @@ function loadProgress(callback) {
         } else if (this.readyState == this.DONE) {
             if (this.status == 200) {
                 var currentPosition = parseInt(this.responseText)
+                markOnDevice(this.getResponseHeader("ondevice"))
                 if (callback != null) {
                     callback(currentPosition)
-                } else {
+                }/* else {
                     callback(undefined)
-                }
+                }*/
             } else if (this.status > 400 && this.status < 500) {
                 window.location.href = "/logout"
             } else {

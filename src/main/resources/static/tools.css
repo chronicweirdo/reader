@@ -1,5 +1,6 @@
 :root {
     --accent-color: gold;
+    --accent-text-color: black;
     --text-color: black;
     --background-color: white;
 }
@@ -292,7 +293,7 @@
 #ch_cover #saved path, #ch_cover #saved rect {
     stroke-width: 1px;
     fill: none;
-    stroke: var(--text-color, black);
+    stroke: var(--accent-text-color, black);
 }
 #ch_cover.ondevice #saved path, #ch_cover.ondevice #saved rect {
     fill: var(--accent-color, gold);

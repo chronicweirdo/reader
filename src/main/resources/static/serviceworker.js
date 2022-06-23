@@ -416,6 +416,17 @@ async function handleRootRequest(request) {
     }
 }
 
+function addHeader(response, headerName, headerValue) {
+    var newHeaders = new Headers(response.headers)
+    newHeaders.append(headerName, headerValue)
+
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+    })
+}
+
 async function handleRootDataRequest(request) {
     try {
         // always try to load from backend first
@@ -469,6 +480,9 @@ async function handleLoadProgress(request) {
     let url = new URL(request.url)
     let id = url.searchParams.get("id")
 
+    let savedBook = await databaseLoad(BOOKS_TABLE, id)
+    let bookOnDevice = savedBook != null && savedBook != undefined
+
     // always get progress from backend - otherwise this doesn't sync well with the server
     let serverProgress
     try {
@@ -484,10 +498,10 @@ async function handleLoadProgress(request) {
 
     // if nothing, try to grab from database
     if (serverProgress) {
-        return serverProgress
+        return addHeader(serverProgress, 'ondevice', bookOnDevice)
     } else {
         let databaseProgress = await databaseLoad(PROGRESS_TABLE, id)
-        let databaseResponse = new Response(databaseProgress.position, {headers: {'Content-Type': 'application/json'}})
+        let databaseResponse = new Response(databaseProgress.position, {headers: {'Content-Type': 'application/json', 'ondevice': bookOnDevice}})
         return databaseResponse
     }
 }
