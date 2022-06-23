@@ -6,6 +6,7 @@ h2 {
 }
 p.images {
     display: grid;
+    justify-self: center;
 }
 p.images span {
     text-align: center;
