@@ -88,6 +88,7 @@ class ScannerService {
   val scannedFiles = new AtomicLong(0)
   val scanFailures = new AtomicLong(0)
   val scanTimeMilliseconds = new AtomicLong(0)
+  val scanInProgress = new AtomicBoolean(false)
 
   var filesSnapshot = Set[String]()
 
@@ -122,6 +123,7 @@ class ScannerService {
   }
 
   private def initialScanFolder(path: String) = {
+    scanInProgress.set(true)
     if (enableFolderWatching) FileUtil.scanFolderTree(path).foreach(f => startWatching(f))
 
     val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
@@ -141,19 +143,25 @@ class ScannerService {
       log.info(s"found ${modifiedFiles.size} modified files in initial scan")
       modifiedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, MODIFIED)))
     }
+    scanInProgress.set(false)
   }
 
   def rescan() = if (!enableFolderWatching) subsequentScanFolder(libraryLocation)
 
   private def subsequentScanFolder(path: String) = {
-    val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
-    val newFiles = filesOnDisk.diff(filesSnapshot)
-    log.info(s"found ${newFiles.size} new files in subsequent scan")
-    newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
-    val deletedFiles = filesSnapshot.diff(filesOnDisk)
-    log.info(s"found ${deletedFiles.size} deleted files in subsequent scan")
-    deletedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, DELETED)))
-    filesSnapshot = filesOnDisk
+    if (scanInProgress.getAndSet(true) == false) {
+      val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet
+      val newFiles = filesOnDisk.diff(filesSnapshot)
+      log.info(s"found ${newFiles.size} new files in subsequent scan")
+      newFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, ADDED)))
+      val deletedFiles = filesSnapshot.diff(filesOnDisk)
+      log.info(s"found ${deletedFiles.size} deleted files in subsequent scan")
+      deletedFiles.foreach(f => changesQueue.put(BookFolderChange(f, true, DELETED)))
+      filesSnapshot = filesOnDisk
+      scanInProgress.set(false)
+    } else {
+      log.info(s"scan already in progress")
+    }
   }
 
   private def startWatcher() = {

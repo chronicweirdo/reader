@@ -63,6 +63,12 @@ function checkOnline() {
     xhttp.send()
 }
 
+function requestRescan() {
+    var xhttp = new XMLHttpRequest()
+    xhttp.open("GET", "rescan")
+    xhttp.send()
+}
+
 function setToOnlineMode() {
     let onlineOnlyElements = Array.from(document.getElementsByClassName(ONLINE_ONLY_CLASS))
     for (let i = 0; i < onlineOnlyElements.length; i++) {

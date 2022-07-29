@@ -108,6 +108,13 @@ class MainController @Autowired()(
     "more"
   }
 
+  @RequestMapping(value = Array("/rescan"))
+  @ResponseBody
+  def rescan() = {
+    scannerService.rescan()
+    ""
+  }
+
   @RequestMapping(value = Array("/historyData"), produces = Array(MediaType.APPLICATION_JSON_VALUE))
   @ResponseBody
   def loadHistoryData(): ResponseEntity[java.util.List[UiBook]] = {
