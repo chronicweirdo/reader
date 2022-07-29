@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service
 import scala.jdk.CollectionConverters._
 import scala.beans.BeanProperty
 import com.cacoveanu.reader.util.SeqUtil.AugmentedSeq
+import com.fasterxml.jackson.databind.util.Named
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 
 import java.nio.file.StandardWatchEventKinds.{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY}
@@ -23,6 +25,8 @@ import java.util.concurrent.{BlockingQueue, ConcurrentHashMap, LinkedBlockingQue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicLong}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.OptionConverters._
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
 
 
 object BookFolderChangeType extends Enumeration {
@@ -38,6 +42,13 @@ class BookFolderChangeComparator extends Comparator[BookFolderChange] {
     case (DELETED, MODIFIED) => -1
     case _ => 1
   }
+}
+
+@Service
+@ConditionalOnProperty(value = Array("scheduling.enabled"), havingValue = "true", matchIfMissing = false)
+class ScannerServiceScheduler @Autowired()(private val scannerService: ScannerService) {
+  @Scheduled(cron = "${rescan.cron}")
+  def scheduledScan() = scannerService.rescan()
 }
 
 @Service
@@ -132,8 +143,7 @@ class ScannerService {
     }
   }
 
-  @Scheduled(cron = "0 */1 * * * *")
-  def scheduledRescan() = if (!enableFolderWatching) subsequentScanFolder(libraryLocation)
+  def rescan() = if (!enableFolderWatching) subsequentScanFolder(libraryLocation)
 
   private def subsequentScanFolder(path: String) = {
     val filesOnDisk: Set[String] = FileUtil.scanFilesRegex(path, SUPPORTED_FILES_REGEX).toSet

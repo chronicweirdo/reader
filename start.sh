@@ -5,5 +5,7 @@ sed -i 's/LOG_LEVEL/'$LOG_LEVEL'/' application.properties
 sed -i 's/ENABLE_FOLDER_WATCHING/'$ENABLE_FOLDER_WATCHING'/' application.properties
 sed -i 's/VERIFY_ON_INITIAL_SCAN/'$VERIFY_ON_INITIAL_SCAN'/' application.properties
 sed -i 's/SERVER_TOMCAT_MAX_THREADS/'$SERVER_TOMCAT_MAX_THREADS'/' application.properties
+sed -i 's/SCHEDULING_ENABLED/'$SCHEDULING_ENABLED'/' application.properties
+sed -i 's/RESCAN_CRON/'$RESCAN_CRON'/' application.properties
 
 java -jar reader.jar
