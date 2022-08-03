@@ -52,29 +52,29 @@ table, th, td {
 .spinner {
     display: block;
 }
-h1 {
+h1, p.h1 {
     font-size: 1.3em;
     font-weight: bold;
 }
-h2 {
+h2, p.h2 {
     font-size: 1.2em;
     font-weight: bold;
 }
-h3 {
+h3, p.h3 {
     font-size: 1.1em;
     font-weight: bold;
 }
-h4 {
+h4, p.h4 {
     font-size: 1.1em;
     font-weight: bold;
     font-style: italic;
 }
-h5 {
+h5, p.h5 {
     font-size: 1.1em;
     font-weight: normal;
     font-style: italic;
 }
-h6 {
+h6, p.h6 {
     font-size: 1.1em;
     font-weight: normal;
     font-style: normal;
