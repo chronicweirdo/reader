@@ -2,9 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head></head>
 <body>
+<div th:fragment="readModeViewport" th:remove="tag">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, height=device-height, viewport-fit=cover">
+<div>
+<div th:fragment="normalModeViewport" th:remove="tag">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, height=device-height">
+<div>
 <div th:fragment="normalPage" th:remove="tag">
     <meta charset="UTF-8">
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, height=device-height, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#FFD700">
