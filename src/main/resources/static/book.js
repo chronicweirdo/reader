@@ -118,16 +118,6 @@ function getContentFor(start, end, callback) {
     }
 }
 
-/*function updateUrl(withNewHistoryEntry) {
-    let url = new URL(document.URL)
-    url.searchParams.set("p", document.currentPage.start)
-    if (withNewHistoryEntry) {
-        history.pushState({"canGoBack": true}, document.title, url.href)
-    } else {
-        history.replaceState({}, document.title, url.href)
-    }
-}*/
-
 function pushToHistoryStack(position) {
     if (document.historyStack == undefined) {
         document.historyStack = []
@@ -602,22 +592,3 @@ window.onload = function() {
 
     downloadBookToDevice()
 }
-
-/*window.onpageshow = function() {
-    document.lastPageChange = new Date()
-    timeout(100).then(() => {
-        let url = new URL(document.URL)
-        console.log("handling book load for url: " + url.href)
-        if (url.searchParams.get("p")) {
-            // load page in url
-            console.log("displaying page in url")
-            displayPageFor(url.searchParams.get("p"), false)
-        } else {
-            // load page saved in progress
-            loadProgress(function(currentPosition) {
-                document.currentPosition = currentPosition
-                displayPageFor(currentPosition, false)
-            })
-        }
-    })
-}*/
