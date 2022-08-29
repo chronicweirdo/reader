@@ -118,9 +118,46 @@ function getContentFor(start, end, callback) {
     }
 }
 
+/*function updateUrl(withNewHistoryEntry) {
+    let url = new URL(document.URL)
+    url.searchParams.set("p", document.currentPage.start)
+    if (withNewHistoryEntry) {
+        history.pushState({"canGoBack": true}, document.title, url.href)
+    } else {
+        history.replaceState({}, document.title, url.href)
+    }
+}*/
 
+function pushToHistoryStack(position) {
+    if (document.historyStack == undefined) {
+        document.historyStack = []
+    }
+    document.historyStack.push(position)
+    updateJumpBackButton()
+}
 
-async function displayPageFor(position) {
+function jumpBackInHistoryStack() {
+    if (document.historyStack && document.historyStack.length > 0) {
+        let position = document.historyStack.pop()
+        displayPageFor(position, false)
+        hideTools()
+        updateJumpBackButton()
+    }
+}
+
+function updateJumpBackButton() {
+    let jumpBackButton = document.getElementById("ch_jump_back")
+    if (jumpBackButton) {
+        if (document.historyStack && document.historyStack.length > 0) {
+            jumpBackButton.style.display = "block"
+        } else {
+            jumpBackButton.style.display = "none"
+        }
+    }
+}
+
+async function displayPageFor(position, withNewHistoryEntry = true) {
+    if (withNewHistoryEntry && document.currentPage) pushToHistoryStack(document.currentPage.start)
     let displayPageForInternal = async function(position) {
         document.lastPageChange = now
 
@@ -135,6 +172,7 @@ async function displayPageFor(position) {
             var content = document.getElementById("ch_content")
             content.innerHTML = text
             document.currentPage = page
+            //updateUrl(withNewHistoryEntry)
             // if book end is displayed, we mark the book as read
             if (page.end == parseInt(getMeta("bookEnd"))) {
                 saveProgress(getMeta("bookId"), page.end)
@@ -152,7 +190,7 @@ async function displayPageFor(position) {
             scrollNecessaryPromise(content).then(scrollNecessary => {
                 if (scrollNecessary) {
                     resetPagesForSection()
-                    displayPageFor(position)
+                    displayPageFor(position, withNewHistoryEntry)
                 } else {
                     hideSpinner()
                 }
@@ -218,7 +256,7 @@ function getPositionPercentage(pageStart, pageEnd) {
 function nextPage() {
     if (document.currentPage != null) {
         if (document.currentPage.end < parseInt(getMeta("bookEnd"))) {
-            displayPageFor(document.currentPage.end + 1)
+            displayPageFor(document.currentPage.end + 1, false)
         }
     }
 }
@@ -226,7 +264,7 @@ function nextPage() {
 function previousPage() {
     if (document.currentPage != null) {
         if (document.currentPage.start > parseInt(getMeta("bookStart"))) {
-            displayPageFor(document.currentPage.start - 1)
+            displayPageFor(document.currentPage.start - 1, false)
         }
     }
 }
@@ -239,7 +277,7 @@ function handleResize() {
         document.currentPage = null
         var content = document.getElementById("ch_content")
         content.innerHTML = ""
-        displayPageFor(position)
+        displayPageFor(position, false)
     }
 }
 
@@ -521,6 +559,7 @@ function initSettings() {
 }
 
 window.onload = function() {
+    updateJumpBackButton()
     checkAndUpdateTheme()
     setUiColors()
 
@@ -563,3 +602,22 @@ window.onload = function() {
 
     downloadBookToDevice()
 }
+
+/*window.onpageshow = function() {
+    document.lastPageChange = new Date()
+    timeout(100).then(() => {
+        let url = new URL(document.URL)
+        console.log("handling book load for url: " + url.href)
+        if (url.searchParams.get("p")) {
+            // load page in url
+            console.log("displaying page in url")
+            displayPageFor(url.searchParams.get("p"), false)
+        } else {
+            // load page saved in progress
+            loadProgress(function(currentPosition) {
+                document.currentPosition = currentPosition
+                displayPageFor(currentPosition, false)
+            })
+        }
+    })
+}*/
