@@ -31,3 +31,10 @@ out/
 .vscode/
 
 docker-compose.yml
+
+bin
+reader_db*
+*.log
+.bloop
+.metals
+#gradle-wrapper.*

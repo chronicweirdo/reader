@@ -246,3 +246,10 @@ the [Digital Comic Museum](https://digitalcomicmuseum.com).
 
 All ebooks used for testing and illustration purposes are from
 [Project Gutenberg](https://www.gutenberg.org) and [Standard Ebooks](https://standardebooks.org).
+
+## Running in devcontainer
+
+```
+gradle build -x tests
+java -jar build/libs/reader.jar
+```

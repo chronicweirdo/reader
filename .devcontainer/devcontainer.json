@@ -1,0 +1,21 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "mounts": [
+        "source=/Users/silviu/ws/testbooks/,target=/books,type=bind,consistency=cached"
+    ],
+    "extensions": [
+        "redhat.java",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-maven",
+        "vscjava.vscode-java-dependency",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "vscjava.vscode-java-pack",
+        "scala-lang.scala",
+        "scalameta.metals",
+        "Pivotal.vscode-boot-dev-pack",
+        "vscjava.vscode-gradle"
+    ]
+}
